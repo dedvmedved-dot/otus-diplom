@@ -1,0 +1,7 @@
+# endpoint-172.100.10.40 — storage
+RUN_ID: 20260808T132708Z
+StorageUnit_0: 4 controllers (model/manufacturer not populated in Redfish)
+  Drives:
+    USB_Device0_Port3 (USB)
+    USB_Device1_Port3 (USB)
+No SCSI/SATA drives exported via Redfish. OS disk likely on Adaptec RAID (not visible).

@@ -1,0 +1,7 @@
+# precheck/model.txt
+RUN_ID: 20260808T132708Z
+primary model: deepseek-v4-pro
+provider: DeepSeek
+base_url: https://api.deepseek.com
+connection: DIRECT
+DEEPSEEK_API_KEY: [REDACTED]

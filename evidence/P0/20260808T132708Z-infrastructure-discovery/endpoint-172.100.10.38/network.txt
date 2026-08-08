@@ -1,0 +1,16 @@
+# endpoint-172.100.10.38 — network
+RUN_ID: 20260808T132708Z
+Physical NICs: 8 (Eth0-Eth7)
+  Eth0: 6C:B3:11:61:D4:90 | LinkUp
+  Eth1: 6C:B3:11:61:D4:92 | LinkDown
+  Eth2: 6C:B3:11:61:D4:94 | LinkUp
+  Eth3: 6C:B3:11:61:D4:96 | LinkUp
+  Eth4: 6C:B3:11:38:D4:70 | LinkDown
+  Eth5: 6C:B3:11:38:D4:71 | LinkDown
+  Eth6: 6C:B3:11:38:D4:72 | LinkDown
+  Eth7: 6C:B3:11:38:D4:73 | LinkDown
+Virtual NIC:
+  VEth8: 42:18:FC:69:07:54 | LinkUp | 169.254.0.18 (link-local)
+MAC ranges:
+  6C:B3:11:61:D4:xx — Eth0-Eth3 (4 ports)
+  6C:B3:11:38:D4:xx — Eth4-Eth7 (4 ports)

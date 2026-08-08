@@ -1,0 +1,12 @@
+# endpoint-172.100.10.40 — identity
+RUN_ID: 20260808T132708Z
+Manufacturer: COMPAL
+SystemSerial: 7490778100035
+ChassisSerial: 7490778100035 (same as system)
+BIOS: 10.19.20
+BMC fw: 10.33.20
+BMC type: AMI MegaRAC, Redfish 1.8.0
+ManagerType: BMC
+SerialConsole: enabled
+PowerState: On
+Health: OK

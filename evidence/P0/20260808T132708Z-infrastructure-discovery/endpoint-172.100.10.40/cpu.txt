@@ -1,0 +1,7 @@
+# endpoint-172.100.10.40 — CPU
+RUN_ID: 20260808T132708Z
+CPU count: 2
+CPU_1: x86, 12 cores, 24 threads, 4000 MHz
+CPU_2: x86, 12 cores, 24 threads, 4000 MHz
+Total physical cores: 24
+Total threads: 48

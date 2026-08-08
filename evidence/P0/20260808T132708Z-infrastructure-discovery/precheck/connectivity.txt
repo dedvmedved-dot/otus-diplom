@@ -1,0 +1,7 @@
+# precheck/connectivity.txt
+RUN_ID: 20260808T132708Z
+VPN: tun0 UP, 192.168.99.112, routes: 172.30.0.0/16, 172.100.10.0/24
+
+172.100.10.38: ping OK (47ms), TCP 80+443 OPEN, Redfish ACCESS GRANTED
+172.100.10.39: UNREACHABLE (server reported as rebooting; 100% packet loss, all ports closed)
+172.100.10.40: ping OK (47ms), TCP 80+443 OPEN, Redfish ACCESS GRANTED

@@ -1,0 +1,7 @@
+# endpoint-172.100.10.38 — storage
+RUN_ID: 20260808T132708Z
+StorageUnit_0:
+  Drives:
+    USB_Device0_Port3 (USB)
+    USB_Device1_Port3 (USB)
+    SCSI_Target0_LUN0: Model=OS, Manufacturer=Adaptec, Capacity=479951060992 bytes (~480 GB), MediaType=HDD, Health=OK

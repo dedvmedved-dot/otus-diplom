@@ -1,0 +1,10 @@
+# endpoint-172.100.10.38 — memory
+RUN_ID: 20260808T132708Z
+Total installed: 256 GB (4x 64GB)
+DIMM slots: 24 (Index0-23)
+Installed DIMMs:
+  Index0:  65536 MiB | Samsung M393A8G40AB2-CWE | DDR4 | 2400 MHz
+  Index6:  65536 MiB | Samsung M393A8G40AB2-CWE | DDR4 | 2400 MHz
+  Index12: 65536 MiB | Samsung M393A8G40AB2-CWE | DDR4 | 2400 MHz
+  Index18: 65536 MiB | Samsung M393A8G40AB2-CWE | DDR4 | 2400 MHz
+All other slots: EMPTY (NO DIMM)

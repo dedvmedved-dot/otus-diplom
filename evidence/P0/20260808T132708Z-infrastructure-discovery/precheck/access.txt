@@ -1,0 +1,8 @@
+# precheck/access.txt
+RUN_ID: 20260808T132708Z
+SSH: UNAVAILABLE on all three endpoints (Connection refused on ports 22, 2222, 2200, 8022, 2122, 2022)
+IPMI Redfish: ACCESSIBLE on 38 and 40 (AMI MegaRAC, Redfish 1.8.0)
+  - endpoint-38: SVKravchuk / [REDACTED]
+  - endpoint-40: SVKravchuk / [REDACTED]
+  - endpoint-39: admin / [REDACTED] (unreachable)
+BMC SerialConsole: ENABLED on both 38 and 40 (firmware 10.33.20)

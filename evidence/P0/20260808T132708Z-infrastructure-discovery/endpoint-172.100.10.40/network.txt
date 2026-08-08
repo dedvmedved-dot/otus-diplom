@@ -1,0 +1,14 @@
+# endpoint-172.100.10.40 — network
+RUN_ID: 20260808T132708Z
+Physical NICs: 8 (Eth0-Eth7)
+  Eth0: 6C:B3:11:61:D3:20 | LinkDown
+  Eth1: 6C:B3:11:61:D3:22 | LinkDown
+  Eth2: 6C:B3:11:61:D3:24 | LinkDown
+  Eth3: 6C:B3:11:61:D3:26 | LinkDown
+  Eth6: 6C:B3:11:38:D5:9A | LinkDown
+  Eth7: 6C:B3:11:38:D5:9B | LinkDown
+  Eth4, Eth5: NOT VERIFIED (timeout during collection)
+MAC ranges:
+  6C:B3:11:61:D3:xx — Eth0-Eth3 (4 ports)
+  6C:B3:11:38:D5:xx — Eth4-Eth7 (4 ports)
+All links: LinkDown (OS possibly not booted or networking not configured)
