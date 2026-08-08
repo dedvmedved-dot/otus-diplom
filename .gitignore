@@ -1,41 +1,48 @@
-# === Secrets / credentials (NEVER commit) ===
-*.pem
+# .gitignore
+#
+# PRINCIPLE (TASK-003): .gitignore is NOT a secret-protection system.
+# Real protection = secret scan + code review + prohibition of plaintext
+# credentials in Git. This file therefore blocks files that CONTAIN secret
+# values by their concrete type/name — NOT every filename that merely contains
+# the word "secret"/"token"/"password"/"credentials". Legitimate
+# Secret-*reference* manifests (which hold only pointers to a Secret Manager)
+# must remain under version control.
+
+# === Environment files with real values ===
+.env
+.env.local
+.env.development
+.env.production
+.env.*.local
+
+# === Private keys / certificates / key material ===
 *.key
-*.crt
+*.pem
 *.p12
 *.pfx
 id_rsa
 id_ed25519
 id_ecdsa
+*.ppk
+
+# === Kubeconfig / cluster admin credentials ===
 *.kubeconfig
 kubeconfig
 admin.conf
-*secret*
-*Secret*
-*.secret
-.env
-.env.*
-*.token
-*token*
-*password*
-*credentials*
-vault-token
+
+# === Vault / ansible-vault ===
+vault-password*
 .vault-token
+vault-token
+*.vault
+
+# === Terraform state (may embed secrets) ===
+*.tfstate
+*.tfstate.*
 *.tfvars
-terraform.tfstate*
-
-# Explicitly DO track *.example / *.sample templates (they are secret-free)
-!*.example
-!*.sample
-!*.example.*
-
-# Evidence secret-scan REPORTS are secret-free by construction and must be tracked.
-# (They record that a scan ran and its verdict; they never contain secret values.)
-!evidence/**/secret-check.txt
 
 # === Ansible ===
 *.retry
-*.vault
 ansible/**/host_vars/**/vault.yml
 ansible/**/group_vars/**/vault.yml
 
@@ -58,3 +65,18 @@ venv/
 *.log
 tmp/
 .tmp/
+
+# === Explicit allow-list (secret-free by construction) ===
+# Templates / examples never carry real secrets:
+!*.example
+!*.sample
+!.env.example
+!*.example.*
+# Secret-REFERENCE manifests carry only pointers to a Secret Manager, not
+# secret values, and MUST stay tracked:
+!external-secret*.yaml
+!secret-store*.yaml
+!cluster-secret-store*.yaml
+!*-secret-reference*.yaml
+# Evidence secret-scan REPORTS record a scan verdict, never secret values:
+!evidence/**/secret-check.txt

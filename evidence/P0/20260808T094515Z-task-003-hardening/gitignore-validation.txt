@@ -1,0 +1,21 @@
+# gitignore-validation.txt — TASK-003 §7 check-ignore results
+# captured: 2026-08-08T09:45:38Z
+# method: git check-ignore -v (no files committed; temp probes only)
+
+=== MUST be IGNORED (contain real secret values) ===
+.env                               -> IGNORED     (expected IGNORED    ) OK
+private.key                        -> IGNORED     (expected IGNORED    ) OK
+admin.conf                         -> IGNORED     (expected IGNORED    ) OK
+id_rsa                             -> IGNORED     (expected IGNORED    ) OK
+cluster.kubeconfig                 -> IGNORED     (expected IGNORED    ) OK
+vault-password.txt                 -> IGNORED     (expected IGNORED    ) OK
+
+=== MUST be NOT IGNORED (legit reference manifests / templates) ===
+external-secret.yaml               -> NOT IGNORED (expected NOT IGNORED) OK
+secret-store.yaml                  -> NOT IGNORED (expected NOT IGNORED) OK
+cluster-secret-store.yaml          -> NOT IGNORED (expected NOT IGNORED) OK
+registry-secret-reference.yaml     -> NOT IGNORED (expected NOT IGNORED) OK
+credentials-reference.yaml         -> NOT IGNORED (expected NOT IGNORED) OK
+example.env.example                -> NOT IGNORED (expected NOT IGNORED) OK
+.env.example                       -> NOT IGNORED (expected NOT IGNORED) OK
+inventory/hosts.yaml.example       -> NOT IGNORED (expected NOT IGNORED) OK

@@ -1,0 +1,48 @@
+# readonly-static-check.txt — TASK-003 §12 / §18 static analysis
+# captured: 2026-08-08T09:46:35Z
+# Goal: prove NO target-node mutation; evidence written ONLY on controller.
+
+=== 1. Search for potentially target-mutating modules ===
+ansible.builtin.package: absent
+ansible.builtin.apt: absent
+ansible.builtin.yum: absent
+ansible.builtin.service: absent
+ansible.builtin.systemd: absent
+ansible.builtin.lineinfile: absent
+ansible.builtin.template: absent
+ansible.builtin.shell: absent
+
+=== 2. file/copy modules must all be delegate_to: localhost ===
+-- occurrences of ansible.builtin.file / ansible.builtin.copy --
+55:      ansible.builtin.file:
+74:      ansible.builtin.copy:
+93:      ansible.builtin.copy:
+117:      ansible.builtin.file:
+123:      ansible.builtin.copy:
+-- occurrences of delegate_to: localhost --
+4
+-- count of file+copy tasks --
+5
+
+=== 3. command module usage (read-only, changed_when:false) ===
+65:      ansible.builtin.command: "{{ item.value.cmd }}"
+2
+
+=== 4. No remote shell used to WRITE evidence ===
+no shell module: OK
+
+STATIC RESULT:
+SYNTAX VERIFIED
+TARGET EXECUTION: NOT VERIFIED (no node access; not run against nodes)
+
+=== 5. Clarification: file/copy vs delegate_to counts ===
+Play 1 (hosts: pak_portal / target nodes): every file/copy task uses
+  delegate_to: localhost so evidence is written on the CONTROLLER, never on
+  target nodes. (dir-create + per-command copy + facts-summary copy = 3, all delegated)
+Play 2 (hosts: localhost): runs natively on the controller, so its file/copy
+  tasks (summary dir + run-summary) need no delegate_to.
+=> No file/copy task writes to a target node. Confirmed.
+
+Per-play host targets:
+22:  hosts: pak_portal
+109:  hosts: localhost
