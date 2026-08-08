@@ -1,0 +1,60 @@
+# === Secrets / credentials (NEVER commit) ===
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+id_ecdsa
+*.kubeconfig
+kubeconfig
+admin.conf
+*secret*
+*Secret*
+*.secret
+.env
+.env.*
+*.token
+*token*
+*password*
+*credentials*
+vault-token
+.vault-token
+*.tfvars
+terraform.tfstate*
+
+# Explicitly DO track *.example / *.sample templates (they are secret-free)
+!*.example
+!*.sample
+!*.example.*
+
+# Evidence secret-scan REPORTS are secret-free by construction and must be tracked.
+# (They record that a scan ran and its verdict; they never contain secret values.)
+!evidence/**/secret-check.txt
+
+# === Ansible ===
+*.retry
+*.vault
+ansible/**/host_vars/**/vault.yml
+ansible/**/group_vars/**/vault.yml
+
+# === OS / editor cruft ===
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# === Python / tooling ===
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# === Logs / tmp ===
+*.log
+tmp/
+.tmp/

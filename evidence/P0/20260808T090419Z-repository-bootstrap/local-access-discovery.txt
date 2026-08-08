@@ -1,0 +1,25 @@
+# local-access-discovery.txt — TASK-002 infrastructure access discovery
+# method: LOCAL information only. No subnet scans, no nmap, no SSH brute force,
+#         no probing of reference IPs. Read-only inspection of local config.
+
+CHECKS PERFORMED (local only):
+  ~/.ssh/               -> contains only authorized_keys (inbound). No client
+                           SSH config, no per-host aliases for node-01/02/03.
+  ~/.ssh/config         -> NOT PRESENT.
+  ~/.ssh/known_hosts    -> NOT PRESENT (no previously contacted PAK hosts).
+  environment variables -> no ansible/kube/node/172.30.x infra parameters set.
+  inventory (real)      -> none provided (only *.example templates authored).
+  TR v4.0 source file   -> NOT PRESENT IN HERMES WORKSPACE.
+
+FINDINGS:
+  - No SSH endpoints, keys, or aliases for node-01, node-02, node-03.
+  - No inventory with real hosts.
+  - No external dependency parameters (DNS/NTP/registry/S3/PKI/BMC).
+
+CONCLUSION:
+
+  P0 INFRASTRUCTURE DISCOVERY:
+  BLOCKED — ACCESS PARAMETERS NOT AVAILABLE
+
+  Repository bootstrap is still completed (this task).
+  No systems were probed. No reference IPs were contacted.

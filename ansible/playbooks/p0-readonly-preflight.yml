@@ -1,0 +1,109 @@
+---
+# p0-readonly-preflight.yml
+# STRICTLY READ-ONLY P0 preflight discovery.
+#
+# This playbook MUST NOT change any target state. It only gathers facts and runs
+# read-only commands. It does NOT: install packages, modify files, modify sysctl,
+# disable swap, create LVM, format devices, configure VLAN/bond, restart
+# services, reboot, or modify the firewall.
+#
+# Usage (only after authorized access is configured):
+#   ansible-playbook -i inventory/hosts.yaml ansible/playbooks/p0-readonly-preflight.yml
+#
+# Every command task uses `changed_when: false` because nothing is changed.
+
+- name: P0 read-only preflight discovery
+  hosts: pak_portal
+  gather_facts: true
+  become: true            # sudo needed for lsblk/by-id/lvm read-only visibility
+  any_errors_fatal: false
+
+  tasks:
+    - name: Hostname (hostnamectl)
+      ansible.builtin.command: hostnamectl
+      changed_when: false
+      register: p0_hostnamectl
+
+    - name: Kernel / uname
+      ansible.builtin.command: uname -a
+      changed_when: false
+      register: p0_uname
+
+    - name: OS release
+      ansible.builtin.command: cat /etc/os-release
+      changed_when: false
+      register: p0_os_release
+
+    - name: Time synchronization state
+      ansible.builtin.command: timedatectl status
+      changed_when: false
+      register: p0_timedatectl
+
+    - name: Network addresses (brief)
+      ansible.builtin.command: ip -br address
+      changed_when: false
+      register: p0_ip_addr
+
+    - name: Network links (brief)
+      ansible.builtin.command: ip -br link
+      changed_when: false
+      register: p0_ip_link
+
+    - name: Routes
+      ansible.builtin.command: ip route
+      changed_when: false
+      register: p0_ip_route
+
+    - name: Block devices
+      ansible.builtin.command: lsblk -O
+      changed_when: false
+      register: p0_lsblk
+
+    - name: Storage identity by-id (authoritative device identity)
+      ansible.builtin.command: ls -l /dev/disk/by-id/
+      changed_when: false
+      register: p0_by_id
+
+    - name: CPU info
+      ansible.builtin.command: lscpu
+      changed_when: false
+      register: p0_lscpu
+
+    - name: Memory
+      ansible.builtin.command: free -h
+      changed_when: false
+      register: p0_free
+
+    - name: Mounts
+      ansible.builtin.command: findmnt
+      changed_when: false
+      register: p0_findmnt
+
+    # LVM: informational only. Not present on all nodes; failures are tolerated.
+    - name: LVM physical volumes (informational)
+      ansible.builtin.command: pvs
+      changed_when: false
+      failed_when: false
+      register: p0_pvs
+
+    - name: LVM volume groups (informational)
+      ansible.builtin.command: vgs
+      changed_when: false
+      failed_when: false
+      register: p0_vgs
+
+    - name: LVM logical volumes (informational)
+      ansible.builtin.command: lvs
+      changed_when: false
+      failed_when: false
+      register: p0_lvs
+
+    - name: Summarize key facts (safe subset)
+      ansible.builtin.debug:
+        msg:
+          - "host: {{ inventory_hostname }}"
+          - "ansible_distribution: {{ ansible_distribution | default('UNKNOWN') }} {{ ansible_distribution_version | default('') }}"
+          - "kernel: {{ ansible_kernel | default('UNKNOWN') }}"
+          - "arch: {{ ansible_architecture | default('UNKNOWN') }}"
+          - "processor_cores: {{ ansible_processor_cores | default('UNKNOWN') }}"
+          - "memtotal_mb: {{ ansible_memtotal_mb | default('UNKNOWN') }}"

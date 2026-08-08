@@ -1,0 +1,37 @@
+# versions.lock
+# Approved component versions from architectural baseline TR v4.0.
+# Hermes MUST NOT independently upgrade or alter these values.
+# Compatibility of these versions on the actual platform (Astra Linux SE)
+# has NOT yet been verified — see verification_status.
+
+baseline: "TR v4.0"
+verification_status: NOT_VERIFIED   # requires factual verification on real nodes
+
+components:
+  astra_linux_se:      "1.8.5.46"
+  kubernetes:          "1.36.2"
+  kubeadm:             "1.36.2"
+  kubelet:             "1.36.2"
+  kubectl:             "1.36.2"
+  containerd:          "2.3.1"
+  kube_vip:            "1.2.0"
+  calico:              "3.32.0"
+  linstor_operator:    "2.10.6"
+  linstor:             "1.33.2"
+  linstor_csi:         "1.11.0"
+  drbd:                "9.2.18"
+  metallb:             "0.16.1"
+  envoy_gateway:       "1.8.3"
+  cloudnative_pg:      "1.29.1"
+  cert_manager:        "1.21.0"
+  barman_cloud_plugin: "0.13.0"
+  postgresql:          "17.10"
+  metrics_server:      "0.8.1"
+  grafana_k6:          "1.7.1"
+  velero:              "1.18.1"
+  helm:                "4.1.3"
+  ansible_core:        "2.19.x"
+
+notes:
+  - "Astra/kernel/DRBD compatibility must be verified before P5."
+  - "Availability of these versions from approved/internal sources is NOT_VERIFIED."

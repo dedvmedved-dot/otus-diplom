@@ -1,0 +1,32 @@
+# network.yml.example — SAFE network vars template
+# Copy to network.yml and fill with real, VERIFIED values.
+# NO credentials in this file — use *_secret_ref pointers only.
+# Values below are placeholders; reference addressing requires factual verification.
+
+network:
+  api_vip:            # e.g. reference 172.30.140.100 (VERIFY)
+  ingress_pool:       # e.g. reference 172.30.140.110-172.30.140.119 (VERIFY)
+  pod_cidr:           # e.g. reference 10.244.0.0/16 (VERIFY)
+  service_cidr:       # e.g. reference 10.96.0.0/12 (VERIFY)
+  dns_servers: []
+  ntp_servers: []
+
+registry:
+  endpoint:           # internal container registry endpoint
+  ca_secret_ref:      # reference to CA secret (NOT the CA material itself)
+
+backup:
+  s3_endpoint:
+  bucket:
+  region:
+  credentials_secret_ref:   # reference only — never inline S3 keys
+  object_lock:              # true/false — retention/immutability policy
+
+pki:
+  issuer:
+  portal_fqdn:
+
+bmc:
+  network:            # e.g. reference 172.30.142.0/24 (VERIFY)
+  credentials_secret_ref:   # reference only — never inline BMC credentials
+  allowed_nodes: []

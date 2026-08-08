@@ -1,0 +1,43 @@
+# git-before.txt — repository state BEFORE TASK-002 commit
+# captured: 2026-08-08T09:04:25Z
+
+$ pwd
+/root/otus-diplom
+
+$ git status (pre-commit, staged)
+On branch main
+
+No commits yet
+
+Changes to be committed:
+  (use "git rm --cached <file>..." to unstage)
+	new file:   .gitignore
+	new file:   README.md
+	new file:   ansible/playbooks/p0-readonly-preflight.yml
+	new file:   docs/backlog/documentation-backlog.md
+	new file:   docs/governance/project-governance.md
+	new file:   docs/p0/access-requirements.md
+	new file:   docs/p0/infrastructure-passport.md
+	new file:   docs/p0/p0-gate-checklist.md
+	new file:   evidence/P0/README.md
+	new file:   images.lock
+	new file:   inventory/group_vars/all/network.yml.example
+	new file:   inventory/hosts.yaml.example
+	new file:   tests/preflight/README.md
+	new file:   versions.lock
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	evidence/P0/20260808T090419Z-repository-bootstrap/
+
+
+$ git branch --show-current
+main
+
+$ git remote -v
+origin	https://github.com/dedvmedved-dot/otus-diplom.git (fetch)
+origin	https://github.com/dedvmedved-dot/otus-diplom.git (push)
+
+$ git log (before)
+fatal: your current branch 'main' does not have any commits yet
+no commits yet

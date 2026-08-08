@@ -1,0 +1,26 @@
+# hosts.yaml.example — SAFE inventory template (Ansible)
+# Copy to hosts.yaml and fill with real values OUT OF BAND.
+# NO passwords, NO private keys, NO BMC passwords, NO real secrets here.
+# Connection credentials must be provided via SSH agent / key files referenced
+# outside Git, or via a secrets manager — never inline.
+
+all:
+  children:
+    pak_portal:
+      hosts:
+        node-01:
+          ansible_host: "REPLACE_ME_MGMT_IP"      # e.g. reference 172.30.140.101 (VERIFY)
+          drbd_ip: "REPLACE_ME_DRBD_IP"           # e.g. reference 172.30.141.101 (VERIFY)
+        node-02:
+          ansible_host: "REPLACE_ME_MGMT_IP"      # e.g. reference 172.30.140.102 (VERIFY)
+          drbd_ip: "REPLACE_ME_DRBD_IP"           # e.g. reference 172.30.141.102 (VERIFY)
+        node-03:
+          ansible_host: "REPLACE_ME_MGMT_IP"      # e.g. reference 172.30.140.103 (VERIFY)
+          drbd_ip: "REPLACE_ME_DRBD_IP"           # e.g. reference 172.30.141.103 (VERIFY)
+      vars:
+        ansible_user: "REPLACE_ME_SSH_USER"
+        # Authentication: prefer SSH agent or a key path kept OUTSIDE this repo.
+        # ansible_ssh_private_key_file: "/path/outside/repo/id_ed25519"  # NOT committed
+        ansible_python_interpreter: "/usr/bin/python3"
+        # BMC credentials are NEVER placed here — use a secret reference.
+        bmc_credentials_secret_ref: "REPLACE_ME_SECRET_REF"

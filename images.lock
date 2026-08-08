@@ -1,0 +1,29 @@
+# images.lock
+# Container image pins for the platform.
+# RULE: digests are NEVER invented. Where a digest is unknown, it MUST be
+# recorded as NOT_VERIFIED with verified: false. No fake SHA-256 values.
+#
+# Populate this file with real, verified digests only as images are actually
+# pulled/mirrored into the approved internal registry during the relevant Gate.
+
+baseline: "TR v4.0"
+status: NOT_VERIFIED
+
+# Field schema for every image entry:
+#   component:         logical component name
+#   image:             image path (without tag/digest)
+#   tag:               version tag (from versions.lock where applicable)
+#   digest:            sha256:... OR NOT_VERIFIED
+#   source_registry:   upstream/public origin
+#   internal_registry: approved internal mirror (TBD)
+#   verified:          true only after digest confirmed on real infrastructure
+
+images: []
+# Example (do NOT treat as verified — placeholder shape only):
+# - component: kube-vip
+#   image: ghcr.io/kube-vip/kube-vip
+#   tag: "1.2.0"
+#   digest: NOT_VERIFIED
+#   source_registry: ghcr.io
+#   internal_registry: NOT_VERIFIED
+#   verified: false
