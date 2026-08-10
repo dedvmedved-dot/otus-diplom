@@ -1,0 +1,25 @@
+=== date ===
+Пн 10 авг 2026 14:16:05 UTC
+=== timedatectl ===
+               Local time: Пн 2026-08-10 17:16:05 MSK
+           Universal time: Пн 2026-08-10 14:16:05 UTC
+                 RTC time: Пн 2026-08-10 14:16:09
+                Time zone: Europe/Moscow (MSK, +0300)
+System clock synchronized: no
+              NTP service: inactive
+          RTC in local TZ: no
+=== systemctl failed ===
+  UNIT                               LOAD   ACTIVE SUB    DESCRIPTION
+● NetworkManager-wait-online.service loaded failed failed Network Manager Wait Online
+
+LOAD   = Reflects whether the unit definition was properly loaded.
+ACTIVE = The high-level unit activation state, i.e. generalization of SUB.
+SUB    = The low-level unit activation state, values depend on unit type.
+1 loaded units listed.
+=== lsmod filter ===
+8021q                  36864  0
+garp                   20480  1 8021q
+mrp                    20480  1 8021q
+bonding               180224  0
+tls                   139264  2 bonding
+=== ceph ===

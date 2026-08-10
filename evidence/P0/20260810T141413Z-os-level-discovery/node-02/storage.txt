@@ -1,0 +1,63 @@
+=== lsblk ===
+NAME                                                                                                    SIZE TYPE MOUNTPOINT MODEL            SERIAL         WWN                HCTL       TRAN
+sda                                                                                                     447G disk            OS               6CBDF7B9                          14:0:0:0
+├─sda1                                                                                                  600M part /boot/efi
+├─sda2                                                                                                    1G part /boot
+└─sda3                                                                                                445,4G part
+  ├─astra39539-lv_swap                                                                                   32G lvm  [SWAP]
+  ├─astra39539-lv_home                                                                                328,4G lvm  /home
+  └─astra39539-lv_root                                                                                   40G lvm  /
+sdb                                                                                                     3,5T disk            MZILT3T8HBLS/007 S5G0NC0T407077 0x5002538b724722b0 14:1:18:0
+sdc                                                                                                     3,5T disk            MZILT3T8HBLS/007 S5G0NC0T407075 0x5002538b72472290 14:1:19:0
+sdd                                                                                                     1,6T disk            AL15SEB18EQ      12U0A3KVFMCF   0x5000039b686ad4d5 14:1:20:0
+└─ceph--03a5dae5--eeef--4ef0--963d--8738328a620a-osd--block--b3677245--59ff--49e2--a178--10420b10e448   1,6T lvm
+sde                                                                                                     1,6T disk            AL15SEB18EQ      12U0A3MSFMCF   0x5000039b686adc19 14:1:21:0
+└─ceph--17e120f4--1c8f--40c0--9f85--c98abc7832ff-osd--block--5d57697f--3f14--48f7--bb37--8f547e982d31   1,6T lvm
+sdf                                                                                                     1,6T disk            AL15SEB18EQ      12U0A3JAFMCF   0x5000039b686ace8d 14:1:22:0
+└─ceph--fbd8bf8c--e3c4--400c--abd5--57687b915139-osd--block--026c4a69--e595--4500--9e1e--d8636afc8db4   1,6T lvm
+sdg                                                                                                     1,6T disk            AL15SEB18EQ      12U0A3LUFMCF   0x5000039b686ad72d 14:1:23:0
+└─ceph--7b02d766--b5de--40bc--be3f--520a3d663c49-osd--block--04f7b4e8--d9cc--4e2e--a07e--47fe59b6f568   1,6T lvm
+sdh                                                                                                     1,6T disk            AL15SEB18EQ      12U0A3MFFMCF   0x5000039b686ad9f9 14:1:24:0
+└─ceph--5a5e4243--1d39--43a6--bd01--074dca489359-osd--block--953577d1--2006--462a--8fca--7df46bd1faf5   1,6T lvm
+sdi                                                                                                     1,6T disk            AL15SEB18EQ      12U0A3J9FMCF   0x5000039b686ace7d 14:1:25:0
+└─ceph--3dcf4314--970b--42c9--8389--91becf381b0e-osd--block--24d2f9eb--cfdd--4fe7--91c1--e55cdc516687   1,6T lvm
+sdj                                                                                                       0B disk            Virtual HDisk0   AAAABBBBCCCC3                     16:0:0:0   usb
+sr0                                                                                                    1024M rom             Virtual CDROM0   AAAABBBBCCCC1                     15:0:0:0   usb
+=== disk by-id ===
+итого 0
+lrwxrwxrwx 1 root root 10 авг  9 03:29 dm-name-astra39539-lv_home -> ../../dm-1
+lrwxrwxrwx 1 root root 10 авг  9 03:29 dm-name-astra39539-lv_root -> ../../dm-2
+lrwxrwxrwx 1 root root 10 авг  9 03:29 dm-name-astra39539-lv_swap -> ../../dm-0
+lrwxrwxrwx 1 root root 10 авг  9 03:29 dm-name-ceph--03a5dae5--eeef--4ef0--963d--8738328a620a-osd--block--b3677245--59ff--49e2--a178--10420b10e448 -> ../../dm-4
+lrwxrwxrwx 1 root root 10 авг  9 03:29 dm-name-ceph--17e120f4--1c8f--40c0--9f85--c98abc7832ff-osd--block--5d57697f--3f14--48f7--bb37--8f547e982d31 -> ../../dm-3
+lrwxrwxrwx 1 root root 10 авг  9 03:29 dm-name-ceph--3dcf4314--970b--42c9--8389--91becf381b0e-osd--block--24d2f9eb--cfdd--4fe7--91c1--e55cdc516687 -> ../../dm-6
+lrwxrwxrwx 1 root root 10 авг  9 03:29 dm-name-ceph--5a5e4243--1d39--43a6--bd01--074dca489359-osd--block--953577d1--2006--462a--8fca--7df46bd1faf5 -> ../../dm-8
+lrwxrwxrwx 1 root root 10 авг  9 03:29 dm-name-ceph--7b02d766--b5de--40bc--be3f--520a3d663c49-osd--block--04f7b4e8--d9cc--4e2e--a07e--47fe59b6f568 -> ../../dm-7
+lrwxrwxrwx 1 root root 10 авг  9 03:29 dm-name-ceph--fbd8bf8c--e3c4--400c--abd5--57687b915139-osd--block--026c4a69--e595--4500--9e1e--d8636afc8db4 -> ../../dm-5
+lrwxrwxrwx 1 root root 10 авг  9 03:29 dm-uuid-LVM-A612mkyRFryAOzV0wVdy1enq4sHIdp7xeY2l12s6AGxY2OTd9HYRUXVgFEpZ4OS5 -> ../../dm-7
+lrwxrwxrwx 1 root root 10 авг  9 03:29 dm-uuid-LVM-LzkIdzwV4XyOdneLspnQiBTfQCF0CebcbCLRkBzE2Zmhk6oBBcR3Cxcrq6NuipOm -> ../../dm-4
+lrwxrwxrwx 1 root root 10 авг  9 03:29 dm-uuid-LVM-nqwfo4YTzYQXtlWIK9h0piPksRv9LDhPyRwLmu9bZYTfsyB1V2MoWHzHa4ah9XSV -> ../../dm-8
+lrwxrwxrwx 1 root root 10 авг  9 03:29 dm-uuid-LVM-NY6RBKcXmTBKUXYS7CDp2E1UXTkWyXhSA5Iu0Z4pmzxxzue5hbUDLn5xW0OiC6ov -> ../../dm-1
+lrwxrwxrwx 1 root root 10 авг  9 03:29 dm-uuid-LVM-NY6RBKcXmTBKUXYS7CDp2E1UXTkWyXhSjCb1NTA9IEbQFUsluu7U8kiXjCgL1YTh -> ../../dm-0
+lrwxrwxrwx 1 root root 10 авг  9 03:29 dm-uuid-LVM-NY6RBKcXmTBKUXYS7CDp2E1UXTkWyXhSwpqxNBiGZnEcMztGIG7O13SPhQ79yDVA -> ../../dm-2
+lrwxrwxrwx 1 root root 10 авг  9 03:29 dm-uuid-LVM-Ps6sHK4y6pAHJQk3XMKzebOgAjpFdN0VXDCN8CvxIsPUB0TS1uAM5Z3C6tdV1mwf -> ../../dm-6
+lrwxrwxrwx 1 root root 10 авг  9 03:29 dm-uuid-LVM-vqhNfSly5hV4f7HDAK6vHDBysGtKNOI93knvtnsw26CEDesC4m9f6M2LD656VkTo -> ../../dm-5
+lrwxrwxrwx 1 root root 10 авг  9 03:29 dm-uuid-LVM-XkURuR3p2KdNQKeCkCj2QY61ve9MUewHErWNR2Ox8wGTBMGJOiu4cUmdj8X7aIbR -> ../../dm-3
+lrwxrwxrwx 1 root root  9 авг  9 03:29 lvm-pv-uuid-1nv89v-z3Fn-4myT-Z1jG-eaw1-loJ3-YeThZF -> ../../sdi
+=== blkid ===
+=== findmnt ===
+TARGET      SOURCE                         FSTYPE OPTIONS
+/           /dev/mapper/astra39539-lv_root ext4   rw,relatime
+├─/boot/efi /dev/sda1                      vfat   rw,relatime,fmask=0077,dmask=0077,codepage=866,iocharset=cp1251,shortname=winnt,utf8,errors=remount-ro
+└─/home     /dev/mapper/astra39539-lv_home ext4   rw,relatime
+=== df ===
+Файловая система               Тип      Размер Использовано  Дост Использовано% Cмонтировано в
+/dev/mapper/astra39539-lv_root ext4        40G         8,2G   29G           22% /
+/dev/sda2                      ext2      1007M         111M  846M           12% /boot
+/dev/mapper/astra39539-lv_home ext4       323G          42M  306G            1% /home
+/dev/sda1                      vfat       599M         304K  599M            1% /boot/efi
+=== nvme ===
+no nvme-cli
+=== /proc/mdstat ===
+Personalities :
+unused devices: <none>
