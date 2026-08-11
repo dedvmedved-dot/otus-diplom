@@ -1,83 +1,130 @@
 #!/bin/bash
-# local-auto-rollback.sh — watchdog на узле ПАК
+# local-auto-rollback.sh — watchdog на узле ПАК (v2 — systemd + profile restore)
 # Запускается ДО изменения bond0.
-# Если валидация не подтверждена в течение WATCHDOG_TIMEOUT — автоматический откат.
+# Если валидация не подтверждена — автоматический откат через systemd timer.
 #
 # Использование:
 #   ARM:    /usr/local/bin/local-auto-rollback.sh arm
-#   VERIFY: /usr/local/bin/local-auto-rollback.sh verify  (если PASS — снимает watchdog)
+#   VERIFY: /usr/local/bin/local-auto-rollback.sh verify
 #   CANCEL: /usr/local/bin/local-auto-rollback.sh cancel
+#   STATUS: /usr/local/bin/local-auto-rollback.sh status
 
 BACKUP_DIR="/var/backups/pak-p1-network/rollback"
-WATCHDOG_FLAG="/var/run/pak-p1-rollback-armed"
-WATCHDOG_TIMEOUT=120  # секунд до авто-отката
+TIMER_NAME="pak-p1-rollback.timer"
+SERVICE_NAME="pak-p1-rollback.service"
+WATCHDOG_SECONDS=120
+
+log() { echo "[$(date -u +%T)] $*" | tee -a "$BACKUP_DIR/rollback.log"; }
 
 arm_rollback() {
     mkdir -p "$BACKUP_DIR"
     chmod 700 "$BACKUP_DIR"
 
-    # Сохраняем исходное состояние
-    nmcli con show > "$BACKUP_DIR/nmcli-connections.txt"
-    nmcli device status > "$BACKUP_DIR/nmcli-devices.txt"
+    # Сохраняем ИСХОДНЫЕ NM profile-файлы ДО изменения
+    cp -a /etc/NetworkManager/system-connections/ "$BACKUP_DIR/nm-original/"
+    chmod 700 "$BACKUP_DIR/nm-original"
+    find "$BACKUP_DIR/nm-original" -type f -exec chmod 600 {} \;
+
+    # Сохраняем состояние
+    cat /proc/net/bonding/bond0 > "$BACKUP_DIR/bond0-state.txt" 2>/dev/null
     ip -br addr show > "$BACKUP_DIR/ip-addr.txt"
     ip route show > "$BACKUP_DIR/ip-route.txt"
-    cat /proc/net/bonding/bond0 2>/dev/null > "$BACKUP_DIR/bond0-state.txt"
+    nmcli -t -f NAME,UUID con show --active > "$BACKUP_DIR/active-connections.txt"
 
-    # Сохраняем profile UUID для bond0, VLAN700
-    nmcli -t -f NAME,UUID con show | grep -E "bond 1|Соединение VLAN 1" > "$BACKUP_DIR/critical-uuids.txt"
+    # Создаём systemd transient timer (независим от SSH)
+    systemd-run --unit="$SERVICE_NAME" --on-active="${WATCHDOG_SECONDS}s" \
+        --description="PAK P1 auto-rollback watchdog" \
+        /bin/bash -c "
+            if [ -f /var/backups/pak-p1-network/rollback/armed ]; then
+                logger -t pak-p1-rollback 'WATCHDOG TIMEOUT — auto-rollback triggered'
+                /usr/local/bin/local-auto-rollback.sh do_rollback
+            fi
+        " 2>/dev/null
 
-    echo "ROLLBACK_ARMED at $(date -u)" > "$WATCHDOG_FLAG"
-    echo "Local rollback armed. Watchdog: ${WATCHDOG_TIMEOUT}s"
-
-    # Запускаем фоновый watchdog
-    (
-        sleep "$WATCHDOG_TIMEOUT"
-        if [ -f "$WATCHDOG_FLAG" ]; then
-            logger -t pak-p1-rollback "WATCHDOG TIMEOUT — auto-rollback triggered"
-            do_rollback
-        fi
-    ) &
+    echo "armed $(date -u)" > "$BACKUP_DIR/armed"
+    log "ROLLBACK ARMED — timer ${WATCHDOG_SECONDS}s"
 }
 
 do_rollback() {
-    echo "=== AUTO-ROLLBACK at $(date -u) ===" >> "$BACKUP_DIR/rollback.log"
+    log "ROLLBACK START"
 
-    # Вернуть bond0
-    BOND0_UUID=$(grep "bond 1" "$BACKUP_DIR/critical-uuids.txt" 2>/dev/null | cut -d: -f2)
-    VLAN700_UUID=$(grep "Соединение VLAN 1" "$BACKUP_DIR/critical-uuids.txt" 2>/dev/null | cut -d: -f2)
+    # Deactivate failed config
+    nmcli con down 'VLAN 140 Management' 2>/dev/null; true
+    nmcli con down 'VLAN 141 DRBD' 2>/dev/null; true
+    nmcli con down 'bond1 DRBD' 2>/dev/null; true
+    nmcli con down 'Агрегированное соединение (bond) 1' 2>/dev/null; true
 
-    # Down всё новое
-    nmcli con down 'VLAN 140 Management' 2>/dev/null
-    nmcli con down 'VLAN 141 DRBD' 2>/dev/null
-    nmcli con down 'bond1 DRBD' 2>/dev/null
+    # Restore original NM profiles
+    if [ -d "$BACKUP_DIR/nm-original" ]; then
+        rm -f /etc/NetworkManager/system-connections/bond*
+        cp "$BACKUP_DIR/nm-original"/* /etc/NetworkManager/system-connections/ 2>/dev/null
+        chown root:root /etc/NetworkManager/system-connections/*
+        chmod 600 /etc/NetworkManager/system-connections/*
+        nmcli connection reload
+        log "Original NM profiles restored"
+    fi
 
-    # Up исходное
-    nmcli con up uuid "$VLAN700_UUID" 2>/dev/null
-    nmcli con up uuid "$BOND0_UUID" 2>/dev/null
+    # Activate original bond0
+    nmcli con up 'Агрегированное соединение (bond) 1' 2>/dev/null
+    sleep 2
 
-    rm -f "$WATCHDOG_FLAG"
-    echo "ROLLBACK COMPLETE" >> "$BACKUP_DIR/rollback.log"
+    # Activate original VLAN700
+    nmcli con up 'Соединение VLAN 1' 2>/dev/null
+
+    rm -f "$BACKUP_DIR/armed"
+    log "ROLLBACK COMPLETE"
 }
 
 verify_and_disarm() {
-    # Проверки: bond0 UP, VLAN700 ping gateway
-    if ! ip link show bond0 | grep -q "state UP"; then
-        echo "bond0 NOT UP — rolling back"
+    FAILS=0
+
+    check() {
+        local desc="$1"; shift
+        if ! "$@" >/dev/null 2>&1; then
+            log "VERIFY FAIL: $desc"
+            FAILS=$((FAILS + 1))
+        else
+            log "VERIFY PASS: $desc"
+        fi
+    }
+
+    check "bond0 UP"             ip link show bond0 | grep -q "state UP"
+    check "bond0 2 slaves"       test "$(grep -c 'Slave Interface' /proc/net/bonding/bond0 2>/dev/null)" -ge 2
+    check "bond0 802.3ad"        grep -q "802.3ad" /proc/net/bonding/bond0 2>/dev/null
+    check "bond0 LACP partner"   grep -q "Partner Churn State: monitoring" /proc/net/bonding/bond0 2>/dev/null
+    check "VLAN700 IP present"   ip -br addr show bond0.700 2>/dev/null | grep -q "192.168.194"
+    check "VLAN700 gateway"      ping -c1 -W2 192.168.194.1 >/dev/null
+    check "VLAN140 IP present"   ip -br addr show bond0.140 2>/dev/null | grep -q "172.30.140"
+    check "default route"        ip route show default | grep -q "192.168.194.1"
+
+    if [ "$FAILS" -eq 0 ]; then
+        rm -f "$BACKUP_DIR/armed"
+        systemctl stop "$SERVICE_NAME" 2>/dev/null; true
+        log "ALL CHECKS PASS — rollback DISARMED"
+    else
+        log "$FAILS CHECKS FAILED — rolling back"
         do_rollback
         exit 1
     fi
-    if ! ping -c1 -W2 192.168.194.1 >/dev/null 2>&1; then
-        echo "VLAN700 gateway unreachable — rolling back"
-        do_rollback
-        exit 1
-    fi
-    rm -f "$WATCHDOG_FLAG"
-    echo "VALIDATION PASS — rollback disarmed"
+}
+
+cancel_rollback() {
+    rm -f "$BACKUP_DIR/armed"
+    systemctl stop "$SERVICE_NAME" 2>/dev/null; true
+    log "rollback cancelled"
 }
 
 case "${1:-}" in
-    arm)    arm_rollback ;;
-    verify) verify_and_disarm ;;
-    cancel) rm -f "$WATCHDOG_FLAG"; echo "rollback cancelled" ;;
-    *)      echo "Usage: $0 {arm|verify|cancel}" >&2; exit 1 ;;
+    arm)        arm_rollback ;;
+    verify)     verify_and_disarm ;;
+    do_rollback) do_rollback ;;
+    cancel)     cancel_rollback ;;
+    status)
+        if [ -f "$BACKUP_DIR/armed" ]; then
+            echo "AUTO-ROLLBACK ARMED: YES"
+            echo "Armed at: $(cat "$BACKUP_DIR/armed")"
+        else
+            echo "AUTO-ROLLBACK ARMED: NO"
+        fi ;;
+    *) echo "Usage: $0 {arm|verify|cancel|status}" >&2; exit 1 ;;
 esac

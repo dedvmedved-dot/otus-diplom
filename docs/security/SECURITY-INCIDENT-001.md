@@ -13,7 +13,7 @@ Commit `28e4d66f5ff10f2fb958fc65144c4d942af4efc3` (TASK-007) содержал ф
 `inventory/hosts.yaml` с root SSH-паролем узлов ПАК в открытом виде:
 
 ```yaml
-ansible_ssh_pass: "!QAZxsw2123"
+ansible_ssh_pass: "[REDACTED — ROTATED AND INVALIDATED]"
 ```
 
 Репозиторий публичный (`github.com/dedvmedved-dot/otus-diplom`).
