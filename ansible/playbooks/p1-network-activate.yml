@@ -1,157 +1,229 @@
 ---
 # p1-network-activate.yml
-# Активация целевой сетевой конфигурации P1 (bond0/bond1/VLAN)
-# ЗАПУСКАТЬ ТОЛЬКО ПОСЛЕ ПОДТВЕРЖДЕНИЯ switch-ready от сетевого инженера.
+# Активация P1 сети: bond1 (DRBD) → bond0 (Management)
+# ВЫПОЛНЯТЬ ТОЛЬКО ПОСЛЕ switch-ready ОТ СЕТЕВОГО ИНЖЕНЕРА.
 #
-# --check --diff поддерживаются.
-# Перед запуском убедиться: SSH через VLAN700 работает (fallback).
+# Порядок:
+#   D1: bond1 + VLAN141 на ОБОИХ узлах (безопасно, не затрагивает management)
+#   D2: bond0 + VLAN140 ПО ОДНОМУ узлу с local auto-rollback
 #
-# Порядок: node-01 → validate → node-02 → validate (НЕ параллельно).
+# Запуск: ansible-playbook -i inventory/hosts.yaml \
+#           -e ansible_ssh_pass='...' ansible/playbooks/p1-network-activate.yml
 
-- name: P1 network activation
+- name: P1 D1 — bond1 + VLAN141 (DRBD network)
   hosts: pak_portal
-  serial: 1             # по одному узлу!
+  serial: 2             # можно параллельно — bond0 не трогаем
   gather_facts: false
-  become: false         # root, sudo не нужен
+  become: false
   vars:
     run_id: "{{ lookup('pipe', 'date -u +%Y%m%dT%H%M%SZ') }}"
     evidence_root: "{{ playbook_dir }}/../../evidence/P1/{{ run_id }}/network"
 
   tasks:
-    # ─── PREFLIGHT ──────────────────────────────────────────────
     - name: Ensure evidence directory
       ansible.builtin.file:
         path: "{{ evidence_root }}"
         state: directory
-        mode: "0755"
       delegate_to: localhost
       run_once: true
 
-    - name: Save preflight state
+    - name: Save preflight (safe — no NM profiles)
       ansible.builtin.shell: |
-        echo "=== nmcli connections ==="
-        nmcli con show
-        echo "=== nmcli devices ==="
-        nmcli device status
+        echo "=== bond0 state ==="
+        grep -E 'Mode|Slave|MII|Partner' /proc/net/bonding/bond0 2>/dev/null
         echo "=== ip addr ==="
-        ip -br addr show
+        ip -br addr show | grep -v "^lo"
         echo "=== ip route ==="
         ip route show
-        echo "=== bond0 ==="
-        cat /proc/net/bonding/bond0 2>/dev/null || echo "no bond0"
-        echo "=== bond1 ==="
-        cat /proc/net/bonding/bond1 2>/dev/null || echo "no bond1"
       register: preflight
       changed_when: false
 
     - name: Write preflight evidence
       ansible.builtin.copy:
-        dest: "{{ evidence_root }}/preflight-{{ inventory_hostname }}.txt"
+        dest: "{{ evidence_root }}/d1-preflight-{{ inventory_hostname }}.txt"
         content: "{{ preflight.stdout }}"
-        mode: "0644"
       delegate_to: localhost
 
-    # ─── BOND0: переключение на ens2f0+f1, mode=802.3ad ─────────
-    - name: Backup /etc/NetworkManager
-      ansible.builtin.copy:
-        src: /etc/NetworkManager/system-connections/
-        dest: "{{ evidence_root }}/nm-backup-{{ inventory_hostname }}/"
-        mode: "0600"
-      delegate_to: localhost
-
-    - name: Bring up bond0 slave ens2f0
-      ansible.builtin.command:
-        cmd: "nmcli con up 'bond0 port 1'"
-      changed_when: false
-      ignore_errors: true
-
-    - name: Bring up bond0 slave ens2f1
-      ansible.builtin.command:
-        cmd: "nmcli con up 'bond0 port 2'"
-      changed_when: false
-      ignore_errors: true
-
-    - name: Set bond0 mode to 802.3ad
-      ansible.builtin.command:
-        cmd: "nmcli con mod 'Агрегированное соединение (bond) 1' bond.options 'mode=802.3ad,miimon=100'"
+    - name: Activate bond1 slave ens2f2
+      ansible.builtin.command: "nmcli con up 'bond1 port 1'"
       changed_when: true
 
-    - name: Reactivate bond0 with new mode
-      ansible.builtin.command:
-        cmd: "nmcli con up 'Агрегированное соединение (bond) 1'"
+    - name: Activate bond1 slave ens2f3
+      ansible.builtin.command: "nmcli con up 'bond1 port 2'"
       changed_when: true
 
-    # ─── VLAN140 на bond0 ───────────────────────────────────────
-    - name: Activate VLAN 140 (Management)
-      ansible.builtin.command:
-        cmd: "nmcli con up 'VLAN 140 Management'"
-      changed_when: true
-
-    # ─── BOND1: ens2f2+f3, mode=802.3ad ─────────────────────────
-    - name: Activate bond1 slaves
-      ansible.builtin.command:
-        cmd: "nmcli con up 'bond1 port {{ item }}'"
-      loop: [1, 2]
-      changed_when: true
-
-    - name: Set bond1 mode to 802.3ad
-      ansible.builtin.command:
-        cmd: "nmcli con mod 'bond1 DRBD' bond.options 'mode=802.3ad,miimon=100'"
+    - name: Set bond1 mode 802.3ad
+      ansible.builtin.command: "nmcli con mod 'bond1 DRBD' bond.options 'mode=802.3ad,miimon=100'"
       changed_when: true
 
     - name: Activate bond1
-      ansible.builtin.command:
-        cmd: "nmcli con up 'bond1 DRBD'"
+      ansible.builtin.command: "nmcli con up 'bond1 DRBD'"
       changed_when: true
 
-    # ─── VLAN141 на bond1 ───────────────────────────────────────
     - name: Activate VLAN 141 (DRBD)
-      ansible.builtin.command:
-        cmd: "nmcli con up 'VLAN 141 DRBD'"
+      ansible.builtin.command: "nmcli con up 'VLAN 141 DRBD'"
       changed_when: true
-
-    # ─── POST-FLIGHT ────────────────────────────────────────────
-    - name: Collect post-activation state
-      ansible.builtin.shell: |
-        echo "=== bond0 ==="
-        cat /proc/net/bonding/bond0 2>/dev/null || echo "no bond0"
-        echo "=== bond1 ==="
-        cat /proc/net/bonding/bond1 2>/dev/null || echo "no bond1"
-        echo "=== ip addr ==="
-        ip -br addr show
-        echo "=== ip route ==="
-        ip route show
-      register: postflight
-      changed_when: false
-
-    - name: Write postflight evidence
-      ansible.builtin.copy:
-        dest: "{{ evidence_root }}/postflight-{{ inventory_hostname }}.txt"
-        content: "{{ postflight.stdout }}"
-        mode: "0644"
-      delegate_to: localhost
-
-    # ─── VALIDATION ─────────────────────────────────────────────
-    - name: Verify bond0 UP
-      ansible.builtin.command:
-        cmd: "cat /sys/class/net/bond0/operstate"
-      register: bond0_state
-      changed_when: false
-      failed_when: bond0_state.stdout != 'up'
 
     - name: Verify bond1 UP
-      ansible.builtin.command:
-        cmd: "cat /sys/class/net/bond1/operstate"
+      ansible.builtin.command: "cat /sys/class/net/bond1/operstate"
       register: bond1_state
       changed_when: false
       failed_when: bond1_state.stdout != 'up'
 
-    - name: Verify VLAN700 still works (ping gateway)
-      ansible.builtin.command:
-        cmd: "ping -c1 -W2 192.168.194.1"
+    - name: Verify LACP bond1
+      ansible.builtin.shell: "grep -c 'Actor Churn State: monitoring' /proc/net/bonding/bond1 2>/dev/null || echo 0"
+      register: lacp1
       changed_when: false
-      failed_when: false
 
-    - name: Verify hermes SSH still reachable
+    - name: Save D1 postflight
+      ansible.builtin.shell: |
+        echo "=== bond1 ==="
+        grep -E 'Mode|Slave|MII|Partner|Actor' /proc/net/bonding/bond1 2>/dev/null
+        echo "=== VLAN141 IP ==="
+        ip -br addr show bond1.141
+      register: d1_post
+      changed_when: false
+
+    - name: Write D1 evidence
+      ansible.builtin.copy:
+        dest: "{{ evidence_root }}/d1-postflight-{{ inventory_hostname }}.txt"
+        content: "{{ d1_post.stdout }}"
+      delegate_to: localhost
+
+- name: P1 D1b — verify DRBD connectivity
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Ping node-02 from node-01 via VLAN141
+      ansible.builtin.shell: |
+        sshpass -p '{{ ansible_ssh_pass }}' ssh -o StrictHostKeyChecking=no root@192.168.194.38 \
+          'ping -c2 -W3 -I 172.30.141.101 172.30.141.102'
+      register: drbd_ping
+      changed_when: false
+      failed_when: "' 0% packet loss' not in drbd_ping.stdout"
+
+    - name: Save DRBD connectivity
+      ansible.builtin.copy:
+        dest: "{{ evidence_root }}/d1-drbd-connectivity.txt"
+        content: "DRBD ping 101↔102: {{ 'PASS' if drbd_ping is success else 'FAIL' }}"
+      delegate_to: localhost
+
+# ═══════════════════════════════════════════════════════════════
+# D2 — bond0 migration (ПО ОДНОМУ узлу, с local auto-rollback)
+# ═══════════════════════════════════════════════════════════════
+
+- name: P1 D2 — deploy local-auto-rollback script
+  hosts: pak_portal
+  serial: 1
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Copy local-auto-rollback.sh
+      ansible.builtin.copy:
+        src: files/local-auto-rollback.sh
+        dest: /usr/local/bin/local-auto-rollback.sh
+        mode: "0755"
+
+- name: P1 D2 — bond0 migration (Management + VLAN140)
+  hosts: pak_portal
+  serial: 1             # СТРОГО по одному!
+  gather_facts: false
+  become: false
+  vars:
+    run_id: "{{ lookup('pipe', 'date -u +%Y%m%dT%H%M%SZ') }}"
+    evidence_root: "{{ playbook_dir }}/../../evidence/P1/{{ run_id }}/network"
+
+  tasks:
+    - name: Save pre-D2 state
+      ansible.builtin.shell: |
+        echo "=== bond0 ==="
+        grep -E 'Mode|Slave|MII|Partner' /proc/net/bonding/bond0
+        echo "=== active connections ==="
+        nmcli -t -f NAME,UUID con show --active
+      register: d2_pre
+      changed_when: false
+
+    - name: Write D2 preflight
+      ansible.builtin.copy:
+        dest: "{{ evidence_root }}/d2-preflight-{{ inventory_hostname }}.txt"
+        content: "{{ d2_pre.stdout }}"
+      delegate_to: localhost
+
+    - name: Backup NM on node (local, not to Git)
+      ansible.builtin.shell: |
+        mkdir -p /var/backups/pak-p1-network/{{ run_id }}
+        cp -a /etc/NetworkManager/system-connections /var/backups/pak-p1-network/{{ run_id }}/
+        chmod -R 600 /var/backups/pak-p1-network/{{ run_id }}
+      changed_when: false
+
+    - name: ARM local auto-rollback
+      ansible.builtin.command: /usr/local/bin/local-auto-rollback.sh arm
+      changed_when: true
+      async: 10
+      poll: 0
+
+    - name: Set bond0 mode to 802.3ad
+      ansible.builtin.command: "nmcli con mod 'Агрегированное соединение (bond) 1' bond.options 'mode=802.3ad,miimon=100'"
+      changed_when: true
+
+    - name: Reactivate bond0
+      ansible.builtin.command: "nmcli con up 'Агрегированное соединение (bond) 1'"
+      changed_when: true
+
+    - name: Wait for bond0 stabilization
       ansible.builtin.wait_for_connection:
-        timeout: 10
+        timeout: 15
+
+    - name: Activate VLAN 140
+      ansible.builtin.command: "nmcli con up 'VLAN 140 Management'"
+      changed_when: true
+
+    - name: Verify bond0 LACP
+      ansible.builtin.shell: "grep -c 'Partner Churn State: monitoring' /proc/net/bonding/bond0 2>/dev/null || echo 0"
+      register: lacp0
+      changed_when: false
+
+    - name: Verify VLAN700 works
+      ansible.builtin.command: "ping -c2 -W2 192.168.194.1"
+      register: vlan700_check
+      changed_when: false
+      failed_when: "' 0% packet loss' not in vlan700_check.stdout"
+
+    - name: DISARM auto-rollback — validation PASS
+      ansible.builtin.command: /usr/local/bin/local-auto-rollback.sh verify
+      changed_when: true
+
+    - name: Save D2 postflight (safe — no NM profiles)
+      ansible.builtin.shell: |
+        echo "=== bond0 ==="
+        grep -E 'Mode|Slave|MII|Partner|Actor' /proc/net/bonding/bond0
+        echo "=== bond1 ==="
+        grep -E 'Mode|Slave|MII|Partner' /proc/net/bonding/bond1 2>/dev/null
+        echo "=== ip addr ==="
+        ip -br addr show | grep -v "^lo"
+      register: d2_post
+      changed_when: false
+
+    - name: Write D2 postflight
+      ansible.builtin.copy:
+        dest: "{{ evidence_root }}/d2-postflight-{{ inventory_hostname }}.txt"
+        content: "{{ d2_post.stdout }}"
+      delegate_to: localhost
+
+- name: P1 D2b — verify Management connectivity
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Ping node-02 from node-01 via VLAN140
+      ansible.builtin.shell: |
+        sshpass -p '{{ ansible_ssh_pass }}' ssh -o StrictHostKeyChecking=no root@192.168.194.38 \
+          'ping -c2 -W3 -I 172.30.140.101 172.30.140.102'
+      register: mgmt_ping
+      changed_when: false
+      failed_when: "' 0% packet loss' not in mgmt_ping.stdout"
+
+    - name: Save Management connectivity
+      ansible.builtin.copy:
+        dest: "{{ evidence_root }}/d2-mgmt-connectivity.txt"
+        content: "Management ping 101↔102: {{ 'PASS' if mgmt_ping is success else 'FAIL' }}"
+      delegate_to: localhost
