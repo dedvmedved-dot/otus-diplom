@@ -76,33 +76,78 @@ do_rollback() {
 }
 
 verify_and_disarm() {
-    FAILS=0
+    local fails=0
 
-    check() {
-        local desc="$1"; shift
-        if ! "$@" >/dev/null 2>&1; then
-            log "VERIFY FAIL: $desc"
-            FAILS=$((FAILS + 1))
-        else
-            log "VERIFY PASS: $desc"
-        fi
-    }
+    # Each check is a standalone condition, no piped command strings.
 
-    check "bond0 UP"             ip link show bond0 | grep -q "state UP"
-    check "bond0 2 slaves"       test "$(grep -c 'Slave Interface' /proc/net/bonding/bond0 2>/dev/null)" -ge 2
-    check "bond0 802.3ad"        grep -q "802.3ad" /proc/net/bonding/bond0 2>/dev/null
-    check "bond0 LACP partner"   grep -q "Partner Churn State: monitoring" /proc/net/bonding/bond0 2>/dev/null
-    check "VLAN700 IP present"   ip -br addr show bond0.700 2>/dev/null | grep -q "192.168.194"
-    check "VLAN700 gateway"      ping -c1 -W2 192.168.194.1 >/dev/null
-    check "VLAN140 IP present"   ip -br addr show bond0.140 2>/dev/null | grep -q "172.30.140"
-    check "default route"        ip route show default | grep -q "192.168.194.1"
+    if ip link show bond0 2>/dev/null | grep -q "state UP"; then
+        log "VERIFY PASS: bond0 UP"
+    else
+        log "VERIFY FAIL: bond0 UP"
+        fails=$((fails + 1))
+    fi
 
-    if [ "$FAILS" -eq 0 ]; then
+    local slave_count
+    slave_count=$(grep -c 'Slave Interface:' /proc/net/bonding/bond0 2>/dev/null || echo 0)
+    local slaves_up
+    slaves_up=$(grep -c 'MII Status: up' /proc/net/bonding/bond0 2>/dev/null || echo 0)
+    if [ "$slave_count" -eq 2 ] && [ "$slaves_up" -eq 2 ]; then
+        log "VERIFY PASS: bond0 slaves 2/2 UP"
+    else
+        log "VERIFY FAIL: bond0 slaves ${slave_count} total, ${slaves_up} UP"
+        fails=$((fails + 1))
+    fi
+
+    if grep -q '802.3ad' /proc/net/bonding/bond0 2>/dev/null; then
+        log "VERIFY PASS: bond0 802.3ad"
+    else
+        log "VERIFY FAIL: bond0 802.3ad"
+        fails=$((fails + 1))
+    fi
+
+    local lacp_partner
+    lacp_partner=$(grep -c 'Partner Churn State: monitoring' /proc/net/bonding/bond0 2>/dev/null || echo 0)
+    if [ "$lacp_partner" -ge 1 ]; then
+        log "VERIFY PASS: bond0 LACP partner present"
+    else
+        log "VERIFY FAIL: bond0 LACP partner missing"
+        fails=$((fails + 1))
+    fi
+
+    if ip -br addr show bond0.700 2>/dev/null | grep -q "192.168.194"; then
+        log "VERIFY PASS: VLAN700 IP present"
+    else
+        log "VERIFY FAIL: VLAN700 IP missing"
+        fails=$((fails + 1))
+    fi
+
+    if ping -c1 -W2 192.168.194.1 >/dev/null 2>&1; then
+        log "VERIFY PASS: VLAN700 gateway reachable"
+    else
+        log "VERIFY FAIL: VLAN700 gateway unreachable"
+        fails=$((fails + 1))
+    fi
+
+    if ip -br addr show bond0.140 2>/dev/null | grep -q "172.30.140"; then
+        log "VERIFY PASS: VLAN140 IP present"
+    else
+        log "VERIFY FAIL: VLAN140 IP missing"
+        fails=$((fails + 1))
+    fi
+
+    if ip route show default 2>/dev/null | grep -q "192.168.194.1"; then
+        log "VERIFY PASS: default route preserved"
+    else
+        log "VERIFY FAIL: default route missing"
+        fails=$((fails + 1))
+    fi
+
+    if [ "$fails" -eq 0 ]; then
         rm -f "$BACKUP_DIR/armed"
-        systemctl stop "$SERVICE_NAME" 2>/dev/null; true
+        systemctl stop "$TIMER_NAME" "$SERVICE_NAME" 2>/dev/null || true
         log "ALL CHECKS PASS — rollback DISARMED"
     else
-        log "$FAILS CHECKS FAILED — rolling back"
+        log "$fails CHECKS FAILED — rolling back"
         do_rollback
         exit 1
     fi
@@ -110,7 +155,7 @@ verify_and_disarm() {
 
 cancel_rollback() {
     rm -f "$BACKUP_DIR/armed"
-    systemctl stop "$SERVICE_NAME" 2>/dev/null; true
+    systemctl stop "$TIMER_NAME" "$SERVICE_NAME" 2>/dev/null || true
     log "rollback cancelled"
 }
 

@@ -10,9 +10,8 @@
 #   — восстанавливает VLAN700
 #   — НЕ трогает BMC
 #
-# Запуск: ansible-playbook -i inventory/hosts.yaml \
-#           -e target_host=node-01 -e ansible_ssh_pass='...' \
-#           ansible/playbooks/p1-network-rollback.yml
+# Запуск: ansible-playbook -i inventory/hosts.yaml --ask-pass \
+#           -e target_host=node-01 ansible/playbooks/p1-network-rollback.yml
 
 - name: P1 network ROLLBACK
   hosts: "{{ target_host | default('pak_portal') }}"

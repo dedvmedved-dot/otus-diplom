@@ -35,7 +35,7 @@ ansible_ssh_pass: "[REDACTED — ROTATED AND INVALIDATED]"
 ## Меры
 
 1. ✅ Root-пароль сменён на node-01 и node-02
-2. ✅ Старый пароль (`!QAZxsw2123`) больше не работает
+2. ✅ Старый пароль ([REDACTED — ROTATED AND INVALIDATED]) больше не работает
 3. ✅ Новый пароль хранится в `/etc/hermes/pak_root_pass.txt` (600), не в Git
 4. ✅ `StrictHostKeyChecking=no` заменён на `yes`
 5. ✅ SSH host keys верифицированы
