@@ -20,39 +20,38 @@
 
 ## 2. Физические порты серверов
 
-Каждый сервер имеет:
+### X710 10GbE SFP+ (4 порта на каждом узле)
 
-### X710 10GbE SFP+ (4 порта)
+| Порт Linux | Назначение | Speed | node-01 MAC | node-02 MAC | node-03 MAC |
+| --- | --- | --- | --- | --- | --- |
+| **ens2f0** | bond0 — Mgmt/Backup | 10 GbE | 6C:B3:11:61:D4:90 | 6C:B3:11:61:D3:20 | (уточнить) |
+| **ens2f1** | bond0 — Mgmt/Backup | 10 GbE | 6C:B3:11:61:D4:92 | 6C:B3:11:61:D3:22 | (уточнить) |
+| **ens2f2** | bond1 — DRBD only | 10 GbE | 6C:B3:11:61:D4:94 | 6C:B3:11:61:D3:24 | (уточнить) |
+| **ens2f3** | bond1 — DRBD only | 10 GbE | 6C:B3:11:61:D4:96 | 6C:B3:11:61:D3:26 | (уточнить) |
 
-| Порт Linux | MAC (node-01) | MAC (node-02) | MAC (node-03) | Назначение |
+### I350 1GbE (4 порта на каждом узле)
+
+| Порты Linux | MAC (node-01) | MAC (node-02) | Статус | Решение |
 | --- | --- | --- | --- | --- |
-| ens2f0 | 6C:B3:11:61:D4:90 | 6C:B3:11:61:D3:20 | (уточнить) | **bond0 — Management/Backup** |
-| ens2f1 | 6C:B3:11:61:D4:92 | 6C:B3:11:61:D3:22 | (уточнить) | **bond0 — Management/Backup** |
-| ens2f2 | 6C:B3:11:61:D4:94 | 6C:B3:11:61:D3:24 | (уточнить) | **bond1 — DRBD only** |
-| ens2f3 | 6C:B3:11:61:D4:96 | 6C:B3:11:61:D3:26 | (уточнить) | **bond1 — DRBD only** |
+| ens4f0 | 6C:B3:11:38:D4:70 | 6C:B3:11:38:D5:98 | DOWN (no-carrier) | **НЕ подключать** |
+| ens4f1 | 6C:B3:11:38:D4:71 | 6C:B3:11:38:D5:99 | DOWN (no-carrier) | зарезервированы |
+| ens4f2 | 6C:B3:11:38:D4:72 | 6C:B3:11:38:D5:9A | DOWN (no-carrier) | |
+| ens4f3 | 6C:B3:11:38:D4:73 | 6C:B3:11:38:D5:9B | DOWN (no-carrier) | |
 
-### I350 1GbE (4 порта)
+### Сводная матрица VLAN по портам
 
-| Порты Linux | Статус | Решение |
-| --- | --- | --- |
-| ens4f0–ens4f3 | DOWN (no-carrier) | **НЕ подключать** — зарезервированы |
+| | bond0 (ens2f0+f1) | bond1 (ens2f2+f3) | BMC (dedicated) |
+| --- | --- | --- | --- |
+| **VLAN 700** | ✅ tagged (сохранить) | ❌ | ❌ |
+| **VLAN 140** (Management/K8s API) | ✅ tagged | ❌ | ❌ |
+| **VLAN 141** (DRBD) | ❌ | ✅ tagged | ❌ |
+| **VLAN 143** (Backup) | ✅ tagged (зарезервировать) | ❌ | ❌ |
+| **VLAN 142** (BMC) | ❌ | ❌ | ✅ |
+| **Mode** | 802.3ad LACP | 802.3ad LACP | access/trunk |
 
 ---
 
-## 3. Конфигурация коммутатора — bond0
-
-### Физические порты
-
-```text
-node-01: ens2f0 (6C:B3:11:61:D4:90)
-         ens2f1 (6C:B3:11:61:D4:92)
-
-node-02: ens2f0 (6C:B3:11:61:D3:20)
-         ens2f1 (6C:B3:11:61:D3:22)
-
-node-03: ens2f0 (MAC уточнить)
-         ens2f1 (MAC уточнить)
-```
+## 3. Конфигурация коммутатора — bond0 (ens2f0 + ens2f1)
 
 ### LAG/bond
 
@@ -91,20 +90,7 @@ Fallback: режим active-backup на серверах (если LACP нево
 
 ---
 
-## 4. Конфигурация коммутатора — bond1
-
-### Физические порты
-
-```text
-node-01: ens2f2 (6C:B3:11:61:D4:94)
-         ens2f3 (6C:B3:11:61:D4:96)
-
-node-02: ens2f2 (6C:B3:11:61:D3:24)
-         ens2f3 (6C:B3:11:61:D3:26)
-
-node-03: ens2f2 (MAC уточнить)
-         ens2f3 (MAC уточнить)
-```
+## 4. Конфигурация коммутатора — bond1 (ens2f2 + ens2f3)
 
 ### LAG/bond
 
