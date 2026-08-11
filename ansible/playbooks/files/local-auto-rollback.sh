@@ -87,10 +87,14 @@ verify_and_disarm() {
         fails=$((fails + 1))
     fi
 
-    local slave_count
-    slave_count=$(grep -c 'Slave Interface:' /proc/net/bonding/bond0 2>/dev/null || echo 0)
-    local slaves_up
-    slaves_up=$(grep -c 'MII Status: up' /proc/net/bonding/bond0 2>/dev/null || echo 0)
+    local slave_count slaves_up slave
+    slave_count=$(wc -w < /sys/class/net/bond0/bonding/slaves 2>/dev/null || echo 0)
+    slaves_up=0
+    for slave in $(cat /sys/class/net/bond0/bonding/slaves 2>/dev/null); do
+        if [ "$(cat /sys/class/net/$slave/carrier 2>/dev/null)" = "1" ]; then
+            slaves_up=$((slaves_up + 1))
+        fi
+    done
     if [ "$slave_count" -eq 2 ] && [ "$slaves_up" -eq 2 ]; then
         log "VERIFY PASS: bond0 slaves 2/2 UP"
     else

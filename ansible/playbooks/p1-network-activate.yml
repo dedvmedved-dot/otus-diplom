@@ -51,14 +51,16 @@
       changed_when: false
       failed_when: b1.stdout != 'up'
 
-    - name: Verify bond1 LACP established (2 slaves, partner present)
+    - name: Verify bond1 LACP (carrier 2/2, partner)
       ansible.builtin.shell: |
-        SLAVES=$(grep -c 'Slave Interface:' /proc/net/bonding/bond1 2>/dev/null)
-        SLAVES_UP=$(grep -c 'MII Status: up' /proc/net/bonding/bond1 2>/dev/null)
+        SLAVES=$(wc -w < /sys/class/net/bond1/bonding/slaves 2>/dev/null)
+        UP=0
+        for s in $(cat /sys/class/net/bond1/bonding/slaves 2>/dev/null); do
+          [ "$(cat /sys/class/net/$s/carrier 2>/dev/null)" = "1" ] && UP=$((UP+1))
+        done
         PARTNERS=$(grep -c 'Partner Churn State: monitoring' /proc/net/bonding/bond1 2>/dev/null)
-        MODE=$(grep -oP 'Bonding Mode: \K.+' /proc/net/bonding/bond1 2>/dev/null)
-        echo "MODE=$MODE SLAVES=$SLAVES/$SLAVES_UP PARTNERS=$PARTNERS"
-        [ "$SLAVES" -eq 2 ] && [ "$SLAVES_UP" -eq 2 ] && [ "$PARTNERS" -ge 1 ] || exit 1
+        echo "SLAVES=$SLAVES UP=$UP PARTNERS=$PARTNERS"
+        [ "$SLAVES" -eq 2 ] && [ "$UP" -eq 2 ] && [ "$PARTNERS" -ge 1 ] || exit 1
       register: lacp1
       changed_when: false
       failed_when: lacp1.rc != 0
@@ -153,9 +155,12 @@
       ansible.builtin.shell: |
         FAILS=0
         ip link show bond0 2>/dev/null | grep -q "state UP" || FAILS=$((FAILS+1))
-        SLAVES=$(grep -c 'Slave Interface:' /proc/net/bonding/bond0 2>/dev/null)
-        SLAVES_UP=$(grep -c 'MII Status: up' /proc/net/bonding/bond0 2>/dev/null)
-        [ "$SLAVES" -eq 2 ] && [ "$SLAVES_UP" -eq 2 ] || FAILS=$((FAILS+1))
+        SLAVES=$(wc -w < /sys/class/net/bond0/bonding/slaves 2>/dev/null)
+        UP=0
+        for s in $(cat /sys/class/net/bond0/bonding/slaves 2>/dev/null); do
+          [ "$(cat /sys/class/net/$s/carrier 2>/dev/null)" = "1" ] && UP=$((UP+1))
+        done
+        [ "$SLAVES" -eq 2 ] && [ "$UP" -eq 2 ] || FAILS=$((FAILS+1))
         grep -q '802.3ad' /proc/net/bonding/bond0 2>/dev/null || FAILS=$((FAILS+1))
         LACP=$(grep -c 'Partner Churn State: monitoring' /proc/net/bonding/bond0 2>/dev/null)
         [ "$LACP" -ge 1 ] || FAILS=$((FAILS+1))
@@ -163,7 +168,7 @@
         ping -c1 -W2 192.168.194.1 >/dev/null 2>&1 || FAILS=$((FAILS+1))
         ip -br addr show bond0.140 2>/dev/null | grep -q "172.30.140" || FAILS=$((FAILS+1))
         ip route show default 2>/dev/null | grep -q "192.168.194.1" || FAILS=$((FAILS+1))
-        [ "$FAILS" -eq 0 ] && echo "ALL_PASS" || echo "FAILS=$FAILS SLAVES=$SLAVES/$SLAVES_UP LACP=$LACP"
+        [ "$FAILS" -eq 0 ] && echo "ALL_PASS" || echo "FAILS=$FAILS SLAVES=$SLAVES/$UP LACP=$LACP"
       register: validation
       changed_when: false
       failed_when: "'ALL_PASS' not in validation.stdout"
