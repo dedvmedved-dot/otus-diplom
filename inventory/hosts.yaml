@@ -1,0 +1,36 @@
+# hosts.yaml — ПАК Портал inventory
+# node-03 ожидает возврата из ремонта
+
+all:
+  children:
+    pak_portal:
+      hosts:
+        node-01:
+          ansible_host: 192.168.194.38
+          ansible_user: root
+          ansible_ssh_pass: "!QAZxsw2123"
+          mgmt_ip: 172.30.140.101
+          drbd_ip: 172.30.141.101
+        node-02:
+          ansible_host: 192.168.194.40
+          ansible_user: root
+          ansible_ssh_pass: "!QAZxsw2123"
+          mgmt_ip: 172.30.140.102
+          drbd_ip: 172.30.141.102
+        # node-03 — в ремонте, раскомментировать после возврата
+        # node-03:
+        #   ansible_host: 192.168.194.39
+        #   ansible_user: root
+        #   ansible_ssh_pass: "!QAZxsw2123"
+        #   mgmt_ip: 172.30.140.103
+        #   drbd_ip: 172.30.141.103
+      vars:
+        ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
+        # Network baseline
+        bond0_slaves: [ens2f0, ens2f1]
+        bond1_slaves: [ens2f2, ens2f3]
+        bond_mode: "802.3ad"
+        vlan700_id: 700
+        vlan140_id: 140
+        vlan141_id: 141
+        vlan143_id: 143

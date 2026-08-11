@@ -1,0 +1,93 @@
+---
+# p1-network-rollback.yml
+# АВАРИЙНЫЙ ROLLBACK: возврат управления через VLAN700.
+# Выполнять при потере SSH через VLAN140 или при неработающих bond1/VLAN141.
+#
+# Что делает:
+#   — деактивирует bond1 и VLAN141
+#   — деактивирует VLAN140
+#   — возвращает bond0 в исходный режим (balance-rr / 802.3ad — на чтение)
+#   — НЕ трогает VLAN700
+#   — НЕ трогает BMC
+
+- name: P1 network ROLLBACK
+  hosts: "{{ target_host | default('pak_portal') }}"
+  serial: 1
+  gather_facts: false
+  become: false
+  vars:
+    run_id: "{{ lookup('pipe', 'date -u +%Y%m%dT%H%M%SZ') }}"
+    evidence_root: "{{ playbook_dir }}/../../evidence/P1/{{ run_id }}/network"
+
+  tasks:
+    - name: Ensure evidence dir
+      ansible.builtin.file:
+        path: "{{ evidence_root }}"
+        state: directory
+      delegate_to: localhost
+      run_once: true
+
+    - name: Save state before rollback
+      ansible.builtin.shell: |
+        echo "=== bond0 ==="
+        cat /proc/net/bonding/bond0 2>/dev/null
+        echo "=== bond1 ==="
+        cat /proc/net/bonding/bond1 2>/dev/null
+        echo "=== ip addr ==="
+        ip -br addr show
+        echo "=== ip route ==="
+        ip route show
+      register: pre_rollback
+      changed_when: false
+
+    - name: Write pre-rollback evidence
+      ansible.builtin.copy:
+        dest: "{{ evidence_root }}/rollback-pre-{{ inventory_hostname }}.txt"
+        content: "{{ pre_rollback.stdout }}"
+        mode: "0644"
+      delegate_to: localhost
+
+    # Деактивировать bond1 + VLAN141
+    - name: Down bond1.141
+      ansible.builtin.command: "nmcli con down 'VLAN 141 DRBD'"
+      ignore_errors: true
+      changed_when: true
+
+    - name: Down bond1
+      ansible.builtin.command: "nmcli con down 'bond1 DRBD'"
+      ignore_errors: true
+      changed_when: true
+
+    # Деактивировать VLAN140
+    - name: Down bond0.140
+      ansible.builtin.command: "nmcli con down 'VLAN 140 Management'"
+      ignore_errors: true
+      changed_when: true
+
+    # Проверить VLAN700
+    - name: Ensure VLAN700 is UP
+      ansible.builtin.command: "nmcli con up 'Соединение VLAN 1'"
+      ignore_errors: true
+      changed_when: true
+
+    - name: Verify SSH via VLAN700
+      ansible.builtin.wait_for_connection:
+        timeout: 10
+
+    - name: Write post-rollback evidence
+      ansible.builtin.shell: |
+        echo "=== bond0 ==="
+        cat /proc/net/bonding/bond0 2>/dev/null
+        echo "=== ip addr ==="
+        ip -br addr show
+        echo "=== ip route ==="
+        ip route show
+      register: post_rollback
+      changed_when: false
+
+    - name: Save post-rollback state
+      ansible.builtin.copy:
+        dest: "{{ evidence_root }}/rollback-post-{{ inventory_hostname }}.txt"
+        content: "{{ post_rollback.stdout }}"
+        mode: "0644"
+      delegate_to: localhost

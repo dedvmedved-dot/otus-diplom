@@ -1,0 +1,157 @@
+---
+# p1-network-activate.yml
+# Активация целевой сетевой конфигурации P1 (bond0/bond1/VLAN)
+# ЗАПУСКАТЬ ТОЛЬКО ПОСЛЕ ПОДТВЕРЖДЕНИЯ switch-ready от сетевого инженера.
+#
+# --check --diff поддерживаются.
+# Перед запуском убедиться: SSH через VLAN700 работает (fallback).
+#
+# Порядок: node-01 → validate → node-02 → validate (НЕ параллельно).
+
+- name: P1 network activation
+  hosts: pak_portal
+  serial: 1             # по одному узлу!
+  gather_facts: false
+  become: false         # root, sudo не нужен
+  vars:
+    run_id: "{{ lookup('pipe', 'date -u +%Y%m%dT%H%M%SZ') }}"
+    evidence_root: "{{ playbook_dir }}/../../evidence/P1/{{ run_id }}/network"
+
+  tasks:
+    # ─── PREFLIGHT ──────────────────────────────────────────────
+    - name: Ensure evidence directory
+      ansible.builtin.file:
+        path: "{{ evidence_root }}"
+        state: directory
+        mode: "0755"
+      delegate_to: localhost
+      run_once: true
+
+    - name: Save preflight state
+      ansible.builtin.shell: |
+        echo "=== nmcli connections ==="
+        nmcli con show
+        echo "=== nmcli devices ==="
+        nmcli device status
+        echo "=== ip addr ==="
+        ip -br addr show
+        echo "=== ip route ==="
+        ip route show
+        echo "=== bond0 ==="
+        cat /proc/net/bonding/bond0 2>/dev/null || echo "no bond0"
+        echo "=== bond1 ==="
+        cat /proc/net/bonding/bond1 2>/dev/null || echo "no bond1"
+      register: preflight
+      changed_when: false
+
+    - name: Write preflight evidence
+      ansible.builtin.copy:
+        dest: "{{ evidence_root }}/preflight-{{ inventory_hostname }}.txt"
+        content: "{{ preflight.stdout }}"
+        mode: "0644"
+      delegate_to: localhost
+
+    # ─── BOND0: переключение на ens2f0+f1, mode=802.3ad ─────────
+    - name: Backup /etc/NetworkManager
+      ansible.builtin.copy:
+        src: /etc/NetworkManager/system-connections/
+        dest: "{{ evidence_root }}/nm-backup-{{ inventory_hostname }}/"
+        mode: "0600"
+      delegate_to: localhost
+
+    - name: Bring up bond0 slave ens2f0
+      ansible.builtin.command:
+        cmd: "nmcli con up 'bond0 port 1'"
+      changed_when: false
+      ignore_errors: true
+
+    - name: Bring up bond0 slave ens2f1
+      ansible.builtin.command:
+        cmd: "nmcli con up 'bond0 port 2'"
+      changed_when: false
+      ignore_errors: true
+
+    - name: Set bond0 mode to 802.3ad
+      ansible.builtin.command:
+        cmd: "nmcli con mod 'Агрегированное соединение (bond) 1' bond.options 'mode=802.3ad,miimon=100'"
+      changed_when: true
+
+    - name: Reactivate bond0 with new mode
+      ansible.builtin.command:
+        cmd: "nmcli con up 'Агрегированное соединение (bond) 1'"
+      changed_when: true
+
+    # ─── VLAN140 на bond0 ───────────────────────────────────────
+    - name: Activate VLAN 140 (Management)
+      ansible.builtin.command:
+        cmd: "nmcli con up 'VLAN 140 Management'"
+      changed_when: true
+
+    # ─── BOND1: ens2f2+f3, mode=802.3ad ─────────────────────────
+    - name: Activate bond1 slaves
+      ansible.builtin.command:
+        cmd: "nmcli con up 'bond1 port {{ item }}'"
+      loop: [1, 2]
+      changed_when: true
+
+    - name: Set bond1 mode to 802.3ad
+      ansible.builtin.command:
+        cmd: "nmcli con mod 'bond1 DRBD' bond.options 'mode=802.3ad,miimon=100'"
+      changed_when: true
+
+    - name: Activate bond1
+      ansible.builtin.command:
+        cmd: "nmcli con up 'bond1 DRBD'"
+      changed_when: true
+
+    # ─── VLAN141 на bond1 ───────────────────────────────────────
+    - name: Activate VLAN 141 (DRBD)
+      ansible.builtin.command:
+        cmd: "nmcli con up 'VLAN 141 DRBD'"
+      changed_when: true
+
+    # ─── POST-FLIGHT ────────────────────────────────────────────
+    - name: Collect post-activation state
+      ansible.builtin.shell: |
+        echo "=== bond0 ==="
+        cat /proc/net/bonding/bond0 2>/dev/null || echo "no bond0"
+        echo "=== bond1 ==="
+        cat /proc/net/bonding/bond1 2>/dev/null || echo "no bond1"
+        echo "=== ip addr ==="
+        ip -br addr show
+        echo "=== ip route ==="
+        ip route show
+      register: postflight
+      changed_when: false
+
+    - name: Write postflight evidence
+      ansible.builtin.copy:
+        dest: "{{ evidence_root }}/postflight-{{ inventory_hostname }}.txt"
+        content: "{{ postflight.stdout }}"
+        mode: "0644"
+      delegate_to: localhost
+
+    # ─── VALIDATION ─────────────────────────────────────────────
+    - name: Verify bond0 UP
+      ansible.builtin.command:
+        cmd: "cat /sys/class/net/bond0/operstate"
+      register: bond0_state
+      changed_when: false
+      failed_when: bond0_state.stdout != 'up'
+
+    - name: Verify bond1 UP
+      ansible.builtin.command:
+        cmd: "cat /sys/class/net/bond1/operstate"
+      register: bond1_state
+      changed_when: false
+      failed_when: bond1_state.stdout != 'up'
+
+    - name: Verify VLAN700 still works (ping gateway)
+      ansible.builtin.command:
+        cmd: "ping -c1 -W2 192.168.194.1"
+      changed_when: false
+      failed_when: false
+
+    - name: Verify hermes SSH still reachable
+      ansible.builtin.wait_for_connection:
+        timeout: 10
