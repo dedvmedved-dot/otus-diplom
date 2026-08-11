@@ -1,0 +1,14 @@
+# P0 node-03 catch-up — Ceph whitelist (6 disks, pre-cleanup)
+RUN_ID: 20260811T144022Z
+
+| Device | Model | Serial | WWN | Size | Ceph VG | Ceph LV |
+| --- | --- | --- | --- | --- | --- | --- |
+| sdd | AL15SEB18EQ | 12U0A481FMCF | 0x5000039b686b5889 | 1.6T | ceph-8d3bba22... | osd-block-dc710645... |
+| sde | AL15SEB18EQ | 12U0A4BBFMCF | 0x5000039b686b6841 | 1.6T | ceph-1aeaf3f9... | osd-block-ce1ed3ac... |
+| sdf | AL15SEB18EQ | 12U0A48QFMCF | 0x5000039b686b5e61 | 1.6T | ceph-3508468b... | osd-block-52154857... |
+| sdg | AL15SEB18EQ | 12U0A48CFMCF | 0x5000039b686b5bfd | 1.6T | ceph-31a1d0e5... | osd-block-3b68cf0c... |
+| sdh | AL15SEB18EQ | 12U0A48AFMCF | 0x5000039b686b5b91 | 1.6T | ceph-a3ff8210... | osd-block-ff0a16f3... |
+| sdi | AL15SEB18EQ | 12U0A49EFMCF | 0x5000039b686b60f5 | 1.6T | ceph-eb81aade... | osd-block-c71f1fbd... |
+
+All: Toshiba AL15SEB18EQ, ~1.6 TB, legacy Ceph OSD LVM.
+Owner authorization: APPROVED (ARCHITECT DECISION TASK-007).

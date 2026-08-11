@@ -1,0 +1,21 @@
+# P1 node-03 alignment — Network profiles (INACTIVE, waiting switch-ready)
+RUN_ID: 20260811T144022Z
+
+bond0 (CURRENTLY ACTIVE, unchanged from install):
+  mode: 802.3ad
+  slaves: ens2f0 (6C:B3:11:61:CA:78) + ens2f1 (6C:B3:11:61:CA:7A)
+  carrier: 2/2
+  VLAN700: 192.168.194.39/24, gateway 192.168.194.1, OPERATIONAL
+
+bond1 profile: PREPARED / INACTIVE
+  slaves: ens2f2 (6C:B3:11:61:CA:7C) + ens2f3 (6C:B3:11:61:CA:7E)
+  mode: 802.3ad
+
+VLAN140 profile: PREPARED / INACTIVE
+  device: bond0, id 140, ip 172.30.140.103/24
+
+VLAN141 profile: PREPARED / INACTIVE
+  device: bond1, id 141, ip 172.30.141.103/24, gateway=NONE
+
+VLAN143 profile: PREPARED / INACTIVE
+  device: bond0, id 143

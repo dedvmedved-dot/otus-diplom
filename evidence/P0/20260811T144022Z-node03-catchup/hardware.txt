@@ -1,0 +1,13 @@
+# P0 node-03 catch-up — OS & Hardware
+RUN_ID: 20260811T144022Z
+
+OS: Astra Linux SE 1.8.5.46
+Kernel: 6.1.158-1-generic
+Vendor (BMC): COMPAL
+System Serial: 7490001200409
+Chassis Serial: 7490001200409
+CPU: 2× Intel Xeon Silver 4214R @2.4GHz, 12c/24t each = 24 cores, 48 threads
+RAM: 256 GB (4× 64GB Samsung M393A8G40AB2-CWE DDR4-2400)
+BIOS: 10.09.20
+BMC fw: 10.33.20
+Power: On

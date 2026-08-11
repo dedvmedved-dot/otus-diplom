@@ -1,0 +1,17 @@
+# P1 node-03 alignment — hostname + sudo + NTP + DNS
+RUN_ID: 20260811T144022Z
+
+hostname: node-03 (changed from astra-39)
+hostnamectl: node-03
+
+Astra Linux: 1.8.5.46 / kernel 6.1.158-1-generic
+
+sudo: astraadm passwordless (sudoers.d/10-astraadm, 0440 root:root)
+  result: sudo -n true = PASS
+
+NTP: systemd-timesyncd, active, synchronized=yes
+  servers: ntp.msk-ix.ru, ntp1/2.vniiftri.ru, 0/1.ru.pool.ntp.org
+
+DNS: TEMPORARY 8.8.8.8, 8.8.4.4 (BACKLOG: replace with project DNS)
+
+Root credential: rotated. Old=FAIL, New=PASS (SECURITY-INCIDENT-001).

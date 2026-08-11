@@ -1,0 +1,11 @@
+# P0 node-03 catch-up — Protected disks (UNCHANGED)
+RUN_ID: 20260811T144022Z
+
+OS disk:
+  sda | 447G | Adaptec OS | Serial: 5502CB3A | UNCHANGED
+
+LINSTOR/DRBD candidates (Samsung NVMe 3.5TB):
+  sdb | 3.5T | Samsung MZILT3T8HBLS/007 | S5G0NC0T403246 | UNCHANGED
+  sdc | 3.5T | Samsung MZILT3T8HBLS/007 | S5G0NC0T403289 | UNCHANGED
+
+STATUS: PROTECTED. No destructive operations performed.

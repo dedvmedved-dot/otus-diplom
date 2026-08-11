@@ -1,0 +1,13 @@
+# P0 node-03 catch-up — Ceph cleanup result
+RUN_ID: 20260811T144022Z
+
+All 6 legacy Ceph OSD disks cleaned. Method: lvremove → vgremove → pvremove → wipefs.
+
+Post-cleanup verification:
+- Ceph PV: 0
+- Ceph VG: 0
+- LVM signatures: NONE (wipefs clean)
+- Filesystem: NONE
+- Mount: NONE
+
+Status: FREE / UNALLOCATED (further use per Architect decision, TASK-007 §16).
