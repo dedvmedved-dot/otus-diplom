@@ -1,0 +1,162 @@
+=== node 38 ===
+HOST: node-01
+--- NM AUTOCONNECT ---
+bond1 DRBD: autoconnect=no
+VLAN 140 Management: autoconnect=no
+VLAN 141 DRBD: autoconnect=no
+VLAN 143 Backup: autoconnect=no
+--- NM ACTIVE ---
+NAME                                TYPE      DEVICE    
+bond1 DRBD                          bond      bond1     
+Соединение VLAN 1                   vlan      bond0.700 
+lo                                  loopback  lo        
+VLAN 140 Management                 vlan      bond0.140 
+VLAN 141 DRBD                       vlan      bond1.141 
+bond0 port 1                        ethernet  ens2f0    
+bond0 port 2                        ethernet  ens2f1    
+bond1 port 1                        ethernet  ens2f2    
+bond1 port 2                        ethernet  ens2f3    
+Агрегированное соединение (bond) 1  bond      bond0     
+--- IP ---
+ens4f0           DOWN           
+ens4f1           DOWN           
+ens4f2           DOWN           
+ens4f3           DOWN           
+ens2f0           UP             
+ens2f1           UP             
+ens2f2           UP             
+enx4218fc690754  UNKNOWN        
+ens2f3           UP             
+bond1            UP             fe80::2ef1:7b13:485a:7c4f/64 
+bond1.141@bond1  UP             172.30.141.101/24 fe80::ac4f:1274:315a:d25a/64 
+bond0            UP             
+bond0.700@bond0  UP             192.168.194.38/24 fe80::96bd:5094:2591:5ee2/64 
+bond0.140@bond0  UP             172.30.140.101/24 fe80::db58:dddc:387d:e878/64 
+--- ROUTE ---
+default via 192.168.194.1 dev bond0.700 proto static metric 400 
+172.30.140.0/24 dev bond0.140 proto kernel scope link src 172.30.140.101 metric 402 
+172.30.141.0/24 dev bond1.141 proto kernel scope link src 172.30.141.101 metric 403 
+192.168.194.0/24 dev bond0.700 proto kernel scope link src 192.168.194.38 metric 400 
+--- BOND0 ---
+Bonding Mode: load balancing (round-robin)
+MII Status: up
+MII Polling Interval (ms): 1
+Slave Interface: ens2f0
+MII Status: up
+Slave queue ID: 0
+Slave Interface: ens2f1
+MII Status: up
+Slave queue ID: 0
+--- CARRIER ---
+ens2f0=1
+ens2f1=1
+=== node 40 ===
+HOST: node-02
+--- NM AUTOCONNECT ---
+bond1 DRBD: autoconnect=no
+VLAN 140 Management: autoconnect=no
+VLAN 141 DRBD: autoconnect=no
+VLAN 143 Backup: autoconnect=no
+--- NM ACTIVE ---
+NAME                                TYPE      DEVICE    
+bond1 DRBD                          bond      bond1     
+VLAN 143 Backup                     vlan      bond0.143 
+Соединение VLAN 1                   vlan      bond0.700 
+lo                                  loopback  lo        
+VLAN 140 Management                 vlan      bond0.140 
+bond0 port 1                        ethernet  ens2f2    
+bond0 port 2                        ethernet  ens2f3    
+Агрегированное соединение (bond) 1  bond      bond0     
+--- IP ---
+ens4f0           DOWN           
+ens4f1           DOWN           
+ens4f2           DOWN           
+ens4f3           DOWN           
+ens2f0           UP             
+ens2f1           UP             
+ens2f2           UP             
+enx12b3f82f0f34  UNKNOWN        
+ens2f3           UP             
+bond0.143@bond0  UP             fe80::6a6b:5e8:eb2a:7705/64 
+bond0            UP             
+bond0.700@bond0  UP             192.168.194.40/24 fe80::2d88:a458:1b12:a1d8/64 
+bond1            DOWN           
+bond1.141@bond1  LOWERLAYERDOWN 
+bond0.140@bond0  UP             172.30.140.102/24 fe80::49a2:1446:3a4b:48c2/64 
+--- ROUTE ---
+default via 192.168.194.1 dev bond0.700 proto static metric 400 
+172.30.140.0/24 dev bond0.140 proto kernel scope link src 172.30.140.102 metric 401 
+192.168.194.0/24 dev bond0.700 proto kernel scope link src 192.168.194.40 metric 400 
+--- BOND0 ---
+Bonding Mode: IEEE 802.3ad Dynamic link aggregation
+MII Status: up
+MII Polling Interval (ms): 1
+	Partner Key: 6721
+	Partner Mac Address: c8:b6:d3:bb:08:d1
+Slave Interface: ens2f2
+MII Status: up
+Slave queue ID: 0
+Partner Churn State: none
+Partner Churned Count: 0
+Slave Interface: ens2f3
+MII Status: up
+Slave queue ID: 0
+Partner Churn State: none
+Partner Churned Count: 0
+--- CARRIER ---
+ens2f0=1
+ens2f1=1
+=== node 39 ===
+HOST: node-03
+--- NM AUTOCONNECT ---
+bond1 DRBD: autoconnect=no
+VLAN 140 Management: autoconnect=no
+VLAN 141 DRBD: autoconnect=no
+VLAN 143 Backup: autoconnect=no
+--- NM ACTIVE ---
+NAME                                TYPE      DEVICE    
+bond1 DRBD                          bond      bond1     
+Соединение VLAN 1                   vlan      bond0.700 
+lo                                  loopback  lo        
+VLAN 141 DRBD                       vlan      bond1.141 
+bond0 port 1                        ethernet  ens2f0    
+bond0 port 2                        ethernet  ens2f1    
+bond1 port 1                        ethernet  ens2f2    
+bond1 port 2                        ethernet  ens2f3    
+Агрегированное соединение (bond) 1  bond      bond0     
+--- IP ---
+ens4f0           DOWN           
+ens4f1           DOWN           
+ens4f2           DOWN           
+ens4f3           DOWN           
+ens2f0           UP             
+ens2f1           UP             
+ens2f2           UP             
+ens2f3           UP             
+bond0            UP             
+bond0.700@bond0  UP             192.168.194.39/24 fe80::ae43:cc5a:9973:570f/64 
+bond1            UP             fe80::5253:b161:281e:3f41/64 
+bond1.141@bond1  UP             172.30.141.103/24 fe80::9a38:61dc:5c63:dfcb/64 
+--- ROUTE ---
+default via 192.168.194.1 dev bond0.700 proto static metric 400 
+172.30.141.0/24 dev bond1.141 proto kernel scope link src 172.30.141.103 metric 403 
+192.168.194.0/24 dev bond0.700 proto kernel scope link src 192.168.194.39 metric 400 
+--- BOND0 ---
+Bonding Mode: IEEE 802.3ad Dynamic link aggregation
+MII Status: up
+MII Polling Interval (ms): 1
+	Partner Key: 1
+	Partner Mac Address: 00:00:00:00:00:00
+Slave Interface: ens2f0
+MII Status: up
+Slave queue ID: 0
+Partner Churn State: churned
+Partner Churned Count: 1
+Slave Interface: ens2f1
+MII Status: up
+Slave queue ID: 0
+Partner Churn State: churned
+Partner Churned Count: 1
+--- CARRIER ---
+ens2f0=1
+ens2f1=1

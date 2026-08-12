@@ -1,0 +1,18 @@
+=== /etc/astra_version ===
+1.8.5
+=== /etc/astra/build_version ===
+1.8.5.46
+=== dpkg base-files ===
+base-files	12.4+deb12u1.astra10
+=== apt-cache policy base-files ===
+base-files:
+  Установлен: 12.4+deb12u1.astra10
+  Кандидат:   12.4+deb12u1.astra10
+  Таблица версий:
+ *** 12.4+deb12u1.astra10 900
+        900 cdrom://OS Astra Linux 1.8.5.46 1.8_x86-64 DVD 1.8_x86-64/main amd64 Packages
+        100 /var/lib/dpkg/status
+=== /etc/os-release ===
+PRETTY_NAME="Astra Linux"
+VERSION_ID=1.8_x86-64
+VERSION_CODENAME=1.8_x86-64

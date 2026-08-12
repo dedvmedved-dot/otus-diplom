@@ -1,0 +1,223 @@
+=== node 38 ===
+HOST: node-01
+--- IP LINK ---
+ens4f0           DOWN           6c:b3:11:38:d4:70 <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+ens4f1           DOWN           6c:b3:11:38:d4:71 <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+ens4f2           DOWN           6c:b3:11:38:d4:72 <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+ens4f3           DOWN           6c:b3:11:38:d4:73 <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+ens2f0           UP             b6:6e:06:00:71:07 <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> 
+ens2f1           UP             b6:6e:06:00:71:07 <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> 
+ens2f2           UP             6c:b3:11:61:d4:94 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+enx4218fc690754  UNKNOWN        42:18:fc:69:07:54 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+ens2f3           UP             6c:b3:11:61:d4:96 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+bond0            UP             b6:6e:06:00:71:07 <BROADCAST,MULTICAST,MASTER,UP,LOWER_UP> 
+bond0.700@bond0  UP             b6:6e:06:00:71:07 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+bond0.140@bond0  UP             b6:6e:06:00:71:07 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+--- IP ADDR ---
+ens4f0           DOWN           
+ens4f1           DOWN           
+ens4f2           DOWN           
+ens4f3           DOWN           
+ens2f0           UP             
+ens2f1           UP             
+ens2f2           UP             
+enx4218fc690754  UNKNOWN        
+ens2f3           UP             
+bond0            UP             
+bond0.700@bond0  UP             192.168.194.38/24 fe80::96bd:5094:2591:5ee2/64 
+bond0.140@bond0  UP             172.30.140.101/24 fe80::db58:dddc:387d:e878/64 
+--- IP ROUTE ---
+default via 192.168.194.1 dev bond0.700 proto static metric 400 
+172.30.140.0/24 dev bond0.140 proto kernel scope link src 172.30.140.101 metric 402 
+192.168.194.0/24 dev bond0.700 proto kernel scope link src 192.168.194.38 metric 400 
+--- NM ALL ---
+NAME                                UUID                                  TYPE      DEVICE     AUTOCONNECT 
+Соединение VLAN 1                   3533d27c-e1b0-432b-bc26-83327aa2d2e8  vlan      bond0.700  да          
+lo                                  d21b7e33-304b-4b66-bf38-ebcd3308e9f0  loopback  lo         нет         
+VLAN 140 Management                 9f1f26e5-49f7-48f9-9f5e-b8fca6719928  vlan      bond0.140  да          
+bond0 port 1                        7272c6e1-db77-4498-84c2-65cb711fd714  ethernet  ens2f0     да          
+bond0 port 2                        54030792-98b5-46a4-8e56-b30fc8e5ff9b  ethernet  ens2f1     да          
+Агрегированное соединение (bond) 1  ba568383-cddc-4e69-b3ab-e033702cbd72  bond      bond0      да          
+bond1 DRBD                          efa7f767-3f36-48df-b340-b53f6fd287ff  bond      --         да          
+bond1 port 1                        ae4ca0ef-6b9a-4599-b9d5-8b6c0ac709a1  ethernet  --         да          
+bond1 port 2                        02a663c4-ecc6-488e-9092-7fdc6c295e5c  ethernet  --         да          
+VLAN 141 DRBD                       769a0ff6-14e7-4409-a67d-9c8e11453cc0  vlan      --         да          
+VLAN 143 Backup                     4f244569-5bff-4256-82e5-19f12a2c42fd  vlan      --         да          
+--- NM ACTIVE ---
+NAME                                TYPE      DEVICE    
+Соединение VLAN 1                   vlan      bond0.700 
+lo                                  loopback  lo        
+VLAN 140 Management                 vlan      bond0.140 
+bond0 port 1                        ethernet  ens2f0    
+bond0 port 2                        ethernet  ens2f1    
+Агрегированное соединение (bond) 1  bond      bond0     
+--- BOND0 ---
+Bonding Mode: load balancing (round-robin)
+MII Status: up
+MII Polling Interval (ms): 1
+Slave Interface: ens2f0
+MII Status: up
+Slave queue ID: 0
+Slave Interface: ens2f1
+MII Status: up
+Slave queue ID: 0
+--- CARRIER ---
+ens2f0=1
+ens2f1=1
+=== node 40 ===
+HOST: node-02
+--- IP LINK ---
+ens4f0           DOWN           6c:b3:11:38:d5:98 <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+ens4f1           DOWN           6c:b3:11:38:d5:99 <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+ens4f2           DOWN           6c:b3:11:38:d5:9a <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+ens4f3           DOWN           6c:b3:11:38:d5:9b <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+ens2f0           UP             6c:b3:11:61:d3:20 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+ens2f1           UP             6c:b3:11:61:d3:22 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+ens2f2           UP             6c:b3:11:61:d3:24 <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> 
+enx12b3f82f0f34  UNKNOWN        12:b3:f8:2f:0f:34 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+ens2f3           UP             6c:b3:11:61:d3:24 <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> 
+bond0            UP             6c:b3:11:61:d3:24 <BROADCAST,MULTICAST,MASTER,UP,LOWER_UP> 
+bond0.700@bond0  UP             6c:b3:11:61:d3:24 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+bond1            DOWN           5e:3d:e9:18:7e:3c <NO-CARRIER,BROADCAST,MULTICAST,MASTER,UP> 
+bond1.141@bond1  LOWERLAYERDOWN 5e:3d:e9:18:7e:3c <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+bond0.140@bond0  UP             6c:b3:11:61:d3:24 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+--- IP ADDR ---
+ens4f0           DOWN           
+ens4f1           DOWN           
+ens4f2           DOWN           
+ens4f3           DOWN           
+ens2f0           UP             
+ens2f1           UP             
+ens2f2           UP             
+enx12b3f82f0f34  UNKNOWN        
+ens2f3           UP             
+bond0            UP             
+bond0.700@bond0  UP             192.168.194.40/24 fe80::2d88:a458:1b12:a1d8/64 
+bond1            DOWN           
+bond1.141@bond1  LOWERLAYERDOWN 
+bond0.140@bond0  UP             172.30.140.102/24 fe80::49a2:1446:3a4b:48c2/64 
+--- IP ROUTE ---
+default via 192.168.194.1 dev bond0.700 proto static metric 400 
+172.30.140.0/24 dev bond0.140 proto kernel scope link src 172.30.140.102 metric 401 
+192.168.194.0/24 dev bond0.700 proto kernel scope link src 192.168.194.40 metric 400 
+--- NM ALL ---
+NAME                                UUID                                  TYPE      DEVICE     AUTOCONNECT 
+bond1 DRBD                          db4f9c19-a83a-4f0d-8f48-8e686d168863  bond      bond1      да          
+Соединение VLAN 1                   4633a10f-399a-495c-8ade-bf8a1b53b4ce  vlan      bond0.700  да          
+lo                                  366c3bb2-2347-40c6-95d5-87b31952c66c  loopback  lo         нет         
+VLAN 140 Management                 315629f9-a300-46c7-946b-cba193a6ab9d  vlan      bond0.140  да          
+bond0 port 1                        7a0feeea-8567-4546-8b3f-9a68f912cb11  ethernet  ens2f2     да          
+bond0 port 2                        1f029403-d007-40b8-b8d8-ca5eac0445f8  ethernet  ens2f3     да          
+Агрегированное соединение (bond) 1  ec2a44eb-8aad-4042-8f85-6a7af64ee94b  bond      bond0      да          
+bond1 port 1                        19795c49-f179-4de8-932a-088bf37d87e4  ethernet  --         да          
+bond1 port 2                        b73e12c8-e9d4-44d4-b75e-3ed3cd2d35e0  ethernet  --         да          
+VLAN 141 DRBD                       0b740ad9-90b4-41be-9912-b44948c8fdf7  vlan      --         да          
+VLAN 143 Backup                     efeb4d88-2318-4f5a-810b-235625247f7f  vlan      --         да          
+--- NM ACTIVE ---
+NAME                                TYPE      DEVICE    
+bond1 DRBD                          bond      bond1     
+Соединение VLAN 1                   vlan      bond0.700 
+lo                                  loopback  lo        
+VLAN 140 Management                 vlan      bond0.140 
+bond0 port 1                        ethernet  ens2f2    
+bond0 port 2                        ethernet  ens2f3    
+Агрегированное соединение (bond) 1  bond      bond0     
+--- BOND0 ---
+Bonding Mode: IEEE 802.3ad Dynamic link aggregation
+MII Status: up
+MII Polling Interval (ms): 1
+	Actor Key: 15
+	Partner Key: 6721
+	Partner Mac Address: c8:b6:d3:bb:08:d1
+Slave Interface: ens2f2
+MII Status: up
+Slave queue ID: 0
+Actor Churn State: none
+Partner Churn State: none
+Actor Churned Count: 0
+Partner Churned Count: 0
+Slave Interface: ens2f3
+MII Status: up
+Slave queue ID: 0
+Actor Churn State: none
+Partner Churn State: none
+Actor Churned Count: 0
+Partner Churned Count: 0
+--- CARRIER ---
+ens2f0=1
+ens2f1=1
+=== node 39 ===
+HOST: node-03
+--- IP LINK ---
+ens4f0           DOWN           6c:b3:11:38:d5:e8 <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+ens4f1           DOWN           6c:b3:11:38:d5:e9 <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+ens4f2           DOWN           6c:b3:11:38:d5:ea <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+ens4f3           DOWN           6c:b3:11:38:d5:eb <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+ens2f0           UP             6c:b3:11:61:ca:78 <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> 
+ens2f1           UP             6c:b3:11:61:ca:78 <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> 
+ens2f2           UP             6c:b3:11:61:ca:7c <BROADCAST,MULTICAST,UP,LOWER_UP> 
+ens2f3           UP             6c:b3:11:61:ca:7e <BROADCAST,MULTICAST,UP,LOWER_UP> 
+bond0            UP             6c:b3:11:61:ca:78 <BROADCAST,MULTICAST,MASTER,UP,LOWER_UP> 
+bond0.700@bond0  UP             6c:b3:11:61:ca:78 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+bond0.140@bond0  UP             6c:b3:11:61:ca:78 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+--- IP ADDR ---
+ens4f0           DOWN           
+ens4f1           DOWN           
+ens4f2           DOWN           
+ens4f3           DOWN           
+ens2f0           UP             
+ens2f1           UP             
+ens2f2           UP             
+ens2f3           UP             
+bond0            UP             
+bond0.700@bond0  UP             192.168.194.39/24 fe80::ae43:cc5a:9973:570f/64 
+bond0.140@bond0  UP             172.30.140.103/24 fe80::b285:5b9a:5853:647/64 
+--- IP ROUTE ---
+default via 192.168.194.1 dev bond0.700 proto static metric 400 
+172.30.140.0/24 dev bond0.140 proto kernel scope link src 172.30.140.103 metric 402 
+192.168.194.0/24 dev bond0.700 proto kernel scope link src 192.168.194.39 metric 400 
+--- NM ALL ---
+NAME                                UUID                                  TYPE      DEVICE     AUTOCONNECT 
+Соединение VLAN 1                   32ff4a89-5e24-406a-ab05-0e2c8f192dfe  vlan      bond0.700  да          
+lo                                  33727391-7374-496c-b5fa-cd4046294a65  loopback  lo         нет         
+VLAN 140 Management                 0317a359-82ac-4442-8434-51a87b4a7451  vlan      bond0.140  да          
+bond0 port 1                        b0e7a858-a5f6-4bac-97e8-236f056d7ca2  ethernet  ens2f0     да          
+bond0 port 2                        106d5452-3880-4074-8f59-f907912408ec  ethernet  ens2f1     да          
+Агрегированное соединение (bond) 1  6269c820-f599-43ed-8d5c-a4ec4f20802b  bond      bond0      да          
+bond1 DRBD                          ec379485-a1cc-448b-ad83-b1da5b801b24  bond      --         да          
+bond1 port 1                        91f6a029-c3b4-4d8e-a441-cef3006d0de8  ethernet  --         да          
+bond1 port 2                        ead16892-641f-4605-b9e1-e1c84afe66fe  ethernet  --         да          
+VLAN 141 DRBD                       7ea6c6a1-215e-4208-a354-7d386ba717ec  vlan      --         да          
+VLAN 143 Backup                     142a0cda-fb23-4b4e-abd5-5b39f1a20095  vlan      --         да          
+--- NM ACTIVE ---
+NAME                                TYPE      DEVICE    
+Соединение VLAN 1                   vlan      bond0.700 
+lo                                  loopback  lo        
+VLAN 140 Management                 vlan      bond0.140 
+bond0 port 1                        ethernet  ens2f0    
+bond0 port 2                        ethernet  ens2f1    
+Агрегированное соединение (bond) 1  bond      bond0     
+--- BOND0 ---
+Bonding Mode: IEEE 802.3ad Dynamic link aggregation
+MII Status: up
+MII Polling Interval (ms): 1
+	Actor Key: 15
+	Partner Key: 1
+	Partner Mac Address: 00:00:00:00:00:00
+Slave Interface: ens2f0
+MII Status: up
+Slave queue ID: 0
+Actor Churn State: none
+Partner Churn State: churned
+Actor Churned Count: 0
+Partner Churned Count: 1
+Slave Interface: ens2f1
+MII Status: up
+Slave queue ID: 0
+Actor Churn State: churned
+Partner Churn State: churned
+Actor Churned Count: 1
+Partner Churned Count: 1
+--- CARRIER ---
+ens2f0=1
+ens2f1=1
