@@ -1,0 +1,1333 @@
+=== 01: ip link/addr/route ===
+--- ip -d link ---
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00 promiscuity 0  allmulti 0 minmtu 0 maxmtu 0 addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535 tso_max_size 524280 tso_max_segs 65535 gro_max_size 65536 
+2: ens4f0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc mq state DOWN mode DEFAULT group default qlen 1000
+    link/ether 6c:b3:11:38:d5:98 brd ff:ff:ff:ff:ff:ff promiscuity 0  allmulti 0 minmtu 68 maxmtu 9216 addrgenmode none numtxqueues 8 numrxqueues 8 gso_max_size 65536 gso_max_segs 65535 tso_max_size 65536 tso_max_segs 65535 gro_max_size 65536 parentbus pci parentdev 0000:86:00.0 
+    altname enp134s0f0
+3: ens4f1: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc mq state DOWN mode DEFAULT group default qlen 1000
+    link/ether 6c:b3:11:38:d5:99 brd ff:ff:ff:ff:ff:ff promiscuity 0  allmulti 0 minmtu 68 maxmtu 9216 addrgenmode none numtxqueues 8 numrxqueues 8 gso_max_size 65536 gso_max_segs 65535 tso_max_size 65536 tso_max_segs 65535 gro_max_size 65536 parentbus pci parentdev 0000:86:00.1 
+    altname enp134s0f1
+4: ens4f2: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc mq state DOWN mode DEFAULT group default qlen 1000
+    link/ether 6c:b3:11:38:d5:9a brd ff:ff:ff:ff:ff:ff promiscuity 0  allmulti 0 minmtu 68 maxmtu 9216 addrgenmode none numtxqueues 8 numrxqueues 8 gso_max_size 65536 gso_max_segs 65535 tso_max_size 65536 tso_max_segs 65535 gro_max_size 65536 parentbus pci parentdev 0000:86:00.2 
+    altname enp134s0f2
+5: ens4f3: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc mq state DOWN mode DEFAULT group default qlen 1000
+    link/ether 6c:b3:11:38:d5:9b brd ff:ff:ff:ff:ff:ff promiscuity 0  allmulti 0 minmtu 68 maxmtu 9216 addrgenmode none numtxqueues 8 numrxqueues 8 gso_max_size 65536 gso_max_segs 65535 tso_max_size 65536 tso_max_segs 65535 gro_max_size 65536 parentbus pci parentdev 0000:86:00.3 
+    altname enp134s0f3
+6: ens2f0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000
+    link/ether 6c:b3:11:61:d3:20 brd ff:ff:ff:ff:ff:ff promiscuity 0  allmulti 0 minmtu 68 maxmtu 9702 addrgenmode none numtxqueues 64 numrxqueues 64 gso_max_size 65536 gso_max_segs 65535 tso_max_size 65536 tso_max_segs 65535 gro_max_size 65536 portid 6cb31161d320 parentbus pci parentdev 0000:18:00.0 
+    altname enp24s0f0
+7: ens2f1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000
+    link/ether 6c:b3:11:61:d3:22 brd ff:ff:ff:ff:ff:ff promiscuity 0  allmulti 0 minmtu 68 maxmtu 9702 addrgenmode none numtxqueues 64 numrxqueues 64 gso_max_size 65536 gso_max_segs 65535 tso_max_size 65536 tso_max_segs 65535 gro_max_size 65536 portid 6cb31161d322 parentbus pci parentdev 0000:18:00.1 
+    altname enp24s0f1
+8: ens2f2: <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> mtu 1500 qdisc mq master bond0 state UP mode DEFAULT group default qlen 1000
+    link/ether 6c:b3:11:61:d3:24 brd ff:ff:ff:ff:ff:ff promiscuity 0  allmulti 0 minmtu 68 maxmtu 9702 
+    bond_slave state ACTIVE mii_status UP link_failure_count 0 perm_hwaddr 6c:b3:11:61:d3:24 queue_id 0 prio 0 ad_aggregator_id 1 ad_actor_oper_port_state 61 ad_actor_oper_port_state_str <active,aggregating,in_sync,collecting,distributing> ad_partner_oper_port_state 61 ad_partner_oper_port_state_str <active,aggregating,in_sync,collecting,distributing> addrgenmode none numtxqueues 64 numrxqueues 64 gso_max_size 65536 gso_max_segs 65535 tso_max_size 65536 tso_max_segs 65535 gro_max_size 65536 portid 6cb31161d324 parentbus pci parentdev 0000:18:00.2 
+    altname enp24s0f2
+9: enx12b3f82f0f34: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UNKNOWN mode DEFAULT group default qlen 1000
+    link/ether 12:b3:f8:2f:0f:34 brd ff:ff:ff:ff:ff:ff promiscuity 0  allmulti 0 minmtu 0 maxmtu 65535 addrgenmode none numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535 tso_max_size 65536 tso_max_segs 65535 gro_max_size 65536 parentbus usb parentdev 1-4.3:2.0 
+10: ens2f3: <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> mtu 1500 qdisc mq master bond0 state UP mode DEFAULT group default qlen 1000
+    link/ether 6c:b3:11:61:d3:24 brd ff:ff:ff:ff:ff:ff permaddr 6c:b3:11:61:d3:26 promiscuity 0  allmulti 0 minmtu 68 maxmtu 9702 
+    bond_slave state ACTIVE mii_status UP link_failure_count 0 perm_hwaddr 6c:b3:11:61:d3:26 queue_id 0 prio 0 ad_aggregator_id 1 ad_actor_oper_port_state 61 ad_actor_oper_port_state_str <active,aggregating,in_sync,collecting,distributing> ad_partner_oper_port_state 61 ad_partner_oper_port_state_str <active,aggregating,in_sync,collecting,distributing> addrgenmode none numtxqueues 64 numrxqueues 64 gso_max_size 65536 gso_max_segs 65535 tso_max_size 65536 tso_max_segs 65535 gro_max_size 65536 portid 6cb31161d326 parentbus pci parentdev 0000:18:00.3 
+    altname enp24s0f3
+154: bond0: <BROADCAST,MULTICAST,MASTER,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
+    link/ether 6c:b3:11:61:d3:24 brd ff:ff:ff:ff:ff:ff promiscuity 0  allmulti 0 minmtu 68 maxmtu 65535 
+    bond mode 802.3ad miimon 1 updelay 0 downdelay 0 peer_notify_delay 0 use_carrier 1 arp_interval 0 arp_missed_max 2 arp_validate none arp_all_targets any primary_reselect always fail_over_mac none xmit_hash_policy layer2 resend_igmp 1 num_grat_arp 1 all_slaves_active 0 min_links 0 lp_interval 1 packets_per_slave 1 lacp_active on lacp_rate slow ad_select stable ad_aggregator 1 ad_num_ports 2 ad_actor_key 15 ad_partner_key 6721 ad_partner_mac c8:b6:d3:bb:08:d1 ad_actor_sys_prio 65535 ad_user_port_key 0 ad_actor_system 00:00:00:00:00:00 tlb_dynamic_lb 1 addrgenmode none numtxqueues 16 numrxqueues 16 gso_max_size 65536 gso_max_segs 65535 tso_max_size 65536 tso_max_segs 65535 gro_max_size 65536 
+155: bond0.700@bond0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
+    link/ether 6c:b3:11:61:d3:24 brd ff:ff:ff:ff:ff:ff promiscuity 0  allmulti 0 minmtu 0 maxmtu 65535 
+    vlan protocol 802.1Q id 700 <REORDER_HDR> addrgenmode none numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535 tso_max_size 65536 tso_max_segs 65535 gro_max_size 65536 
+--- ip -br link ---
+lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP> 
+ens4f0           DOWN           6c:b3:11:38:d5:98 <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+ens4f1           DOWN           6c:b3:11:38:d5:99 <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+ens4f2           DOWN           6c:b3:11:38:d5:9a <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+ens4f3           DOWN           6c:b3:11:38:d5:9b <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+ens2f0           UP             6c:b3:11:61:d3:20 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+ens2f1           UP             6c:b3:11:61:d3:22 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+ens2f2           UP             6c:b3:11:61:d3:24 <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> 
+enx12b3f82f0f34  UNKNOWN        12:b3:f8:2f:0f:34 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+ens2f3           UP             6c:b3:11:61:d3:24 <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> 
+bond0            UP             6c:b3:11:61:d3:24 <BROADCAST,MULTICAST,MASTER,UP,LOWER_UP> 
+bond0.700@bond0  UP             6c:b3:11:61:d3:24 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+--- ip -br addr ---
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens4f0           DOWN           
+ens4f1           DOWN           
+ens4f2           DOWN           
+ens4f3           DOWN           
+ens2f0           UP             
+ens2f1           UP             
+ens2f2           UP             
+enx12b3f82f0f34  UNKNOWN        
+ens2f3           UP             
+bond0            UP             
+bond0.700@bond0  UP             192.168.194.40/24 fe80::2d88:a458:1b12:a1d8/64 
+--- ip route ---
+default via 192.168.194.1 dev bond0.700 proto static metric 400 
+192.168.194.0/24 dev bond0.700 proto kernel scope link src 192.168.194.40 metric 400 
+
+=== 02: NIC hardware mapping ===
+===== ens2f0 =====
+--- CURRENT MAC ---
+6c:b3:11:61:d3:20
+--- PERMANENT MAC ---
+Permanent address: 6c:b3:11:61:d3:20
+--- CARRIER ---
+1
+--- OPERSTATE ---
+up
+--- SPEED ---
+10000
+--- DUPLEX ---
+full
+--- DRIVER ---
+driver: i40e
+firmware-version: 9.10 0x8000d05f 1.3106.0
+bus-info: 0000:18:00.0
+--- UDEV ID_SERIAL ---
+===== ens2f1 =====
+--- CURRENT MAC ---
+6c:b3:11:61:d3:22
+--- PERMANENT MAC ---
+Permanent address: 6c:b3:11:61:d3:22
+--- CARRIER ---
+1
+--- OPERSTATE ---
+up
+--- SPEED ---
+10000
+--- DUPLEX ---
+full
+--- DRIVER ---
+driver: i40e
+firmware-version: 9.10 0x8000d05f 1.3106.0
+bus-info: 0000:18:00.1
+--- UDEV ID_SERIAL ---
+===== ens2f2 =====
+--- CURRENT MAC ---
+6c:b3:11:61:d3:24
+--- PERMANENT MAC ---
+Permanent address: 6c:b3:11:61:d3:24
+--- CARRIER ---
+1
+--- OPERSTATE ---
+up
+--- SPEED ---
+10000
+--- DUPLEX ---
+full
+--- DRIVER ---
+driver: i40e
+firmware-version: 9.10 0x8000d05f 1.3106.0
+bus-info: 0000:18:00.2
+--- UDEV ID_SERIAL ---
+===== ens2f3 =====
+--- CURRENT MAC ---
+6c:b3:11:61:d3:24
+--- PERMANENT MAC ---
+Permanent address: 6c:b3:11:61:d3:26
+--- CARRIER ---
+1
+--- OPERSTATE ---
+up
+--- SPEED ---
+10000
+--- DUPLEX ---
+full
+--- DRIVER ---
+driver: i40e
+firmware-version: 9.10 0x8000d05f 1.3106.0
+bus-info: 0000:18:00.3
+--- UDEV ID_SERIAL ---
+
+=== 03: PCI ===
+0000:18:00.0 Ethernet controller [0200]: Intel Corporation Ethernet Controller X710 for 10GbE SFP+ [8086:1572] (rev 01)
+	Subsystem: Intel Corporation Ethernet Converged Network Adapter X710 [8086:0000]
+	Kernel driver in use: i40e
+	Kernel modules: i40e
+0000:18:00.1 Ethernet controller [0200]: Intel Corporation Ethernet Controller X710 for 10GbE SFP+ [8086:1572] (rev 01)
+	Subsystem: Intel Corporation Ethernet Converged Network Adapter X710 [8086:0000]
+	Kernel driver in use: i40e
+	Kernel modules: i40e
+0000:18:00.2 Ethernet controller [0200]: Intel Corporation Ethernet Controller X710 for 10GbE SFP+ [8086:1572] (rev 01)
+	Subsystem: Intel Corporation Ethernet Converged Network Adapter X710 [8086:0000]
+	Kernel driver in use: i40e
+	Kernel modules: i40e
+0000:18:00.3 Ethernet controller [0200]: Intel Corporation Ethernet Controller X710 for 10GbE SFP+ [8086:1572] (rev 01)
+	Subsystem: Intel Corporation Ethernet Converged Network Adapter X710 [8086:0000]
+	Kernel driver in use: i40e
+	Kernel modules: i40e
+0000:19:00.0 RAID bus controller [0104]: Adaptec Series 8 12G SAS/PCIe 3 [9005:028d] (rev 01)
+	Subsystem: Adaptec Series 8 - ASR-8885 - 8 internal 8 external 12G SAS Port/PCIe 3.0 [9005:0554]
+--
+0000:86:00.0 Ethernet controller [0200]: Intel Corporation I350 Gigabit Network Connection [8086:1521] (rev 01)
+	Subsystem: Intel Corporation Ethernet Server Adapter I350-T4 [8086:0001]
+	Kernel driver in use: igb
+	Kernel modules: igb
+0000:86:00.1 Ethernet controller [0200]: Intel Corporation I350 Gigabit Network Connection [8086:1521] (rev 01)
+	Subsystem: Intel Corporation Ethernet Server Adapter I350-T4 [8086:0001]
+	Kernel driver in use: igb
+	Kernel modules: igb
+0000:86:00.2 Ethernet controller [0200]: Intel Corporation I350 Gigabit Network Connection [8086:1521] (rev 01)
+	Subsystem: Intel Corporation Ethernet Server Adapter I350-T4 [8086:0001]
+	Kernel driver in use: igb
+	Kernel modules: igb
+0000:86:00.3 Ethernet controller [0200]: Intel Corporation I350 Gigabit Network Connection [8086:1521] (rev 01)
+	Subsystem: Intel Corporation Ethernet Server Adapter I350-T4 [8086:0001]
+	Kernel driver in use: igb
+	Kernel modules: igb
+0000:ae:05.0 System peripheral [0880]: Intel Corporation Sky Lake-E VT-d [8086:2034] (rev 07)
+	Subsystem: Intel Corporation Sky Lake-E VT-d [8086:0000]
+
+=== 04: kernel bond membership ===
+--- ens2f0 master ---
+/sys/devices/pci0000:17/0000:17:00.0/0000:18:00.0/net/ens2f0/master
+--- ens2f1 master ---
+/sys/devices/pci0000:17/0000:17:00.0/0000:18:00.1/net/ens2f1/master
+--- ens2f2 master ---
+/sys/devices/virtual/net/bond0
+--- ens2f3 master ---
+/sys/devices/virtual/net/bond0
+--- bond0 slaves ---
+ens2f2 ens2f3
+--- bond1 slaves ---
+
+=== 05: bond0 raw ===
+Ethernet Channel Bonding Driver: v6.1.158-1-generic
+
+Bonding Mode: IEEE 802.3ad Dynamic link aggregation
+Transmit Hash Policy: layer2 (0)
+MII Status: up
+MII Polling Interval (ms): 1
+Up Delay (ms): 0
+Down Delay (ms): 0
+Peer Notification Delay (ms): 0
+
+802.3ad info
+LACP active: on
+LACP rate: slow
+Min links: 0
+Aggregator selection policy (ad_select): stable
+System priority: 65535
+System MAC address: 6c:b3:11:61:d3:24
+Active Aggregator Info:
+	Aggregator ID: 1
+	Number of ports: 2
+	Actor Key: 15
+	Partner Key: 6721
+	Partner Mac Address: c8:b6:d3:bb:08:d1
+
+Slave Interface: ens2f2
+MII Status: up
+Speed: 10000 Mbps
+Duplex: full
+Link Failure Count: 0
+Permanent HW addr: 6c:b3:11:61:d3:24
+Slave queue ID: 0
+Aggregator ID: 1
+Actor Churn State: none
+Partner Churn State: none
+Actor Churned Count: 0
+Partner Churned Count: 0
+details actor lacp pdu:
+    system priority: 65535
+    system mac address: 6c:b3:11:61:d3:24
+    port key: 15
+    port priority: 255
+    port number: 1
+    port state: 61
+details partner lacp pdu:
+    system priority: 32768
+    system mac address: c8:b6:d3:bb:08:d1
+    oper key: 6721
+    port priority: 32768
+    port number: 27
+    port state: 61
+
+Slave Interface: ens2f3
+MII Status: up
+Speed: 10000 Mbps
+Duplex: full
+Link Failure Count: 0
+Permanent HW addr: 6c:b3:11:61:d3:26
+Slave queue ID: 0
+Aggregator ID: 1
+Actor Churn State: none
+Partner Churn State: none
+Actor Churned Count: 0
+Partner Churned Count: 0
+details actor lacp pdu:
+    system priority: 65535
+    system mac address: 6c:b3:11:61:d3:24
+    port key: 15
+    port priority: 255
+    port number: 2
+    port state: 61
+details partner lacp pdu:
+    system priority: 32768
+    system mac address: c8:b6:d3:bb:08:d1
+    oper key: 6721
+    port priority: 32768
+    port number: 28
+    port state: 61
+--- mode ---
+802.3ad 4
+--- slaves ---
+ens2f2 ens2f3
+
+=== 06: bond1 raw ===
+bond1 NO PROC
+bond1 NO MODE
+bond1 NO SLAVES
+bond1 NO LINK
+
+=== 07: NM overview ===
+NAME                                UUID                                  TYPE      DEVICE     AUTOCONNECT 
+Соединение VLAN 1                   4633a10f-399a-495c-8ade-bf8a1b53b4ce  vlan      bond0.700  да          
+lo                                  366c3bb2-2347-40c6-95d5-87b31952c66c  loopback  lo         нет         
+bond0 port 1                        7a0feeea-8567-4546-8b3f-9a68f912cb11  ethernet  ens2f2     да          
+bond0 port 2                        1f029403-d007-40b8-b8d8-ca5eac0445f8  ethernet  ens2f3     да          
+Агрегированное соединение (bond) 1  ec2a44eb-8aad-4042-8f85-6a7af64ee94b  bond      bond0      да          
+bond1 DRBD                          db4f9c19-a83a-4f0d-8f48-8e686d168863  bond      --         нет         
+bond1 port 1                        19795c49-f179-4de8-932a-088bf37d87e4  ethernet  --         нет         
+bond1 port 2                        b73e12c8-e9d4-44d4-b75e-3ed3cd2d35e0  ethernet  --         нет         
+VLAN 140 Management                 315629f9-a300-46c7-946b-cba193a6ab9d  vlan      --         нет         
+VLAN 141 DRBD                       0b740ad9-90b4-41be-9912-b44948c8fdf7  vlan      --         нет         
+VLAN 143 Backup                     efeb4d88-2318-4f5a-810b-235625247f7f  vlan      --         нет         
+--- ACTIVE ---
+NAME                                TYPE      DEVICE    
+Соединение VLAN 1                   vlan      bond0.700 
+lo                                  loopback  lo        
+bond0 port 1                        ethernet  ens2f2    
+bond0 port 2                        ethernet  ens2f3    
+Агрегированное соединение (bond) 1  bond      bond0     
+--- DEVICE STATUS ---
+DEVICE           TYPE      STATE                 CONNECTION                         
+bond0.700        vlan      подключено            Соединение VLAN 1                  
+lo               loopback  подключено (внешнее)  lo                                 
+bond0            bond      подключено            Агрегированное соединение (bond) 1 
+ens2f2           ethernet  подключено            bond0 port 1                       
+ens2f3           ethernet  подключено            bond0 port 2                       
+ens2f0           ethernet  отключено             --                                 
+ens2f1           ethernet  отключено             --                                 
+enx12b3f82f0f34  ethernet  отключено             --                                 
+ens4f0           ethernet  недоступно            --                                 
+ens4f1           ethernet  недоступно            --                                 
+ens4f2           ethernet  недоступно            --                                 
+ens4f3           ethernet  недоступно            --                                 
+
+=== 08: NM bond profiles ===
+===== bond0 port 1 =====
+connection.id:                          bond0 port 1
+connection.uuid:                        7a0feeea-8567-4546-8b3f-9a68f912cb11
+connection.stable-id:                   --
+connection.type:                        802-3-ethernet
+connection.interface-name:              ens2f2
+connection.autoconnect:                 да
+connection.autoconnect-priority:        0
+connection.autoconnect-retries:         -1 (default)
+connection.multi-connect:               0 (default)
+connection.auth-retries:                -1
+connection.timestamp:                   1786368859
+connection.read-only:                   нет
+connection.permissions:                 --
+connection.zone:                        --
+connection.master:                      bond0
+connection.slave-type:                  bond
+connection.autoconnect-slaves:          -1 (default)
+connection.secondaries:                 --
+connection.gateway-ping-timeout:        0
+connection.metered:                     неизвестно
+connection.lldp:                        default
+connection.mdns:                        -1 (default)
+connection.llmnr:                       -1 (default)
+connection.dns-over-tls:                -1 (default)
+connection.mptcp-flags:                 0x0 (default)
+connection.wait-device-timeout:         -1
+connection.wait-activation-delay:       -1
+802-3-ethernet.port:                    --
+802-3-ethernet.speed:                   0
+802-3-ethernet.duplex:                  --
+802-3-ethernet.auto-negotiate:          нет
+802-3-ethernet.mac-address:             6C:B3:11:61:D3:24
+802-3-ethernet.cloned-mac-address:      --
+802-3-ethernet.generate-mac-address-mask:--
+802-3-ethernet.mac-address-blacklist:   --
+802-3-ethernet.mtu:                     автоматически
+802-3-ethernet.s390-subchannels:        --
+802-3-ethernet.s390-nettype:            --
+802-3-ethernet.s390-options:            --
+802-3-ethernet.wake-on-lan:             default
+802-3-ethernet.wake-on-lan-password:    --
+802-3-ethernet.accept-all-mac-addresses:-1 (default)
+GENERAL.NAME:                           bond0 port 1
+GENERAL.UUID:                           7a0feeea-8567-4546-8b3f-9a68f912cb11
+GENERAL.DEVICES:                        ens2f2
+GENERAL.IP-IFACE:                       ens2f2
+GENERAL.STATE:                          активировано
+GENERAL.DEFAULT:                        нет
+GENERAL.DEFAULT6:                       нет
+GENERAL.SPEC-OBJECT:                    --
+GENERAL.VPN:                            нет
+GENERAL.DBUS-PATH:                      /org/freedesktop/NetworkManager/ActiveConnection/5500
+GENERAL.CON-PATH:                       /org/freedesktop/NetworkManager/Settings/11
+GENERAL.ZONE:                           --
+GENERAL.MASTER-PATH:                    /org/freedesktop/NetworkManager/Devices/11
+IP4.GATEWAY:                            --
+IP6.GATEWAY:                            --
+===== bond0 port 2 =====
+connection.id:                          bond0 port 2
+connection.uuid:                        1f029403-d007-40b8-b8d8-ca5eac0445f8
+connection.stable-id:                   --
+connection.type:                        802-3-ethernet
+connection.interface-name:              ens2f3
+connection.autoconnect:                 да
+connection.autoconnect-priority:        0
+connection.autoconnect-retries:         -1 (default)
+connection.multi-connect:               0 (default)
+connection.auth-retries:                -1
+connection.timestamp:                   1786368859
+connection.read-only:                   нет
+connection.permissions:                 --
+connection.zone:                        --
+connection.master:                      bond0
+connection.slave-type:                  bond
+connection.autoconnect-slaves:          -1 (default)
+connection.secondaries:                 --
+connection.gateway-ping-timeout:        0
+connection.metered:                     неизвестно
+connection.lldp:                        default
+connection.mdns:                        -1 (default)
+connection.llmnr:                       -1 (default)
+connection.dns-over-tls:                -1 (default)
+connection.mptcp-flags:                 0x0 (default)
+connection.wait-device-timeout:         -1
+connection.wait-activation-delay:       -1
+802-3-ethernet.port:                    --
+802-3-ethernet.speed:                   0
+802-3-ethernet.duplex:                  --
+802-3-ethernet.auto-negotiate:          нет
+802-3-ethernet.mac-address:             6C:B3:11:61:D3:26
+802-3-ethernet.cloned-mac-address:      --
+802-3-ethernet.generate-mac-address-mask:--
+802-3-ethernet.mac-address-blacklist:   --
+802-3-ethernet.mtu:                     автоматически
+802-3-ethernet.s390-subchannels:        --
+802-3-ethernet.s390-nettype:            --
+802-3-ethernet.s390-options:            --
+802-3-ethernet.wake-on-lan:             default
+802-3-ethernet.wake-on-lan-password:    --
+802-3-ethernet.accept-all-mac-addresses:-1 (default)
+GENERAL.NAME:                           bond0 port 2
+GENERAL.UUID:                           1f029403-d007-40b8-b8d8-ca5eac0445f8
+GENERAL.DEVICES:                        ens2f3
+GENERAL.IP-IFACE:                       ens2f3
+GENERAL.STATE:                          активировано
+GENERAL.DEFAULT:                        нет
+GENERAL.DEFAULT6:                       нет
+GENERAL.SPEC-OBJECT:                    --
+GENERAL.VPN:                            нет
+GENERAL.DBUS-PATH:                      /org/freedesktop/NetworkManager/ActiveConnection/5501
+GENERAL.CON-PATH:                       /org/freedesktop/NetworkManager/Settings/12
+GENERAL.ZONE:                           --
+GENERAL.MASTER-PATH:                    /org/freedesktop/NetworkManager/Devices/11
+IP4.GATEWAY:                            --
+IP6.GATEWAY:                            --
+===== bond1 port 1 =====
+connection.id:                          bond1 port 1
+connection.uuid:                        19795c49-f179-4de8-932a-088bf37d87e4
+connection.stable-id:                   --
+connection.type:                        802-3-ethernet
+connection.interface-name:              ens2f2
+connection.autoconnect:                 нет
+connection.autoconnect-priority:        0
+connection.autoconnect-retries:         -1 (default)
+connection.multi-connect:               0 (default)
+connection.auth-retries:                -1
+connection.timestamp:                   0
+connection.read-only:                   нет
+connection.permissions:                 --
+connection.zone:                        --
+connection.master:                      bond1
+connection.slave-type:                  bond
+connection.autoconnect-slaves:          -1 (default)
+connection.secondaries:                 --
+connection.gateway-ping-timeout:        0
+connection.metered:                     неизвестно
+connection.lldp:                        default
+connection.mdns:                        -1 (default)
+connection.llmnr:                       -1 (default)
+connection.dns-over-tls:                -1 (default)
+connection.mptcp-flags:                 0x0 (default)
+connection.wait-device-timeout:         -1
+connection.wait-activation-delay:       -1
+802-3-ethernet.port:                    --
+802-3-ethernet.speed:                   0
+802-3-ethernet.duplex:                  --
+802-3-ethernet.auto-negotiate:          нет
+802-3-ethernet.mac-address:             --
+802-3-ethernet.cloned-mac-address:      --
+802-3-ethernet.generate-mac-address-mask:--
+802-3-ethernet.mac-address-blacklist:   --
+802-3-ethernet.mtu:                     автоматически
+802-3-ethernet.s390-subchannels:        --
+802-3-ethernet.s390-nettype:            --
+802-3-ethernet.s390-options:            --
+802-3-ethernet.wake-on-lan:             default
+802-3-ethernet.wake-on-lan-password:    --
+802-3-ethernet.accept-all-mac-addresses:-1 (default)
+bond-port.queue-id:                     0
+===== bond1 port 2 =====
+connection.id:                          bond1 port 2
+connection.uuid:                        b73e12c8-e9d4-44d4-b75e-3ed3cd2d35e0
+connection.stable-id:                   --
+connection.type:                        802-3-ethernet
+connection.interface-name:              ens2f3
+connection.autoconnect:                 нет
+connection.autoconnect-priority:        0
+connection.autoconnect-retries:         -1 (default)
+connection.multi-connect:               0 (default)
+connection.auth-retries:                -1
+connection.timestamp:                   0
+connection.read-only:                   нет
+connection.permissions:                 --
+connection.zone:                        --
+connection.master:                      bond1
+connection.slave-type:                  bond
+connection.autoconnect-slaves:          -1 (default)
+connection.secondaries:                 --
+connection.gateway-ping-timeout:        0
+connection.metered:                     неизвестно
+connection.lldp:                        default
+connection.mdns:                        -1 (default)
+connection.llmnr:                       -1 (default)
+connection.dns-over-tls:                -1 (default)
+connection.mptcp-flags:                 0x0 (default)
+connection.wait-device-timeout:         -1
+connection.wait-activation-delay:       -1
+802-3-ethernet.port:                    --
+802-3-ethernet.speed:                   0
+802-3-ethernet.duplex:                  --
+802-3-ethernet.auto-negotiate:          нет
+802-3-ethernet.mac-address:             --
+802-3-ethernet.cloned-mac-address:      --
+802-3-ethernet.generate-mac-address-mask:--
+802-3-ethernet.mac-address-blacklist:   --
+802-3-ethernet.mtu:                     автоматически
+802-3-ethernet.s390-subchannels:        --
+802-3-ethernet.s390-nettype:            --
+802-3-ethernet.s390-options:            --
+802-3-ethernet.wake-on-lan:             default
+802-3-ethernet.wake-on-lan-password:    --
+802-3-ethernet.accept-all-mac-addresses:-1 (default)
+bond-port.queue-id:                     0
+===== Агрегированное соединение (bond) 1 =====
+connection.id:                          Агрегированное соединение (bond) 1
+connection.uuid:                        ec2a44eb-8aad-4042-8f85-6a7af64ee94b
+connection.stable-id:                   --
+connection.type:                        bond
+connection.interface-name:              bond0
+connection.autoconnect:                 да
+connection.autoconnect-priority:        0
+connection.autoconnect-retries:         -1 (default)
+connection.multi-connect:               0 (default)
+connection.auth-retries:                -1
+connection.timestamp:                   1786368859
+connection.read-only:                   нет
+connection.permissions:                 --
+connection.zone:                        --
+connection.master:                      --
+connection.slave-type:                  --
+connection.autoconnect-slaves:          -1 (default)
+connection.secondaries:                 --
+connection.gateway-ping-timeout:        0
+connection.metered:                     неизвестно
+connection.lldp:                        default
+connection.mdns:                        -1 (default)
+connection.llmnr:                       -1 (default)
+connection.dns-over-tls:                -1 (default)
+connection.mptcp-flags:                 0x0 (default)
+connection.wait-device-timeout:         -1
+connection.wait-activation-delay:       -1
+ipv4.method:                            disabled
+ipv4.dns:                               --
+ipv4.dns-search:                        --
+ipv4.dns-options:                       --
+ipv4.dns-priority:                      0
+ipv4.addresses:                         --
+ipv4.gateway:                           --
+ipv4.routes:                            --
+ipv4.route-metric:                      -1
+ipv4.route-table:                       0 (unspec)
+ipv4.routing-rules:                     --
+ipv4.replace-local-rule:                -1 (default)
+ipv4.ignore-auto-routes:                нет
+ipv4.ignore-auto-dns:                   нет
+ipv4.dhcp-client-id:                    --
+ipv4.dhcp-iaid:                         --
+ipv4.dhcp-timeout:                      0 (default)
+ipv4.dhcp-send-hostname:                да
+ipv4.dhcp-hostname:                     --
+ipv4.dhcp-fqdn:                         --
+ipv4.dhcp-hostname-flags:               0x0 (none)
+ipv4.never-default:                     нет
+ipv4.may-fail:                          да
+ipv4.required-timeout:                  -1 (default)
+ipv4.dad-timeout:                       2222
+ipv4.dhcp-vendor-class-identifier:      --
+ipv4.link-local:                        0 (default)
+ipv4.dhcp-reject-servers:               --
+ipv4.auto-route-ext-gw:                 -1 (default)
+ipv6.method:                            disabled
+ipv6.dns:                               --
+ipv6.dns-search:                        --
+ipv6.dns-options:                       --
+ipv6.dns-priority:                      0
+ipv6.addresses:                         --
+ipv6.gateway:                           --
+ipv6.routes:                            --
+ipv6.route-metric:                      -1
+ipv6.route-table:                       0 (unspec)
+ipv6.routing-rules:                     --
+ipv6.replace-local-rule:                -1 (default)
+ipv6.ignore-auto-routes:                нет
+ipv6.ignore-auto-dns:                   нет
+ipv6.never-default:                     нет
+ipv6.may-fail:                          да
+ipv6.required-timeout:                  -1 (default)
+ipv6.ip6-privacy:                       -1 (unknown)
+ipv6.addr-gen-mode:                     stable-privacy
+ipv6.ra-timeout:                        0 (default)
+ipv6.mtu:                               автоматически
+ipv6.dhcp-duid:                         --
+ipv6.dhcp-iaid:                         --
+ipv6.dhcp-timeout:                      0 (default)
+ipv6.dhcp-send-hostname:                да
+ipv6.dhcp-hostname:                     --
+ipv6.dhcp-hostname-flags:               0x0 (none)
+ipv6.auto-route-ext-gw:                 -1 (default)
+ipv6.token:                             --
+bond.options:                           mode=802.3ad,downdelay=0,miimon=1,updelay=0
+proxy.method:                           none
+proxy.browser-only:                     нет
+proxy.pac-url:                          --
+proxy.pac-script:                       --
+GENERAL.NAME:                           Агрегированное соединение (bond) 1
+GENERAL.UUID:                           ec2a44eb-8aad-4042-8f85-6a7af64ee94b
+GENERAL.DEVICES:                        bond0
+GENERAL.IP-IFACE:                       bond0
+GENERAL.STATE:                          активировано
+GENERAL.DEFAULT:                        нет
+GENERAL.DEFAULT6:                       нет
+GENERAL.SPEC-OBJECT:                    --
+GENERAL.VPN:                            нет
+GENERAL.DBUS-PATH:                      /org/freedesktop/NetworkManager/ActiveConnection/5499
+GENERAL.CON-PATH:                       /org/freedesktop/NetworkManager/Settings/13
+GENERAL.ZONE:                           --
+GENERAL.MASTER-PATH:                    --
+IP4.GATEWAY:                            --
+IP6.GATEWAY:                            --
+===== bond1 DRBD =====
+connection.id:                          bond1 DRBD
+connection.uuid:                        db4f9c19-a83a-4f0d-8f48-8e686d168863
+connection.stable-id:                   --
+connection.type:                        bond
+connection.interface-name:              bond1
+connection.autoconnect:                 нет
+connection.autoconnect-priority:        0
+connection.autoconnect-retries:         -1 (default)
+connection.multi-connect:               0 (default)
+connection.auth-retries:                -1
+connection.timestamp:                   0
+connection.read-only:                   нет
+connection.permissions:                 --
+connection.zone:                        --
+connection.master:                      --
+connection.slave-type:                  --
+connection.autoconnect-slaves:          -1 (default)
+connection.secondaries:                 --
+connection.gateway-ping-timeout:        0
+connection.metered:                     неизвестно
+connection.lldp:                        default
+connection.mdns:                        -1 (default)
+connection.llmnr:                       -1 (default)
+connection.dns-over-tls:                -1 (default)
+connection.mptcp-flags:                 0x0 (default)
+connection.wait-device-timeout:         -1
+connection.wait-activation-delay:       -1
+ipv4.method:                            auto
+ipv4.dns:                               --
+ipv4.dns-search:                        --
+ipv4.dns-options:                       --
+ipv4.dns-priority:                      0
+ipv4.addresses:                         --
+ipv4.gateway:                           --
+ipv4.routes:                            --
+ipv4.route-metric:                      -1
+ipv4.route-table:                       0 (unspec)
+ipv4.routing-rules:                     --
+ipv4.replace-local-rule:                -1 (default)
+ipv4.ignore-auto-routes:                нет
+ipv4.ignore-auto-dns:                   нет
+ipv4.dhcp-client-id:                    --
+ipv4.dhcp-iaid:                         --
+ipv4.dhcp-timeout:                      0 (default)
+ipv4.dhcp-send-hostname:                да
+ipv4.dhcp-hostname:                     --
+ipv4.dhcp-fqdn:                         --
+ipv4.dhcp-hostname-flags:               0x0 (none)
+ipv4.never-default:                     нет
+ipv4.may-fail:                          да
+ipv4.required-timeout:                  -1 (default)
+ipv4.dad-timeout:                       2222
+ipv4.dhcp-vendor-class-identifier:      --
+ipv4.link-local:                        0 (default)
+ipv4.dhcp-reject-servers:               --
+ipv4.auto-route-ext-gw:                 -1 (default)
+ipv6.method:                            auto
+ipv6.dns:                               --
+ipv6.dns-search:                        --
+ipv6.dns-options:                       --
+ipv6.dns-priority:                      0
+ipv6.addresses:                         --
+ipv6.gateway:                           --
+ipv6.routes:                            --
+ipv6.route-metric:                      -1
+ipv6.route-table:                       0 (unspec)
+ipv6.routing-rules:                     --
+ipv6.replace-local-rule:                -1 (default)
+ipv6.ignore-auto-routes:                нет
+ipv6.ignore-auto-dns:                   нет
+ipv6.never-default:                     нет
+ipv6.may-fail:                          да
+ipv6.required-timeout:                  -1 (default)
+ipv6.ip6-privacy:                       -1 (unknown)
+ipv6.addr-gen-mode:                     default
+ipv6.ra-timeout:                        0 (default)
+ipv6.mtu:                               автоматически
+ipv6.dhcp-duid:                         --
+ipv6.dhcp-iaid:                         --
+ipv6.dhcp-timeout:                      0 (default)
+ipv6.dhcp-send-hostname:                да
+ipv6.dhcp-hostname:                     --
+ipv6.dhcp-hostname-flags:               0x0 (none)
+ipv6.auto-route-ext-gw:                 -1 (default)
+ipv6.token:                             --
+bond.options:                           mode=active-backup,miimon=100
+proxy.method:                           none
+proxy.browser-only:                     нет
+proxy.pac-url:                          --
+proxy.pac-script:                       --
+
+=== 09: VLAN profiles ===
+===== Соединение VLAN 1 =====
+connection.id:                          Соединение VLAN 1
+connection.uuid:                        4633a10f-399a-495c-8ade-bf8a1b53b4ce
+connection.stable-id:                   --
+connection.type:                        vlan
+connection.interface-name:              --
+connection.autoconnect:                 да
+connection.autoconnect-priority:        0
+connection.autoconnect-retries:         -1 (default)
+connection.multi-connect:               0 (default)
+connection.auth-retries:                -1
+connection.timestamp:                   1786368826
+connection.read-only:                   нет
+connection.permissions:                 --
+connection.zone:                        --
+connection.master:                      --
+connection.slave-type:                  --
+connection.autoconnect-slaves:          -1 (default)
+connection.secondaries:                 --
+connection.gateway-ping-timeout:        0
+connection.metered:                     неизвестно
+connection.lldp:                        default
+connection.mdns:                        -1 (default)
+connection.llmnr:                       -1 (default)
+connection.dns-over-tls:                -1 (default)
+connection.mptcp-flags:                 0x0 (default)
+connection.wait-device-timeout:         -1
+connection.wait-activation-delay:       -1
+802-3-ethernet.port:                    --
+802-3-ethernet.speed:                   0
+802-3-ethernet.duplex:                  --
+802-3-ethernet.auto-negotiate:          нет
+802-3-ethernet.mac-address:             --
+802-3-ethernet.cloned-mac-address:      --
+802-3-ethernet.generate-mac-address-mask:--
+802-3-ethernet.mac-address-blacklist:   --
+802-3-ethernet.mtu:                     автоматически
+802-3-ethernet.s390-subchannels:        --
+802-3-ethernet.s390-nettype:            --
+802-3-ethernet.s390-options:            --
+802-3-ethernet.wake-on-lan:             default
+802-3-ethernet.wake-on-lan-password:    --
+802-3-ethernet.accept-all-mac-addresses:-1 (default)
+ipv4.method:                            manual
+ipv4.dns:                               --
+ipv4.dns-search:                        --
+ipv4.dns-options:                       --
+ipv4.dns-priority:                      0
+ipv4.addresses:                         192.168.194.40/24
+ipv4.gateway:                           192.168.194.1
+ipv4.routes:                            --
+ipv4.route-metric:                      -1
+ipv4.route-table:                       0 (unspec)
+ipv4.routing-rules:                     --
+ipv4.replace-local-rule:                -1 (default)
+ipv4.ignore-auto-routes:                нет
+ipv4.ignore-auto-dns:                   нет
+ipv4.dhcp-client-id:                    --
+ipv4.dhcp-iaid:                         --
+ipv4.dhcp-timeout:                      0 (default)
+ipv4.dhcp-send-hostname:                да
+ipv4.dhcp-hostname:                     --
+ipv4.dhcp-fqdn:                         --
+ipv4.dhcp-hostname-flags:               0x0 (none)
+ipv4.never-default:                     нет
+ipv4.may-fail:                          да
+ipv4.required-timeout:                  -1 (default)
+ipv4.dad-timeout:                       2222
+ipv4.dhcp-vendor-class-identifier:      --
+ipv4.link-local:                        0 (default)
+ipv4.dhcp-reject-servers:               --
+ipv4.auto-route-ext-gw:                 -1 (default)
+ipv6.method:                            auto
+ipv6.dns:                               --
+ipv6.dns-search:                        --
+ipv6.dns-options:                       --
+ipv6.dns-priority:                      0
+ipv6.addresses:                         --
+ipv6.gateway:                           --
+ipv6.routes:                            --
+ipv6.route-metric:                      -1
+ipv6.route-table:                       0 (unspec)
+ipv6.routing-rules:                     --
+ipv6.replace-local-rule:                -1 (default)
+ipv6.ignore-auto-routes:                нет
+ipv6.ignore-auto-dns:                   нет
+ipv6.never-default:                     нет
+ipv6.may-fail:                          да
+ipv6.required-timeout:                  -1 (default)
+ipv6.ip6-privacy:                       -1 (unknown)
+ipv6.addr-gen-mode:                     stable-privacy
+ipv6.ra-timeout:                        0 (default)
+ipv6.mtu:                               автоматически
+ipv6.dhcp-duid:                         --
+ipv6.dhcp-iaid:                         --
+ipv6.dhcp-timeout:                      0 (default)
+ipv6.dhcp-send-hostname:                да
+ipv6.dhcp-hostname:                     --
+ipv6.dhcp-hostname-flags:               0x0 (none)
+ipv6.auto-route-ext-gw:                 -1 (default)
+ipv6.token:                             --
+vlan.parent:                            bond0
+vlan.id:                                700
+vlan.flags:                             1 (УПОРЯДОЧИТЬ_ЗАГОЛОВКИ)
+vlan.protocol:                          --
+vlan.ingress-priority-map:              --
+vlan.egress-priority-map:               --
+proxy.method:                           none
+proxy.browser-only:                     нет
+proxy.pac-url:                          --
+proxy.pac-script:                       --
+GENERAL.NAME:                           Соединение VLAN 1
+GENERAL.UUID:                           4633a10f-399a-495c-8ade-bf8a1b53b4ce
+GENERAL.DEVICES:                        bond0.700
+GENERAL.IP-IFACE:                       bond0.700
+GENERAL.STATE:                          активировано
+GENERAL.DEFAULT:                        да
+GENERAL.DEFAULT6:                       нет
+GENERAL.SPEC-OBJECT:                    --
+GENERAL.VPN:                            нет
+GENERAL.DBUS-PATH:                      /org/freedesktop/NetworkManager/ActiveConnection/5496
+GENERAL.CON-PATH:                       /org/freedesktop/NetworkManager/Settings/14
+GENERAL.ZONE:                           --
+GENERAL.MASTER-PATH:                    --
+IP4.ADDRESS[1]:                         192.168.194.40/24
+IP4.GATEWAY:                            192.168.194.1
+IP4.ROUTE[1]:                           dst = 0.0.0.0/0, nh = 192.168.194.1, mt = 400
+IP4.ROUTE[2]:                           dst = 192.168.194.0/24, nh = 0.0.0.0, mt = 400
+IP6.ADDRESS[1]:                         fe80::2d88:a458:1b12:a1d8/64
+IP6.GATEWAY:                            --
+IP6.ROUTE[1]:                           dst = fe80::/64, nh = ::, mt = 1024
+===== VLAN 140 Management =====
+connection.id:                          VLAN 140 Management
+connection.uuid:                        315629f9-a300-46c7-946b-cba193a6ab9d
+connection.stable-id:                   --
+connection.type:                        vlan
+connection.interface-name:              --
+connection.autoconnect:                 нет
+connection.autoconnect-priority:        0
+connection.autoconnect-retries:         -1 (default)
+connection.multi-connect:               0 (default)
+connection.auth-retries:                -1
+connection.timestamp:                   1786498107
+connection.read-only:                   нет
+connection.permissions:                 --
+connection.zone:                        --
+connection.master:                      --
+connection.slave-type:                  --
+connection.autoconnect-slaves:          -1 (default)
+connection.secondaries:                 --
+connection.gateway-ping-timeout:        0
+connection.metered:                     неизвестно
+connection.lldp:                        default
+connection.mdns:                        -1 (default)
+connection.llmnr:                       -1 (default)
+connection.dns-over-tls:                -1 (default)
+connection.mptcp-flags:                 0x0 (default)
+connection.wait-device-timeout:         -1
+connection.wait-activation-delay:       -1
+802-3-ethernet.port:                    --
+802-3-ethernet.speed:                   0
+802-3-ethernet.duplex:                  --
+802-3-ethernet.auto-negotiate:          нет
+802-3-ethernet.mac-address:             --
+802-3-ethernet.cloned-mac-address:      --
+802-3-ethernet.generate-mac-address-mask:--
+802-3-ethernet.mac-address-blacklist:   --
+802-3-ethernet.mtu:                     автоматически
+802-3-ethernet.s390-subchannels:        --
+802-3-ethernet.s390-nettype:            --
+802-3-ethernet.s390-options:            --
+802-3-ethernet.wake-on-lan:             default
+802-3-ethernet.wake-on-lan-password:    --
+802-3-ethernet.accept-all-mac-addresses:-1 (default)
+ipv4.method:                            manual
+ipv4.dns:                               --
+ipv4.dns-search:                        --
+ipv4.dns-options:                       --
+ipv4.dns-priority:                      0
+ipv4.addresses:                         172.30.140.102/24
+ipv4.gateway:                           --
+ipv4.routes:                            --
+ipv4.route-metric:                      -1
+ipv4.route-table:                       0 (unspec)
+ipv4.routing-rules:                     --
+ipv4.replace-local-rule:                -1 (default)
+ipv4.ignore-auto-routes:                нет
+ipv4.ignore-auto-dns:                   нет
+ipv4.dhcp-client-id:                    --
+ipv4.dhcp-iaid:                         --
+ipv4.dhcp-timeout:                      0 (default)
+ipv4.dhcp-send-hostname:                да
+ipv4.dhcp-hostname:                     --
+ipv4.dhcp-fqdn:                         --
+ipv4.dhcp-hostname-flags:               0x0 (none)
+ipv4.never-default:                     нет
+ipv4.may-fail:                          да
+ipv4.required-timeout:                  -1 (default)
+ipv4.dad-timeout:                       2222
+ipv4.dhcp-vendor-class-identifier:      --
+ipv4.link-local:                        0 (default)
+ipv4.dhcp-reject-servers:               --
+ipv4.auto-route-ext-gw:                 -1 (default)
+ipv6.method:                            auto
+ipv6.dns:                               --
+ipv6.dns-search:                        --
+ipv6.dns-options:                       --
+ipv6.dns-priority:                      0
+ipv6.addresses:                         --
+ipv6.gateway:                           --
+ipv6.routes:                            --
+ipv6.route-metric:                      -1
+ipv6.route-table:                       0 (unspec)
+ipv6.routing-rules:                     --
+ipv6.replace-local-rule:                -1 (default)
+ipv6.ignore-auto-routes:                нет
+ipv6.ignore-auto-dns:                   нет
+ipv6.never-default:                     нет
+ipv6.may-fail:                          да
+ipv6.required-timeout:                  -1 (default)
+ipv6.ip6-privacy:                       -1 (unknown)
+ipv6.addr-gen-mode:                     default
+ipv6.ra-timeout:                        0 (default)
+ipv6.mtu:                               автоматически
+ipv6.dhcp-duid:                         --
+ipv6.dhcp-iaid:                         --
+ipv6.dhcp-timeout:                      0 (default)
+ipv6.dhcp-send-hostname:                да
+ipv6.dhcp-hostname:                     --
+ipv6.dhcp-hostname-flags:               0x0 (none)
+ipv6.auto-route-ext-gw:                 -1 (default)
+ipv6.token:                             --
+vlan.parent:                            bond0
+vlan.id:                                140
+vlan.flags:                             1 (УПОРЯДОЧИТЬ_ЗАГОЛОВКИ)
+vlan.protocol:                          --
+vlan.ingress-priority-map:              --
+vlan.egress-priority-map:               --
+proxy.method:                           none
+proxy.browser-only:                     нет
+proxy.pac-url:                          --
+proxy.pac-script:                       --
+===== VLAN 141 DRBD =====
+connection.id:                          VLAN 141 DRBD
+connection.uuid:                        0b740ad9-90b4-41be-9912-b44948c8fdf7
+connection.stable-id:                   --
+connection.type:                        vlan
+connection.interface-name:              --
+connection.autoconnect:                 нет
+connection.autoconnect-priority:        0
+connection.autoconnect-retries:         -1 (default)
+connection.multi-connect:               0 (default)
+connection.auth-retries:                -1
+connection.timestamp:                   0
+connection.read-only:                   нет
+connection.permissions:                 --
+connection.zone:                        --
+connection.master:                      --
+connection.slave-type:                  --
+connection.autoconnect-slaves:          -1 (default)
+connection.secondaries:                 --
+connection.gateway-ping-timeout:        0
+connection.metered:                     неизвестно
+connection.lldp:                        default
+connection.mdns:                        -1 (default)
+connection.llmnr:                       -1 (default)
+connection.dns-over-tls:                -1 (default)
+connection.mptcp-flags:                 0x0 (default)
+connection.wait-device-timeout:         -1
+connection.wait-activation-delay:       -1
+802-3-ethernet.port:                    --
+802-3-ethernet.speed:                   0
+802-3-ethernet.duplex:                  --
+802-3-ethernet.auto-negotiate:          нет
+802-3-ethernet.mac-address:             --
+802-3-ethernet.cloned-mac-address:      --
+802-3-ethernet.generate-mac-address-mask:--
+802-3-ethernet.mac-address-blacklist:   --
+802-3-ethernet.mtu:                     автоматически
+802-3-ethernet.s390-subchannels:        --
+802-3-ethernet.s390-nettype:            --
+802-3-ethernet.s390-options:            --
+802-3-ethernet.wake-on-lan:             default
+802-3-ethernet.wake-on-lan-password:    --
+802-3-ethernet.accept-all-mac-addresses:-1 (default)
+ipv4.method:                            manual
+ipv4.dns:                               --
+ipv4.dns-search:                        --
+ipv4.dns-options:                       --
+ipv4.dns-priority:                      0
+ipv4.addresses:                         172.30.141.102/24
+ipv4.gateway:                           --
+ipv4.routes:                            --
+ipv4.route-metric:                      -1
+ipv4.route-table:                       0 (unspec)
+ipv4.routing-rules:                     --
+ipv4.replace-local-rule:                -1 (default)
+ipv4.ignore-auto-routes:                нет
+ipv4.ignore-auto-dns:                   нет
+ipv4.dhcp-client-id:                    --
+ipv4.dhcp-iaid:                         --
+ipv4.dhcp-timeout:                      0 (default)
+ipv4.dhcp-send-hostname:                да
+ipv4.dhcp-hostname:                     --
+ipv4.dhcp-fqdn:                         --
+ipv4.dhcp-hostname-flags:               0x0 (none)
+ipv4.never-default:                     нет
+ipv4.may-fail:                          да
+ipv4.required-timeout:                  -1 (default)
+ipv4.dad-timeout:                       2222
+ipv4.dhcp-vendor-class-identifier:      --
+ipv4.link-local:                        0 (default)
+ipv4.dhcp-reject-servers:               --
+ipv4.auto-route-ext-gw:                 -1 (default)
+ipv6.method:                            auto
+ipv6.dns:                               --
+ipv6.dns-search:                        --
+ipv6.dns-options:                       --
+ipv6.dns-priority:                      0
+ipv6.addresses:                         --
+ipv6.gateway:                           --
+ipv6.routes:                            --
+ipv6.route-metric:                      -1
+ipv6.route-table:                       0 (unspec)
+ipv6.routing-rules:                     --
+ipv6.replace-local-rule:                -1 (default)
+ipv6.ignore-auto-routes:                нет
+ipv6.ignore-auto-dns:                   нет
+ipv6.never-default:                     нет
+ipv6.may-fail:                          да
+ipv6.required-timeout:                  -1 (default)
+ipv6.ip6-privacy:                       -1 (unknown)
+ipv6.addr-gen-mode:                     default
+ipv6.ra-timeout:                        0 (default)
+ipv6.mtu:                               автоматически
+ipv6.dhcp-duid:                         --
+ipv6.dhcp-iaid:                         --
+ipv6.dhcp-timeout:                      0 (default)
+ipv6.dhcp-send-hostname:                да
+ipv6.dhcp-hostname:                     --
+ipv6.dhcp-hostname-flags:               0x0 (none)
+ipv6.auto-route-ext-gw:                 -1 (default)
+ipv6.token:                             --
+vlan.parent:                            bond1
+vlan.id:                                141
+vlan.flags:                             1 (УПОРЯДОЧИТЬ_ЗАГОЛОВКИ)
+vlan.protocol:                          --
+vlan.ingress-priority-map:              --
+vlan.egress-priority-map:               --
+proxy.method:                           none
+proxy.browser-only:                     нет
+proxy.pac-url:                          --
+proxy.pac-script:                       --
+===== VLAN 143 Backup =====
+connection.id:                          VLAN 143 Backup
+connection.uuid:                        efeb4d88-2318-4f5a-810b-235625247f7f
+connection.stable-id:                   --
+connection.type:                        vlan
+connection.interface-name:              --
+connection.autoconnect:                 нет
+connection.autoconnect-priority:        0
+connection.autoconnect-retries:         -1 (default)
+connection.multi-connect:               0 (default)
+connection.auth-retries:                -1
+connection.timestamp:                   0
+connection.read-only:                   нет
+connection.permissions:                 --
+connection.zone:                        --
+connection.master:                      --
+connection.slave-type:                  --
+connection.autoconnect-slaves:          -1 (default)
+connection.secondaries:                 --
+connection.gateway-ping-timeout:        0
+connection.metered:                     неизвестно
+connection.lldp:                        default
+connection.mdns:                        -1 (default)
+connection.llmnr:                       -1 (default)
+connection.dns-over-tls:                -1 (default)
+connection.mptcp-flags:                 0x0 (default)
+connection.wait-device-timeout:         -1
+connection.wait-activation-delay:       -1
+802-3-ethernet.port:                    --
+802-3-ethernet.speed:                   0
+802-3-ethernet.duplex:                  --
+802-3-ethernet.auto-negotiate:          нет
+802-3-ethernet.mac-address:             --
+802-3-ethernet.cloned-mac-address:      --
+802-3-ethernet.generate-mac-address-mask:--
+802-3-ethernet.mac-address-blacklist:   --
+802-3-ethernet.mtu:                     автоматически
+802-3-ethernet.s390-subchannels:        --
+802-3-ethernet.s390-nettype:            --
+802-3-ethernet.s390-options:            --
+802-3-ethernet.wake-on-lan:             default
+802-3-ethernet.wake-on-lan-password:    --
+802-3-ethernet.accept-all-mac-addresses:-1 (default)
+ipv4.method:                            auto
+ipv4.dns:                               --
+ipv4.dns-search:                        --
+ipv4.dns-options:                       --
+ipv4.dns-priority:                      0
+ipv4.addresses:                         --
+ipv4.gateway:                           --
+ipv4.routes:                            --
+ipv4.route-metric:                      -1
+ipv4.route-table:                       0 (unspec)
+ipv4.routing-rules:                     --
+ipv4.replace-local-rule:                -1 (default)
+ipv4.ignore-auto-routes:                нет
+ipv4.ignore-auto-dns:                   нет
+ipv4.dhcp-client-id:                    --
+ipv4.dhcp-iaid:                         --
+ipv4.dhcp-timeout:                      0 (default)
+ipv4.dhcp-send-hostname:                да
+ipv4.dhcp-hostname:                     --
+ipv4.dhcp-fqdn:                         --
+ipv4.dhcp-hostname-flags:               0x0 (none)
+ipv4.never-default:                     нет
+ipv4.may-fail:                          да
+ipv4.required-timeout:                  -1 (default)
+ipv4.dad-timeout:                       2222
+ipv4.dhcp-vendor-class-identifier:      --
+ipv4.link-local:                        0 (default)
+ipv4.dhcp-reject-servers:               --
+ipv4.auto-route-ext-gw:                 -1 (default)
+ipv6.method:                            auto
+ipv6.dns:                               --
+ipv6.dns-search:                        --
+ipv6.dns-options:                       --
+ipv6.dns-priority:                      0
+ipv6.addresses:                         --
+ipv6.gateway:                           --
+ipv6.routes:                            --
+ipv6.route-metric:                      -1
+ipv6.route-table:                       0 (unspec)
+ipv6.routing-rules:                     --
+ipv6.replace-local-rule:                -1 (default)
+ipv6.ignore-auto-routes:                нет
+ipv6.ignore-auto-dns:                   нет
+ipv6.never-default:                     нет
+ipv6.may-fail:                          да
+ipv6.required-timeout:                  -1 (default)
+ipv6.ip6-privacy:                       -1 (unknown)
+ipv6.addr-gen-mode:                     default
+ipv6.ra-timeout:                        0 (default)
+ipv6.mtu:                               автоматически
+ipv6.dhcp-duid:                         --
+ipv6.dhcp-iaid:                         --
+ipv6.dhcp-timeout:                      0 (default)
+ipv6.dhcp-send-hostname:                да
+ipv6.dhcp-hostname:                     --
+ipv6.dhcp-hostname-flags:               0x0 (none)
+ipv6.auto-route-ext-gw:                 -1 (default)
+ipv6.token:                             --
+vlan.parent:                            bond0
+vlan.id:                                143
+vlan.flags:                             1 (УПОРЯДОЧИТЬ_ЗАГОЛОВКИ)
+vlan.protocol:                          --
+vlan.ingress-priority-map:              --
+vlan.egress-priority-map:               --
+proxy.method:                           none
+proxy.browser-only:                     нет
+proxy.pac-url:                          --
+proxy.pac-script:                       --
+
+=== 10: active management path ===
+--- ip route get .1 ---
+192.168.194.1 dev bond0.700 src 192.168.194.40 uid 0 
+    cache 
+--- bond0.700 ---
+155: bond0.700@bond0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
+    link/ether 6c:b3:11:61:d3:24 brd ff:ff:ff:ff:ff:ff promiscuity 0  allmulti 0 minmtu 0 maxmtu 65535 
+    vlan protocol 802.1Q id 700 <REORDER_HDR> addrgenmode none numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535 tso_max_size 65536 tso_max_segs 65535 gro_max_size 65536 
+--- bond0.700 addr ---
+155: bond0.700@bond0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000
+    link/ether 6c:b3:11:61:d3:24 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.194.40/24 brd 192.168.194.255 scope global noprefixroute bond0.700
+       valid_lft forever preferred_lft forever
+    inet6 fe80::2d88:a458:1b12:a1d8/64 scope link noprefixroute 
+       valid_lft forever preferred_lft forever
+
+=== 11: LLDP ===
+bash: строка 63: lldpctl: команда не найдена
+LLDP TOOL: NOT AVAILABLE
+
+=== 12: ethtool links ===
+===== ens2f0 =====
+Settings for ens2f0:
+	Supported ports: [ FIBRE ]
+	Supported link modes:   10000baseSR/Full
+	Supported pause frame use: Symmetric Receive-only
+	Supports auto-negotiation: Yes
+	Supported FEC modes: Not reported
+	Advertised link modes:  10000baseSR/Full
+	Advertised pause frame use: No
+	Advertised auto-negotiation: Yes
+	Advertised FEC modes: Not reported
+	Speed: 10000Mb/s
+	Duplex: Full
+	Auto-negotiation: off
+	Port: FIBRE
+	PHYAD: 0
+	Transceiver: internal
+	Supports Wake-on: g
+	Wake-on: g
+        Current message level: 0x00000007 (7)
+                               drv probe link
+	Link detected: yes
+===== ens2f1 =====
+Settings for ens2f1:
+	Supported ports: [ FIBRE ]
+	Supported link modes:   10000baseSR/Full
+	Supported pause frame use: Symmetric Receive-only
+	Supports auto-negotiation: Yes
+	Supported FEC modes: Not reported
+	Advertised link modes:  10000baseSR/Full
+	Advertised pause frame use: No
+	Advertised auto-negotiation: Yes
+	Advertised FEC modes: Not reported
+	Speed: 10000Mb/s
+	Duplex: Full
+	Auto-negotiation: off
+	Port: FIBRE
+	PHYAD: 0
+	Transceiver: internal
+	Supports Wake-on: g
+	Wake-on: g
+        Current message level: 0x00000007 (7)
+                               drv probe link
+	Link detected: yes
+===== ens2f2 =====
+Settings for ens2f2:
+	Supported ports: [ FIBRE ]
+	Supported link modes:   10000baseSR/Full
+	Supported pause frame use: Symmetric Receive-only
+	Supports auto-negotiation: Yes
+	Supported FEC modes: Not reported
+	Advertised link modes:  10000baseSR/Full
+	Advertised pause frame use: No
+	Advertised auto-negotiation: Yes
+	Advertised FEC modes: Not reported
+	Speed: 10000Mb/s
+	Duplex: Full
+	Auto-negotiation: off
+	Port: FIBRE
+	PHYAD: 0
+	Transceiver: internal
+	Supports Wake-on: g
+	Wake-on: g
+        Current message level: 0x00000007 (7)
+                               drv probe link
+	Link detected: yes
+===== ens2f3 =====
+Settings for ens2f3:
+	Supported ports: [ FIBRE ]
+	Supported link modes:   10000baseSR/Full
+	Supported pause frame use: Symmetric Receive-only
+	Supports auto-negotiation: Yes
+	Supported FEC modes: Not reported
+	Advertised link modes:  10000baseSR/Full
+	Advertised pause frame use: No
+	Advertised auto-negotiation: Yes
+	Advertised FEC modes: Not reported
+	Speed: 10000Mb/s
+	Duplex: Full
+	Auto-negotiation: off
+	Port: FIBRE
+	PHYAD: 0
+	Transceiver: internal
+	Supports Wake-on: g
+	Wake-on: g
+        Current message level: 0x00000007 (7)
+                               drv probe link
+	Link detected: yes
+===== bond0 =====
+Settings for bond0:
+	Supported ports: [  ]
+	Supported link modes:   Not reported
+	Supported pause frame use: No
+	Supports auto-negotiation: No
+	Supported FEC modes: Not reported
+	Advertised link modes:  Not reported
+	Advertised pause frame use: No
+	Advertised auto-negotiation: No
+	Advertised FEC modes: Not reported
+	Speed: 20000Mb/s
+	Duplex: Full
+	Auto-negotiation: off
+	Port: Other
+	PHYAD: 0
+	Transceiver: internal
+	Link detected: yes
+===== bond1 =====
+No data available
+N/A
+
+=== 13: NM files safe mapping ===
+/etc/NetworkManager/system-connections/bond1 port 2.nmconnection:6:interface-name=ens2f3
+/etc/NetworkManager/system-connections/bond1 port 2.nmconnection:7:master=bond1
+/etc/NetworkManager/system-connections/bond1 port 2.nmconnection:8:slave-type=bond
+/etc/NetworkManager/system-connections/Агрегированное соединение (bond) 1.nmconnection:5:interface-name=bond0
+/etc/NetworkManager/system-connections/bond1 DRBD.nmconnection:6:interface-name=bond1
+/etc/NetworkManager/system-connections/bond0 port 1.nmconnection:5:interface-name=ens2f2
+/etc/NetworkManager/system-connections/bond0 port 1.nmconnection:6:master=bond0
+/etc/NetworkManager/system-connections/bond0 port 1.nmconnection:7:slave-type=bond
+/etc/NetworkManager/system-connections/bond1 port 1.nmconnection:6:interface-name=ens2f2
+/etc/NetworkManager/system-connections/bond1 port 1.nmconnection:7:master=bond1
+/etc/NetworkManager/system-connections/bond1 port 1.nmconnection:8:slave-type=bond
+/etc/NetworkManager/system-connections/bond0 port 2.nmconnection:5:interface-name=ens2f3
+/etc/NetworkManager/system-connections/bond0 port 2.nmconnection:6:master=bond0
+/etc/NetworkManager/system-connections/bond0 port 2.nmconnection:7:slave-type=bond
