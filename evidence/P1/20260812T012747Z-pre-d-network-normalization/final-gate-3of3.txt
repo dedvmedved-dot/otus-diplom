@@ -1,0 +1,6 @@
+SSH OK 337424.fornex.cloud
+rtt min/avg/max/mdev = 0.563/0.592/0.622/0.029 ms
+SSH OK 337424.fornex.cloud
+rtt min/avg/max/mdev = 0.628/0.641/0.654/0.013 ms
+SSH OK 337424.fornex.cloud
+rtt min/avg/max/mdev = 0.630/0.633/0.636/0.003 ms

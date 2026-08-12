@@ -1,0 +1,30 @@
+HOST: node-01
+--- GATE ---
+bond0.700@bond0  UP             192.168.194.38/24 fe80::96bd:5094:2591:5ee2/64 
+default via 192.168.194.1 dev bond0.700 proto static metric 400 
+PING 192.168.194.1 (192.168.194.1) 56(84) bytes of data.
+64 bytes from 192.168.194.1: icmp_seq=1 ttl=254 time=0.700 ms
+64 bytes from 192.168.194.1: icmp_seq=2 ttl=254 time=0.677 ms
+64 bytes from 192.168.194.1: icmp_seq=3 ttl=254 time=0.783 ms
+
+--- 192.168.194.1 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2030ms
+rtt min/avg/max/mdev = 0.677/0.720/0.783/0.045 ms
+--- NM ACTIVE ---
+NAME                                TYPE      DEVICE    
+Соединение VLAN 1                   vlan      bond0.700 
+lo                                  loopback  lo        
+VLAN 140 Management                 vlan      bond0.140 
+bond0 port 1                        ethernet  ens2f0    
+bond0 port 2                        ethernet  ens2f1    
+Агрегированное соединение (bond) 1  bond      bond0     
+--- BOND0 MODE ---
+Bonding Mode: load balancing (round-robin)
+MII Status: up
+MII Polling Interval (ms): 1
+Slave Interface: ens2f0
+MII Status: up
+Slave queue ID: 0
+Slave Interface: ens2f1
+MII Status: up
+Slave queue ID: 0

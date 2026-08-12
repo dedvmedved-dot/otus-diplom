@@ -1,0 +1,66 @@
+HOST: node-03
+--- GATE ---
+bond0.700@bond0  UP             192.168.194.39/24 fe80::ae43:cc5a:9973:570f/64 
+default via 192.168.194.1 dev bond0.700 proto static metric 400 
+PING 192.168.194.1 (192.168.194.1) 56(84) bytes of data.
+64 bytes from 192.168.194.1: icmp_seq=1 ttl=254 time=0.677 ms
+64 bytes from 192.168.194.1: icmp_seq=2 ttl=254 time=1.41 ms
+64 bytes from 192.168.194.1: icmp_seq=3 ttl=254 time=0.568 ms
+
+--- 192.168.194.1 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2019ms
+rtt min/avg/max/mdev = 0.568/0.884/1.407/0.372 ms
+--- ALL IP/RT ---
+ens4f0           DOWN           
+ens4f1           DOWN           
+ens4f2           DOWN           
+ens4f3           DOWN           
+ens2f0           UP             
+ens2f1           UP             
+ens2f2           UP             
+ens2f3           UP             
+bond0            UP             
+bond0.700@bond0  UP             192.168.194.39/24 fe80::ae43:cc5a:9973:570f/64 
+default via 192.168.194.1 dev bond0.700 proto static metric 400 
+192.168.194.0/24 dev bond0.700 proto kernel scope link src 192.168.194.39 metric 400 
+--- NM ALL ---
+NAME                                UUID                                  TYPE      DEVICE     AUTOCONNECT 
+Соединение VLAN 1                   32ff4a89-5e24-406a-ab05-0e2c8f192dfe  vlan      bond0.700  да          
+lo                                  33727391-7374-496c-b5fa-cd4046294a65  loopback  lo         нет         
+bond0 port 1                        b0e7a858-a5f6-4bac-97e8-236f056d7ca2  ethernet  ens2f0     да          
+bond0 port 2                        106d5452-3880-4074-8f59-f907912408ec  ethernet  ens2f1     да          
+Агрегированное соединение (bond) 1  6269c820-f599-43ed-8d5c-a4ec4f20802b  bond      bond0      да          
+bond1 DRBD                          ec379485-a1cc-448b-ad83-b1da5b801b24  bond      --         нет         
+bond1 port 1                        91f6a029-c3b4-4d8e-a441-cef3006d0de8  ethernet  --         нет         
+bond1 port 2                        ead16892-641f-4605-b9e1-e1c84afe66fe  ethernet  --         нет         
+VLAN 140 Management                 0317a359-82ac-4442-8434-51a87b4a7451  vlan      --         нет         
+VLAN 141 DRBD                       7ea6c6a1-215e-4208-a354-7d386ba717ec  vlan      --         нет         
+VLAN 143 Backup                     142a0cda-fb23-4b4e-abd5-5b39f1a20095  vlan      --         нет         
+--- NM ACTIVE ---
+NAME                                TYPE      DEVICE    
+Соединение VLAN 1                   vlan      bond0.700 
+lo                                  loopback  lo        
+bond0 port 1                        ethernet  ens2f0    
+bond0 port 2                        ethernet  ens2f1    
+Агрегированное соединение (bond) 1  bond      bond0     
+--- BOND0 ---
+Bonding Mode: IEEE 802.3ad Dynamic link aggregation
+MII Status: up
+MII Polling Interval (ms): 1
+	Partner Key: 1
+	Partner Mac Address: 00:00:00:00:00:00
+Slave Interface: ens2f0
+MII Status: up
+Slave queue ID: 0
+Partner Churn State: churned
+Partner Churned Count: 1
+Slave Interface: ens2f1
+MII Status: up
+Slave queue ID: 0
+Partner Churn State: churned
+Partner Churned Count: 1
+802.3ad 4
+ens2f0 ens2f1
+--- CARRIER ---
+ens2f0=1
+ens2f1=1

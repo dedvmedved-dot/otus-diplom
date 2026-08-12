@@ -1,0 +1,20 @@
+--- VLAN700 ---
+bond0.700@bond0  UP             192.168.194.39/24 fe80::ae43:cc5a:9973:570f/64 
+--- route ---
+default via 192.168.194.1 dev bond0.700 proto static metric 400 
+--- ping GW ---
+PING 192.168.194.1 (192.168.194.1) 56(84) bytes of data.
+64 bytes from 192.168.194.1: icmp_seq=1 ttl=254 time=0.718 ms
+64 bytes from 192.168.194.1: icmp_seq=2 ttl=254 time=0.648 ms
+64 bytes from 192.168.194.1: icmp_seq=3 ttl=254 time=0.566 ms
+
+--- 192.168.194.1 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2042ms
+rtt min/avg/max/mdev = 0.566/0.644/0.718/0.062 ms
+--- NM ACTIVE ---
+NAME                                TYPE      DEVICE    
+Соединение VLAN 1                   vlan      bond0.700 
+lo                                  loopback  lo        
+bond0 port 1                        ethernet  ens2f0    
+bond0 port 2                        ethernet  ens2f1    
+Агрегированное соединение (bond) 1  bond      bond0     
