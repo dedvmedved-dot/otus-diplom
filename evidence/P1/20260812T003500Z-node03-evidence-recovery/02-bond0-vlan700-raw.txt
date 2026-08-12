@@ -1,0 +1,143 @@
+=== BOND0 ===
+Ethernet Channel Bonding Driver: v6.1.158-1-generic
+
+Bonding Mode: IEEE 802.3ad Dynamic link aggregation
+Transmit Hash Policy: layer2 (0)
+MII Status: up
+MII Polling Interval (ms): 1
+Up Delay (ms): 0
+Down Delay (ms): 0
+Peer Notification Delay (ms): 0
+
+802.3ad info
+LACP active: on
+LACP rate: slow
+Min links: 0
+Aggregator selection policy (ad_select): stable
+System priority: 65535
+System MAC address: 6c:b3:11:61:ca:78
+Active Aggregator Info:
+	Aggregator ID: 1
+	Number of ports: 1
+	Actor Key: 15
+	Partner Key: 1
+	Partner Mac Address: 00:00:00:00:00:00
+
+Slave Interface: ens2f0
+MII Status: up
+Speed: 10000 Mbps
+Duplex: full
+Link Failure Count: 0
+Permanent HW addr: 6c:b3:11:61:ca:78
+Slave queue ID: 0
+Aggregator ID: 1
+Actor Churn State: none
+Partner Churn State: churned
+Actor Churned Count: 0
+Partner Churned Count: 1
+details actor lacp pdu:
+    system priority: 65535
+    system mac address: 6c:b3:11:61:ca:78
+    port key: 15
+    port priority: 255
+    port number: 1
+    port state: 77
+details partner lacp pdu:
+    system priority: 65535
+    system mac address: 00:00:00:00:00:00
+    oper key: 1
+    port priority: 255
+    port number: 1
+    port state: 0
+
+Slave Interface: ens2f1
+MII Status: up
+Speed: 10000 Mbps
+Duplex: full
+Link Failure Count: 0
+Permanent HW addr: 6c:b3:11:61:ca:7a
+Slave queue ID: 0
+Aggregator ID: 2
+Actor Churn State: churned
+Partner Churn State: churned
+Actor Churned Count: 1
+Partner Churned Count: 1
+details actor lacp pdu:
+    system priority: 65535
+    system mac address: 6c:b3:11:61:ca:78
+    port key: 15
+    port priority: 255
+    port number: 2
+    port state: 69
+details partner lacp pdu:
+    system priority: 65535
+    system mac address: 00:00:00:00:00:00
+    oper key: 1
+    port priority: 255
+    port number: 1
+    port state: 0
+--- mode ---
+802.3ad 4
+--- slaves ---
+ens2f0 ens2f1
+--- carrier ---
+1
+1
+=== IP ===
+lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP> 
+ens4f0           DOWN           6c:b3:11:38:d5:e8 <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+ens4f1           DOWN           6c:b3:11:38:d5:e9 <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+ens4f2           DOWN           6c:b3:11:38:d5:ea <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+ens4f3           DOWN           6c:b3:11:38:d5:eb <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+ens2f0           UP             6c:b3:11:61:ca:78 <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> 
+ens2f1           UP             6c:b3:11:61:ca:78 <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> 
+ens2f2           UP             6c:b3:11:61:ca:7c <BROADCAST,MULTICAST,UP,LOWER_UP> 
+ens2f3           UP             6c:b3:11:61:ca:7e <BROADCAST,MULTICAST,UP,LOWER_UP> 
+bond0            UP             6c:b3:11:61:ca:78 <BROADCAST,MULTICAST,MASTER,UP,LOWER_UP> 
+bond0.700@bond0  UP             6c:b3:11:61:ca:78 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+bond0.140@bond0  UP             6c:b3:11:61:ca:78 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens4f0           DOWN           
+ens4f1           DOWN           
+ens4f2           DOWN           
+ens4f3           DOWN           
+ens2f0           UP             
+ens2f1           UP             
+ens2f2           UP             
+ens2f3           UP             
+bond0            UP             
+bond0.700@bond0  UP             192.168.194.39/24 fe80::ae43:cc5a:9973:570f/64 
+bond0.140@bond0  UP             172.30.140.103/24 fe80::b285:5b9a:5853:647/64 
+default via 192.168.194.1 dev bond0.700 proto static metric 400 
+172.30.140.0/24 dev bond0.140 proto kernel scope link src 172.30.140.103 metric 402 
+192.168.194.0/24 dev bond0.700 proto kernel scope link src 192.168.194.39 metric 400 
+=== NM CONNECTIONS ===
+NAME                                UUID                                  TYPE      DEVICE    
+Соединение VLAN 1                   32ff4a89-5e24-406a-ab05-0e2c8f192dfe  vlan      bond0.700 
+lo                                  33727391-7374-496c-b5fa-cd4046294a65  loopback  lo        
+VLAN 140 Management                 0317a359-82ac-4442-8434-51a87b4a7451  vlan      bond0.140 
+bond0 port 1                        b0e7a858-a5f6-4bac-97e8-236f056d7ca2  ethernet  ens2f0    
+bond0 port 2                        106d5452-3880-4074-8f59-f907912408ec  ethernet  ens2f1    
+Агрегированное соединение (bond) 1  6269c820-f599-43ed-8d5c-a4ec4f20802b  bond      bond0     
+bond1 DRBD                          ec379485-a1cc-448b-ad83-b1da5b801b24  bond      --        
+bond1 port 1                        91f6a029-c3b4-4d8e-a441-cef3006d0de8  ethernet  --        
+bond1 port 2                        ead16892-641f-4605-b9e1-e1c84afe66fe  ethernet  --        
+VLAN 141 DRBD                       7ea6c6a1-215e-4208-a354-7d386ba717ec  vlan      --        
+VLAN 143 Backup                     142a0cda-fb23-4b4e-abd5-5b39f1a20095  vlan      --        
+=== NM ACTIVE ===
+NAME                                TYPE      DEVICE    
+Соединение VLAN 1                   vlan      bond0.700 
+lo                                  loopback  lo        
+VLAN 140 Management                 vlan      bond0.140 
+bond0 port 1                        ethernet  ens2f0    
+bond0 port 2                        ethernet  ens2f1    
+Агрегированное соединение (bond) 1  bond      bond0     
+=== PING GW ===
+PING 192.168.194.1 (192.168.194.1) 56(84) bytes of data.
+64 bytes from 192.168.194.1: icmp_seq=1 ttl=254 time=0.656 ms
+64 bytes from 192.168.194.1: icmp_seq=2 ttl=254 time=0.705 ms
+64 bytes from 192.168.194.1: icmp_seq=3 ttl=254 time=0.724 ms
+
+--- 192.168.194.1 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2054ms
+rtt min/avg/max/mdev = 0.656/0.695/0.724/0.028 ms

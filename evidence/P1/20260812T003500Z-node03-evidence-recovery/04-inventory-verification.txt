@@ -1,0 +1,35 @@
+=== inventory/hosts.yaml check (read-only) ===
+# hosts.yaml — ПАК Портал inventory
+# SSH: --ask-pass или approved vault mechanism
+
+all:
+  children:
+    pak_portal:
+      hosts:
+        node-01:
+          ansible_host: 192.168.194.38
+          ansible_user: root
+          mgmt_ip: 172.30.140.101
+          drbd_ip: 172.30.141.101
+          ansible_ssh_host_key_ed25519: AAAAC3NzaC1lZDI1NTE5AAAAIHEswnth33mMa4AHOsqMBM6lwbPmXeOMwS/li00JWJc7
+        node-02:
+          ansible_host: 192.168.194.40
+          ansible_user: root
+          mgmt_ip: 172.30.140.102
+          drbd_ip: 172.30.141.102
+          ansible_ssh_host_key_ed25519: AAAAC3NzaC1lZDI1NTE5AAAAII68ubEztQ0jUpCh2d5qMzAUPDUCPWc+Q1zcz/PJHlUm
+        node-03:
+          ansible_host: 192.168.194.39
+          ansible_user: root
+          mgmt_ip: 172.30.140.103
+          drbd_ip: 172.30.141.103
+          ansible_ssh_host_key_ed25519: AAAAC3NzaC1lZDI1NTE5AAAAIPycJ4Z0bwe4wDH5dqW+kGPg3vHtBQHe4Df9AMN+0aXr
+      vars:
+        ansible_ssh_common_args: "-o StrictHostKeyChecking=yes"
+        bond0_slaves: [ens2f0, ens2f1]
+        bond1_slaves: [ens2f2, ens2f3]
+        bond_mode: "802.3ad"
+        vlan700_id: 700
+        vlan140_id: 140
+        vlan141_id: 141
+        vlan143_id: 143

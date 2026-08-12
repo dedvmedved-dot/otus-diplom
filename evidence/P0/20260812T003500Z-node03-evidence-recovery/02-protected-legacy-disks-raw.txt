@@ -1,0 +1,112 @@
+=== PROTECTED DISKS ===
+--- /dev/sda ---
+NAME                   PATH                             SIZE TYPE FSTYPE      MOUNTPOINTS MODEL SERIAL   WWN
+sda                    /dev/sda                         447G disk                         OS    5502CB3A 
+├─sda1                 /dev/sda1                        600M part vfat        /boot/efi                  
+├─sda2                 /dev/sda2                          1G part ext2        /boot                      
+└─sda3                 /dev/sda3                      445,4G part LVM2_member                            
+  ├─astra03718-lv_swap /dev/mapper/astra03718-lv_swap    32G lvm  swap        [SWAP]                     
+  ├─astra03718-lv_home /dev/mapper/astra03718-lv_home 328,4G lvm  ext4        /home                      
+  └─astra03718-lv_root /dev/mapper/astra03718-lv_root    40G lvm  ext4        /                          
+--- udevadm /dev/sda ---
+DEVNAME=/dev/sda
+ID_VENDOR=ASR8885
+ID_VENDOR_ENC=ASR8885\x20
+ID_MODEL=OS
+ID_MODEL_ENC=OS\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20
+ID_SERIAL=23acb025500d00000
+ID_SERIAL_SHORT=3acb025500d00000
+--- /dev/sdb ---
+NAME PATH      SIZE TYPE FSTYPE MOUNTPOINTS MODEL            SERIAL         WWN
+sdb  /dev/sdb  3,5T disk                    MZILT3T8HBLS/007 S5G0NC0T403246 0x5002538b72453970
+--- udevadm /dev/sdb ---
+DEVNAME=/dev/sdb
+ID_VENDOR=SAMSUNG
+ID_VENDOR_ENC=SAMSUNG\x20
+ID_MODEL=MZILT3T8HBLS_007
+ID_MODEL_ENC=MZILT3T8HBLS\x2f007
+ID_SERIAL=35002538b72453970
+ID_SERIAL_SHORT=5002538b72453970
+ID_WWN=0x5002538b72453970
+ID_WWN_WITH_EXTENSION=0x5002538b72453970
+--- /dev/sdc ---
+NAME PATH      SIZE TYPE FSTYPE MOUNTPOINTS MODEL            SERIAL         WWN
+sdc  /dev/sdc  3,5T disk                    MZILT3T8HBLS/007 S5G0NC0T403289 0x5002538b72453c20
+--- udevadm /dev/sdc ---
+DEVNAME=/dev/sdc
+ID_VENDOR=SAMSUNG
+ID_VENDOR_ENC=SAMSUNG\x20
+ID_MODEL=MZILT3T8HBLS_007
+ID_MODEL_ENC=MZILT3T8HBLS\x2f007
+ID_SERIAL=35002538b72453c20
+ID_SERIAL_SHORT=5002538b72453c20
+ID_WWN=0x5002538b72453c20
+ID_WWN_WITH_EXTENSION=0x5002538b72453c20
+
+=== LEGACY TOSHIBA DISKS ===
+--- /dev/sdd ---
+NAME PATH      SIZE TYPE FSTYPE MOUNTPOINTS MODEL       SERIAL       WWN
+sdd  /dev/sdd  1,6T disk                    AL15SEB18EQ 12U0A481FMCF 0x5000039b686b5889
+DEVNAME=/dev/sdd
+ID_MODEL=AL15SEB18EQ
+ID_MODEL_ENC=AL15SEB18EQ\x20\x20\x20\x20\x20
+ID_SERIAL=35000039b686b5889
+ID_SERIAL_SHORT=5000039b686b5889
+ID_WWN=0x5000039b686b5889
+ID_WWN_WITH_EXTENSION=0x5000039b686b5889
+--- wipefs -n /dev/sdd ---
+--- /dev/sde ---
+NAME PATH      SIZE TYPE FSTYPE MOUNTPOINTS MODEL       SERIAL       WWN
+sde  /dev/sde  1,6T disk                    AL15SEB18EQ 12U0A4BBFMCF 0x5000039b686b6841
+DEVNAME=/dev/sde
+ID_MODEL=AL15SEB18EQ
+ID_MODEL_ENC=AL15SEB18EQ\x20\x20\x20\x20\x20
+ID_SERIAL=35000039b686b6841
+ID_SERIAL_SHORT=5000039b686b6841
+ID_WWN=0x5000039b686b6841
+ID_WWN_WITH_EXTENSION=0x5000039b686b6841
+--- wipefs -n /dev/sde ---
+--- /dev/sdf ---
+NAME PATH      SIZE TYPE FSTYPE MOUNTPOINTS MODEL       SERIAL       WWN
+sdf  /dev/sdf  1,6T disk                    AL15SEB18EQ 12U0A48QFMCF 0x5000039b686b5e61
+DEVNAME=/dev/sdf
+ID_MODEL=AL15SEB18EQ
+ID_MODEL_ENC=AL15SEB18EQ\x20\x20\x20\x20\x20
+ID_SERIAL=35000039b686b5e61
+ID_SERIAL_SHORT=5000039b686b5e61
+ID_WWN=0x5000039b686b5e61
+ID_WWN_WITH_EXTENSION=0x5000039b686b5e61
+--- wipefs -n /dev/sdf ---
+--- /dev/sdg ---
+NAME PATH      SIZE TYPE FSTYPE MOUNTPOINTS MODEL       SERIAL       WWN
+sdg  /dev/sdg  1,6T disk                    AL15SEB18EQ 12U0A48CFMCF 0x5000039b686b5bfd
+DEVNAME=/dev/sdg
+ID_MODEL=AL15SEB18EQ
+ID_MODEL_ENC=AL15SEB18EQ\x20\x20\x20\x20\x20
+ID_SERIAL=35000039b686b5bfd
+ID_SERIAL_SHORT=5000039b686b5bfd
+ID_WWN=0x5000039b686b5bfd
+ID_WWN_WITH_EXTENSION=0x5000039b686b5bfd
+--- wipefs -n /dev/sdg ---
+--- /dev/sdh ---
+NAME PATH      SIZE TYPE FSTYPE MOUNTPOINTS MODEL       SERIAL       WWN
+sdh  /dev/sdh  1,6T disk                    AL15SEB18EQ 12U0A48AFMCF 0x5000039b686b5b91
+DEVNAME=/dev/sdh
+ID_MODEL=AL15SEB18EQ
+ID_MODEL_ENC=AL15SEB18EQ\x20\x20\x20\x20\x20
+ID_SERIAL=35000039b686b5b91
+ID_SERIAL_SHORT=5000039b686b5b91
+ID_WWN=0x5000039b686b5b91
+ID_WWN_WITH_EXTENSION=0x5000039b686b5b91
+--- wipefs -n /dev/sdh ---
+--- /dev/sdi ---
+NAME PATH      SIZE TYPE FSTYPE MOUNTPOINTS MODEL       SERIAL       WWN
+sdi  /dev/sdi  1,6T disk                    AL15SEB18EQ 12U0A49EFMCF 0x5000039b686b60f5
+DEVNAME=/dev/sdi
+ID_MODEL=AL15SEB18EQ
+ID_MODEL_ENC=AL15SEB18EQ\x20\x20\x20\x20\x20
+ID_SERIAL=35000039b686b60f5
+ID_SERIAL_SHORT=5000039b686b60f5
+ID_WWN=0x5000039b686b60f5
+ID_WWN_WITH_EXTENSION=0x5000039b686b60f5
+--- wipefs -n /dev/sdi ---

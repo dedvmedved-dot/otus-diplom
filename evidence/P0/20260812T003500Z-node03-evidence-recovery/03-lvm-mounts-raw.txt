@@ -1,0 +1,92 @@
+=== PVS ===
+  PV         PV UUID                                VG         PSize    PFree 
+  /dev/sda1                                                          0      0 
+  /dev/sda2                                                          0      0 
+  /dev/sda3  gWHmTP-y0Ly-NRFI-PJu0-osw0-KHZq-0fdf9u astra03718 <445,40g 45,00g
+  /dev/sdb                                                           0      0 
+  /dev/sdc                                                           0      0 
+  /dev/sdd                                                           0      0 
+  /dev/sde                                                           0      0 
+  /dev/sdf                                                           0      0 
+  /dev/sdg                                                           0      0 
+  /dev/sdh                                                           0      0 
+  /dev/sdi                                                           0      0 
+=== VGS ===
+  VG         VG UUID                                #PV #LV VSize    VFree 
+  astra03718 AremAF-uPne-c3bp-olMh-ohyi-x7i7-eGKQI0   1   3 <445,40g 45,00g
+=== LVS ===
+  LV      VG         LV UUID                                LSize   Devices         
+  lv_home astra03718 zfvKDy-ZZuS-YCET-f4gg-pmxA-E2q4-iRx1J2 328,39g /dev/sda3(8192) 
+  lv_root astra03718 0uY093-YGEN-VIdW-H23Y-Dyb2-1DiK-Nbc3YW  40,00g /dev/sda3(92261)
+  lv_swap astra03718 4Uphv8-h4Wu-5BMP-QJK1-e1zj-adwv-9I5p0o  32,00g /dev/sda3(0)    
+=== FINDMNT ===
+TARGET                                                  SOURCE                         FSTYPE      OPTIONS
+/                                                       /dev/mapper/astra03718-lv_root ext4        rw,relatime
+├─/sys                                                  sysfs                          sysfs       rw,nosuid,nodev,noexec,relatime
+│ ├─/sys/kernel/security                                securityfs                     securityfs  rw,nosuid,nodev,noexec,relatime
+│ ├─/sys/fs/cgroup                                      cgroup2                        cgroup2     rw,nosuid,nodev,noexec,relatime,nsdelegate,memory_recursiveprot
+│ ├─/sys/fs/pstore                                      pstore                         pstore      rw,nosuid,nodev,noexec,relatime
+│ ├─/sys/firmware/efi/efivars                           efivarfs                       efivarfs    rw,nosuid,nodev,noexec,relatime
+│ ├─/sys/fs/bpf                                         bpf                            bpf         rw,nosuid,nodev,noexec,relatime,mode=700
+│ ├─/sys/kernel/tracing                                 tracefs                        tracefs     rw,nosuid,nodev,noexec,relatime
+│ ├─/sys/kernel/debug                                   debugfs                        debugfs     rw,nosuid,nodev,noexec,relatime
+│ ├─/sys/kernel/config                                  configfs                       configfs    rw,nosuid,nodev,noexec,relatime
+│ └─/sys/fs/fuse/connections                            fusectl                        fusectl     rw,nosuid,nodev,noexec,relatime
+├─/proc                                                 proc                           proc        rw,nosuid,nodev,noexec,relatime
+│ └─/proc/sys/fs/binfmt_misc                            systemd-1                      autofs      rw,relatime,fd=30,pgrp=1,timeout=0,minproto=5,maxproto=5,direct
+│   └─/proc/sys/fs/binfmt_misc                          binfmt_misc                    binfmt_misc rw,nosuid,nodev,noexec,relatime
+├─/dev                                                  udev                           devtmpfs    rw,nosuid,relatime,size=131830944k,nr_inodes=32957736,mode=755,inode64
+│ ├─/dev/pts                                            devpts                         devpts      rw,nosuid,noexec,relatime,gid=5,mode=620,ptmxmode=000
+│ ├─/dev/shm                                            tmpfs                          tmpfs       rw,nosuid,nodev,inode64
+│ ├─/dev/hugepages                                      hugetlbfs                      hugetlbfs   rw,relatime,pagesize=2M
+│ └─/dev/mqueue                                         mqueue                         mqueue      rw,nosuid,nodev,noexec,relatime
+├─/run                                                  tmpfs                          tmpfs       rw,nosuid,nodev,noexec,relatime,size=26375260k,mode=755,inode64
+│ ├─/run/lock                                           tmpfs                          tmpfs       rw,nosuid,nodev,noexec,relatime,size=5120k,inode64
+│ ├─/run/credentials/systemd-sysctl.service             ramfs                          ramfs       ro,nosuid,nodev,noexec,relatime,mode=700
+│ ├─/run/credentials/systemd-sysusers.service           ramfs                          ramfs       ro,nosuid,nodev,noexec,relatime,mode=700
+│ ├─/run/credentials/systemd-tmpfiles-setup-dev.service ramfs                          ramfs       ro,nosuid,nodev,noexec,relatime,mode=700
+│ ├─/run/credentials/systemd-tmpfiles-setup.service     ramfs                          ramfs       ro,nosuid,nodev,noexec,relatime,mode=700
+│ ├─/run/user/1000z0_0_0x0_0x0                          tmpfs                          tmpfs       rw,nosuid,nodev,relatime,size=26375256k,nr_inodes=6593814,mode=700,uid=1000,gid=1000,inode64
+│ │ └─/run/user/1000z0_0_0x0_0x0/doc                    portal                         fuse.portal rw,nosuid,nodev,relatime,user_id=1000,group_id=1000
+│ ├─/run/user/0z0_0_0x0_0x0                             tmpfs                          tmpfs       rw,nosuid,nodev,relatime,size=26375256k,nr_inodes=6593814,mode=700,inode64
+│ └─/run/user/102z0_0_0x0_0x0                           tmpfs                          tmpfs       rw,nosuid,nodev,relatime,size=26375256k,nr_inodes=6593814,mode=700,uid=102,gid=112,inode64
+├─/parsecfs                                             parsecfs                       parsecfs    rw,relatime,sync
+├─/efi                                                  systemd-1                      autofs      rw,relatime,fd=50,pgrp=1,timeout=120,minproto=5,maxproto=5,direct
+├─/boot                                                 /dev/sda2                      ext2        rw,relatime
+│ └─/boot/efi                                           /dev/sda1                      vfat        rw,relatime,fmask=0077,dmask=0077,codepage=866,iocharset=cp1251,shortname=winnt,utf8,errors=remount-ro
+└─/home                                                 /dev/mapper/astra03718-lv_home ext4        rw,relatime
+=== /proc/mounts ===
+sysfs /sys sysfs rw,nosuid,nodev,noexec,relatime 0 0
+proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0
+udev /dev devtmpfs rw,nosuid,relatime,size=131830944k,nr_inodes=32957736,mode=755,inode64 0 0
+devpts /dev/pts devpts rw,nosuid,noexec,relatime,gid=5,mode=620,ptmxmode=000 0 0
+tmpfs /run tmpfs rw,nosuid,nodev,noexec,relatime,size=26375260k,mode=755,inode64 0 0
+/dev/mapper/astra03718-lv_root / ext4 rw,relatime 0 0
+parsecfs /parsecfs parsecfs rw,sync,relatime 0 0
+securityfs /sys/kernel/security securityfs rw,nosuid,nodev,noexec,relatime 0 0
+tmpfs /dev/shm tmpfs rw,nosuid,nodev,inode64 0 0
+tmpfs /run/lock tmpfs rw,nosuid,nodev,noexec,relatime,size=5120k,inode64 0 0
+cgroup2 /sys/fs/cgroup cgroup2 rw,nosuid,nodev,noexec,relatime,nsdelegate,memory_recursiveprot 0 0
+pstore /sys/fs/pstore pstore rw,nosuid,nodev,noexec,relatime 0 0
+efivarfs /sys/firmware/efi/efivars efivarfs rw,nosuid,nodev,noexec,relatime 0 0
+bpf /sys/fs/bpf bpf rw,nosuid,nodev,noexec,relatime,mode=700 0 0
+systemd-1 /proc/sys/fs/binfmt_misc autofs rw,relatime,fd=30,pgrp=1,timeout=0,minproto=5,maxproto=5,direct 0 0
+hugetlbfs /dev/hugepages hugetlbfs rw,relatime,pagesize=2M 0 0
+mqueue /dev/mqueue mqueue rw,nosuid,nodev,noexec,relatime 0 0
+tracefs /sys/kernel/tracing tracefs rw,nosuid,nodev,noexec,relatime 0 0
+debugfs /sys/kernel/debug debugfs rw,nosuid,nodev,noexec,relatime 0 0
+configfs /sys/kernel/config configfs rw,nosuid,nodev,noexec,relatime 0 0
+fusectl /sys/fs/fuse/connections fusectl rw,nosuid,nodev,noexec,relatime 0 0
+ramfs /run/credentials/systemd-sysctl.service ramfs ro,nosuid,nodev,noexec,relatime,mode=700 0 0
+ramfs /run/credentials/systemd-sysusers.service ramfs ro,nosuid,nodev,noexec,relatime,mode=700 0 0
+ramfs /run/credentials/systemd-tmpfiles-setup-dev.service ramfs ro,nosuid,nodev,noexec,relatime,mode=700 0 0
+systemd-1 /efi autofs rw,relatime,fd=50,pgrp=1,timeout=120,minproto=5,maxproto=5,direct 0 0
+/dev/sda2 /boot ext2 rw,relatime 0 0
+/dev/mapper/astra03718-lv_home /home ext4 rw,relatime 0 0
+/dev/sda1 /boot/efi vfat rw,relatime,fmask=0077,dmask=0077,codepage=866,iocharset=cp1251,shortname=winnt,utf8,errors=remount-ro 0 0
+ramfs /run/credentials/systemd-tmpfiles-setup.service ramfs ro,nosuid,nodev,noexec,relatime,mode=700 0 0
+binfmt_misc /proc/sys/fs/binfmt_misc binfmt_misc rw,nosuid,nodev,noexec,relatime 0 0
+tmpfs /run/user/102z0_0_0x0_0x0 tmpfs rw,nosuid,nodev,relatime,size=26375256k,nr_inodes=6593814,mode=700,uid=102,gid=112,inode64 0 0
+tmpfs /run/user/1000z0_0_0x0_0x0 tmpfs rw,nosuid,nodev,relatime,size=26375256k,nr_inodes=6593814,mode=700,uid=1000,gid=1000,inode64 0 0
+portal /run/user/1000z0_0_0x0_0x0/doc fuse.portal rw,nosuid,nodev,relatime,user_id=1000,group_id=1000 0 0
+tmpfs /run/user/0z0_0_0x0_0x0 tmpfs rw,nosuid,nodev,relatime,size=26375256k,nr_inodes=6593814,mode=700,inode64 0 0

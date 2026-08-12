@@ -1,0 +1,77 @@
+=== HOSTNAME ===
+node-03
+ Static hostname: node-03
+       Icon name: computer-server
+         Chassis: server 🖳
+      Machine ID: 2142a355e7ec4d6fbb772b528cb9c768
+         Boot ID: 133e6a7b513a407cab81bc9ada45f30f
+Operating System: Astra Linux
+          Kernel: Linux 6.1.158-1-generic
+    Architecture: x86-64
+ Hardware Vendor: COMPAL
+  Hardware Model: COMPAL SERVER
+Firmware Version: 10.19.20
+node-03
+
+=== SUDO ===
+sudo_exit_code=0
+  Файл: /etc/sudoers.d/10-astraadm
+  Размер: 72        	Блоков: 8          Блок В/В: 4096   обычный файл
+Устройство: 253/2	Инода: 397475      Ссылки: 1
+Доступ: (0440/-r--r-----)  Uid: (    0/    root)   Gid: (    0/    root)
+Доступ:        2026-08-11 16:33:16.709317724 +0300
+Модифицирован: 2026-08-11 16:33:16.629317725 +0300
+Изменён:       2026-08-11 16:33:16.697317724 +0300
+Создан:        2026-08-11 16:31:42.921318839 +0300
+--- sudoers content ---
+Defaults:astraadm !requiretty,!use_pty
+astraadm ALL=(ALL) NOPASSWD: ALL
+
+=== NTP ===
+               Local time: Ср 2026-08-12 03:36:17 MSK
+           Universal time: Ср 2026-08-12 00:36:17 UTC
+                 RTC time: Ср 2026-08-12 00:36:17
+                Time zone: Europe/Moscow (MSK, +0300)
+System clock synchronized: yes
+              NTP service: active
+          RTC in local TZ: no
+---
+Timezone=Europe/Moscow
+LocalRTC=no
+CanNTP=yes
+NTP=yes
+NTPSynchronized=yes
+TimeUSec=Wed 2026-08-12 03:36:17 MSK
+RTCTimeUSec=Wed 2026-08-12 03:36:17 MSK
+---
+active
+---
+● systemd-timesyncd.service - Network Time Synchronization
+     Loaded: loaded (/lib/systemd/system/systemd-timesyncd.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2026-08-11 16:34:02 MSK; 11h ago
+       Docs: man:systemd-timesyncd.service(8)
+   Main PID: 16797 (systemd-timesyn)
+     Status: "Contacted time server 92.255.126.12:123 (1.ru.pool.ntp.org)."
+      Tasks: 2 (limit: 308978)
+     Memory: 1.5M
+        CPU: 271ms
+     CGroup: /system.slice/systemd-timesyncd.service
+             └─16797 /lib/systemd/systemd-timesyncd
+
+авг 11 16:34:02 node-03 systemd[1]: Starting systemd-timesyncd.service - Network Time Synchronization...
+авг 11 16:34:02 node-03 systemd[1]: Started systemd-timesyncd.service - Network Time Synchronization.
+авг 11 16:34:19 node-03 systemd-timesyncd[16797]: Contacted time server 92.255.126.12:123 (1.ru.pool.ntp.org).
+авг 11 16:34:19 node-03 systemd-timesyncd[16797]: Initial clock synchronization to Tue 2026-08-11 16:34:19.486678 MSK.
+---
+       Server: 92.255.126.12 (1.ru.pool.ntp.org)
+Poll interval: 34min 8s (min: 32s; max 34min 8s)
+         Leap: normal
+      Version: 4
+      Stratum: 2
+    Reference: 596DFB16
+    Precision: 1us (-26)
+Root distance: 1.815ms (max: 5s)
+       Offset: -605us
+        Delay: 1.604ms
+       Jitter: 315us
+ Packet count: 25

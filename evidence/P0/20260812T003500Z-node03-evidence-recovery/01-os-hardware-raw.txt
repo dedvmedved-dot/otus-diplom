@@ -1,0 +1,247 @@
+=== HOSTNAME ===
+node-03
+=== HOSTNAMECTL ===
+ Static hostname: node-03
+       Icon name: computer-server
+         Chassis: server 🖳
+      Machine ID: 2142a355e7ec4d6fbb772b528cb9c768
+         Boot ID: 133e6a7b513a407cab81bc9ada45f30f
+Operating System: Astra Linux
+          Kernel: Linux 6.1.158-1-generic
+    Architecture: x86-64
+ Hardware Vendor: COMPAL
+  Hardware Model: COMPAL SERVER
+Firmware Version: 10.19.20
+=== OS-RELEASE ===
+PRETTY_NAME="Astra Linux"
+NAME="Astra Linux"
+ID=astra
+ID_LIKE=debian
+ANSI_COLOR="1;31"
+HOME_URL="https://astralinux.ru"
+SUPPORT_URL="https://astralinux.ru/support"
+LOGO=astra
+VERSION_ID=1.8_x86-64
+VERSION_CODENAME=1.8_x86-64
+VARIANT_ID=se
+=== UNAME ===
+Linux node-03 6.1.158-1-generic #astra1+ci8 SMP PREEMPT_DYNAMIC Tue Feb 10 19:36:35 MSK 2026 x86_64 GNU/Linux
+6.1.158-1-generic
+=== LSCPU ===
+Архитектура:                          x86_64
+CPU op-mode(s):                       32-bit, 64-bit
+Address sizes:                        46 bits physical, 48 bits virtual
+Порядок байт:                         Little Endian
+CPU(s):                               48
+On-line CPU(s) list:                  0-47
+ID производителя:                     GenuineIntel
+ID производителя BIOS:                Intel(R) Corporation
+Имя модели:                           Intel(R) Xeon(R) Silver 4214R CPU @ 2.40GHz
+Имя модели BIOS:                      Intel(R) Xeon(R) Silver 4214R CPU @ 2.40GHz  CPU @ 2.4GHz
+Семейство ЦП BIOS:                    179
+Семейство ЦП:                         6
+Модель:                               85
+Thread(s) per core:                   2
+Ядер на сокет:                        12
+Сокетов:                              2
+Степпинг:                             7
+CPU(s) scaling MHz:                   31%
+CPU max MHz:                          3500,0000
+CPU min MHz:                          1000,0000
+BogoMIPS:                             4800,00
+Флаги:                                fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid dca sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb cat_l3 cdp_l3 invpcid_single intel_ppin ssbd mba ibrs ibpb stibp ibrs_enhanced tpr_shadow vnmi flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid cqm mpx rdt_a avx512f avx512dq rdseed adx smap clflushopt clwb intel_pt avx512cd avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves cqm_llc cqm_occup_llc cqm_mbm_total cqm_mbm_local dtherm ida arat pln pts hwp hwp_act_window hwp_epp hwp_pkg_req pku ospke avx512_vnni md_clear flush_l1d arch_capabilities ibpb_exit_to_user
+Виртуализация:                        VT-x
+L1d cache:                            768 KiB (24 instances)
+L1i cache:                            768 KiB (24 instances)
+L2 cache:                             24 MiB (24 instances)
+L3 cache:                             33 MiB (2 instances)
+NUMA node(s):                         2
+NUMA node0 CPU(s):                    0-11,24-35
+NUMA node1 CPU(s):                    12-23,36-47
+Уязвимость Gather data sampling:      Mitigation; Microcode
+Уязвимость Indirect target selection: Mitigation; Aligned branch/return thunks
+Уязвимость Itlb multihit:             KVM: Mitigation: VMX disabled
+Уязвимость L1tf:                      Not affected
+Уязвимость Mds:                       Not affected
+Уязвимость Meltdown:                  Not affected
+Уязвимость Mmio stale data:           Mitigation; Clear CPU buffers; SMT vulnerable
+Уязвимость Reg file data sampling:    Not affected
+Уязвимость Retbleed:                  Mitigation; Enhanced IBRS
+Уязвимость Spec rstack overflow:      Not affected
+Уязвимость Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl
+Уязвимость Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+Уязвимость Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI SW loop, KVM SW loop
+Уязвимость Srbds:                     Not affected
+Уязвимость Tsa:                       Not affected
+Уязвимость Tsx async abort:           Mitigation; TSX disabled
+Уязвимость Vmscape:                   Mitigation; IBPB before exit to userspace
+=== FREE ===
+               total        used        free      shared  buff/cache   available
+Mem:           251Gi       3,6Gi       247Gi        46Mi       1,6Gi       247Gi
+Swap:           31Gi          0B        31Gi
+=== LSBLK ===
+NAME                   PATH                             SIZE TYPE FSTYPE      MOUNTPOINTS MODEL            SERIAL         WWN
+sda                    /dev/sda                         447G disk                         OS               5502CB3A       
+├─sda1                 /dev/sda1                        600M part vfat        /boot/efi                                   
+├─sda2                 /dev/sda2                          1G part ext2        /boot                                       
+└─sda3                 /dev/sda3                      445,4G part LVM2_member                                             
+  ├─astra03718-lv_swap /dev/mapper/astra03718-lv_swap    32G lvm  swap        [SWAP]                                      
+  ├─astra03718-lv_home /dev/mapper/astra03718-lv_home 328,4G lvm  ext4        /home                                       
+  └─astra03718-lv_root /dev/mapper/astra03718-lv_root    40G lvm  ext4        /                                           
+sdb                    /dev/sdb                         3,5T disk                         MZILT3T8HBLS/007 S5G0NC0T403246 0x5002538b72453970
+sdc                    /dev/sdc                         3,5T disk                         MZILT3T8HBLS/007 S5G0NC0T403289 0x5002538b72453c20
+sdd                    /dev/sdd                         1,6T disk                         AL15SEB18EQ      12U0A481FMCF   0x5000039b686b5889
+sde                    /dev/sde                         1,6T disk                         AL15SEB18EQ      12U0A4BBFMCF   0x5000039b686b6841
+sdf                    /dev/sdf                         1,6T disk                         AL15SEB18EQ      12U0A48QFMCF   0x5000039b686b5e61
+sdg                    /dev/sdg                         1,6T disk                         AL15SEB18EQ      12U0A48CFMCF   0x5000039b686b5bfd
+sdh                    /dev/sdh                         1,6T disk                         AL15SEB18EQ      12U0A48AFMCF   0x5000039b686b5b91
+sdi                    /dev/sdi                         1,6T disk                         AL15SEB18EQ      12U0A49EFMCF   0x5000039b686b60f5
+=== DMIDECODE SYSTEM ===
+# dmidecode 3.5
+Getting SMBIOS data from sysfs.
+SMBIOS 3.2.1 present.
+
+Handle 0x0001, DMI type 1, 27 bytes
+System Information
+	Manufacturer: COMPAL              
+	Product Name: COMPAL SERVER                                   
+	Version: 01
+	Serial Number: 7490001200409       
+	UUID: 6a1bf19e-3b6a-11ed-880b-fc4596f129c8
+	Wake-up Type: Power Switch
+	SKU Number:  
+	Family: YADRO
+
+Handle 0x000E, DMI type 12, 5 bytes
+System Configuration Options
+	Option 1: JP116: 1-2 BIOS WRITE ENABLE, 2-3 BIOS WRITE PRODECT
+	Option 2: JP39: 1-2 NO FUNCTION, 2-3 CLEAR CMOS
+	Option 3: SW 1: BIOS Recover Mode
+	Option 4: SW 2: ME Recover
+	Option 5: SW 3: Password Clear
+	Option 6: SW 4: NA
+	Option 7: SW 5: HW Reset
+	Option 8: SW 6: BMC Update
+	Option 9: SW 7: ESPI FLASH MODE GPPH12
+	Option 10: SW 8: BOOT BIOS DEVICE
+	Option 11: JP114: 1-2 ESPI, 2-3 LPC
+
+Handle 0x000F, DMI type 32, 20 bytes
+System Boot Information
+	Status: No errors detected
+
+=== DMIDECODE MEMORY ===
+Handle 0x002F, DMI type 16, 23 bytes
+	Error Correction Type: Single-bit ECC
+Handle 0x0030, DMI type 17, 40 bytes
+	Size: 64 GB
+	Type: DDR4
+	Type Detail: Synchronous Registered (Buffered)
+	Speed: 3200 MT/s
+	Manufacturer: Samsung
+	Part Number: M393A8G40AB2-CWE    
+	Configured Memory Speed: 2400 MT/s
+Handle 0x0031, DMI type 17, 40 bytes
+	Size: No Module Installed
+	Type: Unknown
+	Type Detail: Unknown
+Handle 0x0032, DMI type 17, 40 bytes
+	Size: No Module Installed
+	Type: Unknown
+	Type Detail: Unknown
+Handle 0x0033, DMI type 17, 40 bytes
+	Size: No Module Installed
+	Type: Unknown
+	Type Detail: Unknown
+Handle 0x0034, DMI type 17, 40 bytes
+	Size: No Module Installed
+	Type: Unknown
+	Type Detail: Unknown
+Handle 0x0035, DMI type 17, 40 bytes
+	Size: No Module Installed
+	Type: Unknown
+	Type Detail: Unknown
+Handle 0x0036, DMI type 17, 40 bytes
+	Size: 64 GB
+	Type: DDR4
+	Type Detail: Synchronous Registered (Buffered)
+	Speed: 3200 MT/s
+	Manufacturer: Samsung
+	Part Number: M393A8G40AB2-CWE    
+	Configured Memory Speed: 2400 MT/s
+Handle 0x0037, DMI type 17, 40 bytes
+	Size: No Module Installed
+	Type: Unknown
+	Type Detail: Unknown
+Handle 0x0038, DMI type 17, 40 bytes
+	Size: No Module Installed
+	Type: Unknown
+	Type Detail: Unknown
+Handle 0x0039, DMI type 17, 40 bytes
+	Size: No Module Installed
+	Type: Unknown
+	Type Detail: Unknown
+Handle 0x003A, DMI type 17, 40 bytes
+	Size: No Module Installed
+	Type: Unknown
+	Type Detail: Unknown
+Handle 0x003B, DMI type 17, 40 bytes
+	Size: No Module Installed
+	Type: Unknown
+	Type Detail: Unknown
+Handle 0x003C, DMI type 17, 40 bytes
+	Size: 64 GB
+	Type: DDR4
+	Type Detail: Synchronous Registered (Buffered)
+	Speed: 3200 MT/s
+	Manufacturer: Samsung
+	Part Number: M393A8G40AB2-CWE    
+	Configured Memory Speed: 2400 MT/s
+Handle 0x003D, DMI type 17, 40 bytes
+	Size: No Module Installed
+	Type: Unknown
+	Type Detail: Unknown
+Handle 0x003E, DMI type 17, 40 bytes
+	Size: No Module Installed
+	Type: Unknown
+	Type Detail: Unknown
+Handle 0x003F, DMI type 17, 40 bytes
+	Size: No Module Installed
+	Type: Unknown
+	Type Detail: Unknown
+Handle 0x0040, DMI type 17, 40 bytes
+	Size: No Module Installed
+	Type: Unknown
+	Type Detail: Unknown
+Handle 0x0041, DMI type 17, 40 bytes
+	Size: No Module Installed
+	Type: Unknown
+	Type Detail: Unknown
+Handle 0x0042, DMI type 17, 40 bytes
+	Size: 64 GB
+	Type: DDR4
+	Type Detail: Synchronous Registered (Buffered)
+	Speed: 3200 MT/s
+	Manufacturer: Samsung
+	Part Number: M393A8G40AB2-CWE    
+	Configured Memory Speed: 2400 MT/s
+Handle 0x0043, DMI type 17, 40 bytes
+	Size: No Module Installed
+	Type: Unknown
+	Type Detail: Unknown
+Handle 0x0044, DMI type 17, 40 bytes
+	Size: No Module Installed
+	Type: Unknown
+	Type Detail: Unknown
+Handle 0x0045, DMI type 17, 40 bytes
+	Size: No Module Installed
+	Type: Unknown
+	Type Detail: Unknown
+Handle 0x0046, DMI type 17, 40 bytes
+	Size: No Module Installed
+	Type: Unknown
+	Type Detail: Unknown
+Handle 0x0047, DMI type 17, 40 bytes
+	Size: No Module Installed
+	Type: Unknown
+	Type Detail: Unknown
