@@ -1,0 +1,25 @@
+=== P1/P2 REGRESSION ===
+--- node . ---
+bond0: ens2f0 ens2f1 | bond1: ens2f2 ens2f3
+default: default via 192.168.194.1 dev bond0.700 proto static metric 400 
+rtt min/avg/max/mdev = 0.657/0.661/0.665/0.004 ms
+--- node . ---
+bond0: ens2f0 ens2f1 | bond1: ens2f2 ens2f3
+default: default via 192.168.194.1 dev bond0.700 proto static metric 400 
+rtt min/avg/max/mdev = 0.615/0.622/0.629/0.007 ms
+--- node . ---
+bond0: ens2f0 ens2f1 | bond1: ens2f2 ens2f3
+default: default via 192.168.194.1 dev bond0.700 proto static metric 400 
+rtt min/avg/max/mdev = 0.661/0.667/0.673/0.006 ms
+--- node . P2 ---
+containerd v2.3.3
+active
+Kubernetes v1.36.2
+containerd.io kubeadm kubectl kubelet 
+swap: 0
+--- node . P2 ---
+containerd v2.3.3
+active
+Kubernetes v1.36.2
+containerd.io kubeadm kubectl kubelet 
+swap: 0

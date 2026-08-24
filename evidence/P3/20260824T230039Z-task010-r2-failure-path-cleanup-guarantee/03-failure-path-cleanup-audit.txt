@@ -1,0 +1,47 @@
+# TASK-010-R2 — Failure-Path Cleanup Audit
+
+RUN_ID: 20260824T230039Z
+
+JOIN CONFIG CREATED: identified
+  - task "Render JoinConfiguration from node-01 facts" (template → /root/kubeadm-join-node02.yaml, mode 0600)
+
+JOIN CONFIG CLEANUP: always-block guaranteed
+  - task "Remove temporary JoinConfiguration (guaranteed)" in `always:` block
+  - ansible.builtin.file: path=/root/kubeadm-join-node02.yaml state=absent, no_log
+
+TOKEN CREATED: identified
+  - task "Create bootstrap token (node-01)" (kubeadm token create --ttl 30m)
+
+TOKEN CLEANUP: always-block guaranteed
+  - task "Delete exact generated bootstrap token (guaranteed)" in `always:` block
+  - delegate_to node-01, no_log
+  - when: hostvars['node-01']['p3b1_bootstrap_token_id'] is defined
+
+TOKEN ID SOURCE: exact generated bootstrap token
+  - p3b1_bootstrap_token_id = (p3b1_bootstrap_token_raw.stdout | trim).split('.')[0]
+  - тот же raw output, что и token, переданный в JoinConfiguration
+
+FAILURE PATH MATRIX:
+
+DRY-RUN FAILURE:
+  - join config cleanup attempted: YES (always)
+  - token cleanup attempted: YES (always)
+
+JOIN FAILURE:
+  - join config cleanup attempted: YES (always)
+  - token cleanup attempted: YES (always)
+
+KUBE-VIP FAILURE:
+  - join config cleanup attempted: YES (always)
+  - token cleanup attempted: YES (always)
+
+POST-JOIN VALIDATION FAILURE:
+  - join config cleanup attempted: YES (always)
+  - token cleanup attempted: YES (always)
+
+CLEANUP FAILURE:
+  - automation FAIL (нет ignore_errors: true на cleanup tasks)
+
+RESCUE BLOCK:
+  - только фиксирует контролируемую ошибку (debug, failed_when: false)
+  - НЕТ kubeadm reset / retry join / etcd member remove/add / PKI delete / reboot

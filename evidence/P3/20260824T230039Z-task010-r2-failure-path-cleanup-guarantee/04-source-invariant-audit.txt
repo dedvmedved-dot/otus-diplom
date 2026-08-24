@@ -1,0 +1,52 @@
+# TASK-010-R2 — Source Invariant Audit
+
+RUN_ID: 20260824T230039Z
+
+ENV P3B1_* REFERENCES: 0 (grep подтверждён)
+
+CERTIFICATE KEY FLOW PRESERVED:
+kubeadm certs certificate-key
+→ p3b1_certificate_key (set_fact, delegate_facts node-01, no_log)
+→ assert ^[0-9a-fA-F]{64}$
+→ upload-certs --certificate-key {{ same key }} --skip-certificate-key-print (no_log)
+→ hostvars['node-01']['p3b1_certificate_key']
+→ JoinConfiguration certificateKey
+
+BOOTSTRAP TOKEN FLOW PRESERVED:
+kubeadm token create --ttl 30m
+→ p3b1_bootstrap_token (set_fact, no_log)
+→ p3b1_bootstrap_token_id = split('.')[0] (no_log)
+→ hostvars['node-01']['p3b1_bootstrap_token']
+→ JoinConfiguration token
+
+CA HASH FLOW PRESERVED:
+/etc/kubernetes/pki/ca.crt → openssl sha256 → assert ^[0-9a-fA-F]{64}$
+→ p3b1_ca_hash (set_fact)
+→ hostvars['node-01']['p3b1_ca_hash']
+→ JoinConfiguration caCertHashes
+
+HOSTVARS NODE01 -> NODE02 PRESERVED:
+hostvars['node-01']['p3b1_bootstrap_token'] / certificate_key / ca_hash
+→ template vars на node-02
+
+CLEANUP STRUCTURE:
+block/rescue/always (Ansible native)
+always: Remove temporary JoinConfiguration (file state=absent, no_log)
+always: Delete exact generated bootstrap token (delegate_to node-01, no_log, when defined)
+
+SECRET-BEARING TASKS no_log (проверено grep):
+Generate certificate key ✓
+Save certificate key ✓
+Assert certificate key format ✓
+Upload certs ✓
+Create bootstrap token ✓
+Save bootstrap token ✓
+Save bootstrap token ID ✓
+Render JoinConfiguration ✓
+join dry-run ✓
+kubeadm join ✓
+Remove temp JoinConfiguration ✓
+Delete bootstrap token ✓
+
+NO ignore_errors на cleanup tasks ✓
+NO kubeadm reset / retry / etcd remediation в rescue ✓
