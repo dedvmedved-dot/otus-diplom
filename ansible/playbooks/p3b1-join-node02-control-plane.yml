@@ -1,86 +1,133 @@
 ---
 # p3b1-join-node02-control-plane.yml
-# TASK-010 P3B-1: присоединить node-02 как второй control-plane + stacked etcd + kube-vip.
+# TASK-010-R1 P3B-1: воспроизводимое присоединение node-02 как второго control-plane.
 #
-# node-03: ТОЛЬКО read-only validation, НИКАКОГО kubeadm join.
-# Все secret-related tasks: no_log: true.
+# Credential flow полностью самодостаточен:
+#   PLAY 1 (node-01)  генерирует certificate key / bootstrap token / CA hash и сохраняет facts
+#   PLAY 2 (node-02)  рендерит JoinConfiguration из hostvars['node-01'] и выполняет join
+#   PLAY 3 (node-03)  read-only NOT-JOINED validation
+#   PLAY 4 (node-01)  удаляет ровно тот token, который использовался в join
+#
+# Никаких P3B1_* environment variables. Все secret-bearing tasks: no_log: true.
 # Нет automatic reset/retry. Нет CNI. Нет failure tests.
 
-- name: P3B1 join node-02 control-plane
-  hosts: pak_portal
-  serial: 1
+- name: "P3B1 [node-01] validate cluster and generate fresh join credentials"
+  hosts: node-01
   gather_facts: true
   become: true
   vars:
     api_vip: "172.30.140.100"
-    node_name: "node-02"
-    advertise_address: "172.30.140.102"
-    kubernetes_version: "v1.36.2"
-    kube_vip_image: "ghcr.io/kube-vip/kube-vip:v1.2.0"
-    # runtime-only secrets via env, никогда не в Git
-    bootstrap_token: "{{ lookup('env', 'P3B1_BOOTSTRAP_TOKEN') | default('', true) }}"
-    certificate_key: "{{ lookup('env', 'P3B1_CERTIFICATE_KEY') | default('', true) }}"
-    discovery_ca_hash: "{{ lookup('env', 'P3B1_CA_HASH') | default('', true) }}"
-
   tasks:
-    # ─── node-01: cluster validation + fresh credentials ─────
-    - name: Cluster readyz check (node-01)
+    - name: Validate cluster readyz
       ansible.builtin.command:
         cmd: "kubectl --kubeconfig /etc/kubernetes/admin.conf get --raw='/readyz'"
       register: readyz
       changed_when: false
       failed_when: "'ok' not in readyz.stdout"
-      when: inventory_hostname == 'node-01'
 
-    - name: Upload control-plane certs (fresh certificate key)
+    - name: Generate certificate key
+      ansible.builtin.command:
+        cmd: "kubeadm certs certificate-key"
+      register: p3b1_certificate_key_raw
+      changed_when: false
+      no_log: true
+
+    - name: Save generated certificate key
+      ansible.builtin.set_fact:
+        p3b1_certificate_key: "{{ p3b1_certificate_key_raw.stdout | trim }}"
+      no_log: true
+
+    - name: Assert certificate key format
+      ansible.builtin.assert:
+        that:
+          - p3b1_certificate_key is match('^[0-9a-fA-F]{64}$')
+      no_log: true
+
+    - name: Upload control-plane certificates with exact generated key
       ansible.builtin.command:
         cmd: >-
           kubeadm init phase upload-certs --upload-certs
-          --config /root/upload-certs-config.yaml
+          --certificate-key {{ p3b1_certificate_key }}
           --kubeconfig /etc/kubernetes/admin.conf
+          --skip-certificate-key-print
       register: upload_certs
+      changed_when: false
       no_log: true
-      when: inventory_hostname == 'node-01'
 
-    - name: Create fresh bootstrap token
+    - name: Create bootstrap token
       ansible.builtin.command:
         cmd: "kubeadm token create --ttl 30m --kubeconfig /etc/kubernetes/admin.conf"
-      register: token_out
+      register: p3b1_bootstrap_token_raw
+      changed_when: false
       no_log: true
-      when: inventory_hostname == 'node-01'
 
-    # ─── node-02: preflight ──────────────────────────────────
-    - name: Assert node-02 clean
+    - name: Save bootstrap token
+      ansible.builtin.set_fact:
+        p3b1_bootstrap_token: "{{ p3b1_bootstrap_token_raw.stdout | trim }}"
+      no_log: true
+
+    - name: Save bootstrap token ID
+      ansible.builtin.set_fact:
+        p3b1_bootstrap_token_id: "{{ (p3b1_bootstrap_token_raw.stdout | trim).split('.')[0] }}"
+      no_log: true
+
+    - name: Compute discovery CA hash
+      ansible.builtin.shell:
+        cmd: >-
+          openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt
+          | openssl rsa -pubin -outform der 2>/dev/null
+          | openssl dgst -sha256 -hex
+          | sed 's/^.* //'
+      register: p3b1_ca_hash_raw
+      changed_when: false
+
+    - name: Validate CA hash format
+      ansible.builtin.assert:
+        that:
+          - p3b1_ca_hash_raw.stdout | trim is match('^[0-9a-fA-F]{64}$')
+
+    - name: Save CA hash
+      ansible.builtin.set_fact:
+        p3b1_ca_hash: "{{ p3b1_ca_hash_raw.stdout | trim }}"
+
+- name: "P3B1 [node-02] render JoinConfiguration and join as control-plane"
+  hosts: node-02
+  gather_facts: true
+  become: true
+  vars:
+    api_vip: "172.30.140.100"
+  tasks:
+    - name: Assert node-02 clean state
       ansible.builtin.shell:
         cmd: "test ! -f /etc/kubernetes/admin.conf && test ! -d /var/lib/etcd/member && echo CLEAN"
       register: clean
       changed_when: false
       failed_when: "'CLEAN' not in clean.stdout"
-      when: inventory_hostname == 'node-02'
 
-    - name: Render join config (no_log)
+    - name: Render JoinConfiguration from node-01 facts
       ansible.builtin.template:
         src: p3b1-kubeadm-join-node02.yaml.j2
         dest: /root/kubeadm-join-node02.yaml
         mode: "0600"
+      vars:
+        bootstrap_token: "{{ hostvars['node-01']['p3b1_bootstrap_token'] }}"
+        certificate_key: "{{ hostvars['node-01']['p3b1_certificate_key'] }}"
+        discovery_ca_hash: "{{ hostvars['node-01']['p3b1_ca_hash'] }}"
       no_log: true
-      when: inventory_hostname == 'node-02'
 
-    - name: kubeadm join dry-run (no_log)
+    - name: kubeadm join dry-run
       ansible.builtin.command:
         cmd: "kubeadm join --config /root/kubeadm-join-node02.yaml --dry-run"
       register: join_dryrun
       no_log: true
-      when: inventory_hostname == 'node-02'
 
-    - name: kubeadm join node-02 (no_log)
+    - name: kubeadm join node-02 (control-plane)
       ansible.builtin.command:
         cmd: "kubeadm join --config /root/kubeadm-join-node02.yaml"
       register: join_out
       no_log: true
-      when: inventory_hostname == 'node-02'
 
-    - name: kube-vip static pod manifest node-02
+    - name: kube-vip static pod manifest
       ansible.builtin.copy:
         dest: /etc/kubernetes/manifests/kube-vip.yaml
         content: |
@@ -97,7 +144,7 @@
               ip: 127.0.0.1
             containers:
             - name: kube-vip
-              image: {{ kube_vip_image }}
+              image: ghcr.io/kube-vip/kube-vip:v1.2.0
               imagePullPolicy: IfNotPresent
               args:
               - manager
@@ -143,20 +190,32 @@
                 path: /etc/kubernetes/admin.conf
                 type: FileOrCreate
         mode: "0600"
-      when: inventory_hostname == 'node-02'
 
-    # ─── node-03: read-only check ─────────────────────────────
+    - name: Remove temporary join config
+      ansible.builtin.file:
+        path: /root/kubeadm-join-node02.yaml
+        state: absent
+
+- name: "P3B1 [node-03] read-only NOT-JOINED validation"
+  hosts: node-03
+  gather_facts: true
+  become: true
+  tasks:
     - name: Assert node-03 NOT joined
       ansible.builtin.shell:
         cmd: "test ! -f /etc/kubernetes/admin.conf && test ! -d /var/lib/etcd/member && echo NOT_JOINED"
       register: n3
       changed_when: false
       failed_when: "'NOT_JOINED' not in n3.stdout"
-      when: inventory_hostname == 'node-03'
 
-    # ─── node-01: cleanup token ───────────────────────────────
-    - name: Delete bootstrap token (cleanup)
+- name: "P3B1 [node-01] delete exact bootstrap token used for join"
+  hosts: node-01
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Delete exact generated bootstrap token
       ansible.builtin.command:
-        cmd: "kubeadm token delete {{ (token_out.stdout | trim).split('.')[0] }} --kubeconfig /etc/kubernetes/admin.conf"
+        cmd: >-
+          kubeadm token delete {{ hostvars['node-01']['p3b1_bootstrap_token_id'] }}
+          --kubeconfig /etc/kubernetes/admin.conf
       no_log: true
-      when: inventory_hostname == 'node-01'

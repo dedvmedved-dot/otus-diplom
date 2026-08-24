@@ -1,0 +1,58 @@
+=== STATIC LAYOUT ===
+--- list-hosts ---
+
+playbook: ansible/playbooks/p3b1-join-node02-control-plane.yml
+
+  play #1 (node-01): P3B1 [node-01] validate cluster and generate fresh join credentials	TAGS: []
+    pattern: ['node-01']
+    hosts (1):
+      node-01
+
+  play #2 (node-02): P3B1 [node-02] render JoinConfiguration and join as control-plane	TAGS: []
+    pattern: ['node-02']
+    hosts (1):
+      node-02
+
+  play #3 (node-03): P3B1 [node-03] read-only NOT-JOINED validation	TAGS: []
+    pattern: ['node-03']
+    hosts (1):
+      node-03
+
+  play #4 (node-01): P3B1 [node-01] delete exact bootstrap token used for join	TAGS: []
+    pattern: ['node-01']
+    hosts (1):
+      node-01
+--- list-tasks ---
+
+playbook: ansible/playbooks/p3b1-join-node02-control-plane.yml
+
+  play #1 (node-01): P3B1 [node-01] validate cluster and generate fresh join credentials	TAGS: []
+    tasks:
+      Validate cluster readyz	TAGS: []
+      Generate certificate key	TAGS: []
+      Save generated certificate key	TAGS: []
+      Assert certificate key format	TAGS: []
+      Upload control-plane certificates with exact generated key	TAGS: []
+      Create bootstrap token	TAGS: []
+      Save bootstrap token	TAGS: []
+      Save bootstrap token ID	TAGS: []
+      Compute discovery CA hash	TAGS: []
+      Validate CA hash format	TAGS: []
+      Save CA hash	TAGS: []
+
+  play #2 (node-02): P3B1 [node-02] render JoinConfiguration and join as control-plane	TAGS: []
+    tasks:
+      Assert node-02 clean state	TAGS: []
+      Render JoinConfiguration from node-01 facts	TAGS: []
+      kubeadm join dry-run	TAGS: []
+      kubeadm join node-02 (control-plane)	TAGS: []
+      kube-vip static pod manifest	TAGS: []
+      Remove temporary join config	TAGS: []
+
+  play #3 (node-03): P3B1 [node-03] read-only NOT-JOINED validation	TAGS: []
+    tasks:
+      Assert node-03 NOT joined	TAGS: []
+
+  play #4 (node-01): P3B1 [node-01] delete exact bootstrap token used for join	TAGS: []
+    tasks:
+      Delete exact generated bootstrap token	TAGS: []

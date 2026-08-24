@@ -1,0 +1,8 @@
+=== NODES + PODS + READYZ ===
+NAME      STATUS     ROLES           AGE     VERSION   INTERNAL-IP      EXTERNAL-IP   OS-IMAGE      KERNEL-VERSION              CONTAINER-RUNTIME
+node-01   NotReady   control-plane   6h20m   v1.36.2   172.30.140.101   <none>        Astra Linux   6.1.158-1-generic (amd64)   containerd://2.3.3
+node-02   NotReady   control-plane   5h8m    v1.36.2   172.30.140.102   <none>        Astra Linux   6.1.158-1-generic (amd64)   containerd://2.3.3
+--- readyz ---
+[+]ping ok
+[+]etcd ok
+[+]etcd-readiness ok
