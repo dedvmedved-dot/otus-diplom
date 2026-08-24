@@ -1,0 +1,14 @@
+=== KUBEADM PREFLIGHT ===
+[preflight] Running pre-flight checks
+	[WARNING Hostname]: hostname "node-01" could not be reached
+	[WARNING Hostname]: hostname "node-01": lookup node-01 on 8.8.8.8:53: no such host
+[preflight] Pulling images required for setting up a Kubernetes cluster
+[preflight] This might take a minute or two, depending on the speed of your internet connection
+[preflight] You can also perform this action beforehand using 'kubeadm config images pull'
+[preflight] Running pre-flight checks
+	[WARNING Hostname]: hostname "node-01" could not be reached
+	[WARNING Hostname]: hostname "node-01": lookup node-01 on 8.8.8.8:53: no such host
+[preflight] Pulling images required for setting up a Kubernetes cluster
+[preflight] This might take a minute or two, depending on the speed of your internet connection
+[preflight] You can also perform this action beforehand using 'kubeadm config images pull'
+EXIT=0

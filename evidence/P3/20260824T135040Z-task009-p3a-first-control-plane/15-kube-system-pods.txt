@@ -1,0 +1,10 @@
+=== KUBE-SYSTEM PODS ===
+NAME                              READY   STATUS    RESTARTS   AGE     IP               NODE      NOMINATED NODE   READINESS GATES
+coredns-589f44dc88-khx9s          0/1     Pending   0          8m18s   <none>           <none>    <none>           <none>
+coredns-589f44dc88-xt9px          0/1     Pending   0          8m18s   <none>           <none>    <none>           <none>
+etcd-node-01                      1/1     Running   0          8m24s   172.30.140.101   node-01   <none>           <none>
+kube-apiserver-node-01            1/1     Running   0          8m24s   172.30.140.101   node-01   <none>           <none>
+kube-controller-manager-node-01   1/1     Running   0          8m24s   172.30.140.101   node-01   <none>           <none>
+kube-proxy-ftsf4                  1/1     Running   0          8m18s   172.30.140.101   node-01   <none>           <none>
+kube-scheduler-node-01            1/1     Running   0          8m24s   172.30.140.101   node-01   <none>           <none>
+kube-vip-node-01                  1/1     Running   0          50s     172.30.140.101   node-01   <none>           <none>

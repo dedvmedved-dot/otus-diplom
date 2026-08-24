@@ -1,0 +1,162 @@
+---
+# p3a-bootstrap-first-control-plane.yml
+# TASK-009 P3A: bootstrap node-01 как первый control-plane c kube-vip + локальный etcd.
+#
+# ВНИМАНИЕ: node-02/node-03 — ТОЛЬКО read-only precheck, НИКАКОГО kubeadm join.
+# kubeadm init выполняется ТОЛЬКО на node-01.
+# certificateKey и kubeadm init output — runtime-only, no_log: true.
+# Нет CNI, нет reset, нет retry.
+
+- name: P3A first control-plane bootstrap
+  hosts: pak_portal
+  serial: 1
+  gather_facts: true
+  become: true
+  vars:
+    advertise_address: "172.30.140.101"
+    node_name: "node-01"
+    cluster_name: "pak-portal"
+    kubernetes_version: "v1.36.2"
+    api_vip: "172.30.140.100"
+    pod_subnet: "10.244.0.0/16"
+    service_subnet: "10.96.0.0/12"
+    dns_domain: "cluster.local"
+    kube_vip_image: "ghcr.io/kube-vip/kube-vip:v1.2.0"
+    kube_vip_interface: "bond0.140"
+    # certificate_key задаётся runtime-only через -e, в Git не хранится.
+    certificate_key: "{{ lookup('env', 'P3A_CERTIFICATE_KEY') | default('', true) }}"
+
+  tasks:
+    # ─── READ-ONLY precheck (все узлы) ──────────────────────
+    - name: Precheck bond0
+      ansible.builtin.command:
+        cmd: "cat /sys/class/net/bond0/bonding/slaves"
+      register: b0
+      changed_when: false
+      failed_when: "'ens2f0' not in b0.stdout or 'ens2f1' not in b0.stdout"
+
+    - name: Precheck containerd active
+      ansible.builtin.command:
+        cmd: "systemctl is-active containerd"
+      register: ctr
+      changed_when: false
+      failed_when: ctr.stdout != 'active'
+
+    - name: Precheck no existing cluster
+      ansible.builtin.shell:
+        cmd: "test ! -f /etc/kubernetes/admin.conf && test ! -d /var/lib/etcd/member && echo NO_CLUSTER"
+      register: nocluster
+      changed_when: false
+      failed_when: "'NO_CLUSTER' not in nocluster.stdout"
+
+    # ─── bootstrap — ТОЛЬКО node-01 ─────────────────────────
+    - name: Generate certificate key (runtime only)
+      ansible.builtin.command:
+        cmd: "kubeadm certs certificate-key"
+      register: certkey_out
+      changed_when: false
+      no_log: true
+      when: inventory_hostname == 'node-01'
+
+    - name: Set certificate_key fact
+      ansible.builtin.set_fact:
+        certkey: "{{ certkey_out.stdout }}"
+      when: inventory_hostname == 'node-01'
+
+    - name: Render kubeadm init config
+      ansible.builtin.template:
+        src: p3a-kubeadm-init-node01.yaml.j2
+        dest: /root/kubeadm-init.yaml
+        mode: "0600"
+      vars:
+        certificate_key: "{{ certkey | default('') }}"
+      when: inventory_hostname == 'node-01'
+
+    - name: kube-vip static pod manifest
+      ansible.builtin.copy:
+        dest: /etc/kubernetes/manifests/kube-vip.yaml
+        content: |
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: kube-vip
+            namespace: kube-system
+          spec:
+            hostNetwork: true
+            hostAliases:
+            - hostnames:
+              - kubernetes
+              ip: 127.0.0.1
+            containers:
+            - name: kube-vip
+              image: {{ kube_vip_image }}
+              imagePullPolicy: IfNotPresent
+              args:
+              - manager
+              env:
+              - name: vip_arp
+                value: "true"
+              - name: port
+                value: "6443"
+              - name: vip_interface
+                value: "{{ kube_vip_interface }}"
+              - name: vip_subnet
+                value: "32"
+              - name: cp_enable
+                value: "true"
+              - name: cp_namespace
+                value: "kube-system"
+              - name: vip_ddns
+                value: "false"
+              - name: svc_enable
+                value: "false"
+              - name: vip_leaderelection
+                value: "true"
+              - name: vip_leaseduration
+                value: "5"
+              - name: vip_renewdeadline
+                value: "3"
+              - name: vip_retryperiod
+                value: "1"
+              - name: address
+                value: "{{ api_vip }}"
+              securityContext:
+                capabilities:
+                  add:
+                  - NET_ADMIN
+                  - NET_RAW
+              volumeMounts:
+              - mountPath: /etc/kubernetes/admin.conf
+                name: kubeconfig
+                readOnly: true
+            volumes:
+            - name: kubeconfig
+              hostPath:
+                path: /etc/kubernetes/super-admin.conf
+                type: FileOrCreate
+        mode: "0600"
+      when: inventory_hostname == 'node-01'
+
+    - name: kubeadm init (node-01 ONLY, no_log)
+      ansible.builtin.command:
+        cmd: "kubeadm init --config /root/kubeadm-init.yaml --upload-certs"
+      register: init_out
+      no_log: true
+      when: inventory_hostname == 'node-01'
+
+    - name: Switch kube-vip kubeconfig hostPath to admin.conf
+      ansible.builtin.replace:
+        path: /etc/kubernetes/manifests/kube-vip.yaml
+        regexp: 'path: /etc/kubernetes/super-admin.conf'
+        replace: 'path: /etc/kubernetes/admin.conf'
+      when: inventory_hostname == 'node-01'
+
+    - name: Wait for API VIP readyz
+      ansible.builtin.command:
+        cmd: "kubectl --kubeconfig /etc/kubernetes/admin.conf get --raw='/readyz'"
+      register: readyz
+      retries: 12
+      delay: 10
+      until: "'ok' in readyz.stdout"
+      changed_when: false
+      when: inventory_hostname == 'node-01'

@@ -1,0 +1,16 @@
+=== P1 REGRESSION (3 узла) ===
+--- node . ---
+bond0: ens2f0 ens2f1 | bond1: ens2f2 ens2f3
+vlans: bond0.700 bond0.143 bond0.140 bond1.141 
+default: default via 192.168.194.1 dev bond0.700 proto static metric 400 
+rtt min/avg/max/mdev = 0.638/0.662/0.686/0.024 ms
+--- node . ---
+bond0: ens2f0 ens2f1 | bond1: ens2f2 ens2f3
+vlans: bond0.700 bond0.140 bond1.141 bond0.143 
+default: default via 192.168.194.1 dev bond0.700 proto static metric 400 
+rtt min/avg/max/mdev = 0.618/0.645/0.672/0.027 ms
+--- node . ---
+bond0: ens2f0 ens2f1 | bond1: ens2f2 ens2f3
+vlans: bond0.700 bond1.141 bond0.140 bond0.143 
+default: default via 192.168.194.1 dev bond0.700 proto static metric 400 
+rtt min/avg/max/mdev = 0.625/0.630/0.635/0.005 ms

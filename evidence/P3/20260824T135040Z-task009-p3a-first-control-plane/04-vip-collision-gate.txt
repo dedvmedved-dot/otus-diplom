@@ -1,0 +1,19 @@
+=== VIP COLLISION GATE ===
+--- node .38 ---
+local addr 172.30.140.100: 0
+
+neigh: 172.30.140.100 dev bond0.140 INCOMPLETE 
+arping: NOT_AVAILABLE
+TCP6443: CLOSED
+--- node .40 ---
+local addr 172.30.140.100: 0
+
+neigh: 172.30.140.100 dev bond0.140 INCOMPLETE 
+arping: NOT_AVAILABLE
+TCP6443: CLOSED
+--- node .39 ---
+local addr 172.30.140.100: 0
+
+neigh: 172.30.140.100 dev bond0.140 INCOMPLETE 
+arping: NOT_AVAILABLE
+TCP6443: CLOSED

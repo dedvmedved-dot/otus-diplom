@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kube-vip
+  namespace: kube-system
+spec:
+  hostNetwork: true
+  containers:
+  - name: kube-vip
+    image: ghcr.io/kube-vip/kube-vip:v1.2.0
+    args:
+    - manager
+    env:
+    - name: vip_arp
+      value: "true"
+    - name: vip_interface
+      value: "bond0.140"
+    - name: address
+      value: "172.30.140.100"
+    - name: vip_leaderelection
+      value: "true"
+    - name: vip_services
+      value: "false"
+    - name: cp_enable
+      value: "true"
+    - name: svc_enable
+      value: "false"
+    securityContext:
+      capabilities:
+        add:
+        - NET_ADMIN
+        - NET_RAW
+    volumeMounts:
+    - mountPath: /etc/kubernetes/admin.conf
+      name: kubeconfig
+      readOnly: true
+  volumes:
+  - name: kubeconfig
+    hostPath:
+      path: /etc/kubernetes/super-admin.conf
+      type: FileOrCreate

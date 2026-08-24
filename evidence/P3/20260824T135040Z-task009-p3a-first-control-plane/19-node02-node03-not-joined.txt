@@ -1,0 +1,9 @@
+=== NODE-02/NODE-03 NOT JOINED ===
+--- node .40 ---
+admin_absent
+kubeletconf_absent
+etcd_member_absent
+--- node .39 ---
+admin_absent
+kubeletconf_absent
+etcd_member_absent

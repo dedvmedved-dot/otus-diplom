@@ -1,0 +1,2 @@
+=== NODE INTERNAL IP ===
+[{"address":"172.30.140.101","type":"InternalIP"},{"address":"node-01","type":"Hostname"}]

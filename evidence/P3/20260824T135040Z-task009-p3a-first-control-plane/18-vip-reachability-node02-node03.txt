@@ -1,0 +1,8 @@
+=== VIP REACHABILITY node-02/node-03 ===
+--- node .40 ---
+TCP6443: PASS
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+--- node .39 ---
+TCP6443: PASS
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+ok

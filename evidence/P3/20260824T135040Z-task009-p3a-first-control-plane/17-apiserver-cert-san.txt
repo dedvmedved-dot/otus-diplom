@@ -1,0 +1,20 @@
+=== APISERVER CERT SAN ===
+            X509v3 Subject Alternative Name: 
+                DNS:kubernetes, DNS:kubernetes.default, DNS:kubernetes.default.svc, DNS:kubernetes.default.svc.cluster.local, DNS:node-01, IP Address:10.96.0.1, IP Address:172.30.140.101, IP Address:172.30.140.100
+    Signature Algorithm: sha256WithRSAEncryption
+    Signature Value:
+        be:11:77:1d:71:c5:56:87:74:3d:9c:db:ee:f9:bc:7f:8f:a8:
+        d4:b3:17:6d:86:c8:4d:c3:ba:86:50:d3:65:69:03:67:ec:bc:
+        a2:1d:bd:68:1a:f1:63:e3:b4:2d:68:a6:cc:6a:b8:c3:96:2c:
+        4a:5d:75:3b:74:0c:19:ee:33:7d:60:75:16:8e:3c:69:f8:7d:
+        f9:78:0d:21:79:42:fd:1c:0d:2c:3b:ba:90:f0:ff:ae:6d:f2:
+        3f:dd:2d:6a:ef:2c:c6:b3:b1:64:99:38:48:07:7f:39:56:b4:
+        57:09:db:b8:23:6e:cf:b1:ce:0f:77:30:8c:6f:fb:76:bb:aa:
+        0a:fe:ea:ca:7b:44:97:f0:bd:e0:5d:7f:e0:57:a1:8c:7f:dd:
+        51:4d:2d:0b:87:e3:df:6b:33:03:50:c5:40:72:55:b6:e3:97:
+        24:a5:db:c9:cd:b6:19:34:58:ff:a7:d9:73:76:7f:11:51:5e:
+        43:7b:32:36:12:8f:ae:df:4d:bc:83:d7:33:b8:b6:eb:88:e7:
+        34:96:14:55:c8:61:e8:f0:fc:cc:d4:27:9b:ce:88:40:3d:2a:
+        20:32:a5:d5:24:85:0c:e2:c2:8a:55:b2:30:2c:75:1a:64:42:
+        4c:a7:d6:8f:0d:a3:88:b2:15:44:a2:28:b3:49:6d:08:c7:24:
+        b2:a3:cf:e5

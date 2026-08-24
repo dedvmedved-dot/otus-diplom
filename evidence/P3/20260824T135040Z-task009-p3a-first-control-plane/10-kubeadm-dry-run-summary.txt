@@ -1,0 +1,42 @@
+=== KUBEADM DRY-RUN ===
+[dryrun] Would perform action CREATE on resource "configmaps" in API group "core/v1"
+[dryrun] Attached object:
+[dryrun] Would perform action CREATE on resource "roles" in API group "rbac.authorization.k8s.io/v1"
+[dryrun] Attached object:
+[dryrun] Would perform action CREATE on resource "rolebindings" in API group "rbac.authorization.k8s.io/v1"
+[dryrun] Attached object:
+[dryrun] Would perform action LIST on resource "deployments" in API group "apps/v1"
+[dryrun] Real object does not exist. Attempting to LIST from followup reactors or from the fake client tracker
+[dryrun] Would perform action GET on resource "configmaps" in API group "core/v1"
+[dryrun] Resource name "coredns", namespace "kube-system"
+[dryrun] Real object does not exist. Attempting to GET from followup reactors or from the fake client tracker
+[dryrun] Would perform action CREATE on resource "configmaps" in API group "core/v1"
+[dryrun] Attached object:
+        errors
+[dryrun] Would perform action CREATE on resource "clusterroles" in API group "rbac.authorization.k8s.io/v1"
+[dryrun] Attached object:
+[dryrun] Would perform action CREATE on resource "clusterrolebindings" in API group "rbac.authorization.k8s.io/v1"
+[dryrun] Attached object:
+[dryrun] Would perform action CREATE on resource "serviceaccounts" in API group "core/v1"
+[dryrun] Attached object:
+[dryrun] Would perform action CREATE on resource "deployments" in API group "apps/v1"
+[dryrun] Attached object:
+[dryrun] Would perform action CREATE on resource "services" in API group "core/v1"
+[dryrun] Attached object:
+[addons] Applied essential addon: CoreDNS
+[dryrun] Would perform action CREATE on resource "configmaps" in API group "core/v1"
+[dryrun] Attached object:
+[dryrun] Would perform action CREATE on resource "daemonsets" in API group "apps/v1"
+[dryrun] Attached object:
+[dryrun] Would perform action CREATE on resource "serviceaccounts" in API group "core/v1"
+[dryrun] Attached object:
+[dryrun] Would perform action CREATE on resource "clusterrolebindings" in API group "rbac.authorization.k8s.io/v1"
+[dryrun] Attached object:
+[dryrun] Would perform action CREATE on resource "roles" in API group "rbac.authorization.k8s.io/v1"
+[dryrun] Attached object:
+[dryrun] Would perform action CREATE on resource "rolebindings" in API group "rbac.authorization.k8s.io/v1"
+[dryrun] Attached object:
+[addons] Applied essential addon: kube-proxy
+Your Kubernetes control-plane has initialized successfully!
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+EXIT=0

@@ -1,0 +1,31 @@
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: "172.30.140.101"
+  bindPort: 6443
+nodeRegistration:
+  name: "node-01"
+  criSocket: "unix:///run/containerd/containerd.sock"
+  kubeletExtraArgs:
+    - name: "node-ip"
+      value: "172.30.140.101"
+certificateKey: "REDACTED_LOCAL_SECRET"
+---
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: ClusterConfiguration
+clusterName: "pak-portal"
+kubernetesVersion: "v1.36.2"
+controlPlaneEndpoint: "172.30.140.100:6443"
+networking:
+  podSubnet: "10.244.0.0/16"
+  serviceSubnet: "10.96.0.0/12"
+  dnsDomain: "cluster.local"
+apiServer:
+  certSANs:
+    - "172.30.140.100"
+    - "172.30.140.101"
+    - "node-01"
+---
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+cgroupDriver: systemd

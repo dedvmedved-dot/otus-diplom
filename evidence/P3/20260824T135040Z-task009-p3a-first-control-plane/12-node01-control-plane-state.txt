@@ -1,0 +1,17 @@
+=== NODE-01 CONTROL PLANE STATE ===
+--- VIP on bond0.140 ---
+    inet 172.30.140.101/24 brd 172.30.140.255 scope global noprefixroute bond0.140
+--- k8s nodes ---
+E0824 17:04:05.521901   32576 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"https://172.30.140.100:6443/api?timeout=32s\": dial tcp 172.30.140.100:6443: connect: no route to host"
+E0824 17:04:08.593809   32576 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"https://172.30.140.100:6443/api?timeout=32s\": dial tcp 172.30.140.100:6443: connect: no route to host"
+E0824 17:04:11.665803   32576 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"https://172.30.140.100:6443/api?timeout=32s\": dial tcp 172.30.140.100:6443: connect: no route to host"
+E0824 17:04:14.741826   32576 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"https://172.30.140.100:6443/api?timeout=32s\": dial tcp 172.30.140.100:6443: connect: no route to host"
+E0824 17:04:17.809783   32576 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"https://172.30.140.100:6443/api?timeout=32s\": dial tcp 172.30.140.100:6443: connect: no route to host"
+Unable to connect to the server: dial tcp 172.30.140.100:6443: connect: no route to host
+--- kube-system pods ---
+E0824 17:04:20.881887   32613 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"https://172.30.140.100:6443/api?timeout=32s\": dial tcp 172.30.140.100:6443: connect: no route to host"
+E0824 17:04:23.953899   32613 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"https://172.30.140.100:6443/api?timeout=32s\": dial tcp 172.30.140.100:6443: connect: no route to host"
+E0824 17:04:27.025811   32613 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"https://172.30.140.100:6443/api?timeout=32s\": dial tcp 172.30.140.100:6443: connect: no route to host"
+E0824 17:04:30.097816   32613 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"https://172.30.140.100:6443/api?timeout=32s\": dial tcp 172.30.140.100:6443: connect: no route to host"
+E0824 17:04:33.169832   32613 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"https://172.30.140.100:6443/api?timeout=32s\": dial tcp 172.30.140.100:6443: connect: no route to host"
+Unable to connect to the server: dial tcp 172.30.140.100:6443: connect: no route to host
