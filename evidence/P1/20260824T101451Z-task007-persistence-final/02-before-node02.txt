@@ -1,0 +1,70 @@
+=== HOSTNAME ===
+node-02
+=== IP ===
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens4f0           DOWN           
+ens4f1           DOWN           
+ens4f2           DOWN           
+ens4f3           DOWN           
+ens2f0           UP             
+ens2f1           UP             
+ens2f2           UP             
+ens2f3           UP             
+bond0            UP             
+bond0.700@bond0  UP             192.168.194.40/24 fe80::711b:38fb:1f90:60c2/64 
+enx12b3f82f0f34  UNKNOWN        
+bond0.140@bond0  UP             172.30.140.102/24 fe80::df23:943a:e9ab:49d6/64 
+bond1            UP             
+bond1.141@bond1  UP             172.30.141.102/24 fe80::7626:7340:9569:1e88/64 
+bond0.143@bond0  UP             172.30.143.102/24 fe80::a7c2:8f2a:37e7:27e6/64 
+=== ROUTE ===
+default via 192.168.194.1 dev bond0.700 proto static metric 400 
+172.30.140.0/24 dev bond0.140 proto kernel scope link src 172.30.140.102 metric 401 
+172.30.141.0/24 dev bond1.141 proto kernel scope link src 172.30.141.102 metric 402 
+172.30.143.0/24 dev bond0.143 proto kernel scope link src 172.30.143.102 metric 403 
+192.168.194.0/24 dev bond0.700 proto kernel scope link src 192.168.194.40 metric 400 
+=== NM ALL ===
+NAME                                TYPE      DEVICE     AUTOCONNECT 
+Соединение VLAN 1                   vlan      bond0.700  да          
+lo                                  loopback  lo         нет         
+VLAN 140 Management                 vlan      bond0.140  нет         
+VLAN 141 DRBD                       vlan      bond1.141  нет         
+VLAN 143 Backup                     vlan      bond0.143  нет         
+bond0 port 1                        ethernet  ens2f0     да          
+bond0 port 2                        ethernet  ens2f1     да          
+bond1 DRBD                          bond      bond1      нет         
+bond1 port 1                        ethernet  ens2f2     нет         
+bond1 port 2                        ethernet  ens2f3     нет         
+Агрегированное соединение (bond) 1  bond      bond0      да          
+=== NM ACTIVE ===
+NAME                                TYPE      DEVICE    
+Соединение VLAN 1                   vlan      bond0.700 
+lo                                  loopback  lo        
+VLAN 140 Management                 vlan      bond0.140 
+VLAN 141 DRBD                       vlan      bond1.141 
+VLAN 143 Backup                     vlan      bond0.143 
+bond0 port 1                        ethernet  ens2f0    
+bond0 port 2                        ethernet  ens2f1    
+bond1 DRBD                          bond      bond1     
+bond1 port 1                        ethernet  ens2f2    
+bond1 port 2                        ethernet  ens2f3    
+Агрегированное соединение (bond) 1  bond      bond0     
+=== AUTOCONNECT CHECK ===
+===== VLAN 140 Management =====
+VLAN 140 Management
+no
+===== VLAN 141 DRBD =====
+VLAN 141 DRBD
+no
+===== VLAN 143 Backup =====
+VLAN 143 Backup
+no
+===== bond1 DRBD =====
+bond1 DRBD
+no
+===== bond1 port 1 =====
+bond1 port 1
+no
+===== bond1 port 2 =====
+bond1 port 2
+no
