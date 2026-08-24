@@ -1,0 +1,10 @@
+=== NODE-03 NOT JOINED ===
+admin_absent
+kubeletconf_absent
+etcd_member_absent
+no_apiserver
+no_etcd
+--- cluster nodes (node-03 отсутствует?) ---
+NAME      STATUS     ROLES           AGE     VERSION
+node-01   NotReady   control-plane   75m     v1.36.2
+node-02   NotReady   control-plane   3m14s   v1.36.2

@@ -1,0 +1,4 @@
+=== KUBE-VIP 2/2 ===
+NAME                              READY   STATUS    RESTARTS   AGE   IP               NODE      NOMINATED NODE   READINESS GATES
+kube-vip-node-01                  1/1     Running   0          65m   172.30.140.101   node-01   <none>           <none>
+kube-vip-node-02                  1/1     Running   0          37s   172.30.140.102   node-02   <none>           <none>

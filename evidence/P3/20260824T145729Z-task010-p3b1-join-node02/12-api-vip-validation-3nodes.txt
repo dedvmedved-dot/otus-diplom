@@ -1,0 +1,8 @@
+=== API VIP 3 NODES ===
+--- node .38 ---
+TCP6443=PASS
+ok--- node .40 ---
+TCP6443=PASS
+ok--- node .39 ---
+TCP6443=PASS
+ok

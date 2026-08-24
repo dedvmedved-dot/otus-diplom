@@ -1,0 +1,162 @@
+---
+# p3b1-join-node02-control-plane.yml
+# TASK-010 P3B-1: присоединить node-02 как второй control-plane + stacked etcd + kube-vip.
+#
+# node-03: ТОЛЬКО read-only validation, НИКАКОГО kubeadm join.
+# Все secret-related tasks: no_log: true.
+# Нет automatic reset/retry. Нет CNI. Нет failure tests.
+
+- name: P3B1 join node-02 control-plane
+  hosts: pak_portal
+  serial: 1
+  gather_facts: true
+  become: true
+  vars:
+    api_vip: "172.30.140.100"
+    node_name: "node-02"
+    advertise_address: "172.30.140.102"
+    kubernetes_version: "v1.36.2"
+    kube_vip_image: "ghcr.io/kube-vip/kube-vip:v1.2.0"
+    # runtime-only secrets via env, никогда не в Git
+    bootstrap_token: "{{ lookup('env', 'P3B1_BOOTSTRAP_TOKEN') | default('', true) }}"
+    certificate_key: "{{ lookup('env', 'P3B1_CERTIFICATE_KEY') | default('', true) }}"
+    discovery_ca_hash: "{{ lookup('env', 'P3B1_CA_HASH') | default('', true) }}"
+
+  tasks:
+    # ─── node-01: cluster validation + fresh credentials ─────
+    - name: Cluster readyz check (node-01)
+      ansible.builtin.command:
+        cmd: "kubectl --kubeconfig /etc/kubernetes/admin.conf get --raw='/readyz'"
+      register: readyz
+      changed_when: false
+      failed_when: "'ok' not in readyz.stdout"
+      when: inventory_hostname == 'node-01'
+
+    - name: Upload control-plane certs (fresh certificate key)
+      ansible.builtin.command:
+        cmd: >-
+          kubeadm init phase upload-certs --upload-certs
+          --config /root/upload-certs-config.yaml
+          --kubeconfig /etc/kubernetes/admin.conf
+      register: upload_certs
+      no_log: true
+      when: inventory_hostname == 'node-01'
+
+    - name: Create fresh bootstrap token
+      ansible.builtin.command:
+        cmd: "kubeadm token create --ttl 30m --kubeconfig /etc/kubernetes/admin.conf"
+      register: token_out
+      no_log: true
+      when: inventory_hostname == 'node-01'
+
+    # ─── node-02: preflight ──────────────────────────────────
+    - name: Assert node-02 clean
+      ansible.builtin.shell:
+        cmd: "test ! -f /etc/kubernetes/admin.conf && test ! -d /var/lib/etcd/member && echo CLEAN"
+      register: clean
+      changed_when: false
+      failed_when: "'CLEAN' not in clean.stdout"
+      when: inventory_hostname == 'node-02'
+
+    - name: Render join config (no_log)
+      ansible.builtin.template:
+        src: p3b1-kubeadm-join-node02.yaml.j2
+        dest: /root/kubeadm-join-node02.yaml
+        mode: "0600"
+      no_log: true
+      when: inventory_hostname == 'node-02'
+
+    - name: kubeadm join dry-run (no_log)
+      ansible.builtin.command:
+        cmd: "kubeadm join --config /root/kubeadm-join-node02.yaml --dry-run"
+      register: join_dryrun
+      no_log: true
+      when: inventory_hostname == 'node-02'
+
+    - name: kubeadm join node-02 (no_log)
+      ansible.builtin.command:
+        cmd: "kubeadm join --config /root/kubeadm-join-node02.yaml"
+      register: join_out
+      no_log: true
+      when: inventory_hostname == 'node-02'
+
+    - name: kube-vip static pod manifest node-02
+      ansible.builtin.copy:
+        dest: /etc/kubernetes/manifests/kube-vip.yaml
+        content: |
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: kube-vip
+            namespace: kube-system
+          spec:
+            hostNetwork: true
+            hostAliases:
+            - hostnames:
+              - kubernetes
+              ip: 127.0.0.1
+            containers:
+            - name: kube-vip
+              image: {{ kube_vip_image }}
+              imagePullPolicy: IfNotPresent
+              args:
+              - manager
+              env:
+              - name: vip_arp
+                value: "true"
+              - name: port
+                value: "6443"
+              - name: vip_interface
+                value: "bond0.140"
+              - name: vip_subnet
+                value: "32"
+              - name: cp_enable
+                value: "true"
+              - name: cp_namespace
+                value: "kube-system"
+              - name: vip_ddns
+                value: "false"
+              - name: svc_enable
+                value: "false"
+              - name: vip_leaderelection
+                value: "true"
+              - name: vip_leaseduration
+                value: "5"
+              - name: vip_renewdeadline
+                value: "3"
+              - name: vip_retryperiod
+                value: "1"
+              - name: address
+                value: "{{ api_vip }}"
+              securityContext:
+                capabilities:
+                  add:
+                  - NET_ADMIN
+                  - NET_RAW
+              volumeMounts:
+              - mountPath: /etc/kubernetes/admin.conf
+                name: kubeconfig
+                readOnly: true
+            volumes:
+            - name: kubeconfig
+              hostPath:
+                path: /etc/kubernetes/admin.conf
+                type: FileOrCreate
+        mode: "0600"
+      when: inventory_hostname == 'node-02'
+
+    # ─── node-03: read-only check ─────────────────────────────
+    - name: Assert node-03 NOT joined
+      ansible.builtin.shell:
+        cmd: "test ! -f /etc/kubernetes/admin.conf && test ! -d /var/lib/etcd/member && echo NOT_JOINED"
+      register: n3
+      changed_when: false
+      failed_when: "'NOT_JOINED' not in n3.stdout"
+      when: inventory_hostname == 'node-03'
+
+    # ─── node-01: cleanup token ───────────────────────────────
+    - name: Delete bootstrap token (cleanup)
+      ansible.builtin.command:
+        cmd: "kubeadm token delete {{ (token_out.stdout | trim).split('.')[0] }} --kubeconfig /etc/kubernetes/admin.conf"
+      no_log: true
+      when: inventory_hostname == 'node-01'

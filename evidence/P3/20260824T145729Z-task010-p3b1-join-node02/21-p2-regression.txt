@@ -1,0 +1,13 @@
+=== P2 REGRESSION (node-01/02) ===
+--- node . ---
+containerd v2.3.3
+active
+Kubernetes v1.36.2
+containerd.io kubeadm kubectl kubelet 
+swap: 0
+--- node . ---
+containerd v2.3.3
+active
+Kubernetes v1.36.2
+containerd.io kubeadm kubectl kubelet 
+swap: 0

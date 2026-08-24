@@ -1,0 +1,17 @@
+=== NODE-02 CLEAN STATE (PHASE B) ===
+admin_absent
+kubeletconf_absent
+apiserver_manifest_absent
+etcd_manifest_absent
+etcd_member_absent
+no_apiserver
+no_etcd
+--- ports 6443/2379/2380 ---
+ports free
+--- VIP 6443 ---
+VIP_6443=PASS
+ok
+--- node-01 API 6443 ---
+NODE01_6443=PASS
+--- node-01 etcd peer 2380 ---
+ETCD_PEER_2380=PASS
