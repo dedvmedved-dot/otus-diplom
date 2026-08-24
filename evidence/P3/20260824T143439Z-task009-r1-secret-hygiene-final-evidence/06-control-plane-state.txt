@@ -1,0 +1,13 @@
+=== CONTROL-PLANE STATE ===
+NAME                              READY   STATUS    RESTARTS   AGE
+coredns-589f44dc88-khx9s          0/1     Pending   0          34m
+coredns-589f44dc88-xt9px          0/1     Pending   0          34m
+etcd-node-01                      1/1     Running   0          34m
+kube-apiserver-node-01            1/1     Running   0          34m
+kube-controller-manager-node-01   1/1     Running   0          34m
+kube-proxy-ftsf4                  1/1     Running   0          34m
+kube-scheduler-node-01            1/1     Running   0          34m
+kube-vip-node-01                  1/1     Running   0          26m
+--- nodes ---
+NAME      STATUS     ROLES           AGE   VERSION   INTERNAL-IP      EXTERNAL-IP   OS-IMAGE      KERNEL-VERSION              CONTAINER-RUNTIME
+node-01   NotReady   control-plane   34m   v1.36.2   172.30.140.101   <none>        Astra Linux   6.1.158-1-generic (amd64)   containerd://2.3.3

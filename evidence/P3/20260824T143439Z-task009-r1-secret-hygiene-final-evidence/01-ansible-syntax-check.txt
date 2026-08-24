@@ -1,0 +1,2 @@
+
+playbook: ansible/playbooks/p3a-bootstrap-first-control-plane.yml

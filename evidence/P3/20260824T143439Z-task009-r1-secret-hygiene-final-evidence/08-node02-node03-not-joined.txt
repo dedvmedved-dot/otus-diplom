@@ -1,0 +1,13 @@
+=== NODE-02/03 NOT JOINED ===
+--- node .40 ---
+admin_absent
+kubeletconf_absent
+etcd_member_absent
+no_apiserver
+no_etcd
+--- node .39 ---
+admin_absent
+kubeletconf_absent
+etcd_member_absent
+no_apiserver
+no_etcd

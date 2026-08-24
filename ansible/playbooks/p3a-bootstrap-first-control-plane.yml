@@ -61,6 +61,7 @@
     - name: Set certificate_key fact
       ansible.builtin.set_fact:
         certkey: "{{ certkey_out.stdout }}"
+      no_log: true
       when: inventory_hostname == 'node-01'
 
     - name: Render kubeadm init config
@@ -70,6 +71,7 @@
         mode: "0600"
       vars:
         certificate_key: "{{ certkey | default('') }}"
+      no_log: true
       when: inventory_hostname == 'node-01'
 
     - name: kube-vip static pod manifest
