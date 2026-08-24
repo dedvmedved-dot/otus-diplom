@@ -1,0 +1,10 @@
+=== package sources (без credentials) ===
+--- /etc/apt/sources.list ---
+--- существующие keyrings ---
+итого 8
+drwxr-xr-x 2 root root 4096 дек 30  2025 .
+drwxr-xr-x 8 root root 4096 авг 11 07:23 ..
+--- containerd установлен? ---
+containerd НЕ установлен
+--- k8s установлены? ---
+k8s НЕ установлены

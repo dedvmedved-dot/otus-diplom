@@ -1,0 +1,22 @@
+=== OS/KERNEL ===
+node-01
+PRETTY_NAME="Astra Linux"
+VERSION_ID=1.8_x86-64
+VERSION_CODENAME=1.8_x86-64
+1.8.5.46
+6.1.158-1-generic
+amd64
+=== P1 REGRESSION ===
+bond0            UP             
+bond0.700@bond0  UP             192.168.194.38/24 fe80::96bd:5094:2591:5ee2/64 
+bond0.143@bond0  UP             172.30.143.101/24 fe80::622a:5635:5d3d:d439/64 
+bond0.140@bond0  UP             172.30.140.101/24 fe80::db58:dddc:387d:e878/64 
+bond1            UP             
+bond1.141@bond1  UP             172.30.141.101/24 fe80::ac4f:1274:315a:d25a/64 
+default via 192.168.194.1 dev bond0.700 proto static metric 400 
+bond0 slaves: ens2f0 ens2f1
+bond1 slaves: ens2f2 ens2f3
+/proc/net/bonding/bond0:Bonding Mode: IEEE 802.3ad Dynamic link aggregation
+/proc/net/bonding/bond1:Bonding Mode: IEEE 802.3ad Dynamic link aggregation
+--- gateway ping ---
+rtt min/avg/max/mdev = 0.616/0.639/0.658/0.017 ms
