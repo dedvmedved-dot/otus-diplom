@@ -1,0 +1,24 @@
+=== P1 REGRESSION (после P2) ===
+--- node . ---
+bond0: ens2f0 ens2f1 | bond1: ens2f2 ens2f3
+vlans: bond0.700 bond0.143 bond0.140 bond1.141 
+default: default via 192.168.194.1 dev bond0.700 proto static metric 400 
+rtt min/avg/max/mdev = 0.627/0.644/0.662/0.017 ms
+--- node . ---
+bond0: ens2f0 ens2f1 | bond1: ens2f2 ens2f3
+vlans: bond0.700 bond0.140 bond1.141 bond0.143 
+default: default via 192.168.194.1 dev bond0.700 proto static metric 400 
+rtt min/avg/max/mdev = 0.714/0.719/0.724/0.005 ms
+--- node . ---
+bond0: ens2f0 ens2f1 | bond1: ens2f2 ens2f3
+vlans: bond0.700 bond1.141 bond0.140 bond0.143 
+default: default via 192.168.194.1 dev bond0.700 proto static metric 400 
+rtt min/avg/max/mdev = 0.580/0.659/0.739/0.079 ms
+=== CROSS-NODE P1 ===
+--- node-01 → peers ---
+172.30.140.102: rtt min/avg/max/mdev = 0.099/0.121/0.143/0.022 ms
+172.30.140.103: rtt min/avg/max/mdev = 0.080/0.107/0.134/0.027 ms
+172.30.141.102: rtt min/avg/max/mdev = 0.100/0.123/0.146/0.023 ms
+172.30.141.103: rtt min/avg/max/mdev = 0.086/0.111/0.136/0.025 ms
+172.30.143.102: rtt min/avg/max/mdev = 0.087/0.102/0.117/0.015 ms
+172.30.143.103: rtt min/avg/max/mdev = 0.102/0.117/0.132/0.015 ms

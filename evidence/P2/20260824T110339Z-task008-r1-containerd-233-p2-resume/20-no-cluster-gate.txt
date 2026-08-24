@@ -1,0 +1,16 @@
+=== NO-CLUSTER GATE ===
+--- node . ---
+admin.conf: ABSENT
+kubelet.conf: ABSENT
+etcd member: ABSENT
+k8s control processes: 1
+--- node . ---
+admin.conf: ABSENT
+kubelet.conf: ABSENT
+etcd member: ABSENT
+k8s control processes: 1
+--- node . ---
+admin.conf: ABSENT
+kubelet.conf: ABSENT
+etcd member: ABSENT
+k8s control processes: 1

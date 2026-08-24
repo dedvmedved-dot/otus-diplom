@@ -1,0 +1,25 @@
+=== K8s source + versions ===
+deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.36/deb/ /
+   kubelet | 1.36.2-2.1 | https://pkgs.k8s.io/core:/stable:/v1.36/deb  Packages
+   kubeadm | 1.36.2-2.1 | https://pkgs.k8s.io/core:/stable:/v1.36/deb  Packages
+   kubectl | 1.36.2-2.1 | https://pkgs.k8s.io/core:/stable:/v1.36/deb  Packages
+=== simulation k8s install ===
+Чтение списков пакетов…
+Построение дерева зависимостей…
+Чтение информации о состоянии…
+Следующий пакет устанавливался автоматически и больше не требуется:
+  grub-pc-bin
+Для его удаления используйте «apt autoremove».
+Будут установлены следующие дополнительные пакеты:
+  kubernetes-cni
+Следующие НОВЫЕ пакеты будут установлены:
+  kubeadm kubectl kubelet kubernetes-cni
+Обновлено 0 пакетов, установлено 4 новых пакетов, для удаления отмечено 0 пакетов, и 0 пакетов не обновлено.
+Inst kubeadm (1.36.2-2.1 isv:kubernetes:core:stable:v1.36:pkgs.k8s.io [amd64])
+Inst kubectl (1.36.2-2.1 isv:kubernetes:core:stable:v1.36:pkgs.k8s.io [amd64])
+Inst kubernetes-cni (1.9.1-1.1 isv:kubernetes:core:stable:v1.36:pkgs.k8s.io [amd64])
+Inst kubelet (1.36.2-2.1 isv:kubernetes:core:stable:v1.36:pkgs.k8s.io [amd64])
+Conf kubeadm (1.36.2-2.1 isv:kubernetes:core:stable:v1.36:pkgs.k8s.io [amd64])
+Conf kubectl (1.36.2-2.1 isv:kubernetes:core:stable:v1.36:pkgs.k8s.io [amd64])
+Conf kubernetes-cni (1.9.1-1.1 isv:kubernetes:core:stable:v1.36:pkgs.k8s.io [amd64])
+Conf kubelet (1.36.2-2.1 isv:kubernetes:core:stable:v1.36:pkgs.k8s.io [amd64])

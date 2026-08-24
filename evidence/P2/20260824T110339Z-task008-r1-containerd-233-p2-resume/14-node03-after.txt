@@ -1,0 +1,35 @@
+=== AFTER node 03 ===
+containerd containerd v2.3.3 aad11006b869517fcd3009450b6f82da282e1a9b
+runc version 1.4.3
+Kubernetes v1.36.2
+v1.36.2
+Client Version: v1.36.2
+--- services ---
+enabled
+active
+enabled
+--- cgroup ---
+1
+--- cri plugins ---
+3
+--- socket ---
+SOCK_OK
+--- holds ---
+containerd.io
+kubeadm
+kubectl
+kubelet
+--- swap ---
+--- modules ---
+2
+--- sysctl ---
+net.bridge.bridge-nf-call-iptables = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.ipv4.ip_forward = 1
+--- no-cluster ---
+admin_absent
+etcd_absent
+root      499787  499768  0 14:44 ?        00:00:00 bash -c  echo '=== AFTER node 03 ===' containerd --version runc --version 2>&1 | head -1 kubelet --version kubeadm version -o short kubectl version --client 2>&1 | head -1 echo '--- services ---' systemctl is-enabled containerd systemctl is-active containerd systemctl is-enabled kubelet echo '--- cgroup ---' grep -c 'SystemdCgroup = true' /etc/containerd/config.toml echo '--- cri plugins ---' ctr plugins ls 2>&1 | grep -ci 'cri' echo '--- socket ---' test -S /run/containerd/containerd.sock && echo SOCK_OK || echo SOCK_MISSING echo '--- holds ---' apt-mark showhold echo '--- swap ---' swapon --show 2>&1 | head -1 echo '--- modules ---' lsmod | grep -cE '^(overlay|br_netfilter) ' echo '--- sysctl ---' sysctl net.bridge.bridge-nf-call-iptables net.bridge.bridge-nf-call-ip6tables net.ipv4.ip_forward 2>&1 | awk -F= '{print $1"="$2}' echo '--- no-cluster ---' test ! -f /etc/kubernetes/admin.conf && echo admin_absent test ! -d /var/lib/etcd/member && echo etcd_absent ps -ef | grep -E '[k]ube-apiserver|[e]tcd' | head -1 || echo no_k8s_procs echo '--- P1 ---' ip -br addr | grep -cE 'bond0\.(700|140|143)|bond1\.141' ping -c2 -W2 192.168.194.1 2>&1 | tail -1 
+--- P1 ---
+4
+rtt min/avg/max/mdev = 0.609/0.622/0.635/0.013 ms

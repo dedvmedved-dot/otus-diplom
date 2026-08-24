@@ -1,0 +1,265 @@
+---
+# p2-host-runtime-packages.yml
+# TASK-008-R1: P2 host runtime — containerd 2.3.3 + Kubernetes 1.36.2 packages
+# БЕЗ kubeadm init/join, БЕЗ network/storage changes, БЕЗ reboot.
+#
+# Запуск:
+#   ansible-playbook -i inventory/hosts.yaml --ask-pass \
+#     ansible/playbooks/p2-host-runtime-packages.yml
+
+- name: P2 host runtime and Kubernetes packages
+  hosts: pak_portal
+  serial: 1
+  gather_facts: true
+  become: true
+  vars:
+    containerd_version: "2.3.3-1~debian.12~bookworm"
+    k8s_version: "1.36.2-2.1"
+    docker_key_url: "https://download.docker.com/linux/debian/gpg"
+    docker_repo_line: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian bookworm stable"
+    k8s_key_url: "https://pkgs.k8s.io/core:/stable:/v1.36/deb/Release.key"
+    k8s_repo_line: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.36/deb/ /"
+
+  tasks:
+    # ─── P1 guard: сеть не трогаем ───────────────────────────
+    - name: Assert bond0 slaves
+      ansible.builtin.command:
+        cmd: "cat /sys/class/net/bond0/bonding/slaves"
+      register: bond0_slaves
+      changed_when: false
+      failed_when: "'ens2f0' not in bond0_slaves.stdout or 'ens2f1' not in bond0_slaves.stdout"
+
+    - name: Assert bond1 slaves
+      ansible.builtin.command:
+        cmd: "cat /sys/class/net/bond1/bonding/slaves"
+      register: bond1_slaves
+      changed_when: false
+      failed_when: "'ens2f2' not in bond1_slaves.stdout or 'ens2f3' not in bond1_slaves.stdout"
+
+    - name: Gateway reachable
+      ansible.builtin.command:
+        cmd: "ping -c 1 -W 2 192.168.194.1"
+      register: gw
+      changed_when: false
+      failed_when: "' 0% packet loss' not in gw.stdout"
+
+    # ─── Docker repo (containerd) ────────────────────────────
+    - name: Ensure keyrings dir
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0755"
+
+    - name: Fetch Docker GPG key
+      ansible.builtin.get_url:
+        url: "{{ docker_key_url }}"
+        dest: /tmp/docker-key.asc
+        mode: "0644"
+
+    - name: Dearmor Docker key
+      ansible.builtin.command:
+        cmd: "gpg --batch --yes --dearmor -o /etc/apt/keyrings/docker.gpg /tmp/docker-key.asc"
+      args:
+        creates: /etc/apt/keyrings/docker.gpg
+
+    - name: Write Docker repo
+      ansible.builtin.copy:
+        dest: /etc/apt/sources.list.d/docker.list
+        content: "{{ docker_repo_line }}\n"
+        mode: "0644"
+
+    # ─── Kubernetes repo ─────────────────────────────────────
+    - name: Fetch k8s GPG key
+      ansible.builtin.get_url:
+        url: "{{ k8s_key_url }}"
+        dest: /tmp/k8s-key.asc
+        mode: "0644"
+
+    - name: Dearmor k8s key
+      ansible.builtin.command:
+        cmd: "gpg --batch --yes --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg /tmp/k8s-key.asc"
+      args:
+        creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+    - name: Write k8s repo
+      ansible.builtin.copy:
+        dest: /etc/apt/sources.list.d/kubernetes.list
+        content: "{{ k8s_repo_line }}\n"
+        mode: "0644"
+
+    - name: apt update
+      ansible.builtin.apt:
+        update_cache: true
+
+    # ─── Swap ────────────────────────────────────────────────
+    - name: Check swap usage
+      ansible.builtin.command:
+        cmd: "swapon --show --bytes"
+      register: swap_show
+      changed_when: false
+
+    - name: Assert swap used == 0
+      ansible.builtin.shell:
+        cmd: "swapon --show --bytes | awk 'NR>1 {print $4}' | grep -qv '^0$' && echo SWAP_IN_USE || echo SWAP_FREE"
+      register: swap_check
+      changed_when: false
+      failed_when: "'SWAP_IN_USE' in swap_check.stdout"
+
+    - name: swapoff
+      ansible.builtin.command:
+        cmd: "swapoff -a"
+      changed_when: false
+      when: swap_show.stdout | length > 0
+
+    - name: Comment swap in fstab
+      ansible.builtin.replace:
+        path: /etc/fstab
+        regexp: '^([^#].*[ \t]+swap[ \t]+)'
+        replace: '#\1'
+
+    # ─── Kernel modules ──────────────────────────────────────
+    - name: Write modules-load config
+      ansible.builtin.copy:
+        dest: /etc/modules-load.d/kubernetes.conf
+        content: "overlay\nbr_netfilter\n"
+        mode: "0644"
+
+    - name: Load modules
+      ansible.builtin.command:
+        cmd: "modprobe {{ item }}"
+      loop: [overlay, br_netfilter]
+      changed_when: false
+
+    # ─── sysctl ──────────────────────────────────────────────
+    - name: Write sysctl config
+      ansible.builtin.copy:
+        dest: /etc/sysctl.d/99-kubernetes.conf
+        content: |
+          net.bridge.bridge-nf-call-iptables = 1
+          net.bridge.bridge-nf-call-ip6tables = 1
+          net.ipv4.ip_forward = 1
+        mode: "0644"
+
+    - name: Apply sysctl
+      ansible.builtin.command:
+        cmd: "sysctl --system"
+      changed_when: false
+
+    # ─── containerd.io ───────────────────────────────────────
+    - name: Install containerd.io exact
+      ansible.builtin.apt:
+        name: "containerd.io={{ containerd_version }}"
+        state: present
+        update_cache: false
+
+    # ─── Kubernetes packages ─────────────────────────────────
+    - name: Install kubelet kubeadm kubectl exact
+      ansible.builtin.apt:
+        name:
+          - "kubelet={{ k8s_version }}"
+          - "kubeadm={{ k8s_version }}"
+          - "kubectl={{ k8s_version }}"
+        state: present
+
+    # ─── containerd config ───────────────────────────────────
+    - name: Generate containerd default config
+      ansible.builtin.command:
+        cmd: "containerd config default > /etc/containerd/config.toml"
+      args:
+        creates: /etc/containerd/config.toml
+
+    - name: Disable cri removal (containerd 2.x defaults cri in disabled_plugins)
+      ansible.builtin.replace:
+        path: /etc/containerd/config.toml
+        regexp: '^disabled_plugins = \["cri"\]'
+        replace: '# disabled_plugins = []'
+
+    - name: Count SystemdCgroup occurrences
+      ansible.builtin.command:
+        cmd: "grep -c 'SystemdCgroup = true' /etc/containerd/config.toml"
+      register: runc_cfg
+      changed_when: false
+      failed_when: false
+
+    - name: Add runc runtime with SystemdCgroup (if missing)
+      ansible.builtin.blockinfile:
+        path: /etc/containerd/config.toml
+        block: |
+          [plugins."io.containerd.cri.v1".containerd.runtimes.runc]
+            runtime_type = "io.containerd.runc.v2"
+
+          [plugins."io.containerd.cri.v1".containerd.runtimes.runc.options]
+            SystemdCgroup = true
+        marker: "# {mark} ANSIBLE MANAGED runc SystemdCgroup"
+      when: runc_cfg.stdout == "0"
+
+    - name: Assert cri not disabled
+      ansible.builtin.command:
+        cmd: "grep -c '^disabled_plugins = \\[\"cri\"\\]' /etc/containerd/config.toml"
+      register: cri_disabled
+      changed_when: false
+      failed_when: cri_disabled.stdout != '0'
+
+    # ─── services ────────────────────────────────────────────
+    - name: Enable containerd
+      ansible.builtin.systemd:
+        name: containerd
+        enabled: true
+
+    - name: Restart containerd
+      ansible.builtin.systemd:
+        name: containerd
+        state: restarted
+
+    - name: Enable kubelet
+      ansible.builtin.systemd:
+        name: kubelet
+        enabled: true
+
+    # ─── package holds ───────────────────────────────────────
+    - name: Hold packages
+      ansible.builtin.command:
+        cmd: "apt-mark hold kubelet kubeadm kubectl containerd.io"
+      changed_when: false
+
+    # ─── validation ──────────────────────────────────────────
+    - name: containerd version
+      ansible.builtin.command:
+        cmd: "containerd --version"
+      register: ctr_ver
+      changed_when: false
+      failed_when: "'2.3.3' not in ctr_ver.stdout"
+
+    - name: kubelet version
+      ansible.builtin.command:
+        cmd: "kubelet --version"
+      register: kubelet_ver
+      changed_when: false
+      failed_when: "'v1.36.2' not in kubelet_ver.stdout"
+
+    - name: kubeadm version
+      ansible.builtin.command:
+        cmd: "kubeadm version -o short"
+      register: kubeadm_ver
+      changed_when: false
+      failed_when: "'v1.36.2' not in kubeadm_ver.stdout"
+
+    - name: containerd socket
+      ansible.builtin.stat:
+        path: /run/containerd/containerd.sock
+      register: ctr_sock
+      failed_when: not ctr_sock.stat.exists
+
+    - name: No-cluster gate
+      ansible.builtin.shell:
+        cmd: "test ! -f /etc/kubernetes/admin.conf && test ! -d /var/lib/etcd/member && echo NO_CLUSTER"
+      register: nocluster
+      changed_when: false
+      failed_when: "'NO_CLUSTER' not in nocluster.stdout"
+
+    - name: P1 regression (gateway)
+      ansible.builtin.command:
+        cmd: "ping -c 1 -W 2 192.168.194.1"
+      register: gw_after
+      changed_when: false
+      failed_when: "' 0% packet loss' not in gw_after.stdout"

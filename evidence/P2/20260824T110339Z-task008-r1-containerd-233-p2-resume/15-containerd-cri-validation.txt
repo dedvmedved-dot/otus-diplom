@@ -1,0 +1,19 @@
+=== CONTAINERD CRI VALIDATION ===
+--- node . ---
+socket: OK
+io.containerd.cri.v1                      images                   -              ok        
+io.containerd.cri.v1                      runtime                  linux/amd64    ok        
+io.containerd.grpc.v1                     cri                      -              ok        
+crictl: NOT AVAILABLE
+--- node . ---
+socket: OK
+io.containerd.cri.v1                      images                   -              ok        
+io.containerd.cri.v1                      runtime                  linux/amd64    ok        
+io.containerd.grpc.v1                     cri                      -              ok        
+crictl: NOT AVAILABLE
+--- node . ---
+socket: OK
+io.containerd.cri.v1                      images                   -              ok        
+io.containerd.cri.v1                      runtime                  linux/amd64    ok        
+io.containerd.grpc.v1                     cri                      -              ok        
+crictl: NOT AVAILABLE

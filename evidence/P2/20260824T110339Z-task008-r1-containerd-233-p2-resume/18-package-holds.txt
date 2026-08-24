@@ -1,0 +1,16 @@
+=== PACKAGE HOLDS ===
+--- node .38 ---
+containerd.io
+kubeadm
+kubectl
+kubelet
+--- node .40 ---
+containerd.io
+kubeadm
+kubectl
+kubelet
+--- node .39 ---
+containerd.io
+kubeadm
+kubectl
+kubelet

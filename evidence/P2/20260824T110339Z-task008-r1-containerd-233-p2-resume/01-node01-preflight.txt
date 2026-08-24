@@ -1,0 +1,14 @@
+=== HOSTNAME/OS ===
+node-01
+1.8.5
+6.1.158-1-generic
+amd64
+=== P1 ===
+bond0.700@bond0  UP             192.168.194.38/24 fe80::96bd:5094:2591:5ee2/64 
+bond0.143@bond0  UP             172.30.143.101/24 fe80::622a:5635:5d3d:d439/64 
+bond0.140@bond0  UP             172.30.140.101/24 fe80::db58:dddc:387d:e878/64 
+bond1.141@bond1  UP             172.30.141.101/24 fe80::ac4f:1274:315a:d25a/64 
+default via 192.168.194.1 dev bond0.700 proto static metric 400 
+bond0: ens2f0 ens2f1
+bond1: ens2f2 ens2f3
+rtt min/avg/max/mdev = 0.602/0.644/0.703/0.042 ms

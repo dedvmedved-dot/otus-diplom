@@ -1,0 +1,363 @@
+
+PLAY [P2 host runtime and Kubernetes packages] *********************************
+
+TASK [Gathering Facts] *********************************************************
+[WARNING]: Platform linux on host node-01 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-01]
+
+TASK [Assert bond0 slaves] *****************************************************
+ok: [node-01]
+
+TASK [Assert bond1 slaves] *****************************************************
+ok: [node-01]
+
+TASK [Gateway reachable] *******************************************************
+ok: [node-01]
+
+TASK [Ensure keyrings dir] *****************************************************
+ok: [node-01]
+
+TASK [Fetch Docker GPG key] ****************************************************
+ok: [node-01]
+
+TASK [Dearmor Docker key] ******************************************************
+ok: [node-01]
+
+TASK [Write Docker repo] *******************************************************
+ok: [node-01]
+
+TASK [Fetch k8s GPG key] *******************************************************
+ok: [node-01]
+
+TASK [Dearmor k8s key] *********************************************************
+ok: [node-01]
+
+TASK [Write k8s repo] **********************************************************
+ok: [node-01]
+
+TASK [apt update] **************************************************************
+ok: [node-01]
+
+TASK [Check swap usage] ********************************************************
+ok: [node-01]
+
+TASK [Assert swap used == 0] ***************************************************
+ok: [node-01]
+
+TASK [swapoff] *****************************************************************
+skipping: [node-01]
+
+TASK [Comment swap in fstab] ***************************************************
+ok: [node-01]
+
+TASK [Write modules-load config] ***********************************************
+ok: [node-01]
+
+TASK [Load modules] ************************************************************
+ok: [node-01] => (item=overlay)
+ok: [node-01] => (item=br_netfilter)
+
+TASK [Write sysctl config] *****************************************************
+ok: [node-01]
+
+TASK [Apply sysctl] ************************************************************
+ok: [node-01]
+
+TASK [Install containerd.io exact] *********************************************
+ok: [node-01]
+
+TASK [Install kubelet kubeadm kubectl exact] ***********************************
+ok: [node-01]
+
+TASK [Generate containerd default config] **************************************
+ok: [node-01]
+
+TASK [Disable cri removal (containerd 2.x defaults cri in disabled_plugins)] ***
+ok: [node-01]
+
+TASK [Count SystemdCgroup occurrences] *****************************************
+ok: [node-01]
+
+TASK [Add runc runtime with SystemdCgroup (if missing)] ************************
+skipping: [node-01]
+
+TASK [Assert cri not disabled] *************************************************
+ok: [node-01]
+
+TASK [Enable containerd] *******************************************************
+ok: [node-01]
+
+TASK [Restart containerd] ******************************************************
+changed: [node-01]
+
+TASK [Enable kubelet] **********************************************************
+ok: [node-01]
+
+TASK [Hold packages] ***********************************************************
+ok: [node-01]
+
+TASK [containerd version] ******************************************************
+ok: [node-01]
+
+TASK [kubelet version] *********************************************************
+ok: [node-01]
+
+TASK [kubeadm version] *********************************************************
+ok: [node-01]
+
+TASK [containerd socket] *******************************************************
+ok: [node-01]
+
+TASK [No-cluster gate] *********************************************************
+ok: [node-01]
+
+TASK [P1 regression (gateway)] *************************************************
+ok: [node-01]
+
+PLAY [P2 host runtime and Kubernetes packages] *********************************
+
+TASK [Gathering Facts] *********************************************************
+[WARNING]: Platform linux on host node-02 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-02]
+
+TASK [Assert bond0 slaves] *****************************************************
+ok: [node-02]
+
+TASK [Assert bond1 slaves] *****************************************************
+ok: [node-02]
+
+TASK [Gateway reachable] *******************************************************
+ok: [node-02]
+
+TASK [Ensure keyrings dir] *****************************************************
+ok: [node-02]
+
+TASK [Fetch Docker GPG key] ****************************************************
+changed: [node-02]
+
+TASK [Dearmor Docker key] ******************************************************
+changed: [node-02]
+
+TASK [Write Docker repo] *******************************************************
+changed: [node-02]
+
+TASK [Fetch k8s GPG key] *******************************************************
+changed: [node-02]
+
+TASK [Dearmor k8s key] *********************************************************
+changed: [node-02]
+
+TASK [Write k8s repo] **********************************************************
+changed: [node-02]
+
+TASK [apt update] **************************************************************
+changed: [node-02]
+
+TASK [Check swap usage] ********************************************************
+ok: [node-02]
+
+TASK [Assert swap used == 0] ***************************************************
+ok: [node-02]
+
+TASK [swapoff] *****************************************************************
+ok: [node-02]
+
+TASK [Comment swap in fstab] ***************************************************
+ok: [node-02]
+
+TASK [Write modules-load config] ***********************************************
+changed: [node-02]
+
+TASK [Load modules] ************************************************************
+ok: [node-02] => (item=overlay)
+ok: [node-02] => (item=br_netfilter)
+
+TASK [Write sysctl config] *****************************************************
+changed: [node-02]
+
+TASK [Apply sysctl] ************************************************************
+ok: [node-02]
+
+TASK [Install containerd.io exact] *********************************************
+changed: [node-02]
+
+TASK [Install kubelet kubeadm kubectl exact] ***********************************
+changed: [node-02]
+
+TASK [Generate containerd default config] **************************************
+ok: [node-02]
+
+TASK [Disable cri removal (containerd 2.x defaults cri in disabled_plugins)] ***
+changed: [node-02]
+
+TASK [Count SystemdCgroup occurrences] *****************************************
+ok: [node-02]
+
+TASK [Add runc runtime with SystemdCgroup (if missing)] ************************
+changed: [node-02]
+
+TASK [Assert cri not disabled] *************************************************
+ok: [node-02]
+
+TASK [Enable containerd] *******************************************************
+ok: [node-02]
+
+TASK [Restart containerd] ******************************************************
+changed: [node-02]
+
+TASK [Enable kubelet] **********************************************************
+ok: [node-02]
+
+TASK [Hold packages] ***********************************************************
+ok: [node-02]
+
+TASK [containerd version] ******************************************************
+ok: [node-02]
+
+TASK [kubelet version] *********************************************************
+ok: [node-02]
+
+TASK [kubeadm version] *********************************************************
+ok: [node-02]
+
+TASK [containerd socket] *******************************************************
+ok: [node-02]
+
+TASK [No-cluster gate] *********************************************************
+ok: [node-02]
+
+TASK [P1 regression (gateway)] *************************************************
+ok: [node-02]
+
+PLAY [P2 host runtime and Kubernetes packages] *********************************
+
+TASK [Gathering Facts] *********************************************************
+[WARNING]: Platform linux on host node-03 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-03]
+
+TASK [Assert bond0 slaves] *****************************************************
+ok: [node-03]
+
+TASK [Assert bond1 slaves] *****************************************************
+ok: [node-03]
+
+TASK [Gateway reachable] *******************************************************
+ok: [node-03]
+
+TASK [Ensure keyrings dir] *****************************************************
+ok: [node-03]
+
+TASK [Fetch Docker GPG key] ****************************************************
+changed: [node-03]
+
+TASK [Dearmor Docker key] ******************************************************
+changed: [node-03]
+
+TASK [Write Docker repo] *******************************************************
+changed: [node-03]
+
+TASK [Fetch k8s GPG key] *******************************************************
+changed: [node-03]
+
+TASK [Dearmor k8s key] *********************************************************
+changed: [node-03]
+
+TASK [Write k8s repo] **********************************************************
+changed: [node-03]
+
+TASK [apt update] **************************************************************
+changed: [node-03]
+
+TASK [Check swap usage] ********************************************************
+ok: [node-03]
+
+TASK [Assert swap used == 0] ***************************************************
+ok: [node-03]
+
+TASK [swapoff] *****************************************************************
+ok: [node-03]
+
+TASK [Comment swap in fstab] ***************************************************
+ok: [node-03]
+
+TASK [Write modules-load config] ***********************************************
+changed: [node-03]
+
+TASK [Load modules] ************************************************************
+ok: [node-03] => (item=overlay)
+ok: [node-03] => (item=br_netfilter)
+
+TASK [Write sysctl config] *****************************************************
+changed: [node-03]
+
+TASK [Apply sysctl] ************************************************************
+ok: [node-03]
+
+TASK [Install containerd.io exact] *********************************************
+changed: [node-03]
+
+TASK [Install kubelet kubeadm kubectl exact] ***********************************
+changed: [node-03]
+
+TASK [Generate containerd default config] **************************************
+ok: [node-03]
+
+TASK [Disable cri removal (containerd 2.x defaults cri in disabled_plugins)] ***
+changed: [node-03]
+
+TASK [Count SystemdCgroup occurrences] *****************************************
+ok: [node-03]
+
+TASK [Add runc runtime with SystemdCgroup (if missing)] ************************
+changed: [node-03]
+
+TASK [Assert cri not disabled] *************************************************
+ok: [node-03]
+
+TASK [Enable containerd] *******************************************************
+ok: [node-03]
+
+TASK [Restart containerd] ******************************************************
+changed: [node-03]
+
+TASK [Enable kubelet] **********************************************************
+ok: [node-03]
+
+TASK [Hold packages] ***********************************************************
+ok: [node-03]
+
+TASK [containerd version] ******************************************************
+ok: [node-03]
+
+TASK [kubelet version] *********************************************************
+ok: [node-03]
+
+TASK [kubeadm version] *********************************************************
+ok: [node-03]
+
+TASK [containerd socket] *******************************************************
+ok: [node-03]
+
+TASK [No-cluster gate] *********************************************************
+ok: [node-03]
+
+TASK [P1 regression (gateway)] *************************************************
+ok: [node-03]
+
+PLAY RECAP *********************************************************************
+node-01                    : ok=35   changed=1    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0   
+node-02                    : ok=37   changed=14   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-03                    : ok=37   changed=14   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
