@@ -1,0 +1,234 @@
+=== HOSTNAME ===
+node-01
+=== IP LINK ===
+lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP> 
+ens4f0           DOWN           6c:b3:11:38:d4:70 <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+ens4f1           DOWN           6c:b3:11:38:d4:71 <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+ens4f2           DOWN           6c:b3:11:38:d4:72 <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+ens4f3           DOWN           6c:b3:11:38:d4:73 <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+ens2f0           UP             b6:6e:06:00:71:07 <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> 
+ens2f1           UP             b6:6e:06:00:71:07 <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> 
+ens2f2           UP             6c:b3:11:61:d4:94 <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> 
+enx4218fc690754  UNKNOWN        42:18:fc:69:07:54 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+ens2f3           UP             6c:b3:11:61:d4:94 <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> 
+bond0            UP             b6:6e:06:00:71:07 <BROADCAST,MULTICAST,MASTER,UP,LOWER_UP> 
+bond0.700@bond0  UP             b6:6e:06:00:71:07 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+bond0.143@bond0  UP             b6:6e:06:00:71:07 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+bond0.140@bond0  UP             b6:6e:06:00:71:07 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+bond1            UP             6c:b3:11:61:d4:94 <BROADCAST,MULTICAST,MASTER,UP,LOWER_UP> 
+bond1.141@bond1  UP             6c:b3:11:61:d4:94 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+=== IP ADDR ===
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens4f0           DOWN           
+ens4f1           DOWN           
+ens4f2           DOWN           
+ens4f3           DOWN           
+ens2f0           UP             
+ens2f1           UP             
+ens2f2           UP             
+enx4218fc690754  UNKNOWN        
+ens2f3           UP             
+bond0            UP             
+bond0.700@bond0  UP             192.168.194.38/24 fe80::96bd:5094:2591:5ee2/64 
+bond0.143@bond0  UP             172.30.143.101/24 fe80::622a:5635:5d3d:d439/64 
+bond0.140@bond0  UP             172.30.140.101/24 fe80::db58:dddc:387d:e878/64 
+bond1            UP             
+bond1.141@bond1  UP             172.30.141.101/24 fe80::ac4f:1274:315a:d25a/64 
+=== IP ROUTE ===
+default via 192.168.194.1 dev bond0.700 proto static metric 400 
+172.30.140.0/24 dev bond0.140 proto kernel scope link src 172.30.140.101 metric 402 
+172.30.141.0/24 dev bond1.141 proto kernel scope link src 172.30.141.101 metric 403 
+172.30.143.0/24 dev bond0.143 proto kernel scope link src 172.30.143.101 metric 401 
+192.168.194.0/24 dev bond0.700 proto kernel scope link src 192.168.194.38 metric 400 
+=== IP ROUTE DEFAULT ===
+default via 192.168.194.1 dev bond0.700 proto static metric 400 
+=== NM ALL ===
+NAME                                UUID                                  TYPE      DEVICE     AUTOCONNECT 
+Соединение VLAN 1                   3533d27c-e1b0-432b-bc26-83327aa2d2e8  vlan      bond0.700  да          
+lo                                  93108db0-dd5b-4799-b2df-293e0aa02508  loopback  lo         нет         
+VLAN 140 Management                 9f1f26e5-49f7-48f9-9f5e-b8fca6719928  vlan      bond0.140  нет         
+VLAN 141 DRBD                       769a0ff6-14e7-4409-a67d-9c8e11453cc0  vlan      bond1.141  нет         
+VLAN 143 Backup                     4f244569-5bff-4256-82e5-19f12a2c42fd  vlan      bond0.143  нет         
+bond0 port 1                        7272c6e1-db77-4498-84c2-65cb711fd714  ethernet  ens2f0     да          
+bond0 port 2                        54030792-98b5-46a4-8e56-b30fc8e5ff9b  ethernet  ens2f1     да          
+bond1 DRBD                          efa7f767-3f36-48df-b340-b53f6fd287ff  bond      bond1      нет         
+bond1 port 1                        ae4ca0ef-6b9a-4599-b9d5-8b6c0ac709a1  ethernet  ens2f2     нет         
+bond1 port 2                        02a663c4-ecc6-488e-9092-7fdc6c295e5c  ethernet  ens2f3     нет         
+Агрегированное соединение (bond) 1  ba568383-cddc-4e69-b3ab-e033702cbd72  bond      bond0      да          
+=== NM ACTIVE ===
+NAME                                TYPE      DEVICE    
+Соединение VLAN 1                   vlan      bond0.700 
+lo                                  loopback  lo        
+VLAN 140 Management                 vlan      bond0.140 
+VLAN 141 DRBD                       vlan      bond1.141 
+VLAN 143 Backup                     vlan      bond0.143 
+bond0 port 1                        ethernet  ens2f0    
+bond0 port 2                        ethernet  ens2f1    
+bond1 DRBD                          bond      bond1     
+bond1 port 1                        ethernet  ens2f2    
+bond1 port 2                        ethernet  ens2f3    
+Агрегированное соединение (bond) 1  bond      bond0     
+=== BOND0 ===
+Ethernet Channel Bonding Driver: v6.1.158-1-generic
+
+Bonding Mode: IEEE 802.3ad Dynamic link aggregation
+Transmit Hash Policy: layer2 (0)
+MII Status: up
+MII Polling Interval (ms): 100
+Up Delay (ms): 0
+Down Delay (ms): 0
+Peer Notification Delay (ms): 0
+
+802.3ad info
+LACP active: on
+LACP rate: slow
+Min links: 0
+Aggregator selection policy (ad_select): stable
+System priority: 65535
+System MAC address: b6:6e:06:00:71:07
+Active Aggregator Info:
+	Aggregator ID: 1
+	Number of ports: 2
+	Actor Key: 15
+	Partner Key: 6977
+	Partner Mac Address: c8:b6:d3:bb:08:d1
+
+Slave Interface: ens2f0
+MII Status: up
+Speed: 10000 Mbps
+Duplex: full
+Link Failure Count: 0
+Permanent HW addr: 6c:b3:11:61:d4:90
+Slave queue ID: 0
+Aggregator ID: 1
+Actor Churn State: none
+Partner Churn State: none
+Actor Churned Count: 0
+Partner Churned Count: 0
+details actor lacp pdu:
+    system priority: 65535
+    system mac address: b6:6e:06:00:71:07
+    port key: 15
+    port priority: 255
+    port number: 1
+    port state: 61
+details partner lacp pdu:
+    system priority: 32768
+    system mac address: c8:b6:d3:bb:08:d1
+    oper key: 6977
+    port priority: 32768
+    port number: 29
+    port state: 61
+
+Slave Interface: ens2f1
+MII Status: up
+Speed: 10000 Mbps
+Duplex: full
+Link Failure Count: 0
+Permanent HW addr: 6c:b3:11:61:d4:92
+Slave queue ID: 0
+Aggregator ID: 1
+Actor Churn State: none
+Partner Churn State: none
+Actor Churned Count: 0
+Partner Churned Count: 0
+details actor lacp pdu:
+    system priority: 65535
+    system mac address: b6:6e:06:00:71:07
+    port key: 15
+    port priority: 255
+    port number: 2
+    port state: 61
+details partner lacp pdu:
+    system priority: 32768
+    system mac address: c8:b6:d3:bb:08:d1
+    oper key: 6977
+    port priority: 32768
+    port number: 30
+    port state: 61
+=== BOND1 ===
+Ethernet Channel Bonding Driver: v6.1.158-1-generic
+
+Bonding Mode: IEEE 802.3ad Dynamic link aggregation
+Transmit Hash Policy: layer2 (0)
+MII Status: up
+MII Polling Interval (ms): 100
+Up Delay (ms): 0
+Down Delay (ms): 0
+Peer Notification Delay (ms): 0
+
+802.3ad info
+LACP active: on
+LACP rate: slow
+Min links: 0
+Aggregator selection policy (ad_select): stable
+System priority: 65535
+System MAC address: 6c:b3:11:61:d4:94
+Active Aggregator Info:
+	Aggregator ID: 1
+	Number of ports: 2
+	Actor Key: 15
+	Partner Key: 7233
+	Partner Mac Address: c8:b6:d3:bb:08:d1
+
+Slave Interface: ens2f2
+MII Status: up
+Speed: 10000 Mbps
+Duplex: full
+Link Failure Count: 0
+Permanent HW addr: 6c:b3:11:61:d4:94
+Slave queue ID: 0
+Aggregator ID: 1
+Actor Churn State: none
+Partner Churn State: none
+Actor Churned Count: 0
+Partner Churned Count: 0
+details actor lacp pdu:
+    system priority: 65535
+    system mac address: 6c:b3:11:61:d4:94
+    port key: 15
+    port priority: 255
+    port number: 1
+    port state: 61
+details partner lacp pdu:
+    system priority: 32768
+    system mac address: c8:b6:d3:bb:08:d1
+    oper key: 7233
+    port priority: 32768
+    port number: 31
+    port state: 61
+
+Slave Interface: ens2f3
+MII Status: up
+Speed: 10000 Mbps
+Duplex: full
+Link Failure Count: 0
+Permanent HW addr: 6c:b3:11:61:d4:96
+Slave queue ID: 0
+Aggregator ID: 1
+Actor Churn State: none
+Partner Churn State: none
+Actor Churned Count: 0
+Partner Churned Count: 0
+details actor lacp pdu:
+    system priority: 65535
+    system mac address: 6c:b3:11:61:d4:94
+    port key: 15
+    port priority: 255
+    port number: 2
+    port state: 61
+details partner lacp pdu:
+    system priority: 32768
+    system mac address: c8:b6:d3:bb:08:d1
+    oper key: 7233
+    port priority: 32768
+    port number: 32
+    port state: 61
+=== SLAVES ===
+bond0: ens2f0 ens2f1
+bond1: ens2f2 ens2f3
+=== CARRIER ===
+ens2f0=1
+ens2f1=1
+ens2f2=1
+ens2f3=1
