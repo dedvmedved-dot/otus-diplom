@@ -1,0 +1,89 @@
+████ BEFORE node 192.168.194.40 ████
+HOST: node-02
+--- bond0 ---
+Bonding Mode: IEEE 802.3ad Dynamic link aggregation
+MII Status: up
+Slave Interface: ens2f0
+MII Status: up
+Partner Churn State: none
+Partner Churned Count: 0
+Slave Interface: ens2f1
+MII Status: up
+Partner Churn State: none
+Partner Churned Count: 0
+slaves: ens2f0 ens2f1
+--- carrier ---
+ens2f0=1 ens2f1=1 ens2f2=1 ens2f3=1 
+--- bond1 slaves ---
+нет
+--- NM profiles ---
+Соединение VLAN 1                   vlan      bond0.700  да          
+bond0 port 1                        ethernet  ens2f0     да          
+bond0 port 2                        ethernet  ens2f1     да          
+Агрегированное соединение (bond) 1  bond      bond0      да          
+--- NM active ---
+Соединение VLAN 1                   vlan      bond0.700 
+bond0 port 1                        ethernet  ens2f0    
+bond0 port 2                        ethernet  ens2f1    
+Агрегированное соединение (bond) 1  bond      bond0     
+--- IP/route ---
+ens4f0           DOWN           
+ens4f1           DOWN           
+ens4f2           DOWN           
+ens4f3           DOWN           
+ens2f0           UP             
+ens2f1           UP             
+ens2f2           UP             
+ens2f3           UP             
+bond0            UP             
+bond0.700@bond0  UP             192.168.194.40/24 fe80::711b:38fb:1f90:60c2/64 
+enx12b3f82f0f34  UNKNOWN        
+default via 192.168.194.1 dev bond0.700 proto static metric 400 
+
+████ BEFORE node 192.168.194.39 ████
+HOST: node-03
+--- bond0 ---
+Bonding Mode: IEEE 802.3ad Dynamic link aggregation
+MII Status: up
+Slave Interface: ens2f0
+MII Status: up
+Partner Churn State: none
+Partner Churned Count: 1
+Slave Interface: ens2f1
+MII Status: up
+Partner Churn State: none
+Partner Churned Count: 1
+slaves: ens2f0 ens2f1
+--- carrier ---
+ens2f0=1 ens2f1=1 ens2f2=1 ens2f3=1 
+--- bond1 slaves ---
+нет
+--- NM profiles ---
+Соединение VLAN 1                   vlan      bond0.700  да          
+bond0 port 1                        ethernet  ens2f0     да          
+bond0 port 2                        ethernet  ens2f1     да          
+Агрегированное соединение (bond) 1  bond      bond0      да          
+bond1 DRBD                          bond      --         нет         
+bond1 port 1                        ethernet  --         нет         
+bond1 port 2                        ethernet  --         нет         
+VLAN 140 Management                 vlan      --         нет         
+VLAN 141 DRBD                       vlan      --         нет         
+VLAN 143 Backup                     vlan      --         нет         
+--- NM active ---
+Соединение VLAN 1                   vlan      bond0.700 
+bond0 port 1                        ethernet  ens2f0    
+bond0 port 2                        ethernet  ens2f1    
+Агрегированное соединение (bond) 1  bond      bond0     
+--- IP/route ---
+ens4f0           DOWN           
+ens4f1           DOWN           
+ens4f2           DOWN           
+ens4f3           DOWN           
+ens2f0           UP             
+ens2f1           UP             
+ens2f2           UP             
+ens2f3           UP             
+bond0            UP             
+bond0.700@bond0  UP             192.168.194.39/24 fe80::ae43:cc5a:9973:570f/64 
+default via 192.168.194.1 dev bond0.700 proto static metric 400 
+
