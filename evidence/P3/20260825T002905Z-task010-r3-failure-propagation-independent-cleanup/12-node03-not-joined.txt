@@ -1,0 +1,6 @@
+=== NODE-03 NOT JOINED ===
+admin_absent
+kubeletconf_absent
+etcd_member_absent
+no_apiserver
+no_etcd

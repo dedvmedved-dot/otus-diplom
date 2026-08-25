@@ -1,0 +1,29 @@
+=== STATIC LAYOUT ===
+
+playbook: ansible/playbooks/p3b1-join-node02-control-plane.yml
+
+  play #1 (node-02): P3B1 join node-02 control-plane with guaranteed cleanup	TAGS: []
+    tasks:
+      Initialize control-state flags	TAGS: []
+      Validate cluster readyz (node-01)	TAGS: []
+      Generate certificate key (node-01)	TAGS: []
+      Save generated certificate key (node-01)	TAGS: []
+      Assert certificate key format	TAGS: []
+      Upload control-plane certificates with exact generated key (node-01)	TAGS: []
+      Create bootstrap token (node-01)	TAGS: []
+      Save bootstrap token (node-01)	TAGS: []
+      Save bootstrap token ID (node-01)	TAGS: []
+      Compute discovery CA hash (node-01)	TAGS: []
+      Validate CA hash format	TAGS: []
+      Save CA hash (node-01)	TAGS: []
+      Assert node-02 clean state	TAGS: []
+      Render JoinConfiguration from node-01 facts	TAGS: []
+      kubeadm join dry-run	TAGS: []
+      kubeadm join node-02 (control-plane)	TAGS: []
+      kube-vip static pod manifest	TAGS: []
+      Post-join validation (admin.conf present on node-02)	TAGS: []
+      Fail automation if join path or cleanup failed	TAGS: []
+
+  play #2 (node-03): P3B1 [node-03] read-only NOT-JOINED validation	TAGS: []
+    tasks:
+      Assert node-03 NOT joined	TAGS: []

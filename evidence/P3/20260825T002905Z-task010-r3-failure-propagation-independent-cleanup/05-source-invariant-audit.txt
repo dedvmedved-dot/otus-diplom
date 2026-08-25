@@ -1,0 +1,31 @@
+# TASK-010-R3 — Source Invariant Audit
+
+RUN_ID: 20260825T002905Z
+
+ENV P3B1_* REFERENCES: 0 (grep подтверждён)
+
+CERTIFICATE KEY FLOW PRESERVED:
+kubeadm certs certificate-key → p3b1_certificate_key → assert → upload-certs (same key) → hostvars → JoinConfiguration
+
+BOOTSTRAP TOKEN FLOW PRESERVED:
+kubeadm token create → p3b1_bootstrap_token + p3b1_bootstrap_token_id → hostvars → JoinConfiguration → cleanup exact ID
+
+CA HASH FLOW PRESERVED:
+ca.crt → openssl sha256 → assert → p3b1_ca_hash → hostvars → caCertHashes
+
+HOSTVARS FLOW PRESERVED:
+hostvars['node-01']['p3b1_*'] → template vars node-02
+
+KUBE-VIP CONFIG PRESERVED:
+image v1.2.0, hostAliases kubernetes→127.0.0.1, vip_arp, bond0.140, svc_enable false, cp_enable true
+
+NODE-03 READ-ONLY PRESERVED:
+Assert node-03 NOT joined
+
+FORBIDDEN PATTERNS:
+kubeadm reset: 0
+ignore_errors: true: 0
+etcd member remove/add: 0
+
+SECRET-BEARING TASKS no_log:
+Generate certificate key / Save cert key / assert / upload-certs / Create token / Save token / Save token ID / Render join config / dry-run / join / Remove temp config / Delete token

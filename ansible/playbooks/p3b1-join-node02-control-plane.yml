@@ -1,19 +1,27 @@
 ---
 # p3b1-join-node02-control-plane.yml
-# TASK-010-R2 P3B-1: присоединение node-02 как второго control-plane с
-# ГАРАНТИРОВАННОЙ очисткой секретов на всех failure paths.
+# TASK-010-R3 P3B-1: присоединение node-02 как второго control-plane с
+# ГАРАНТИРОВАННОЙ очисткой секретов и КОРРЕКТНЫМ пробросом failure status.
 #
 # Credential flow самодостаточен (никаких P3B1_* env variables):
 #   node-01 (delegated): validate → certificate key → upload-certs → bootstrap token → CA hash
-#   node-02:             clean-state → render JoinConfiguration → dry-run → join → kube-vip
+#   node-02:             clean-state → render JoinConfiguration → dry-run → join → kube-vip → validate
 #   node-03:             read-only NOT-JOINED
 #
-# ГАРАНТИЯ CLEANUP (block/rescue/always):
-#   IF temporary JoinConfiguration создан → удаляется на всех exit paths
-#   IF bootstrap token создан → удаляется exact ID на всех exit paths
-#   Cleanup failure → automation FAIL (не ignore_errors)
+# FAILURE PROPAGATION (R3):
+#   MAIN JOIN PATH
+#       ↓
+#   ORIGINAL FAILURE? ---- YES → set_fact p3b1_original_failure=true (в rescue)
+#       ↓
+#   ALWAYS:
+#       ├─ cleanup JoinConfiguration  (независимый block/rescue → свой flag)
+#       └─ cleanup bootstrap token   (независимый block/rescue → свой flag)
+#       ↓
+#   FINAL DECISION:
+#       fail if original_failure OR join_config_cleanup_failed OR token_cleanup_failed
 #
 # Все secret-bearing tasks: no_log: true. Нет automatic reset/retry. Нет CNI.
+# Нет ignore_errors на secret cleanup.
 
 - name: "P3B1 join node-02 control-plane with guaranteed cleanup"
   hosts: node-02
@@ -22,6 +30,12 @@
   vars:
     api_vip: "172.30.140.100"
   tasks:
+    - name: Initialize control-state flags
+      ansible.builtin.set_fact:
+        p3b1_original_failure: false
+        p3b1_join_config_cleanup_failed: false
+        p3b1_token_cleanup_failed: false
+
     - name: "Join flow (guaranteed cleanup on every exit path)"
       block:
         # ─── node-01 credential generation (delegated) ─────────
@@ -212,26 +226,48 @@
           failed_when: not admin_conf.stat.exists
 
       rescue:
-        - name: Record controlled join-path failure (no remediation)
-          ansible.builtin.debug:
-            msg: "P3B1 join path failed — cleanup will run in always; no automatic reset/retry"
-          failed_when: false
+        - name: Record original join-path failure (propagate, no remediation)
+          ansible.builtin.set_fact:
+            p3b1_original_failure: true
 
       always:
-        - name: Remove temporary JoinConfiguration (guaranteed)
-          ansible.builtin.file:
-            path: /root/kubeadm-join-node02.yaml
-            state: absent
-          no_log: true
+        - name: Cleanup temporary JoinConfiguration (independent)
+          block:
+            - name: Remove temporary JoinConfiguration
+              ansible.builtin.file:
+                path: /root/kubeadm-join-node02.yaml
+                state: absent
+              no_log: true
+          rescue:
+            - name: Record JoinConfiguration cleanup failure
+              ansible.builtin.set_fact:
+                p3b1_join_config_cleanup_failed: true
 
-        - name: Delete exact generated bootstrap token (guaranteed)
-          ansible.builtin.command:
-            cmd: >-
-              kubeadm token delete {{ hostvars['node-01']['p3b1_bootstrap_token_id'] }}
-              --kubeconfig /etc/kubernetes/admin.conf
-          no_log: true
-          delegate_to: node-01
-          when: hostvars['node-01']['p3b1_bootstrap_token_id'] is defined
+        - name: Cleanup exact bootstrap token (independent)
+          block:
+            - name: Delete exact generated bootstrap token
+              ansible.builtin.command:
+                cmd: >-
+                  kubeadm token delete
+                  {{ hostvars['node-01']['p3b1_bootstrap_token_id'] }}
+                  --kubeconfig /etc/kubernetes/admin.conf
+              no_log: true
+              delegate_to: node-01
+              when: hostvars['node-01']['p3b1_bootstrap_token_id'] is defined
+          rescue:
+            - name: Record bootstrap-token cleanup failure
+              ansible.builtin.set_fact:
+                p3b1_token_cleanup_failed: true
+
+    - name: Fail automation if join path or cleanup failed
+      ansible.builtin.fail:
+        msg: >-
+          P3B1 failed: original join-path or cleanup failure.
+          See controlled task results; secrets are not logged.
+      when:
+        - p3b1_original_failure
+          or p3b1_join_config_cleanup_failed
+          or p3b1_token_cleanup_failed
 
 - name: "P3B1 [node-03] read-only NOT-JOINED validation"
   hosts: node-03

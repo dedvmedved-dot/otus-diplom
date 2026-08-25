@@ -1,0 +1,52 @@
+# TASK-010-R3 — Failure Propagation Matrix
+
+RUN_ID: 20260825T002905Z
+
+ORIGINAL FAILURE FLAG:
+present (p3b1_original_failure, set in rescue)
+
+JOIN CONFIG CLEANUP FAILURE FLAG:
+present (p3b1_join_config_cleanup_failed, set in cleanup rescue)
+
+TOKEN CLEANUP FAILURE FLAG:
+present (p3b1_token_cleanup_failed, set in cleanup rescue)
+
+FINAL EXPLICIT FAIL:
+present (ansible.builtin.fail, when original_failure OR join_config_cleanup_failed OR token_cleanup_failed)
+
+SCENARIO MATRIX:
+
+DRY-RUN FAIL:
+original failure recorded (rescue set_fact true)
+join-config cleanup attempted (always, independent block/rescue)
+token cleanup attempted (always, independent block/rescue)
+final FAIL
+
+JOIN FAIL:
+original failure recorded
+both cleanup attempted
+final FAIL
+
+KUBE-VIP FAIL:
+original failure recorded
+both cleanup attempted
+final FAIL
+
+POST-VALIDATION FAIL:
+original failure recorded
+both cleanup attempted
+final FAIL
+
+JOIN-CONFIG CLEANUP FAIL:
+token cleanup still attempted (independent block, not suppressed)
+final FAIL
+
+TOKEN CLEANUP FAIL:
+final FAIL
+
+BOTH CLEANUP FAIL:
+both attempts occur (independent blocks)
+final FAIL
+
+ALL SUCCESS:
+no flags set → final fail task skipped → PASS

@@ -1,0 +1,44 @@
+# TASK-010-R3 — Control-Flow Audit
+
+RUN_ID: 20260825T002905Z
+
+block:
+present (Join flow block, wraps main join path + credential generation)
+
+rescue:
+records original failure state (set_fact p3b1_original_failure: true)
+НЕ debug с failed_when: false
+НЕ содержит remediation (reset/retry/etcd)
+
+always:
+present
+
+join-config cleanup:
+independent block/rescue
+  block: Remove temporary JoinConfiguration (file state=absent, no_log)
+  rescue: set_fact p3b1_join_config_cleanup_failed: true
+
+token cleanup:
+independent block/rescue
+  block: Delete exact generated bootstrap token (delegate node-01, no_log, when defined)
+  rescue: set_fact p3b1_token_cleanup_failed: true
+
+final fail task:
+present (ansible.builtin.fail, when original OR join_config_failed OR token_failed)
+
+ignore_errors:
+not used for cleanup (grep подтвердил 0 совпадений)
+
+automatic reset/retry:
+absent (grep подтвердил отсутствие kubeadm reset / etcd member remove/add)
+
+Status flags initialized before block:
+p3b1_original_failure: false
+p3b1_join_config_cleanup_failed: false
+p3b1_token_cleanup_failed: false
+
+Ключевое свойство:
+- cleanup #1 failure (join config) записывается в свой flag, но НЕ прерывает cleanup #2
+- cleanup #2 failure (token) записывается в свой flag
+- финальный fail учитывает ВСЕ три flags
+- original failure НЕ конвертируется в success (rescue только set_fact, без debug failed_when:false)
