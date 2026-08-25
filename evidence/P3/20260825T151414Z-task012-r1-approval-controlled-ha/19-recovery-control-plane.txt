@@ -1,0 +1,17 @@
+=== RECOVERY CONTROL-PLANE 3/3 ===
+NAME                              READY   STATUS    RESTARTS        AGE
+etcd-node-01                      1/1     Running   1 (2m52s ago)   25h
+etcd-node-02                      1/1     Running   0               24h
+etcd-node-03                      1/1     Running   0               14h
+kube-apiserver-node-01            1/1     Running   1 (2m38s ago)   25h
+kube-apiserver-node-02            1/1     Running   0               24h
+kube-apiserver-node-03            1/1     Running   0               14h
+kube-controller-manager-node-01   1/1     Running   1 (3m ago)      25h
+kube-controller-manager-node-02   1/1     Running   0               24h
+kube-controller-manager-node-03   1/1     Running   0               14h
+kube-scheduler-node-01            1/1     Running   1 (3m ago)      25h
+kube-scheduler-node-02            1/1     Running   0               24h
+kube-scheduler-node-03            1/1     Running   0               14h
+kube-vip-node-01                  1/1     Running   1 (3m ago)      25h
+kube-vip-node-02                  1/1     Running   0               24h
+kube-vip-node-03                  1/1     Running   0               14h

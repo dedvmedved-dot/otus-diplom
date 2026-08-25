@@ -1,0 +1,12 @@
+FAILURE_T0_UTC=2026-08-25T15:17:28Z
+[WARNING]: Platform linux on host node-01 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+node-01 | CHANGED | rc=0 >>
+kubelet: inactive
+running targets: 2
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+node-01 | CHANGED | rc=0 >>
+running targets: 0

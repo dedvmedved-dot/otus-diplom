@@ -1,0 +1,4 @@
+=== ETCD LEADER ELECTION ===
+|          ENDPOINT           |        ID        | VERSION | STORAGE VERSION | DB SIZE | IN USE | PERCENTAGE NOT IN USE | QUOTA  | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX | ERRORS | DOWNGRADE TARGET VERSION | DOWNGRADE ENABLED |
+| https://172.30.140.102:2379 | a96306f57a39ca3e |   3.6.8 |           3.6.0 |  2.2 MB | 1.4 MB |                   37% | 2.1 GB |      true |      false |         3 |     367621 |             367621 |        |                          |             false |
+| https://172.30.140.103:2379 |  cf1ee7f696207f4 |   3.6.8 |           3.6.0 |  2.1 MB | 1.4 MB |                   33% | 2.1 GB |     false |      false |         3 |     367621 |             367621 |        |                          |             false |

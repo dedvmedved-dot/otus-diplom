@@ -1,0 +1,3 @@
+=== ETCD SURVIVOR HEALTH (node-02/03) ===
+https://172.30.140.102:2379 is healthy: successfully committed proposal: took = 18.510694ms
+https://172.30.140.103:2379 is healthy: successfully committed proposal: took = 24.562146ms

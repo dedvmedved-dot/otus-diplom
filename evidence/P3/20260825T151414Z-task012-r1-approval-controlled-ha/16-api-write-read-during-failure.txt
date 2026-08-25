@@ -1,0 +1,3 @@
+=== API WRITE/READ DURING FAILURE ===
+configmap/task012-ha-probe patched
+read: during-failure

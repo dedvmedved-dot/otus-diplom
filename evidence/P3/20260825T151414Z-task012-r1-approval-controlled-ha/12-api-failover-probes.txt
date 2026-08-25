@@ -1,0 +1,3 @@
+=== API VIP (с node-02) ===
+VIP_6443=PASS
+ok

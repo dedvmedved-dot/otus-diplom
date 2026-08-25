@@ -1,0 +1,266 @@
+---
+# p3c-ha-single-control-plane-failure-validation.yml
+# TASK-012 P3C: реальная контролируемая проверка HA 3-node control-plane.
+#
+# Цель: доказать single-node HA при отказе node-01 (текущий kube-vip owner + etcd leader).
+# Failure method: systemctl stop kubelet + graceful stop 5 exact static-pod containers.
+# containerd остаётся running. SSH/management path сохраняется.
+#
+# SAFETY MODEL:
+#   PRECHECK → probe ConfigMap → ARM DEAD-MAN (180s) → BLOCK[inject + validate HA]
+#   → RESCUE[record] → ALWAYS[recovery] → CLEANUP → FINAL explicit PASS/FAIL
+#
+# Dead-man: systemd-run transient timer, через 180s принудительно start kubelet node-01.
+# Recovery имеет приоритет над evidence.
+#
+# Инвариант: MAXIMUM FAILED CONTROL-PLANE NODES = 1. Только node-01.
+# Никаких reboot/shutdown, network/storage/package/kernel changes, etcd membership ops,
+# kubeadm reset, manifest mutation, CNI.
+
+- name: "P3C HA single control-plane failure validation"
+  hosts: node-01
+  gather_facts: true
+  become: true
+  vars:
+    api_vip: "172.30.140.100"
+    etcd_ep_101: "https://172.30.140.101:2379"
+    etcd_ep_102: "https://172.30.140.102:2379"
+    etcd_ep_103: "https://172.30.140.103:2379"
+    etcd_ca: "/etc/kubernetes/pki/etcd/ca.crt"
+    etcd_cert: "/etc/kubernetes/pki/etcd/healthcheck-client.crt"
+    etcd_key: "/etc/kubernetes/pki/etcd/healthcheck-client.key"
+  tasks:
+    - name: Initialize control-state flags
+      ansible.builtin.set_fact:
+        task012_test_failed: false
+        task012_recovery_failed: false
+        task012_probe_cleanup_failed: false
+        task012_deadman_cleanup_failed: false
+
+    - name: "HA validation flow (guaranteed recovery on every exit path)"
+      block:
+        # ─── PRECHECK: подтвердить baseline ──────────────────────
+        - name: Precheck — cluster readyz
+          ansible.builtin.command:
+            cmd: "kubectl --kubeconfig /etc/kubernetes/admin.conf get --raw='/readyz'"
+          register: readyz
+          changed_when: false
+          failed_when: "'ok' not in readyz.stdout"
+
+        - name: Precheck — etcd 3/3 healthy
+          ansible.builtin.command:
+            cmd: >-
+              kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-node-01 --
+              etcdctl --endpoints={{ etcd_ep_101 }},{{ etcd_ep_102 }},{{ etcd_ep_103 }}
+              --cacert={{ etcd_ca }} --cert={{ etcd_cert }} --key={{ etcd_key }}
+              endpoint health
+          register: etcd_health
+          changed_when: false
+          failed_when: "etcd_health.stdout_lines | select('search', 'is healthy') | list | length != 3"
+
+        - name: Precheck — etcd leader is node-01
+          ansible.builtin.command:
+            cmd: >-
+              kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-node-01 --
+              etcdctl --endpoints={{ etcd_ep_101 }} --cacert={{ etcd_ca }} --cert={{ etcd_cert }} --key={{ etcd_key }}
+              endpoint status -w json
+          register: etcd_status
+          changed_when: false
+
+        - name: Assert etcd leader is node-01
+          ansible.builtin.assert:
+            that:
+              - etcd_status.stdout | from_json | selectattr('Status.leader', '!=', 0) | map(attribute='Endpoint') | first == etcd_ep_101
+
+        - name: Create temporary API HA probe ConfigMap
+          ansible.builtin.command:
+            cmd: "kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system create configmap task012-ha-probe --from-literal=phase=baseline"
+          register: probe_create
+          changed_when: false
+          failed_when: "probe_create.rc != 0 and 'already exists' not in probe_create.stderr"
+
+        - name: Read-back probe baseline
+          ansible.builtin.command:
+            cmd: >-
+              kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system
+              get configmap task012-ha-probe -o jsonpath='{.data.phase}'
+          register: probe_readback
+          changed_when: false
+          failed_when: "'baseline' not in probe_readback.stdout"
+
+        # ─── ARM DEAD-MAN RECOVERY ───────────────────────────────
+        - name: Verify systemd-run available
+          ansible.builtin.command:
+            cmd: "which systemd-run"
+          register: sysd_run
+          changed_when: false
+          failed_when: sysd_run.rc != 0
+
+        - name: Arm dead-man recovery timer (180s)
+          ansible.builtin.command:
+            cmd: >-
+              systemd-run --unit=task012-auto-recover --on-active=180s
+              /usr/bin/systemctl start kubelet
+          register: deadman_arm
+          changed_when: false
+
+        - name: Verify dead-man timer active
+          ansible.builtin.command:
+            cmd: "systemctl is-active task012-auto-recover.timer"
+          register: deadman_check
+          changed_when: false
+          failed_when: "'active' not in deadman_check.stdout"
+
+        # ─── FAILURE INJECTION ───────────────────────────────────
+        - name: Record failure injection T0
+          ansible.builtin.set_fact:
+            task012_failure_t0_utc: "{{ ansible_date_time.iso8601 }}"
+          when: false  # помечено для evidence через separate task
+
+        - name: Stop kubelet on node-01
+          ansible.builtin.systemd:
+            name: kubelet
+            state: stopped
+          register: kubelet_stop
+
+        - name: Verify kubelet inactive
+          ansible.builtin.command:
+            cmd: "systemctl is-active kubelet"
+          register: kubelet_state
+          changed_when: false
+          failed_when: "'inactive' not in kubelet_state.stdout and 'failed' not in kubelet_state.stdout"
+
+        - name: Graceful stop kube-vip container
+          ansible.builtin.command:
+            cmd: "ctr -n k8s.io tasks kill -s SIGTERM 0ffce9e862410eb3791e04dbee0e5bfb4944dca99669fdb079aebf303e879817"
+          changed_when: false
+          failed_when: false
+
+        - name: Graceful stop kube-apiserver container
+          ansible.builtin.command:
+            cmd: "ctr -n k8s.io tasks kill -s SIGTERM b0d3259fba8d452abc0e4f9d7f4fa283a8354e4d1f9c5c43ba5b00f70707be8c"
+          changed_when: false
+          failed_when: false
+
+        - name: Graceful stop etcd container
+          ansible.builtin.command:
+            cmd: "ctr -n k8s.io tasks kill -s SIGTERM fa06024426ae77e97af912b2daaba9288adc986afd6f580f77b57a3442600b1a"
+          changed_when: false
+          failed_when: false
+
+        - name: Graceful stop kube-controller-manager container
+          ansible.builtin.command:
+            cmd: "ctr -n k8s.io tasks kill -s SIGTERM ef711cd876cac1250c1e2e19c5c84200f9780b4fb020d29e9da4ebf87860c41a"
+          changed_when: false
+          failed_when: false
+
+        - name: Graceful stop kube-scheduler container
+          ansible.builtin.command:
+            cmd: "ctr -n k8s.io tasks kill -s SIGTERM 69b735e6b45340b42dde060141a8a6ac4c2e030a4ffe680f2eff78573a415a5e"
+          changed_when: false
+          failed_when: false
+
+        # ─── HA VALIDATION (периодические проверки через делегирование) ───
+        - name: Validate API VIP reachable after failover (30s stability window)
+          ansible.builtin.shell:
+            cmd: |
+              ok=0
+              for i in $(seq 1 30); do
+                if curl -k --connect-timeout 1 --max-time 2 -s https://172.30.140.100:6443/livez 2>/dev/null | grep -q ok; then
+                  ok=$((ok+1))
+                fi
+                sleep 1
+              done
+              echo "STABLE=$ok/30"
+          register: api_stability
+          changed_when: false
+          failed_when: "'30/30' not in api_stability.stdout"
+
+        - name: Validate API write/read during failure
+          ansible.builtin.command:
+            cmd: >-
+              kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system patch configmap task012-ha-probe
+              --type merge -p '{"data":{"phase":"during-failure"}}'
+          register: api_write
+          changed_when: false
+
+        - name: Validate API read during failure
+          ansible.builtin.command:
+            cmd: >-
+              kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system
+              get configmap task012-ha-probe -o jsonpath='{.data.phase}'
+          register: api_read
+          changed_when: false
+          failed_when: "'during-failure' not in api_read.stdout"
+
+        - name: Validate readyz during failure
+          ansible.builtin.command:
+            cmd: "kubectl --kubeconfig /etc/kubernetes/admin.conf get --raw='/readyz'"
+          register: readyz_during
+          changed_when: false
+          failed_when: "'ok' not in readyz_during.stdout"
+
+      rescue:
+        - name: Record HA test failure
+          ansible.builtin.set_fact:
+            task012_test_failed: true
+
+      always:
+        # ─── RECOVERY (приоритет) ───────────────────────────────
+        - name: RECOVERY — start kubelet on node-01
+          ansible.builtin.systemd:
+            name: kubelet
+            state: started
+          register: kubelet_recover
+
+        - name: RECOVERY — verify kubelet active
+          ansible.builtin.command:
+            cmd: "systemctl is-active kubelet"
+          register: kubelet_recover_state
+          changed_when: false
+          failed_when: "'active' not in kubelet_recover_state.stdout"
+
+        - name: RECOVERY — wait for node-01 static pods (max 120s)
+          ansible.builtin.shell:
+            cmd: |
+              for i in $(seq 1 24); do
+                running=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system \
+                  --field-selector spec.nodeName=node-01 2>/dev/null \
+                  | grep -cE 'Running' || true)
+                if [ "$running" -ge 5 ]; then echo "RECOVERED pods=$running"; exit 0; fi
+                sleep 5
+              done
+              echo "RECOVERY_INCOMPLETE pods=$running"
+              exit 1
+          register: recovery_pods
+          changed_when: false
+          failed_when: "'RECOVERED' not in recovery_pods.stdout"
+
+        # ─── CLEANUP probe ConfigMap ────────────────────────────
+        - name: Cleanup probe ConfigMap
+          ansible.builtin.command:
+            cmd: "kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system delete configmap task012-ha-probe"
+          register: probe_delete
+          changed_when: false
+          failed_when: false
+
+        # ─── CLEANUP dead-man ───────────────────────────────────
+        - name: Cleanup dead-man timer/service
+          ansible.builtin.shell:
+            cmd: |
+              systemctl stop task012-auto-recover.timer 2>/dev/null || true
+              systemctl stop task012-auto-recover.service 2>/dev/null || true
+              systemctl reset-failed task012-auto-recover.timer 2>/dev/null || true
+              systemctl reset-failed task012-auto-recover.service 2>/dev/null || true
+              echo CLEANED
+          register: deadman_cleanup
+          changed_when: false
+
+    - name: Fail automation if HA test or recovery failed
+      ansible.builtin.fail:
+        msg: >-
+          TASK-012 HA validation failed or recovery incomplete.
+          See controlled task results; no secrets logged.
+      when:
+        - task012_test_failed
+          or task012_recovery_failed

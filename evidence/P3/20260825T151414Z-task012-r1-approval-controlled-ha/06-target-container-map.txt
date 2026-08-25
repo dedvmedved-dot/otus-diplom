@@ -1,0 +1,6 @@
+=== TARGET CONTAINER MAP ===
+0ffce9e862410eb3791e04dbee0e5bfb4944dca99669fdb079aebf303e879817    ghcr.io/kube-vip/kube-vip:v1.2.0                   io.containerd.runc.v2    
+69b735e6b45340b42dde060141a8a6ac4c2e030a4ffe680f2eff78573a415a5e    registry.k8s.io/kube-scheduler:v1.36.2             io.containerd.runc.v2    
+b0d3259fba8d452abc0e4f9d7f4fa283a8354e4d1f9c5c43ba5b00f70707be8c    registry.k8s.io/kube-apiserver:v1.36.2             io.containerd.runc.v2    
+ef711cd876cac1250c1e2e19c5c84200f9780b4fb020d29e9da4ebf87860c41a    registry.k8s.io/kube-controller-manager:v1.36.2    io.containerd.runc.v2    
+fa06024426ae77e97af912b2daaba9288adc986afd6f580f77b57a3442600b1a    registry.k8s.io/etcd:3.6.8-0                       io.containerd.runc.v2    

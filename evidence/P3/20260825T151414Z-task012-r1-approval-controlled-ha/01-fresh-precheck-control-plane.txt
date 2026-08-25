@@ -1,0 +1,7 @@
+=== FRESH PRECHECK control-plane ===
+[WARNING]: Platform linux on host node-01 is using the discovered Python
+node-01 | CHANGED | rc=0 >>
+NAME      STATUS     ROLES           AGE   VERSION   INTERNAL-IP      EXTERNAL-IP   OS-IMAGE      KERNEL-VERSION              CONTAINER-RUNTIME
+node-01   NotReady   control-plane   25h   v1.36.2   172.30.140.101   <none>        Astra Linux   6.1.158-1-generic (amd64)   containerd://2.3.3
+node-02   NotReady   control-plane   24h   v1.36.2   172.30.140.102   <none>        Astra Linux   6.1.158-1-generic (amd64)   containerd://2.3.3
+node-03   NotReady   control-plane   14h   v1.36.2   172.30.140.103   <none>        Astra Linux   6.1.158-1-generic (amd64)   containerd://2.3.3

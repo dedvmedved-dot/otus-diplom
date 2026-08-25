@@ -1,0 +1,6 @@
+=== RECOVERY kubelet node-01 ===
+        "WatchdogUSec": "0"
+    }
+}
+node-01 | CHANGED | rc=0 >>
+active

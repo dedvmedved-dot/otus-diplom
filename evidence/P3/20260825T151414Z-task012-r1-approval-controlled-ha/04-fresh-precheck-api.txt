@@ -1,0 +1,4 @@
+=== API readyz ===
+[+]ping ok
+[+]etcd ok
+[+]etcd-readiness ok

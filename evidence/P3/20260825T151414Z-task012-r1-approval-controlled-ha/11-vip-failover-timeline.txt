@@ -1,0 +1,4 @@
+=== VIP OWNER DURING FAILURE ===
+node .38: none
+node .40:     inet 172.30.140.100/32 scope global deprecated bond0.140
+node .39: none

@@ -1,0 +1,2 @@
+=== API STABILITY (30x1s probes с node-02) ===
+STABLE=30/30
