@@ -1,0 +1,31 @@
+# TASK-011-R2 — Token Creation State Audit
+
+RUN_ID: 20260825T105529Z
+
+TOKEN CREATION SOURCE:
+p3b2_bootstrap_token_raw (raw register, не поздний flag)
+
+TOKEN SUCCESS DETECTION:
+p3b2_bootstrap_token_raw is defined
+AND p3b2_bootstrap_token_raw.failed != true
+AND p3b2_bootstrap_token_raw.rc == 0
+AND stdout trim is match('^[a-z0-9]{6}\.[a-z0-9]{16}$')
+
+DEPENDENCY ON LATE p3b2_token_created:
+NO (флаг удалён из main path; grep 0 matches)
+
+PRIMARY CLEANUP ID:
+saved exact token ID (hostvars['node-01']['p3b2_bootstrap_token_id'],
+применяется только если match ^[a-z0-9]{6}$)
+
+FALLBACK CLEANUP ID:
+raw token stdout split('.')[0], при TOKEN_WAS_CREATED && primary empty
+
+TOKEN CREATED + SAVE TOKEN FAIL:
+cleanup still possible (fallback из raw register)
+
+TOKEN CREATED + SAVE ID FAIL:
+cleanup still possible (fallback из raw register)
+
+TOKEN CREATED + NO CLEANUP ID:
+assert fail → rescue → p3b2_token_cleanup_failed=true → FINAL FAIL

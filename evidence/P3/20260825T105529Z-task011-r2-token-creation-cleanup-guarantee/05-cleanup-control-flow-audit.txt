@@ -1,0 +1,26 @@
+# TASK-011-R2 — Cleanup Control-Flow Audit
+
+RUN_ID: 20260825T105529Z
+
+block: present (Join flow)
+rescue: set_fact p3b2_original_failure: true (не debug)
+always: present
+
+JOIN-CONFIG CLEANUP:
+independent block/rescue → p3b2_join_config_cleanup_failed
+
+TOKEN CLEANUP (independent block/rescue):
+  1. Determine TOKEN_WAS_CREATED (из raw register, no_log)
+  2. Resolve primary ID (hostvars, only if ^[a-z0-9]{6}$)
+  3. Resolve fallback ID (raw stdout split('.')[0], if TOKEN_WAS_CREATED && primary empty)
+  4. Assert cleanup ID valid (^[a-z0-9]{6}$) if TOKEN_WAS_CREATED
+  5. Delete exact token (no_log, delegate node-01, when ID non-empty)
+  rescue → p3b2_token_cleanup_failed=true
+
+INDEPENDENCE:
+cleanup #1 failure не блокирует cleanup #2 (отдельные block/rescue)
+
+FINAL FAIL:
+p3b2_original_failure OR join_config_cleanup_failed OR token_cleanup_failed
+
+no ignore_errors на cleanup. Нет automatic reset/retry/etcd manipulation.

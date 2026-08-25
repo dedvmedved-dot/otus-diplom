@@ -1,0 +1,4 @@
+=== ETCD HEALTH ===
+https://172.30.140.101:2379 is healthy: successfully committed proposal: took = 15.913126ms
+https://172.30.140.103:2379 is healthy: successfully committed proposal: took = 22.876935ms
+https://172.30.140.102:2379 is healthy: successfully committed proposal: took = 22.672427ms

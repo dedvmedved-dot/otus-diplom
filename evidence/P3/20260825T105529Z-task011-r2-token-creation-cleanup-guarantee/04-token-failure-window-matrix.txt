@@ -1,0 +1,35 @@
+# TASK-011-R2 — Token Failure-Window Matrix
+
+RUN_ID: 20260825T105529Z
+
+A. token create not reached
+   TOKEN_WAS_CREATED = false
+   token cleanup required: NO
+   final: (по original failure, если есть)
+
+B. token create command FAIL
+   token existed: NO
+   TOKEN_WAS_CREATED = false
+   final: FAIL (original failure)
+
+C. token create SUCCESS / Save token FAIL
+   raw register valid → TOKEN_WAS_CREATED = true
+   fallback cleanup: YES (exact ID из raw stdout)
+   final: FAIL (original failure)
+
+D. token create SUCCESS / Save token ID FAIL
+   raw register valid → TOKEN_WAS_CREATED = true
+   fallback cleanup: YES
+   final: FAIL (original failure)
+
+E. token create SUCCESS / primary ID exists
+   primary cleanup: YES (exact ID)
+   delete attempted
+
+F. token created / ID unresolved
+   p3b2_token_cleanup_failed = true
+   final: FAIL
+
+G. token delete FAIL
+   p3b2_token_cleanup_failed = true
+   final: FAIL

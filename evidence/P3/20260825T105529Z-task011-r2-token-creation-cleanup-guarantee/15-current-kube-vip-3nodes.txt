@@ -1,0 +1,5 @@
+=== KUBE-VIP 3/3 ===
+NAME                              READY   STATUS    RESTARTS   AGE
+kube-vip-node-01                  1/1     Running   0          20h
+kube-vip-node-02                  1/1     Running   0          19h
+kube-vip-node-03                  1/1     Running   0          10h

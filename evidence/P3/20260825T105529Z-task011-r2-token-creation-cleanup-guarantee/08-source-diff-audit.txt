@@ -1,0 +1,74 @@
+diff --git a/ansible/playbooks/p3b2-join-node03-control-plane.yml b/ansible/playbooks/p3b2-join-node03-control-plane.yml
+index debde6a..4db9c76 100644
+--- a/ansible/playbooks/p3b2-join-node03-control-plane.yml
++++ b/ansible/playbooks/p3b2-join-node03-control-plane.yml
+@@ -25,7 +25,6 @@
+         p3b2_original_failure: false
+         p3b2_join_config_cleanup_failed: false
+         p3b2_token_cleanup_failed: false
+-        p3b2_token_created: false
+ 
+     - name: "Join flow (guaranteed cleanup on every exit path)"
+       block:
+@@ -93,11 +92,6 @@
+           delegate_to: node-01
+           delegate_facts: true
+ 
+-        - name: Mark bootstrap token created
+-          ansible.builtin.set_fact:
+-            p3b2_token_created: true
+-          when: p3b2_bootstrap_token_raw.stdout | default('') | trim | length > 0
+-
+         - name: Compute discovery CA hash (node-01)
+           ansible.builtin.shell:
+             cmd: >-
+@@ -241,11 +235,31 @@
+ 
+         - name: Cleanup exact bootstrap token (independent)
+           block:
++            - name: Determine whether bootstrap token was created successfully
++              ansible.builtin.set_fact:
++                p3b2_token_was_created: >-
++                  {{
++                    p3b2_bootstrap_token_raw is defined
++                    and not (p3b2_bootstrap_token_raw.failed | default(true))
++                    and (p3b2_bootstrap_token_raw.rc | default(1) | int) == 0
++                    and
++                    (
++                      p3b2_bootstrap_token_raw.stdout
++                      | default('')
++                      | trim
++                    )
++                    is match('^[a-z0-9]{6}\.[a-z0-9]{16}$')
++                  }}
++              no_log: true
++
+             - name: Resolve cleanup token ID (primary)
+               ansible.builtin.set_fact:
+                 p3b2_cleanup_token_id: >-
+                   {{ hostvars['node-01']['p3b2_bootstrap_token_id'] | default('') | trim }}
+               no_log: true
++              when: >-
++                (hostvars['node-01'].get('p3b2_bootstrap_token_id', '') | default('') | trim)
++                is match('^[a-z0-9]{6}$')
+ 
+             - name: Resolve cleanup token ID (fallback from token-create stdout)
+               ansible.builtin.set_fact:
+@@ -253,15 +267,14 @@
+                   {{ (p3b2_bootstrap_token_raw.stdout | default('') | trim).split('.')[0] }}
+               no_log: true
+               when:
+-                - p3b2_token_created | bool
++                - p3b2_token_was_created | bool
+                 - (p3b2_cleanup_token_id | default('')) | length == 0
+-                - (p3b2_bootstrap_token_raw.stdout | default('') | trim) is match('^[a-z0-9]{6}\.[a-z0-9]{16}$')
+ 
+             - name: Assert cleanup token ID valid when token created
+               ansible.builtin.assert:
+                 that:
+                   - >-
+-                    (not p3b2_token_created | bool)
++                    (not p3b2_token_was_created | bool)
+                     or
+                     (p3b2_cleanup_token_id | default('') is match('^[a-z0-9]{6}$'))
+                 fail_msg: "bootstrap token was created but cleanup token ID could not be resolved"

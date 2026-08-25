@@ -1,0 +1,18 @@
+# TASK-011-R2 — Upload-Certs Regression Audit
+
+RUN_ID: 20260825T105529Z
+
+UPLOAD-CERTS EXTERNAL CONFIG:
+ABSENT (grep 'upload-certs-node03-config' / '--config /root/upload-certs' = 0 matches)
+
+UPLOAD-CERTS KUBECONFIG:
+/etc/kubernetes/admin.conf
+
+UPLOAD-CERTS CERTIFICATE KEY SOURCE:
+generated p3b2_certificate_key (kubeadm certs certificate-key → upload-certs --certificate-key SAME KEY)
+
+CERTIFICATE KEY FLOW:
+kubeadm certs certificate-key → p3b2_certificate_key → assert ^[0-9a-fA-F]{64}$ → upload-certs SAME KEY → JoinConfiguration
+
+ENV P3B2_* REFERENCES: 0
+UNDECLARED RUNTIME INPUT FILES: 0

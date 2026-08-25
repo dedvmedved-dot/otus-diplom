@@ -1,0 +1,13 @@
+=== P1 REGRESSION 3/3 ===
+--- node . ---
+bond0: ens2f0 ens2f1 | bond1: ens2f2 ens2f3
+default: default via 192.168.194.1 dev bond0.700 proto static metric 400 
+rtt min/avg/max/mdev = 0.632/0.679/0.726/0.047 ms
+--- node . ---
+bond0: ens2f0 ens2f1 | bond1: ens2f2 ens2f3
+default: default via 192.168.194.1 dev bond0.700 proto static metric 400 
+rtt min/avg/max/mdev = 0.631/0.642/0.654/0.011 ms
+--- node . ---
+bond0: ens2f0 ens2f1 | bond1: ens2f2 ens2f3
+default: default via 192.168.194.1 dev bond0.700 proto static metric 400 
+rtt min/avg/max/mdev = 0.622/0.628/0.635/0.006 ms
