@@ -1,0 +1,24 @@
+# TASK-011-R1 — Reproducibility Audit
+
+RUN_ID: 20260825T084840Z
+
+UPLOAD-CERTS EXTERNAL CONFIG: ABSENT
+(команда upload-certs больше не содержит --config; grep подтверждён 0 matches)
+
+UPLOAD-CERTS KUBECONFIG: /etc/kubernetes/admin.conf
+
+UPLOAD-CERTS CERTIFICATE KEY SOURCE: generated p3b2_certificate_key
+(kubeadm certs certificate-key → p3b2_certificate_key → upload-certs --certificate-key SAME KEY)
+
+EXTERNAL P3B2 ENV VARIABLES: 0
+(grep P3B2_BOOTSTRAP_TOKEN / P3B2_CERTIFICATE_KEY / P3B2_CA_HASH / lookup('env') = 0 matches)
+
+UNDECLARED RUNTIME INPUT FILES: 0
+(playbook использует только /etc/kubernetes/admin.conf, /etc/kubernetes/pki/ca.crt,
+и runtime /root/kubeadm-join-node03.yaml, который сам генерирует через template)
+
+JOIN TEMPLATE: repository-controlled
+(ansible/playbooks/templates/p3b2-kubeadm-join-node03.yaml.j2 — только expressions)
+
+JOIN CONFIG: playbook-generated runtime file
+(/root/kubeadm-join-node03.yaml, mode 0600, создаётся template-задачей)

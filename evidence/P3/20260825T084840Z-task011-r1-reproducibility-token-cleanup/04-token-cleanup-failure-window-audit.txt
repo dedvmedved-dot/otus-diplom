@@ -1,0 +1,31 @@
+# TASK-011-R1 — Token Cleanup Failure-Window Audit
+
+RUN_ID: 20260825T084840Z
+
+TOKEN CREATE SUCCESS: tracked
+(task "Mark bootstrap token created" → p3b2_token_created: true, when stdout non-empty)
+
+PRIMARY CLEANUP ID: saved p3b2_bootstrap_token_id
+(hostvars['node-01']['p3b2_bootstrap_token_id'], set через delegate_facts)
+
+FALLBACK CLEANUP ID: exact ID derived from successful p3b2_bootstrap_token_raw.stdout
+(task "Resolve cleanup token ID (fallback from token-create stdout)" → split('.')[0],
+ when token_created AND primary empty AND stdout matches ^[a-z0-9]{6}\.[a-z0-9]{16}$)
+
+TOKEN FORMAT VALIDATION: present
+(fallback condition требует full-format match; assert требует cleanup ID ^[a-z0-9]{6}$)
+
+FAILURE BETWEEN TOKEN CREATE AND SAVE ID:
+cleanup ID still resolvable (fallback из raw.stdout, который зарегистрирован на node-03)
+
+TOKEN CREATED BUT CLEANUP ID EMPTY:
+assert fails → rescue → p3b2_token_cleanup_failed=true → final FAIL
+
+TOKEN DELETE: exact ID only
+(kubeadm token delete {{ p3b2_cleanup_token_id }}, no hardcoded/all-tokens)
+
+TOKEN CLEANUP: independent from JoinConfiguration cleanup
+(отдельный block/rescue, не блокируется failure cleanup #1)
+
+TOKEN CLEANUP FAILURE: final FAIL
+(p3b2_token_cleanup_failed=true → final explicit fail)

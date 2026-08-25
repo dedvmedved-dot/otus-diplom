@@ -1,0 +1,7 @@
+=== VIP SINGLE OWNER ===
+--- node .38 ---
+    inet 172.30.140.100/32 scope global deprecated bond0.140
+--- node .40 ---
+VIP НЕ на этом узле
+--- node .39 ---
+VIP НЕ на этом узле

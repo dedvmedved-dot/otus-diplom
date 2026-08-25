@@ -1,0 +1,17 @@
+=== CONTROL-PLANE PODS ===
+NAME                              READY   STATUS    RESTARTS   AGE
+etcd-node-01                      1/1     Running   0          18h
+etcd-node-02                      1/1     Running   0          17h
+etcd-node-03                      1/1     Running   0          8h
+kube-apiserver-node-01            1/1     Running   0          18h
+kube-apiserver-node-02            1/1     Running   0          17h
+kube-apiserver-node-03            1/1     Running   0          8h
+kube-controller-manager-node-01   1/1     Running   0          18h
+kube-controller-manager-node-02   1/1     Running   0          17h
+kube-controller-manager-node-03   1/1     Running   0          8h
+kube-scheduler-node-01            1/1     Running   0          18h
+kube-scheduler-node-02            1/1     Running   0          17h
+kube-scheduler-node-03            1/1     Running   0          8h
+kube-vip-node-01                  1/1     Running   0          18h
+kube-vip-node-02                  1/1     Running   0          17h
+kube-vip-node-03                  1/1     Running   0          8h

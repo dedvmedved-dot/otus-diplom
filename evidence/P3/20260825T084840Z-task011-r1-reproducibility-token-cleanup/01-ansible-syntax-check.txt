@@ -1,0 +1,3 @@
+=== SYNTAX ===
+
+playbook: ansible/playbooks/p3b2-join-node03-control-plane.yml

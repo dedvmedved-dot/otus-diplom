@@ -1,0 +1,76 @@
+diff --git a/ansible/playbooks/p3b2-join-node03-control-plane.yml b/ansible/playbooks/p3b2-join-node03-control-plane.yml
+index eff5d08..debde6a 100644
+--- a/ansible/playbooks/p3b2-join-node03-control-plane.yml
++++ b/ansible/playbooks/p3b2-join-node03-control-plane.yml
+@@ -25,6 +25,7 @@
+         p3b2_original_failure: false
+         p3b2_join_config_cleanup_failed: false
+         p3b2_token_cleanup_failed: false
++        p3b2_token_created: false
+ 
+     - name: "Join flow (guaranteed cleanup on every exit path)"
+       block:
+@@ -63,7 +64,6 @@
+             cmd: >-
+               kubeadm init phase upload-certs --upload-certs
+               --certificate-key {{ hostvars['node-01']['p3b2_certificate_key'] }}
+-              --config /root/upload-certs-node03-config.yaml
+               --kubeconfig /etc/kubernetes/admin.conf
+               --skip-certificate-key-print
+           register: upload_certs
+@@ -93,6 +93,11 @@
+           delegate_to: node-01
+           delegate_facts: true
+ 
++        - name: Mark bootstrap token created
++          ansible.builtin.set_fact:
++            p3b2_token_created: true
++          when: p3b2_bootstrap_token_raw.stdout | default('') | trim | length > 0
++
+         - name: Compute discovery CA hash (node-01)
+           ansible.builtin.shell:
+             cmd: >-
+@@ -236,15 +241,41 @@
+ 
+         - name: Cleanup exact bootstrap token (independent)
+           block:
++            - name: Resolve cleanup token ID (primary)
++              ansible.builtin.set_fact:
++                p3b2_cleanup_token_id: >-
++                  {{ hostvars['node-01']['p3b2_bootstrap_token_id'] | default('') | trim }}
++              no_log: true
++
++            - name: Resolve cleanup token ID (fallback from token-create stdout)
++              ansible.builtin.set_fact:
++                p3b2_cleanup_token_id: >-
++                  {{ (p3b2_bootstrap_token_raw.stdout | default('') | trim).split('.')[0] }}
++              no_log: true
++              when:
++                - p3b2_token_created | bool
++                - (p3b2_cleanup_token_id | default('')) | length == 0
++                - (p3b2_bootstrap_token_raw.stdout | default('') | trim) is match('^[a-z0-9]{6}\.[a-z0-9]{16}$')
++
++            - name: Assert cleanup token ID valid when token created
++              ansible.builtin.assert:
++                that:
++                  - >-
++                    (not p3b2_token_created | bool)
++                    or
++                    (p3b2_cleanup_token_id | default('') is match('^[a-z0-9]{6}$'))
++                fail_msg: "bootstrap token was created but cleanup token ID could not be resolved"
++              no_log: true
++
+             - name: Delete exact generated bootstrap token
+               ansible.builtin.command:
+                 cmd: >-
+                   kubeadm token delete
+-                  {{ hostvars['node-01']['p3b2_bootstrap_token_id'] }}
++                  {{ p3b2_cleanup_token_id }}
+                   --kubeconfig /etc/kubernetes/admin.conf
+               no_log: true
+               delegate_to: node-01
+-              when: hostvars['node-01']['p3b2_bootstrap_token_id'] is defined
++              when: p3b2_cleanup_token_id | default('') | length > 0
+           rescue:
+             - name: Record bootstrap-token cleanup failure
+               ansible.builtin.set_fact:
