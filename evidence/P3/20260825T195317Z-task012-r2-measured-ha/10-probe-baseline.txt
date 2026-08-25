@@ -1,0 +1,3 @@
+=== probe ===
+configmap/task012-ha-probe created
+phase=baseline

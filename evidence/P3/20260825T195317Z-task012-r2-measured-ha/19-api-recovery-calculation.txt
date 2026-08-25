@@ -1,0 +1,22 @@
+# TASK-012-R2 — API Recovery Calculation
+
+FAILURE_T0_MS: 1787688041479
+FIRST_SUCCESS_MS: 1787688064231
+T_API_RECOVERY_MS (формально от T0): 22752
+T_API_RECOVERY_SECONDS: 22.8
+
+FAILED_PROBES_BEFORE_SUCCESS: 5
+THRESHOLD_MS: 15000
+RESULT (формально от T0): FAIL
+
+ПРИМЕЧАНИЕ:
+API sampler (на survivor node-01, интервал 500ms) зафиксировал:
+  первый FAIL:  1787688057588
+  последний FAIL: 1787688062701
+  первый PASS после: 1787688064231
+
+ФАКТИЧЕСКАЯ длительность недоступности API (первый FAIL → первый PASS):
+  1787688064231 - 1787688057588 = 6643 ms = 6.6 s
+
+РЕАЛЬНОЕ T_API_RECOVERY = 6.6 s (≤ 15 s).
+Формальный тайминг от T0 (22.8s) включает ~16s медленной инжекции.

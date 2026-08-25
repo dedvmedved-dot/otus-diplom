@@ -1,0 +1,28 @@
+# TASK-012-R2 — VIP Failover Calculation
+
+FAILURE_T0_MS: 1787688041479
+OLD_OWNER: node-02
+NEW_OWNER: node-03
+FIRST_VALID_NEW_OWNER_SAMPLE_MS: 1787688063185
+
+T_VIP_FAILOVER_MS (формально от T0): 21706
+T_VIP_FAILOVER_SECONDS: 21.7
+
+SPLIT_OWNER_OBSERVED: NO
+THRESHOLD_MS: 15000
+RESULT (формально от T0): FAIL
+
+ПРИМЕЧАНИЕ (важно для Connector):
+Инжекция в данном run была НЕ атомарной: FAILURE_T0 записан перед stop kubelet,
+но фактическая остановка kube-vip контейнера произошла через ~16s (несколько
+SSH round-trip: stop kubelet → kill batch → discover remaining → kill apiserver).
+
+ФАКТИЧЕСКИЙ момент смерти kube-vip (потеря VIP на node-02): 1787688057768
+ФАКТИЧЕСКИЙ момент нового owner (node-03): 1787688063185
+
+РЕАЛЬНЫЙ failover кластера (от смерти kube-vip до нового owner):
+  1787688063185 - 1787688057768 = 5417 ms = 5.4 s
+
+РЕАЛЬНЫЙ T_VIP_FAILOVER = 5.4 s (≤ 15 s) — кластер переизбрал VIP owner за ~5.4s.
+Формальный T0-базированный тайминг (21.7s) включает время медленной инжекции,
+НЕ время failover кластера.

@@ -1,0 +1,3 @@
+=== RECOVERY WRITE/READ ===
+configmap/task012-ha-probe patched
+read: after-recovery

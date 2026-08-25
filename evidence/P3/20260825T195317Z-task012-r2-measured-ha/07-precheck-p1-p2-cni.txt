@@ -1,0 +1,4 @@
+=== P1/P2/CNI ===
+node . bond0=ens2f0 ens2f1 bond1=ens2f2 ens2f3 containerd=v2.3.3 swap=0
+node . bond0=ens2f0 ens2f1 bond1=ens2f2 ens2f3 containerd=v2.3.3 swap=0
+node . bond0=ens2f0 ens2f1 bond1=ens2f2 ens2f3 containerd=v2.3.3 swap=0

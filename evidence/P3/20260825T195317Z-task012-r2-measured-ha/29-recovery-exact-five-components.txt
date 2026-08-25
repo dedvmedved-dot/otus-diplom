@@ -1,0 +1,13 @@
+# TASK-012-R2 — Recovery Exact Five Components (node-02)
+
+RUN_ID: 20260825T195317Z
+
+node-02 target components after recovery (kubectl field-selector spec.nodeName=node-02):
+
+etcd-node-02                      1/1     Running   1 (restart после инжекции)
+kube-apiserver-node-02            1/1     Running   1
+kube-controller-manager-node-02   1/1     Running   1
+kube-scheduler-node-02            1/1     Running   1
+kube-vip-node-02                  1/1     Running   1
+
+EXACT 5/5 COMPONENTS RESTORED: PASS

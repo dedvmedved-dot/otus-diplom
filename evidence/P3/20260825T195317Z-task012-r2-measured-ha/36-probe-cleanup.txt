@@ -1,0 +1,2 @@
+=== PROBE CLEANUP ===
+configmap "task012-ha-probe" deleted from kube-system namespace

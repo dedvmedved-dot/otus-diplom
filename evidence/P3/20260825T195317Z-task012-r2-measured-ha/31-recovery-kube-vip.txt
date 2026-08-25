@@ -1,0 +1,4 @@
+=== RECOVERY KUBE-VIP 3/3 + VIP OWNER ===
+kube-vip-node-01                  1/1     Running   1 (4h48m ago)   29h
+kube-vip-node-02                  1/1     Running   1 (4m50s ago)   28h
+kube-vip-node-03                  1/1     Running   0               19h

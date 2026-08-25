@@ -1,0 +1,15 @@
+# TASK-012-R2 — Dynamic Target Selection
+
+RUN_ID: 20260825T195317Z
+
+CURRENT_VIP_OWNER: node-02
+CURRENT_ETCD_LEADER: node-02
+
+OWNER == LEADER: YES
+
+TASK012_TARGET: node-02
+SURVIVOR_A: node-01
+SURVIVOR_B: node-03
+
+Вывод: тест разрешён. Цель — node-02 (текущий kube-vip owner И etcd leader).
+Никаких force VIP / transfer leadership / restart. Значения owner/leader взяты fresh, не из R1.

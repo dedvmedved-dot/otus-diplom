@@ -1,0 +1,4 @@
+=== P2 REGRESSION ===
+node . containerd=v2.3.3 kubelet=v1.36.2 swap=0
+node . containerd=v2.3.3 kubelet=v1.36.2 swap=0
+node . containerd=v2.3.3 kubelet=v1.36.2 swap=0

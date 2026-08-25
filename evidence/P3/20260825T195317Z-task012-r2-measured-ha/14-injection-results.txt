@@ -1,0 +1,9 @@
+=== INJECTION node-02 (kubelet stop + 5 containers) ===
+    }
+}
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+node-02 | CHANGED | rc=0 >>
+kubelet: inactive
+running targets: 2
+node-02 | CHANGED | rc=0 >>
+running targets: 0

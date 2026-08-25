@@ -1,0 +1,4 @@
+=== RECOVERY ETCD 3/3 ===
+https://172.30.140.103:2379 is healthy: successfully committed proposal: took = 18.554129ms
+https://172.30.140.102:2379 is healthy: successfully committed proposal: took = 27.240439ms
+https://172.30.140.101:2379 is healthy: successfully committed proposal: took = 27.245077ms

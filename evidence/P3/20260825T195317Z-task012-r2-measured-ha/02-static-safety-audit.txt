@@ -1,0 +1,28 @@
+# TASK-012-R2 — Static Safety Audit
+
+RUN_ID: 20260825T195317Z
+
+Проверки playbook p3c-ha-single-control-plane-failure-validation.yml:
+
+hardcoded runtime container IDs (64-hex literals из R1): 0
+failed_when:false на destructive stop: 0
+ignore_errors на destructive stop: 0
+etcd member add/remove: 0
+reboot/shutdown/poweroff: 0
+kubeadm reset/join/init: 0
+
+dynamic target selection (owner==leader assert): PASS
+dynamic 5/5 container discovery (ctr containers list): PASS
+5 IDs unique assertion: PASS
+post-injection 0/5 assertion: PASS
+machine timestamps (date +%s%3N): PASS
+dead-man (180s): PASS
+always recovery: PASS
+independent cleanup blocks (probe/dead-man): PASS
+all failure flags in final fail: PASS
+
+Второй-узловой failure actions: 0
+network/storage changes: 0
+approval bypass: NO
+
+ВЫВОД: static audit PASS — разрешён execution HA run.

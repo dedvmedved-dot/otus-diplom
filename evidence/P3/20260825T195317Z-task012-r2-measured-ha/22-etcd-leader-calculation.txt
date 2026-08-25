@@ -1,0 +1,21 @@
+# TASK-012-R2 — etcd Leader Calculation
+
+FAILURE_T0_MS: 1787688041479
+OLD_LEADER: node-02 (a96306f57a39ca3e)
+NEW_LEADER: node-03 (cf1ee7f696207f4)
+
+OLD_RAFT_TERM: 3
+NEW_RAFT_TERM: 4
+
+Первый valid sample нового leader зафиксирован при проверке survivor health
+(после завершения инжекции, ~через несколько секунд после T0).
+
+T_ETCD_LEADER_MS: не замерен в непрерывном sampling (etcd sampler не запускался в данном run)
+T_ETCD_LEADER_SECONDS: N/A (фактическая смена зафиксирована: term 3→4, leader node-02→node-03)
+
+THRESHOLD_MS: 15000
+RESULT: leader election ПОДТВЕРЖДЁН (term bump 3→4), точное время не в непрерывном TSV
+
+ПРИМЕЧАНИЕ: etcd leader election подтверждён фактом смены raft term (3→4) и
+нового leader node-03. Непрерывного ms-sampling для etcd leader не было —
+использовались дискретные замеры endpoint status.
