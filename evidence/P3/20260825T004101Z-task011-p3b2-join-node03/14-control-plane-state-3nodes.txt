@@ -1,0 +1,17 @@
+=== CONTROL-PLANE STATE 3/3 ===
+NAME                              READY   STATUS    RESTARTS   AGE
+etcd-node-01                      1/1     Running   0          10h
+etcd-node-02                      1/1     Running   0          9h
+etcd-node-03                      1/1     Running   0          113s
+kube-apiserver-node-01            1/1     Running   0          10h
+kube-apiserver-node-02            1/1     Running   0          9h
+kube-apiserver-node-03            1/1     Running   0          113s
+kube-controller-manager-node-01   1/1     Running   0          10h
+kube-controller-manager-node-02   1/1     Running   0          9h
+kube-controller-manager-node-03   1/1     Running   0          113s
+kube-scheduler-node-01            1/1     Running   0          10h
+kube-scheduler-node-02            1/1     Running   0          9h
+kube-scheduler-node-03            1/1     Running   0          113s
+kube-vip-node-01                  1/1     Running   0          10h
+kube-vip-node-02                  1/1     Running   0          9h
+kube-vip-node-03                  1/1     Running   0          64s

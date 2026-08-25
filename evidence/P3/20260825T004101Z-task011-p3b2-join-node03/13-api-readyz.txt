@@ -1,0 +1,4 @@
+=== READYZ ===
+[+]ping ok
+[+]etcd ok
+[+]etcd-readiness ok

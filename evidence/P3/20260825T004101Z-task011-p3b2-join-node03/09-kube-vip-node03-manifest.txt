@@ -1,0 +1,7 @@
+    ip: 127.0.0.1
+    image: ghcr.io/kube-vip/kube-vip:v1.2.0
+    - name: vip_interface
+    - name: cp_enable
+    - name: svc_enable
+    - name: address
+    hostPath:

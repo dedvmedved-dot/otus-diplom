@@ -1,0 +1,21 @@
+# TASK-011 — Failure-Path Control-Flow Audit
+
+RUN_ID: 20260825T004101Z
+
+block: present (Join flow)
+rescue: set_fact p3b2_original_failure: true (не debug failed_when:false)
+always: present
+  - join-config cleanup: independent block/rescue → p3b2_join_config_cleanup_failed
+  - token cleanup: independent block/rescue → p3b2_token_cleanup_failed
+final fail: ansible.builtin.fail when original OR join_config_failed OR token_failed
+
+Status flags initialized before block (все false).
+
+Инварианты:
+- cleanup #1 failure не блокирует cleanup #2 (независимые block/rescue)
+- original failure не конвертируется в success
+- cleanup failure → final FAIL (нет ignore_errors)
+- нет automatic reset/retry/etcd member manipulation
+
+Secret-bearing tasks no_log: 13
+env P3B2_* references: 0

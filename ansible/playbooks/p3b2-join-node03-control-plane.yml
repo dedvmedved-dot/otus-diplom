@@ -1,0 +1,261 @@
+---
+# p3b2-join-node03-control-plane.yml
+# TASK-011 P3B-2: присоединение node-03 как третьего control-plane + stacked etcd + kube-vip.
+#
+# Credential flow самодостаточен (никаких P3B2_* env variables):
+#   node-01 (delegated): validate → certificate key → upload-certs → bootstrap token → CA hash
+#   node-03:             clean-state → render JoinConfiguration → dry-run → join → kube-vip → validate
+#
+# FAILURE PROPAGATION (как TASK-010-R3):
+#   rescue → set_fact p3b2_original_failure: true
+#   always → два независимых cleanup (block/rescue), каждый со своим flag
+#   final fail → if original OR join_config_cleanup_failed OR token_cleanup_failed
+#
+# Все secret-bearing tasks: no_log: true. Нет automatic reset/retry. Нет CNI.
+
+- name: "P3B2 join node-03 control-plane with guaranteed cleanup"
+  hosts: node-03
+  gather_facts: true
+  become: true
+  vars:
+    api_vip: "172.30.140.100"
+  tasks:
+    - name: Initialize control-state flags
+      ansible.builtin.set_fact:
+        p3b2_original_failure: false
+        p3b2_join_config_cleanup_failed: false
+        p3b2_token_cleanup_failed: false
+
+    - name: "Join flow (guaranteed cleanup on every exit path)"
+      block:
+        # ─── node-01 credential generation (delegated) ─────────
+        - name: Validate cluster readyz (node-01)
+          ansible.builtin.command:
+            cmd: "kubectl --kubeconfig /etc/kubernetes/admin.conf get --raw='/readyz'"
+          register: readyz
+          changed_when: false
+          failed_when: "'ok' not in readyz.stdout"
+          delegate_to: node-01
+
+        - name: Generate certificate key (node-01)
+          ansible.builtin.command:
+            cmd: "kubeadm certs certificate-key"
+          register: p3b2_certificate_key_raw
+          changed_when: false
+          no_log: true
+          delegate_to: node-01
+
+        - name: Save generated certificate key (node-01)
+          ansible.builtin.set_fact:
+            p3b2_certificate_key: "{{ p3b2_certificate_key_raw.stdout | trim }}"
+          no_log: true
+          delegate_to: node-01
+          delegate_facts: true
+
+        - name: Assert certificate key format
+          ansible.builtin.assert:
+            that:
+              - hostvars['node-01']['p3b2_certificate_key'] is match('^[0-9a-fA-F]{64}$')
+          no_log: true
+
+        - name: Upload control-plane certificates with exact generated key (node-01)
+          ansible.builtin.command:
+            cmd: >-
+              kubeadm init phase upload-certs --upload-certs
+              --certificate-key {{ hostvars['node-01']['p3b2_certificate_key'] }}
+              --config /root/upload-certs-node03-config.yaml
+              --kubeconfig /etc/kubernetes/admin.conf
+              --skip-certificate-key-print
+          register: upload_certs
+          changed_when: false
+          no_log: true
+          delegate_to: node-01
+
+        - name: Create bootstrap token (node-01)
+          ansible.builtin.command:
+            cmd: "kubeadm token create --ttl 30m --kubeconfig /etc/kubernetes/admin.conf"
+          register: p3b2_bootstrap_token_raw
+          changed_when: false
+          no_log: true
+          delegate_to: node-01
+
+        - name: Save bootstrap token (node-01)
+          ansible.builtin.set_fact:
+            p3b2_bootstrap_token: "{{ p3b2_bootstrap_token_raw.stdout | trim }}"
+          no_log: true
+          delegate_to: node-01
+          delegate_facts: true
+
+        - name: Save bootstrap token ID (node-01)
+          ansible.builtin.set_fact:
+            p3b2_bootstrap_token_id: "{{ (p3b2_bootstrap_token_raw.stdout | trim).split('.')[0] }}"
+          no_log: true
+          delegate_to: node-01
+          delegate_facts: true
+
+        - name: Compute discovery CA hash (node-01)
+          ansible.builtin.shell:
+            cmd: >-
+              openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt
+              | openssl rsa -pubin -outform der 2>/dev/null
+              | openssl dgst -sha256 -hex
+              | sed 's/^.* //'
+          register: p3b2_ca_hash_raw
+          changed_when: false
+          delegate_to: node-01
+
+        - name: Validate CA hash format
+          ansible.builtin.assert:
+            that:
+              - p3b2_ca_hash_raw.stdout | trim is match('^[0-9a-fA-F]{64}$')
+
+        - name: Save CA hash (node-01)
+          ansible.builtin.set_fact:
+            p3b2_ca_hash: "{{ p3b2_ca_hash_raw.stdout | trim }}"
+          delegate_to: node-01
+          delegate_facts: true
+
+        # ─── node-03 join path ─────────────────────────────────
+        - name: Assert node-03 clean state
+          ansible.builtin.shell:
+            cmd: "test ! -f /etc/kubernetes/admin.conf && test ! -d /var/lib/etcd/member && echo CLEAN"
+          register: clean
+          changed_when: false
+          failed_when: "'CLEAN' not in clean.stdout"
+
+        - name: Render JoinConfiguration from node-01 facts
+          ansible.builtin.template:
+            src: p3b2-kubeadm-join-node03.yaml.j2
+            dest: /root/kubeadm-join-node03.yaml
+            mode: "0600"
+          vars:
+            bootstrap_token: "{{ hostvars['node-01']['p3b2_bootstrap_token'] }}"
+            certificate_key: "{{ hostvars['node-01']['p3b2_certificate_key'] }}"
+            discovery_ca_hash: "{{ hostvars['node-01']['p3b2_ca_hash'] }}"
+          no_log: true
+
+        - name: kubeadm join dry-run
+          ansible.builtin.command:
+            cmd: "kubeadm join --config /root/kubeadm-join-node03.yaml --dry-run"
+          register: join_dryrun
+          no_log: true
+
+        - name: kubeadm join node-03 (control-plane)
+          ansible.builtin.command:
+            cmd: "kubeadm join --config /root/kubeadm-join-node03.yaml"
+          register: join_out
+          no_log: true
+
+        - name: kube-vip static pod manifest
+          ansible.builtin.copy:
+            dest: /etc/kubernetes/manifests/kube-vip.yaml
+            content: |
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: kube-vip
+                namespace: kube-system
+              spec:
+                hostNetwork: true
+                hostAliases:
+                - hostnames:
+                  - kubernetes
+                  ip: 127.0.0.1
+                containers:
+                - name: kube-vip
+                  image: ghcr.io/kube-vip/kube-vip:v1.2.0
+                  imagePullPolicy: IfNotPresent
+                  args:
+                  - manager
+                  env:
+                  - name: vip_arp
+                    value: "true"
+                  - name: port
+                    value: "6443"
+                  - name: vip_interface
+                    value: "bond0.140"
+                  - name: vip_subnet
+                    value: "32"
+                  - name: cp_enable
+                    value: "true"
+                  - name: cp_namespace
+                    value: "kube-system"
+                  - name: vip_ddns
+                    value: "false"
+                  - name: svc_enable
+                    value: "false"
+                  - name: vip_leaderelection
+                    value: "true"
+                  - name: vip_leaseduration
+                    value: "5"
+                  - name: vip_renewdeadline
+                    value: "3"
+                  - name: vip_retryperiod
+                    value: "1"
+                  - name: address
+                    value: "{{ api_vip }}"
+                  securityContext:
+                    capabilities:
+                      add:
+                      - NET_ADMIN
+                      - NET_RAW
+                  volumeMounts:
+                  - mountPath: /etc/kubernetes/admin.conf
+                    name: kubeconfig
+                    readOnly: true
+                volumes:
+                - name: kubeconfig
+                  hostPath:
+                    path: /etc/kubernetes/admin.conf
+                    type: FileOrCreate
+            mode: "0600"
+
+        - name: Post-join validation (admin.conf present on node-03)
+          ansible.builtin.stat:
+            path: /etc/kubernetes/admin.conf
+          register: admin_conf
+          failed_when: not admin_conf.stat.exists
+
+      rescue:
+        - name: Record original join-path failure (propagate, no remediation)
+          ansible.builtin.set_fact:
+            p3b2_original_failure: true
+
+      always:
+        - name: Cleanup temporary JoinConfiguration (independent)
+          block:
+            - name: Remove temporary JoinConfiguration
+              ansible.builtin.file:
+                path: /root/kubeadm-join-node03.yaml
+                state: absent
+              no_log: true
+          rescue:
+            - name: Record JoinConfiguration cleanup failure
+              ansible.builtin.set_fact:
+                p3b2_join_config_cleanup_failed: true
+
+        - name: Cleanup exact bootstrap token (independent)
+          block:
+            - name: Delete exact generated bootstrap token
+              ansible.builtin.command:
+                cmd: >-
+                  kubeadm token delete
+                  {{ hostvars['node-01']['p3b2_bootstrap_token_id'] }}
+                  --kubeconfig /etc/kubernetes/admin.conf
+              no_log: true
+              delegate_to: node-01
+              when: hostvars['node-01']['p3b2_bootstrap_token_id'] is defined
+          rescue:
+            - name: Record bootstrap-token cleanup failure
+              ansible.builtin.set_fact:
+                p3b2_token_cleanup_failed: true
+
+    - name: Fail automation if join path or cleanup failed
+      ansible.builtin.fail:
+        msg: >-
+          P3B2 failed: original join-path or cleanup failure.
+          See controlled task results; secrets are not logged.
+      when:
+        - p3b2_original_failure
+          or p3b2_join_config_cleanup_failed
+          or p3b2_token_cleanup_failed

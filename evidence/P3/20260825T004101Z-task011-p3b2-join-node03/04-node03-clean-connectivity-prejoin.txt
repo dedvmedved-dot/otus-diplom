@@ -1,0 +1,17 @@
+=== NODE-03 CLEAN + CONNECTIVITY ===
+--- clean state ---
+admin_absent
+kubeletconf_absent
+apiserver_manifest_absent
+etcd_manifest_absent
+etcd_member_absent
+no_apiserver
+no_etcd
+ports free
+--- connectivity ---
+VIP_6443=PASS
+ok
+node01_6443=PASS
+node01_2380=PASS
+node02_6443=PASS
+node02_2380=PASS

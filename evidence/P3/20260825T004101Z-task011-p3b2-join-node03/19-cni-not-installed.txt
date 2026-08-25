@@ -1,0 +1,4 @@
+=== CNI NOT INSTALLED ===
+NAMESPACE     NAME         DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
+kube-system   kube-proxy   3         3         3       3            3           kubernetes.io/os=linux   10h
+НЕТ CNI

@@ -1,0 +1,14 @@
+=== NODE-03 P1/P2 PRECHECK ===
+node-03
+192.168.194.39/24 172.30.140.103/24 
+bond0: ens2f0 ens2f1 | bond1: ens2f2 ens2f3
+containerd v2.3.3
+Kubernetes v1.36.2
+v1.36.2
+Client Version: v1.36.2
+active
+enabled
+containerd.io kubeadm kubectl kubelet 
+swap: 0 строк
+ 1  1  1 
+rtt min/avg/max/mdev = 0.643/0.660/0.677/0.017 ms
