@@ -1,0 +1,3 @@
+=== GIT SCOPE AUDIT ===
+ M ansible/playbooks/p4a-calico-cni-foundation.yml
+?? evidence/P4/20260826T211215Z-task013-r2-p4a-automation-semantics-final/

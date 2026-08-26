@@ -1,0 +1,17 @@
+# TASK-013-R2 — P3 Regression Static Audit
+
+POST-CLEANUP INDEPENDENT CHECK: YES (отдельная PHASE 15, не PHASE 0)
+ETCD members=3: PRESENT
+ETCD health=3/3: PRESENT
+ETCD learners=0: PRESENT (member + endpoint)
+ETCD unique leader IDs=1: PRESENT
+ETCD actual leader endpoint=1: PRESENT
+kube-vip 3/3: PRESENT
+VIP owner=1: PRESENT
+API livez node-01: PRESENT
+API livez node-02: PRESENT
+API livez node-03: PRESENT
+API 3/3: PRESENT
+readyz: PRESENT
+
+RESULT: PASS

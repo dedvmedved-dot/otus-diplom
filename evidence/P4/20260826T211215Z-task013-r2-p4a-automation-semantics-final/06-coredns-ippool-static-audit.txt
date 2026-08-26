@@ -1,0 +1,13 @@
+# TASK-013-R2 — CoreDNS/IPPool Static Audit
+
+COREDNS DESIRED ASSERT: PRESENT (spec.replicas)
+COREDNS AVAILABLE ASSERT: PRESENT (status.availableReplicas)
+COREDNS READY ASSERT: PRESENT (status.readyReplicas)
+60S / 12 SAMPLES: PRESENT (12×5s)
+IPPOOL COUNT=1: PRESENT
+CIDR=10.244.0.0/16: PRESENT
+IPIP=Always: PRESENT
+natOutgoing=true: PRESENT
+disabled=false: PRESENT
+
+RESULT: PASS

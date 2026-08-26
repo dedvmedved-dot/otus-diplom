@@ -1,0 +1,13 @@
+# TASK-013-R2 — Cross-node/Service/DNS Static Audit
+
+CROSS-NODE MATRIX: 6 explicit pairs (01->02,01->03,02->01,02->03,03->01,03->02)
+CROSS-NODE METHOD: HTTP/TCP (wget http://PodIP:8080/), не только ICMP
+EXPECTED TOTAL: 6/6
+
+SERVICE CONNECTIVITY: HTTP application-level (wget http://ClusterIP:8080/), 3 sources
+SERVICE TOTAL: 3/3
+
+DNS kubernetes.default SOURCES: 3
+DNS p4a-echo SOURCES: 3
+
+RESULT: PASS

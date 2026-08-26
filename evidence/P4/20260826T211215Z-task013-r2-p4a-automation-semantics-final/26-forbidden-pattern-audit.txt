@@ -1,0 +1,20 @@
+# TASK-013-R2 — Forbidden Pattern Audit
+
+NORMAL PLAYBOOK RUN: NO
+KUBECTL APPLY MUTATION: NO
+CREATE/DELETE/PATCH: NO
+CALICO RESTART: NO
+REBOOT: NO
+NETWORK PERSISTENT CHANGE: NO
+STORAGE CHANGE: NO
+ETCD MEMBERSHIP CHANGE: NO
+P4B: NOT STARTED
+P5: NOT STARTED
+
+Source acceptance anti-patterns:
+service_cidr_prefix "10.96.": 0
+p4a-echo2: 0
+one-shot nc listener backend: 0
+post-cleanup P3 readyz-only: 0
+
+RESULT: PASS

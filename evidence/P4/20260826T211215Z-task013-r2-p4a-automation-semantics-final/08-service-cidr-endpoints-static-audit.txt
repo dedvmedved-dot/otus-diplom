@@ -1,0 +1,11 @@
+# TASK-013-R2 — Service CIDR/Endpoints Static Audit
+
+SERVICE: p4a-echo only (single Service, no p4a-echo2)
+COMMON POD LABEL: app=p4a-echo
+SERVICE SELECTOR: app=p4a-echo
+READY ENDPOINT COUNT ASSERT: 3 (via EndpointSlice endpoints, poll until 3)
+SERVICE CIDR: 10.96.0.0/12
+CIDR CHECK METHOD: ipaddress.ip_address(cluster_ip) in ipaddress.ip_network("10.96.0.0/12") — semantic, не string prefix
+SECOND TEST SERVICE: 0
+
+RESULT: PASS

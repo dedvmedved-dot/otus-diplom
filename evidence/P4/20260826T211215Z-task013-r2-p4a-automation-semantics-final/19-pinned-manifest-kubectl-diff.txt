@@ -1,0 +1,10 @@
+# TASK-013-R2 — Pinned Manifest kubectl diff (SAFE)
+
+Diff только image tag -> verified digest замены + generation metadata:
+- node: v3.32.0 -> @sha256:f4fafd8b...
+- cni: v3.32.0 -> @sha256:1cfc6aa9... (×2)
+- kube-controllers: v3.32.0 -> @sha256:adf0ac89...
+
+НЕТ semantic drift (CIDR/IPIP/BGP/autodetection/RBAC/resource deletion).
+
+KUBECTL DIFF SAFE: PASS

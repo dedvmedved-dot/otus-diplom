@@ -1,0 +1,13 @@
+# TASK-013-R2 — P1 Regression Static Audit
+
+bond0 exact slaves (ens2f0 ens2f1): PASS
+bond1 exact slaves (ens2f2 ens2f3): PASS
+VLAN700 exact address checks: 3/3 (per-node expected 192.168.194.38/40/39)
+VLAN140 exact address checks: 3/3 (172.30.140.101/102/103)
+VLAN141 exact address checks: 3/3 (172.30.141.101/102/103)
+VLAN143 exact address checks: 3/3 (172.30.143.101/102/103)
+DEFAULT ROUTE COUNT=1: PRESENT
+DEFAULT GW=192.168.194.1: PRESENT
+DEFAULT DEV=bond0.700: PRESENT
+
+RESULT: PASS

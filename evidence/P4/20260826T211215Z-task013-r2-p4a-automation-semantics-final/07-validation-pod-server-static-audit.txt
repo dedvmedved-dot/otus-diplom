@@ -1,0 +1,10 @@
+# TASK-013-R2 — Validation Pod Server Static Audit
+
+VALIDATION PODS: 3 (p4a-net-node-01/02/03)
+NODE PINNING: nodeName=node-01/02/03 (via --overrides)
+COMMON LABELS: app=p4a-echo, task=TASK-013, stage=P4A
+UNIQUE LABEL: validation-node=node-01/02/03
+PERSISTENT TCP/HTTP SERVER: httpd -f -p 8080 -h /www (persistent, не one-shot nc)
+CONTROL-PLANE TAINT HANDLING: PRESENT (tolerations NoSchedule)
+
+RESULT: PASS

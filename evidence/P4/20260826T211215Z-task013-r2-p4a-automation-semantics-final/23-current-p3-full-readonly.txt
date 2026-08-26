@@ -1,0 +1,14 @@
+=== CURRENT P3 FULL ===
+readyz: ok
+|          ENDPOINT           |        ID        | VERSION | STORAGE VERSION | DB SIZE | IN USE | PERCENTAGE NOT IN USE | QUOTA  | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX | ERRORS | DOWNGRADE TARGET VERSION | DOWNGRADE ENABLED |
+| https://172.30.140.101:2379 | c6680809554332ee |   3.6.8 |           3.6.0 |  5.1 MB | 2.2 MB |                   58% | 2.1 GB |      true |      false |         5 |     845971 |             845971 |        |                          |             false |
+| https://172.30.140.102:2379 | a96306f57a39ca3e |   3.6.8 |           3.6.0 |  5.1 MB | 2.1 MB |                   58% | 2.1 GB |     false |      false |         5 |     845971 |             845971 |        |                          |             false |
+| https://172.30.140.103:2379 |  cf1ee7f696207f4 |   3.6.8 |           3.6.0 |  5.1 MB | 2.2 MB |                   58% | 2.1 GB |     false |      false |         5 |     845971 |             845971 |        |                          |             false |
+--- VIP owner ---
+node .38 VIP=0
+node .40 VIP=1
+node .39 VIP=0
+--- kube-vip ---
+kube-vip-node-01                          1/1     Running   1 (30h ago)   2d7h
+kube-vip-node-02                          1/1     Running   1 (25h ago)   2d6h
+kube-vip-node-03                          1/1     Running   1 (13h ago)   44h

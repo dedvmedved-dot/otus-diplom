@@ -1,0 +1,6 @@
+=== CURRENT COREDNS ===
+NAME      READY   UP-TO-DATE   AVAILABLE   AGE    CONTAINERS   IMAGES                                    SELECTOR
+coredns   2/2     2            2           2d7h   coredns      registry.k8s.io/coredns/coredns:v1.14.2   k8s-app=kube-dns
+NAME                       READY   STATUS    RESTARTS   AGE
+coredns-589f44dc88-khx9s   1/1     Running   0          2d7h
+coredns-589f44dc88-xt9px   1/1     Running   0          2d7h

@@ -1,0 +1,11 @@
+# TASK-013-R2 — Preflight P3/NetworkManager Static Audit
+
+ETCD FULL PRECHECK: PASS (members=3, health=3/3, member learners=0, endpoint learners=0, unique leader IDs=1, actual leader endpoint=1 — JSON-aware)
+KUBE-VIP 3/3 PRECHECK: PRESENT
+VIP OWNER=1 PRECHECK: PRESENT (по node-01/02/03)
+API LIVEZ 3/3 PRECHECK: PRESENT (по node-01/02/03)
+READYZ PRECHECK: PRESENT
+NETWORKMANAGER 3/3: PRESENT (systemctl is-active на каждом node)
+NETWORKMANAGER CONFLICT FAIL-CLOSED: PRESENT (nmcli cali/tunl/vxlan/ipip profile check -> exit 1)
+
+RESULT: PASS

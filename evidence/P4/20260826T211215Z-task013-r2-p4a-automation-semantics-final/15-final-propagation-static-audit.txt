@@ -1,0 +1,23 @@
+# TASK-013-R2 — Final Propagation Static Audit
+
+PHASE 0 PASS: enforced (exit 1 на любом precheck failure)
+PHASE 1 PASS: enforced (exact pin count fail-closed)
+PHASE 2 PASS: enforced (dry-run command failure propagates)
+PHASE 3 PASS: enforced (apply failure propagates)
+PHASE 4 PASS: enforced (rollout status failure propagates)
+PHASE 5 PASS: enforced (node flap exit 1)
+PHASE 6 PASS: enforced (coredns mismatch exit 1)
+PHASE 7 PASS: enforced (ippool mismatch exit 1)
+PHASE 8 PASS: enforced (pod timeout exit 1)
+PHASE 9 PASS: enforced (pod IP mismatch exit 1)
+PHASE 10 PASS: enforced (cross-node <6 exit 1)
+PHASE 11 PASS: enforced (endpoint/CIDR/connect mismatch exit 1)
+PHASE 12 PASS: enforced (DNS mismatch exit 1)
+PHASE 13 PASS: enforced (cleanup verify exit 1)
+PHASE 14 PASS: enforced (post-cleanup flap exit 1)
+PHASE 15 PASS: enforced (P1/P2/P3 mismatch exit 1)
+
+All acceptance gates fail-fast (no ignore_errors/failed_when:false/|| true).
+P4A_ACCEPTANCE_WORKFLOW_PASS: only if all 16 phases complete.
+
+RESULT: PASS

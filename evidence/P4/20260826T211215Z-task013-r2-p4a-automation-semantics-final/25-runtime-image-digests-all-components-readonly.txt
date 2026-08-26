@@ -1,0 +1,24 @@
+# TASK-013-R2 — Runtime Image Digest (ALL Calico components)
+
+COMPONENT: calico-node (main container)
+  configured image: quay.io/calico/node:v3.32.0 (live) / @sha256:f4fafd8b... (manifest-list, pinned)
+  runtime imageID: sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65
+  nodes: node-01, node-02, node-03 (identical)
+  interpretation: platform (amd64) digest == 6bc9fa4d...; manifest-list digest == f4fafd8b...
+
+COMPONENT: calico-cni (init container)
+  configured image: quay.io/calico/cni:v3.32.0 (live) / @sha256:1cfc6aa9... (manifest-list, pinned)
+  runtime imageID: sha256:d456a937d6e7445d4785ca592e5fffc2aa390cb578d7778f17e5a016201cceb4
+  nodes: node-01, node-02, node-03 (identical)
+  interpretation: platform (amd64) digest == d456a937...; manifest-list digest == 1cfc6aa9...
+
+COMPONENT: calico-kube-controllers
+  configured image: quay.io/calico/kube-controllers:v3.32.0 (live) / @sha256:adf0ac89... (manifest-list, pinned)
+  runtime imageID: sha256:e67ce8d034ec572033278ceaee634ca98bc7c7d422b9f4b39a5a66e1aab98e11
+  nodes: (single replica)
+  interpretation: platform (amd64) digest == e67ce8d0...; manifest-list digest == adf0ac89...
+
+ВСЕ КОМПОНЕНТЫ СОГЛАСОВАНЫ (manifest-list digest в images.lock/manifest;
+platform imageID одинаков на всех узлах).
+
+RESULT: PASS (all consistent)

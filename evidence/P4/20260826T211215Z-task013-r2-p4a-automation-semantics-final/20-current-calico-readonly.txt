@@ -1,0 +1,9 @@
+=== CURRENT CALICO ===
+NAME      STATUS   ROLES           AGE    VERSION
+node-01   Ready    control-plane   2d7h   v1.36.2
+node-02   Ready    control-plane   2d6h   v1.36.2
+node-03   Ready    control-plane   44h    v1.36.2
+NAME                         DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
+daemonset.apps/calico-node   3         3         3       3            3           kubernetes.io/os=linux   114m
+NAME                                      READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/calico-kube-controllers   1/1     1            1           114m

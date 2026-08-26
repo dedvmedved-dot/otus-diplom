@@ -1,0 +1,17 @@
+# TASK-013-R2 — Scope
+
+MODE: STATIC + READ-ONLY
+NORMAL PLAYBOOK RUN: NO
+CALICO RUNTIME MUTATION: NO
+
+MODIFIED SOURCE (only):
+  ansible/playbooks/p4a-calico-cni-foundation.yml
+
+READ-ONLY:
+  ansible/playbooks/files/calico-v3.32.0.yaml (digest-pinned, НЕ меняется)
+  images.lock
+
+NEW EVIDENCE:
+  evidence/P4/20260826T211215Z-task013-r2-p4a-automation-semantics-final/
+
+HISTORICAL EVIDENCE: НЕ изменяется.

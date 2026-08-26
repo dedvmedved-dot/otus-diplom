@@ -1,0 +1,9 @@
+=== CURRENT IPPOOL/BGP ===
+  cidr: 10.244.0.0/16
+  ipipMode: Always
+  natOutgoing: true
+--- calico node IPs ---
+NAME NODE
+calico-node-4krkt node-03
+calico-node-lgmtz node-01
+calico-node-mqrgg node-02

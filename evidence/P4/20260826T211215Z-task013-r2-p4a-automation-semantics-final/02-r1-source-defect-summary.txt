@@ -1,0 +1,16 @@
+# TASK-013-R2 — R1 Source Defect Summary
+
+D1. Service CIDR assertion неверен (prefix "10.96." вместо 10.96.0.0/12 semantics)
+D2. Service не имеет 3 endpoints (p4a-echo выбирал 1 pod; p4a-echo2 лишний)
+D3. Validation server не гарантирует 3-endpoint TCP test (nc -l one-shot)
+D4. Cleanup verification неполный (только namespace NotFound)
+D5. Post-cleanup stability не проверяет CoreDNS
+D6. P1 regression неполный (нет exact VLAN addresses, default route count)
+D7. P3 regression проверял только readyz
+D8. Strong preflight неполный (нет kube-vip/VIP/API livez/NM)
+D9. CoreDNS stability Gate неполный (desired==available, нет ready)
+D10. Effective IPPool Gate неполный (нет ipipMode/natOutgoing/disabled)
+D11. Image pin preflight недостаточно fail-closed (нет exact counts)
+D12. Runtime digest evidence R1 неполный (только calico-node)
+
+Все 12 дефектов исправлены в R2 playbook.

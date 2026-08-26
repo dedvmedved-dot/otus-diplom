@@ -1,0 +1,15 @@
+# TASK-013-R2 — R1 Static Audit Correction
+
+R1 CLAIM: SERVICE READY ENDPOINT COUNT ASSERT=3
+R1 SOURCE ACTUAL: no 3-endpoint assertion; p4a-echo selected one pod
+CORRECTION: single Service with app=p4a-echo and exact 3 ready endpoint assertion
+
+R1 CLAIM: cleanup pod/service zero verification present
+R1 SOURCE ACTUAL: namespace NotFound only
+CORRECTION: explicit pod/service/configmap/secret zero checks + namespace NotFound
+
+R1 CLAIM: P3 regression complete
+R1 SOURCE ACTUAL: post-cleanup P3 task checked readyz only
+CORRECTION: full independent post-cleanup etcd/kube-vip/API regression
+
+HISTORICAL R1 EVIDENCE MODIFIED: NO
