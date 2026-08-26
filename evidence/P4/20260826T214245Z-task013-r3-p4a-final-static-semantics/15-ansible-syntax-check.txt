@@ -1,0 +1,2 @@
+
+playbook: ansible/playbooks/p4a-calico-cni-foundation.yml

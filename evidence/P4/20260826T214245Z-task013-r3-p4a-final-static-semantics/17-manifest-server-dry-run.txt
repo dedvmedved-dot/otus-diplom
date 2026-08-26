@@ -1,0 +1,4 @@
+=== DRY-RUN ===
+clusterrolebinding.rbac.authorization.k8s.io/calico-tier-getter unchanged (server dry run)
+daemonset.apps/calico-node configured (server dry run)
+deployment.apps/calico-kube-controllers configured (server dry run)

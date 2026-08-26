@@ -1,0 +1,5 @@
+=== RUNTIME IMAGE DIGESTS ===
+quay.io/calico/node:v3.32.0 -> sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65
+quay.io/calico/node:v3.32.0 -> sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65
+quay.io/calico/node:v3.32.0 -> sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65
+quay.io/calico/kube-controllers:v3.32.0 -> sha256:e67ce8d034ec572033278ceaee634ca98bc7c7d422b9f4b39a5a66e1aab98e11

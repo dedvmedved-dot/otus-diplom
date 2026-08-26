@@ -1,0 +1,17 @@
+# TASK-013-R3 — Scope
+
+MODE: STATIC + READ-ONLY
+NORMAL P4A RUN: NO
+CALICO MUTATION: NO
+
+MODIFIED SOURCE (only):
+  ansible/playbooks/p4a-calico-cni-foundation.yml
+
+READ-ONLY:
+  ansible/playbooks/files/calico-v3.32.0.yaml
+  images.lock
+
+NEW EVIDENCE:
+  evidence/P4/20260826T214245Z-task013-r3-p4a-final-static-semantics/
+
+HISTORICAL EVIDENCE: НЕ изменяется.

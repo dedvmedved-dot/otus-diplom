@@ -1,0 +1,19 @@
+# TASK-013-R3 — R2 Static Audit Correction
+
+R2 FALSE CLAIM: P1 per-node exact mapping PASS
+SOURCE DEFECT: nested ternary precedence can resolve node_expected incorrectly
+CORRECTION: explicit expected_network_by_host[inventory_hostname]
+
+R2 IPPOOL DEFECT: disabled absent is effective false, but source expected literal "false"
+CORRECTION: JSON-aware spec.get("disabled", False) is False
+
+R2 CLEANUP DEFECT: all ConfigMaps counted; Kubernetes system kube-root-ca.crt may exist
+CORRECTION: count only task-owned labeled resources; fail-closed API reads
+
+R2 ENDPOINT DEFECT: IP occurrences in first EndpointSlice != 3 Ready endpoints
+CORRECTION: parse all slices + conditions.ready + unique addresses
+
+R2 STABILITY DEFECT: checks ended at ~t55 before final sleep
+CORRECTION: last acceptance sample >=t60
+
+HISTORICAL R2 EVIDENCE MODIFIED: NO

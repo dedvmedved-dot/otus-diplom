@@ -1,0 +1,13 @@
+# TASK-013-R3 — kube-root-ca Cleanup Semantics
+
+Проблема: в namespace автоматически создаётся системный ConfigMap kube-root-ca.crt
+(для projected service-account volumes). Он не является task-owned.
+
+Cleanup НЕ требует all ConfigMaps == 0. Вместо этого:
+- фильтр по label task=TASK-013
+- JSON-aware подсчёт task-owned ресурсов
+- только task-owned resources должны быть 0
+
+Системный kube-root-ca.crt и default service account secret НЕ дают false FAIL.
+
+RESULT: PASS

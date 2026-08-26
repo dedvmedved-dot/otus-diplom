@@ -1,0 +1,11 @@
+=== DIFF (image lines only) ===
+-        image: quay.io/calico/node:v3.32.0
++        image: quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a
+-        image: quay.io/calico/cni:v3.32.0
++        image: quay.io/calico/cni@sha256:1cfc6aa9c4dad3575fdf36b78185fd7d68bcd4acc95778f8342be4fb6a851a14
+-        image: quay.io/calico/cni:v3.32.0
++        image: quay.io/calico/cni@sha256:1cfc6aa9c4dad3575fdf36b78185fd7d68bcd4acc95778f8342be4fb6a851a14
+-        image: quay.io/calico/node:v3.32.0
++        image: quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a
+-        image: quay.io/calico/kube-controllers:v3.32.0
++        image: quay.io/calico/kube-controllers@sha256:adf0ac895796d21bca5383bc81c4cd2614be3a4308085b47857d7999f4cc2b1f

@@ -1,0 +1,5 @@
+CASE A 3 ready one slice: status=OK ready=3 uniq=3 in_cidr=3
+CASE B 2 ready + 1 not ready: status=OK ready=2 uniq=2 in_cidr=2
+CASE C 3 ready across 2 slices: status=OK ready=3 uniq=3 in_cidr=3
+CASE D duplicate address: status=OK ready=3 uniq=2 in_cidr=3
+CASE E malformed: status=FAIL_CLOSED ready=None uniq=None in_cidr=None

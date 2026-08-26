@@ -1,0 +1,4 @@
+CASE A disabled:false: PASS
+CASE B disabled omitted: PASS
+CASE C disabled:true: FAIL
+CASE D malformed spec: FAIL_CLOSED

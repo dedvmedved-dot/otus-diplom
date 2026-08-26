@@ -1,0 +1,9 @@
+# TASK-013-R3 — R2 Defect Summary
+
+R2-A: Jinja nested ternary precedence для per-node P1 map (неоднозначно)
+R2-B: IPPool disabled=false omitted semantics (dis="" может false FAIL)
+R2-C: EndpointSlice ready count (IP occurrences in items[0] != 3 Ready endpoints)
+R2-D: system ConfigMap (kube-root-ca.crt) ломает all-CM==0 cleanup count
+R2-E: 60-second sampling boundary (loop проверял t=0..55, не включал t=60)
+
+Все 5 дефектов исправлены в R3 playbook.

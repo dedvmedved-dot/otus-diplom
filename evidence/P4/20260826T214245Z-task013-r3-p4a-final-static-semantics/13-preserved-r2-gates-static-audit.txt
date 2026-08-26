@@ -1,0 +1,22 @@
+# TASK-013-R3 — Preserved R2 Gates Static Audit
+
+strong etcd preflight: PRESERVED
+kube-vip 3/3: PRESERVED
+VIP owner=1: PRESERVED
+API livez 3/3: PRESERVED
+NetworkManager fail-closed gate: PRESERVED
+digest exact counts (total=5, node=2, cni=2, ctrl=1, tag-only=0, unexpected=0): PRESERVED
+CoreDNS desired=available=ready: PRESERVED
+IPPool CIDR/IPIP/natOutgoing/pool count: PRESERVED (+disabled JSON-aware)
+persistent HTTP server: PRESERVED
+one pod per node: PRESERVED
+cross-node HTTP 6/6: PRESERVED
+single Service: PRESERVED
+semantic Service CIDR /12: PRESERVED
+Service HTTP 3/3: PRESERVED
+DNS 3/3+3/3: PRESERVED
+post-cleanup CoreDNS: PRESERVED
+P2 regression: PRESERVED
+full independent P3 regression: PRESERVED
+
+RESULT: PASS

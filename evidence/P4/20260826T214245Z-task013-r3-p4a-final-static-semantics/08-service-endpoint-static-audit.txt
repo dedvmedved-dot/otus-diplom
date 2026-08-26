@@ -1,0 +1,9 @@
+# TASK-013-R3 — Service Endpoint Static Audit
+
+SERVICE: p4a-echo (single, selector app=p4a-echo)
+SERVICE TASK LABELS: PRESENT (task=TASK-013, stage=P4A, purpose=network-validation)
+READY ENDPOINT SEMANTICS: JSON-aware parse всех EndpointSlices + conditions.ready + unique addresses + 10.244.0.0/16 membership
+SECOND TEST SERVICE (p4a-echo2): 0
+OLD items[0].endpoints IP-count gate: 0
+
+RESULT: PASS

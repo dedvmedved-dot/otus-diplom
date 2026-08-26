@@ -1,0 +1,23 @@
+# TASK-013-R3 — Forbidden Pattern Audit
+
+NORMAL P4A RUN: NO
+KUBECTL APPLY MUTATION: NO (только --dry-run=server)
+CALICO RESTART: NO
+REBOOT: NO
+NETWORK PERSISTENT CHANGE: NO
+STORAGE CHANGE: NO
+ETCD MEMBERSHIP CHANGE: NO
+P4B: NOT STARTED
+P5: NOT STARTED
+
+Source anti-patterns (0):
+nested ternary node_expected selector: 0
+literal disabled == "false" only: 0 (JSON-aware spec.get)
+.items[0].endpoints IP-count gate: 0
+all namespace ConfigMap count == 0: 0
+all namespace Secret count == 0: 0
+cleanup kubectl-get errors suppressed into PASS: 0
+service_cidr_prefix: 0
+p4a-echo2: 0
+
+RESULT: PASS

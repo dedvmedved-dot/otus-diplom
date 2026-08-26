@@ -1,0 +1,18 @@
+# TASK-013-R3 — Stability Boundary Static Audit
+
+PHASE 5 (nodes):
+  duration >=60s, 12 samples, interval 5s, first offset t=5, last sample t=60
+  last sample >=t60: PASS
+
+PHASE 6 (CoreDNS):
+  duration >=60s, 12 samples, interval 5s, first offset t=5, last sample t=60
+  last sample >=t60: PASS
+
+PHASE 14 (post-cleanup):
+  duration >=60s, 12 samples, interval 5s, first offset t=5, last sample t=60
+  last sample >=t60: PASS
+
+Исправление: циклы переведены на "sleep 5; check" ×12 (samples t=5..60),
+вместо прежнего "check; sleep 5" (samples t=0..55).
+
+RESULT: PASS

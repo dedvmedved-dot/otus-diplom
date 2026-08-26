@@ -1,0 +1,29 @@
+{
+    "apiVersion": "crd.projectcalico.org/v1",
+    "kind": "IPPool",
+    "metadata": {
+        "annotations": {
+            "projectcalico.org/metadata": "{\"creationTimestamp\":\"2026-08-26T19:22:25Z\"}"
+        },
+        "creationTimestamp": "2026-08-26T19:22:25Z",
+        "generation": 1,
+        "name": "default-ipv4-ippool",
+        "resourceVersion": "597110",
+        "uid": "8f21f381-6f61-4ee3-9ab6-b1d09301d4be"
+    },
+    "spec": {
+        "allowedUses": [
+            "Workload",
+            "Tunnel"
+        ],
+        "assignmentMode": "Automatic",
+        "blockSize": 26,
+        "cidr": "10.244.0.0/16",
+        "ipipMode": "Always",
+        "natOutgoing": true,
+        "nodeSelector": "all()",
+        "vxlanMode": "Never"
+    }
+}
+--- parser result ---
+CIDR=10.244.0.0/16 IPIP=Always natOutgoing=True disabled_effective=False pool_count=1
