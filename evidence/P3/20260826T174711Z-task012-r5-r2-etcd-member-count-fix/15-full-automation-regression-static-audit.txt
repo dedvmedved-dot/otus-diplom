@@ -1,0 +1,29 @@
+# TASK-012-R5-R2 — Full Automation Regression Static Audit
+
+RUN_ID: 20260826T174711Z
+
+RUNNING-state discovery: PASS
+hardcoded target IDs: 0
+ctr containers list target mapping: 0
+exact 5 unique assert: PASS
+
+injection block/rescue: PASS
+recovery kubelet block/rescue: PASS
+recovery exact-five block/rescue: PASS
+
+recovery etcd:
+  member_count JSON-aware=3 PASS
+  member learners=0 PASS
+  health=3/3 PASS
+  endpoint learners=0 PASS
+  unique leader IDs=1 PASS
+  actual leader endpoint count=1 PASS
+
+recovery kube-vip: 3/3 PASS, owner_count=1 PASS
+recovery API: node-01/02/03 PASS, 3/3 PASS, readyz PASS
+
+cleanup blocks (probe/dead-man/sampler): PASS
+live flags: 10/10
+final fail refs: 10/10
+
+ВЫВОД: PASS

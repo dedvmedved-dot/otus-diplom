@@ -1,0 +1,22 @@
+# TASK-012-R5-R2 — R5-R1 Member Count Correction
+
+HISTORICAL ASSERTION:
+grep -c '"ID"' == 3
+
+DEFECT:
+grep -c counts matching lines, not members.
+JSON may contain all members on one line.
+
+CORRECT SEMANTICS:
+member_count = len(member_list_json["members"])
+member_learner_count = count(isLearner == true)
+
+HISTORICAL EVIDENCE MODIFIED:
+NO
+
+IMPACT:
+runtime membership remains valid;
+only automation assertion semantics corrected.
+
+NEW HA FAILURE RUN REQUIRED:
+NO

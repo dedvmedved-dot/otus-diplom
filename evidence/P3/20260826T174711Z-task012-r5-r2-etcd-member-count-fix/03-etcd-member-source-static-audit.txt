@@ -1,0 +1,25 @@
+# TASK-012-R5-R2 — etcd Member Source Static Audit
+
+RUN_ID: 20260826T174711Z
+
+JSON-AWARE MEMBER PARSER: PRESENT (python3 json.load, not grep/wc)
+
+MEMBER COUNT FROM len(members): PRESENT
+
+MEMBER LEARNER COUNT: PRESENT (sum over m where m.get("isLearner") is True)
+
+FAIL-CLOSED ON MALFORMED STRUCTURE: PRESENT
+  - sys.exit(2) если members не list
+  - sys.exit(3) если любой member не имеет поля "ID"
+
+OLD grep -c '"ID"' ACCEPTANCE: ABSENT (0 occurrences)
+
+ПРИМЕЧАНИЕ (фактический etcd 3.6.8 формат):
+member list -w json использует omitempty для isLearner — у не-learner поле
+отсутствует. Parser корректно трактует отсутствие поля как non-learner (проверено
+Case E unit test), а не считает отсутствие ошибкой. Ошибка (fail-closed) только
+при malformed structure (нет members list или нет ID).
+
+RECOVERY ETCD FAILURE SET TRUE: task012_recovery_etcd_failed=true
+
+RESULT: PASS

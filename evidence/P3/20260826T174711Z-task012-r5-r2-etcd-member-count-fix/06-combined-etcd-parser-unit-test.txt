@@ -1,0 +1,27 @@
+# TASK-012-R5-R2 — Combined etcd Parser Unit Test
+
+RUN_ID: 20260826T174711Z
+
+Synthetic input объединяет все 5 semantic conditions:
+
+member list JSON:
+  members=3, all isLearner=false  -> member_count=3, member_learners=0
+
+endpoint health:
+  3 endpoints 'is healthy'        -> healthy=3
+
+endpoint status JSON:
+  member A: member_id=A leader=A  (actual leader)
+  member B: member_id=B leader=A
+  member C: member_id=C leader=A
+  -> endpoint learners=0, unique leader IDs=1, actual leader endpoints=1
+
+Expected:
+  member_count=3 PASS
+  member_learners=0 PASS
+  healthy=3 PASS
+  endpoint_learners=0 PASS
+  unique_leader_ids=1 PASS
+  actual_leader_endpoints=1 PASS
+
+RESULT: PASS (combined 6/6)

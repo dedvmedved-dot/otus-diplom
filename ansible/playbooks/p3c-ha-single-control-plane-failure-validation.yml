@@ -448,23 +448,28 @@
                 cmd: |
                   EP="--endpoints=https://172.30.140.101:2379,https://172.30.140.102:2379,https://172.30.140.103:2379"
                   CAC="--cacert={{ etcd_ca }} --cert={{ etcd_cert }} --key={{ etcd_key }}"
-                  # members = 3
-                  m=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-node-01 -- \
-                    etcdctl $EP $CAC member list -w json 2>/dev/null | grep -c '"ID"')
-                  echo "members=$m"
-                  [ "$m" = "3" ] || exit 1
+                  # members=3 + member learners=0 via JSON-aware parser (fail-closed on malformed)
+                  members_json=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-node-01 -- \
+                    etcdctl $EP $CAC member list -w json 2>/dev/null)
+                  member_metrics=$(printf '%s' "$members_json" | python3 -c 'import json,sys; d=json.load(sys.stdin); ms=d.get("members"); sys.exit(2) if not isinstance(ms, list) else None; sys.exit(3) if any("ID" not in m for m in ms) else None; mc=len(ms); lc=sum(1 for m in ms if m.get("isLearner") is True); print(f"{mc} {lc}")')
+                  mrc=$?
+                  [ "$mrc" = "0" ] || { echo "MEMBER_JSON_PARSE_FAIL rc=$mrc"; exit 1; }
+                  read member_count member_learners <<< "$member_metrics"
+                  echo "member_count=$member_count member_learners=$member_learners"
+                  [ "$member_count" = "3" ] || exit 1
+                  [ "$member_learners" = "0" ] || exit 1
                   # health = 3/3
                   h=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-node-01 -- \
                     etcdctl $EP $CAC endpoint health 2>/dev/null | grep -c 'is healthy')
                   echo "healthy=$h"
                   [ "$h" = "3" ] || exit 1
-                  # learners=0 + JSON-aware leader semantics (Gate A: unique non-zero leader IDs=1;
+                  # endpoint learners=0 + JSON-aware leader semantics (Gate A: unique non-zero leader IDs=1;
                   # Gate B: actual leader endpoints where member_id==leader_id = exactly 1)
                   st=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-node-01 -- \
                     etcdctl $EP $CAC endpoint status -w json 2>/dev/null)
                   metrics=$(printf '%s' "$st" | python3 -c 'import json,sys; d=json.load(sys.stdin); lr=sum(1 for x in d if x.get("Status",{}).get("isLearner") is True); lids={int(x.get("Status",{}).get("leader",0) or 0) for x in d}; lids.discard(0); act=sum(1 for x in d if ((int(x.get("Status",{}).get("leader",0) or 0)!=0) and (int(x.get("Status",{}).get("header",{}).get("member_id",0) or 0)==int(x.get("Status",{}).get("leader",0) or 0)))); lid=max(lids) if lids else 0; print(f"{lr} {len(lids)} {act} {lid}")')
                   read learners unique_leaders actual_leaders leader_id <<< "$metrics"
-                  echo "learners=$learners unique_leaders=$unique_leaders actual_leaders=$actual_leaders leader_id=$leader_id"
+                  echo "endpoint_learners=$learners unique_leaders=$unique_leaders actual_leaders=$actual_leaders leader_id=$leader_id"
                   [ "$learners" = "0" ] || exit 1
                   [ "$unique_leaders" = "1" ] || exit 1
                   [ "$actual_leaders" = "1" ] || exit 1

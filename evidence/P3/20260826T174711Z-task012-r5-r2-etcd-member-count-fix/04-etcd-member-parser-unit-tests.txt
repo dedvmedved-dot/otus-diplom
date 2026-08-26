@@ -1,0 +1,32 @@
+# TASK-012-R5-R2 — etcd Member Parser Unit Tests
+
+RUN_ID: 20260826T174711Z
+
+Parser: JSON-aware (python3 json), fail-closed на malformed structure.
+etcd 3.6.8 member list JSON: 'members' = list; каждый member всегда имеет 'ID';
+поле 'isLearner' присутствует ТОЛЬКО когда true (omitempty) — у не-learner отсутствует.
+
+CASE A 3 members, 0 learners:
+  status=OK member_count=3 learner_count=0
+  Gate A (member_count==3) OK; Gate B (learner_count==0) OK
+  -> PASS
+
+CASE B 2 members:
+  status=OK member_count=2 learner_count=0
+  Gate A: 2 != 3
+  -> EXPECTED FAIL -> PASS
+
+CASE C 3 members, 1 learner:
+  status=OK member_count=3 learner_count=1
+  Gate B: 1 != 0
+  -> EXPECTED FAIL -> PASS
+
+CASE D malformed structure ({"foo":[]}):
+  status=FAIL_CLOSED_STRUCTURE member_count=None learner_count=None
+  -> EXPECTED FAIL (fail-closed) -> PASS
+
+CASE E (доп.) реальный etcd 3.6.8 omitempty — без ключа isLearner у не-learner:
+  status=OK member_count=3 learner_count=0
+  -> PASS (корректная обработка фактического JSON)
+
+OVERALL: 4/4 обязательных PASS (+ Case E валидация фактического формата)
