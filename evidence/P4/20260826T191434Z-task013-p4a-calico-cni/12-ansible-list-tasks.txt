@@ -1,0 +1,15 @@
+=== LIST-TASKS ===
+
+playbook: ansible/playbooks/p4a-calico-cni-foundation.yml
+
+  play #1 (all): P4A Calico CNI foundation (v3.32.0)	TAGS: []
+    tasks:
+      Precheck readyz (before CNI)	TAGS: []
+      Precheck etcd 3/3 healthy (before CNI)	TAGS: []
+      Manifest server-side dry-run	TAGS: []
+      Apply Calico manifest	TAGS: []
+      Wait calico-node DaemonSet ready	TAGS: []
+      Wait calico-kube-controllers ready	TAGS: []
+      Wait nodes Ready 3/3	TAGS: []
+      Wait CoreDNS ready	TAGS: []
+      Verify Calico IPPool CIDR	TAGS: []

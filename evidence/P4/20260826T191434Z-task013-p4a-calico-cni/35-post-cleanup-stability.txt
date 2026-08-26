@@ -1,0 +1,13 @@
+=== POST-CLEANUP STABILITY (60s) ===
+t=5s nodes=3 calico=3 coredns=2 readyz=ok
+t=10s nodes=3 calico=3 coredns=2 readyz=ok
+t=15s nodes=3 calico=3 coredns=2 readyz=ok
+t=20s nodes=3 calico=3 coredns=2 readyz=ok
+t=25s nodes=3 calico=3 coredns=2 readyz=ok
+t=30s nodes=3 calico=3 coredns=2 readyz=ok
+t=35s nodes=3 calico=3 coredns=2 readyz=ok
+t=40s nodes=3 calico=3 coredns=2 readyz=ok
+t=45s nodes=3 calico=3 coredns=2 readyz=ok
+t=50s nodes=3 calico=3 coredns=2 readyz=ok
+t=55s nodes=3 calico=3 coredns=2 readyz=ok
+t=60s nodes=3 calico=3 coredns=2 readyz=ok

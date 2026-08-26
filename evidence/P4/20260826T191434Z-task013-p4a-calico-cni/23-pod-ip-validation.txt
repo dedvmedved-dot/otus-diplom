@@ -1,0 +1,9 @@
+# TASK-013 / P4A — Pod IP Validation
+
+node-01 pod: p4a-net-test-b967d5b68-v6hx9  IP=10.244.190.1  (in 10.244.0.0/16)
+node-02 pod: p4a-net-test-b967d5b68-zcnqj  IP=10.244.184.1  (in 10.244.0.0/16)
+node-03 pod: p4a-net-test-b967d5b68-bj4w2  IP=10.244.254.68 (in 10.244.0.0/16)
+
+All 3 pod IPs unique and inside 10.244.0.0/16.
+
+RESULT: PASS

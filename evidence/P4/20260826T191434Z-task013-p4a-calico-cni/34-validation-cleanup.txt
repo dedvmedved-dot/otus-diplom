@@ -1,0 +1,4 @@
+namespace "p4a-net-validation" deleted
+Error from server (NotFound): namespaces "p4a-net-validation" not found
+NotFound verified
+No resources found in p4a-net-validation namespace.

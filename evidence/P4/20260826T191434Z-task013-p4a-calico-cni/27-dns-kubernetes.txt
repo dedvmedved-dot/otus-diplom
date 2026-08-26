@@ -1,0 +1,16 @@
+=== DNS kubernetes.default ===
+--- p4a-net-test-b967d5b68-v6hx9 ---
+
+Name:	kubernetes.default.svc.cluster.local
+Address: 10.96.0.1
+
+--- p4a-net-test-b967d5b68-zcnqj ---
+Name:	kubernetes.default.svc.cluster.local
+Address: 10.96.0.1
+
+
+--- p4a-net-test-b967d5b68-bj4w2 ---
+
+Name:	kubernetes.default.svc.cluster.local
+Address: 10.96.0.1
+

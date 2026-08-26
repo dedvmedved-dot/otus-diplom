@@ -1,0 +1,6 @@
+CALICO VERSION: 3.32.0
+SOURCE TAG: v3.32.0
+MANIFEST: calico.yaml
+SOURCE: https://raw.githubusercontent.com/projectcalico/calico/v3.32.0/manifests/calico.yaml
+DOWNLOAD TIMESTAMP UTC: 2026-08-26T19:16:15Z
+LATEST/FLOATING SOURCE: NO

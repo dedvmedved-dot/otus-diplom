@@ -1,0 +1,11 @@
+# TASK-013 / P4A — Cross-node Pod Connectivity
+
+SOURCE        DESTINATION        RESULT
+node01-pod    node02-pod         PASS (0.433ms avg)
+node01-pod    node03-pod         PASS (0.447ms avg)
+node02-pod    node01-pod         PASS (0.392ms avg)
+node02-pod    node03-pod         PASS (0.414ms avg)
+node03-pod    node01-pod         PASS (0.336ms avg)
+node03-pod    node02-pod         PASS (0.401ms avg)
+
+TOTAL: 6/6 PASS

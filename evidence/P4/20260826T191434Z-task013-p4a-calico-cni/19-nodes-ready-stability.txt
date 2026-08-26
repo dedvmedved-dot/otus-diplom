@@ -1,0 +1,13 @@
+=== NODES READY STABILITY (60s) ===
+t=5s nodes_ready=3 calico_node_ready=3 coredns_ready=2
+t=10s nodes_ready=3 calico_node_ready=3 coredns_ready=2
+t=15s nodes_ready=3 calico_node_ready=3 coredns_ready=2
+t=20s nodes_ready=3 calico_node_ready=3 coredns_ready=2
+t=25s nodes_ready=3 calico_node_ready=3 coredns_ready=2
+t=30s nodes_ready=3 calico_node_ready=3 coredns_ready=2
+t=35s nodes_ready=3 calico_node_ready=3 coredns_ready=2
+t=40s nodes_ready=3 calico_node_ready=3 coredns_ready=2
+t=45s nodes_ready=3 calico_node_ready=3 coredns_ready=2
+t=50s nodes_ready=3 calico_node_ready=3 coredns_ready=2
+t=55s nodes_ready=3 calico_node_ready=3 coredns_ready=2
+t=60s nodes_ready=3 calico_node_ready=3 coredns_ready=2

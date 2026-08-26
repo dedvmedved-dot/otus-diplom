@@ -1,0 +1,6 @@
+service/p4a-echo created
+NAME       TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE   SELECTOR
+p4a-echo   ClusterIP   10.103.181.227   <none>        8080/TCP   0s    app=p4a-net-test
+Warning: v1 Endpoints is deprecated in v1.33+; use discovery.k8s.io/v1 EndpointSlice
+NAME       ENDPOINTS                                                AGE
+p4a-echo   10.244.184.1:8080,10.244.190.1:8080,10.244.254.68:8080   0s

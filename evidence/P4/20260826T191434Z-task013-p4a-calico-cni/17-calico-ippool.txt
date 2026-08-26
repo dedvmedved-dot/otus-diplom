@@ -1,0 +1,11 @@
+# TASK-013 / P4A — Calico IPPool
+
+IPv4 POOL COUNT: 1
+CIDR: 10.244.0.0/16
+IPIP: Always
+VXLAN: Never
+NAT OUTGOING: true
+DISABLED: false (не задан)
+UNEXPECTED POOLS: 0
+
+RESULT: PASS

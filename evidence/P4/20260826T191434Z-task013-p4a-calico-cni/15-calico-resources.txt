@@ -1,0 +1,10 @@
+NAME                                      READY   STATUS    RESTARTS      AGE     IP               NODE      NOMINATED NODE   READINESS GATES
+calico-kube-controllers-6b9b5f7c4-48mqk   1/1     Running   0             3m15s   10.244.254.67    node-03   <none>           <none>
+calico-node-2m2gc                         1/1     Running   0             3m15s   172.30.140.102   node-02   <none>           <none>
+calico-node-g76wv                         0/1     Running   0             3m15s   172.30.140.101   node-01   <none>           <none>
+calico-node-jwbps                         1/1     Running   0             3m15s   172.30.140.103   node-03   <none>           <none>
+--- nodes ---
+NAME      STATUS   ROLES           AGE    VERSION
+node-01   Ready    control-plane   2d5h   v1.36.2
+node-02   Ready    control-plane   2d4h   v1.36.2
+node-03   Ready    control-plane   42h    v1.36.2

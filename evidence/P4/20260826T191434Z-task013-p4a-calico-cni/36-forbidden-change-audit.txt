@@ -1,0 +1,19 @@
+# TASK-013 / P4A — Forbidden Change Audit
+
+REBOOT: NO
+NETWORK PERSISTENT CONFIG CHANGES: NONE (bond0/bond1/VLAN700/140/141/143/default route unchanged)
+STORAGE CHANGES: NONE
+PACKAGE CHANGES: NONE
+KERNEL CHANGES: NONE
+ETCD MEMBERSHIP CHANGES: NONE
+KUBEADM RECONFIGURATION: NONE
+CUSTOM BASELINE NETWORKPOLICY APPLIED: NO
+
+EXPECTED Calico runtime additions (не forbidden):
+- tunl0 / cali* interfaces
+- BIRD routes for pod subnets
+- CNI config (/etc/cni/net.d) + CNI binaries (/opt/cni/bin)
+- Calico iptables/nftables rules
+- Calico Kubernetes resources
+
+ВЫВОД: PASS

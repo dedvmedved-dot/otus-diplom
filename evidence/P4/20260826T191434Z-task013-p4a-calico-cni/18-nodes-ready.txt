@@ -1,0 +1,10 @@
+daemon set "calico-node" successfully rolled out
+--- nodes ---
+NAME      STATUS   ROLES           AGE    VERSION
+node-01   Ready    control-plane   2d5h   v1.36.2
+node-02   Ready    control-plane   2d4h   v1.36.2
+node-03   Ready    control-plane   42h    v1.36.2
+--- coredns ---
+NAME                       READY   STATUS    RESTARTS   AGE
+coredns-589f44dc88-khx9s   1/1     Running   0          2d5h
+coredns-589f44dc88-xt9px   1/1     Running   0          2d5h

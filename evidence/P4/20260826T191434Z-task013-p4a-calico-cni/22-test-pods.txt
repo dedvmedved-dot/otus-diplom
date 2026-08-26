@@ -1,0 +1,6 @@
+namespace/p4a-net-validation created
+deployment.apps/p4a-net-test created
+NAME                           READY   STATUS    RESTARTS   AGE   IP              NODE      NOMINATED NODE   READINESS GATES
+p4a-net-test-b967d5b68-bj4w2   1/1     Running   0          27s   10.244.254.68   node-03   <none>           <none>
+p4a-net-test-b967d5b68-v6hx9   1/1     Running   0          27s   10.244.190.1    node-01   <none>           <none>
+p4a-net-test-b967d5b68-zcnqj   1/1     Running   0          27s   10.244.184.1    node-02   <none>           <none>

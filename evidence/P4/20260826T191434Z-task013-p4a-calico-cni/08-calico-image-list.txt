@@ -1,0 +1,4 @@
+=== IMAGE LIST ===
+image: quay.io/calico/cni:v3.32.0
+image: quay.io/calico/kube-controllers:v3.32.0
+image: quay.io/calico/node:v3.32.0

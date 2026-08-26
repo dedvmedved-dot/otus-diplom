@@ -1,0 +1,9 @@
+=== API/ETCD/VIP REGRESSION ===
+readyz: ok
+https://172.30.140.101:2379 is healthy: successfully committed proposal: took = 21.172066ms
+https://172.30.140.102:2379 is healthy: successfully committed proposal: took = 27.106459ms
+https://172.30.140.103:2379 is healthy: successfully committed proposal: took = 27.50061ms
+--- VIP owner ---
+node .38 VIP=0
+node .40 VIP=1
+node .39 VIP=0

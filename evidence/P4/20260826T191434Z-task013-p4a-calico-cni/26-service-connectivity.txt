@@ -1,0 +1,7 @@
+# TASK-013 / P4A — Service Connectivity
+
+node01-pod -> ClusterIP: PASS (pong)
+node02-pod -> ClusterIP: PASS (pong)
+node03-pod -> ClusterIP: PASS (pong)
+
+TOTAL: 3/3 PASS

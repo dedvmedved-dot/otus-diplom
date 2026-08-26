@@ -1,0 +1,13 @@
+=== DNS test service ===
+--- p4a-net-test-b967d5b68-v6hx9 ---
+Name:	p4a-echo.p4a-net-validation.svc.cluster.local
+Address: 10.103.181.227
+
+--- p4a-net-test-b967d5b68-zcnqj ---
+Name:	p4a-echo.p4a-net-validation.svc.cluster.local
+Address: 10.103.181.227
+
+--- p4a-net-test-b967d5b68-bj4w2 ---
+Address: 10.103.181.227
+
+

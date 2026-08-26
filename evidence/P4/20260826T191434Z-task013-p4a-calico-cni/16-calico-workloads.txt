@@ -1,0 +1,61 @@
+Waiting for daemon set "calico-node" rollout to finish: 0 of 3 updated pods are available...
+Waiting for daemon set "calico-node" rollout to finish: 1 of 3 updated pods are available...
+Waiting for daemon set "calico-node" rollout to finish: 2 of 3 updated pods are available...
+error: timed out waiting for the condition
+deployment "calico-kube-controllers" successfully rolled out
+calico-node-2m2gc                         1/1     Running   0             3m52s
+calico-node-g76wv                         0/1     Running   0             3m52s
+calico-node-jwbps                         1/1     Running   0             3m52s
+NAME                READY   STATUS    RESTARTS   AGE     IP               NODE      NOMINATED NODE   READINESS GATES
+calico-node-2m2gc   1/1     Running   0          3m53s   172.30.140.102   node-02   <none>           <none>
+calico-node-g76wv   0/1     Running   0          3m53s   172.30.140.101   node-01   <none>           <none>
+calico-node-jwbps   1/1     Running   0          3m53s   172.30.140.103   node-03   <none>           <none>
+[{"lastProbeTime":null,"lastTransitionTime":"2026-08-26T19:22:20Z","observedGeneration":1,"status":"True","type":"PodReadyToStartContainers"},{"lastProbeTime":null,"lastTransitionTime":"2026-08-26T19:22:24Z","observedGeneration":1,"status":"True","type":"Initialized"},{"lastProbeTime":null,"lastTransitionTime":"2026-08-26T19:22:20Z","message":"containers with unready status: [calico-node]","observedGeneration":1,"reason":"ContainersNotReady","status":"False","type":"Ready"},{"lastProbeTime":null,"lastTransitionTime":"2026-08-26T19:22:20Z","message":"containers with unready status: [calico-node]","observedGeneration":1,"reason":"ContainersNotReady","status":"False","type":"ContainersReady"},{"lastProbeTime":null,"lastTransitionTime":"2026-08-26T19:22:20Z","observedGeneration":1,"status":"True","type":"PodScheduled"}]
+2026-08-26 19:26:11.114 [INFO][120] node-services/health.go 207: Number of node(s) with BGP peering established = 0
+2026-08-26 19:26:11.114 [INFO][120] node-services/health.go 207: Number of node(s) with BGP peering established = 0
+2026-08-26 19:26:11.114 [WARNING][120] node-services/startup.go 290: Calico is not ready yet, waiting... reason="calico/node is not ready: BIRD is not ready: BGP not established with 172.30.143.102,172.30.143.103"
+2026-08-26 19:26:12.116 [INFO][120] node-services/health.go 207: Number of node(s) with BGP peering established = 0
+2026-08-26 19:26:12.117 [INFO][120] node-services/health.go 207: Number of node(s) with BGP peering established = 0
+2026-08-26 19:26:12.117 [WARNING][120] node-services/startup.go 290: Calico is not ready yet, waiting... reason="calico/node is not ready: BIRD is not ready: BGP not established with 172.30.143.102,172.30.143.103"
+2026-08-26 19:26:13.118 [INFO][120] node-services/health.go 207: Number of node(s) with BGP peering established = 0
+2026-08-26 19:26:13.118 [INFO][120] node-services/health.go 207: Number of node(s) with BGP peering established = 0
+2026-08-26 19:26:13.118 [WARNING][120] node-services/startup.go 290: Calico is not ready yet, waiting... reason="calico/node is not ready: BIRD is not ready: BGP not established with 172.30.143.102,172.30.143.103"
+2026-08-26 19:26:14.120 [INFO][120] node-services/health.go 207: Number of node(s) with BGP peering established = 0
+2026-08-26 19:26:14.120 [INFO][120] node-services/health.go 207: Number of node(s) with BGP peering established = 0
+2026-08-26 19:26:14.120 [WARNING][120] node-services/startup.go 290: Calico is not ready yet, waiting... reason="calico/node is not ready: BIRD is not ready: BGP not established with 172.30.143.102,172.30.143.103"
+2026-08-26 19:26:15.121 [INFO][120] node-services/health.go 207: Number of node(s) with BGP peering established = 0
+2026-08-26 19:26:15.121 [INFO][120] node-services/health.go 207: Number of node(s) with BGP peering established = 0
+2026-08-26 19:26:15.122 [WARNING][120] node-services/startup.go 290: Calico is not ready yet, waiting... reason="calico/node is not ready: BIRD is not ready: BGP not established with 172.30.143.102,172.30.143.103"
+2026-08-26 19:26:16.123 [INFO][120] node-services/health.go 207: Number of node(s) with BGP peering established = 0
+2026-08-26 19:26:16.123 [INFO][120] node-services/health.go 207: Number of node(s) with BGP peering established = 0
+2026-08-26 19:26:16.123 [WARNING][120] node-services/startup.go 290: Calico is not ready yet, waiting... reason="calico/node is not ready: BIRD is not ready: BGP not established with 172.30.143.102,172.30.143.103"
+2026-08-26 19:26:17.125 [INFO][120] node-services/health.go 207: Number of node(s) with BGP peering established = 0
+2026-08-26 19:26:17.125 [INFO][120] node-services/health.go 207: Number of node(s) with BGP peering established = 0
+2026-08-26 19:26:17.125 [WARNING][120] node-services/startup.go 290: Calico is not ready yet, waiting... reason="calico/node is not ready: BIRD is not ready: BGP not established with 172.30.143.102,172.30.143.103"
+2026-08-26 19:26:18.127 [INFO][120] node-services/health.go 207: Number of node(s) with BGP peering established = 0
+2026-08-26 19:26:18.127 [INFO][120] node-services/health.go 207: Number of node(s) with BGP peering established = 0
+2026-08-26 19:26:18.127 [WARNING][120] node-services/startup.go 290: Calico is not ready yet, waiting... reason="calico/node is not ready: BIRD is not ready: BGP not established with 172.30.143.102,172.30.143.103"
+2026-08-26 19:26:19.128 [INFO][120] node-services/health.go 207: Number of node(s) with BGP peering established = 0
+2026-08-26 19:26:19.128 [INFO][120] node-services/health.go 207: Number of node(s) with BGP peering established = 0
+2026-08-26 19:26:19.128 [WARNING][120] node-services/startup.go 290: Calico is not ready yet, waiting... reason="calico/node is not ready: BIRD is not ready: BGP not established with 172.30.143.102,172.30.143.103"
+2026-08-26 19:26:20.130 [INFO][120] node-services/health.go 207: Number of node(s) with BGP peering established = 0
+2026-08-26 19:26:20.130 [INFO][120] node-services/health.go 207: Number of node(s) with BGP peering established = 0
+2026-08-26 19:26:20.130 [WARNING][120] node-services/startup.go 290: Calico is not ready yet, waiting... reason="calico/node is not ready: BIRD is not ready: BGP not established with 172.30.143.102,172.30.143.103"
+Waiting for daemon set "calico-node" rollout to finish: 1 out of 3 new pods have been updated...
+error: timed out waiting for the condition
+NAME                READY   STATUS    RESTARTS   AGE     IP               NODE      NOMINATED NODE   READINESS GATES
+calico-node-2m2gc   1/1     Running   0          11m     172.30.140.102   node-02   <none>           <none>
+calico-node-jwbps   1/1     Running   0          11m     172.30.140.103   node-03   <none>           <none>
+calico-node-qtmqk   0/1     Running   0          3m13s   172.30.140.101   node-01   <none>           <none>
+pod "calico-node-2m2gc" deleted from kube-system namespace
+pod "calico-node-jwbps" deleted from kube-system namespace
+pod "calico-node-qtmqk" deleted from kube-system namespace
+NAME                READY   STATUS    RESTARTS   AGE   IP               NODE      NOMINATED NODE   READINESS GATES
+calico-node-4krkt   1/1     Running   0          26s   172.30.140.103   node-03   <none>           <none>
+calico-node-lgmtz   1/1     Running   0          26s   172.30.140.101   node-01   <none>           <none>
+calico-node-mqrgg   1/1     Running   0          27s   172.30.140.102   node-02   <none>           <none>
+ssh: connect to host 192.168.194.38 port 22: Connection timed out
+NAME                         DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
+daemonset.apps/calico-node   3         3         3       3            3           kubernetes.io/os=linux   14m
+NAME                                      READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/calico-kube-controllers   1/1     1            1           14m

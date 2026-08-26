@@ -1,0 +1,17 @@
+# TASK-013 / P4A — P1 Network Diff (before vs after)
+
+bond0 membership: UNCHANGED (ens2f0 ens2f1)
+bond1 membership: UNCHANGED (ens2f2 ens2f3)
+VLAN700 (192.168.194.0/24): UNCHANGED
+VLAN140 (172.30.140.0/24): UNCHANGED
+VLAN141 (172.30.141.0/24): UNCHANGED
+VLAN143 (172.30.143.0/24): UNCHANGED
+default route (via 192.168.194.1 dev bond0.700): UNCHANGED
+
+EXPECTED Calico runtime additions (не P1 изменения):
+- tunl0 (IPIP tunnel) на каждом узле
+- cali* veth interfaces
+- BIRD routes (proto bird) для 10.244.x/26 pod subnets
+- blackhole routes для local pod subnets
+
+P1 PRESERVED 3/3: PASS

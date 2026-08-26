@@ -1,0 +1,8 @@
+# TASK-013 / P4A — CoreDNS Status
+
+COREDNS DESIRED: 2
+COREDNS AVAILABLE: 2
+COREDNS READY: 2/2
+PODS: all Running/Ready (coredns-589f44dc88-khx9s, coredns-589f44dc88-xt9px)
+
+RESULT: PASS

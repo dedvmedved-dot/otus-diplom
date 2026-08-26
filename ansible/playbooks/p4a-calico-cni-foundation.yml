@@ -1,0 +1,135 @@
+---
+# p4a-calico-cni-foundation.yml
+# TASK-013 / P4A: установка Calico CNI v3.32.0 в 3-node control-plane cluster.
+#
+# Scope: только P4A (CNI foundation). НЕ выполняет: baseline NetworkPolicy (P4B),
+# LINSTOR/DRBD (P5), MetalLB/Envoy (P6).
+#
+# Модель: официальный raw manifest v3.32.0 (Kubernetes API datastore), НЕ Tigera operator.
+# Manifest: files/calico-v3.32.0.yaml (vendored, Pod CIDR явно 10.244.0.0/16).
+#
+# Безопасность: precheck (P3/P1/NetworkManager) до apply; dry-run server-side;
+# wait-логика с timeout; никаких host network config изменений.
+
+- name: "P4A Calico CNI foundation (v3.32.0)"
+  hosts: all
+  gather_facts: true
+  become: true
+  vars:
+    calico_manifest: "/tmp/calico-v3.32.0.yaml"
+    pod_cidr: "10.244.0.0/16"
+    expected_pool_cidr: "10.244.0.0/16"
+  tasks:
+    # ─── 0. Stage vendored manifest on node-01 (from repo file) ──
+    - name: Stage vendored Calico manifest on node-01
+      ansible.builtin.copy:
+        src: files/calico-v3.32.0.yaml
+        dest: "/tmp/calico-v3.32.0.yaml"
+        mode: "0644"
+      run_once: true
+      delegate_to: node-01
+    # ─── 1. Precheck baseline (control-plane/etcd/API healthy) ──
+    - name: Precheck readyz (before CNI)
+      ansible.builtin.command:
+        cmd: "kubectl --kubeconfig /etc/kubernetes/admin.conf get --raw='/readyz'"
+      register: pre_readyz
+      changed_when: false
+      failed_when: "'ok' not in pre_readyz.stdout"
+      run_once: true
+      delegate_to: node-01
+
+    - name: Precheck etcd 3/3 healthy (before CNI)
+      ansible.builtin.command:
+        cmd: >-
+          kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-node-01 --
+          etcdctl --endpoints=https://172.30.140.101:2379,https://172.30.140.102:2379,https://172.30.140.103:2379
+          --cacert=/etc/kubernetes/pki/etcd/ca.crt
+          --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt
+          --key=/etc/kubernetes/pki/etcd/healthcheck-client.key
+          endpoint health
+      register: pre_etcd_health
+      changed_when: false
+      failed_when: "pre_etcd_health.stdout_lines | select('search', 'is healthy') | list | length != 3"
+      run_once: true
+      delegate_to: node-01
+
+    # ─── 2. Server-side dry-run validation ─────────────────────
+    - name: Manifest server-side dry-run
+      ansible.builtin.command:
+        cmd: "kubectl --kubeconfig /etc/kubernetes/admin.conf apply --dry-run=server -f {{ calico_manifest }}"
+      register: dry_run
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ─── 3. Apply Calico v3.32.0 ───────────────────────────────
+    - name: Apply Calico manifest
+      ansible.builtin.command:
+        cmd: "kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f {{ calico_manifest }}"
+      register: calico_apply
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ─── 4. Wait for Calico DaemonSet ready ────────────────────
+    - name: Wait calico-node DaemonSet ready
+      ansible.builtin.shell:
+        cmd: "kubectl --kubeconfig /etc/kubernetes/admin.conf rollout status ds/calico-node -n kube-system --timeout=180s"
+      register: calico_node_rollout
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ─── 5. Wait for calico-kube-controllers ready ─────────────
+    - name: Wait calico-kube-controllers ready
+      ansible.builtin.shell:
+        cmd: "kubectl --kubeconfig /etc/kubernetes/admin.conf rollout status deploy/calico-kube-controllers -n kube-system --timeout=120s"
+      register: calico_controllers_rollout
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ─── 6. Wait nodes Ready 3/3 ───────────────────────────────
+    - name: Wait nodes Ready 3/3
+      ansible.builtin.shell:
+        cmd: |
+          for i in $(seq 1 60); do
+            r=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get nodes 2>/dev/null | grep -c ' Ready')
+            [ "$r" = "3" ] && echo "NODES_READY_3/3" && exit 0
+            sleep 5
+          done
+          echo "TIMEOUT_WAITING_NODES" && exit 1
+      register: nodes_ready
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ─── 7. Wait CoreDNS ready ────────────────────────────────
+    - name: Wait CoreDNS ready
+      ansible.builtin.shell:
+        cmd: |
+          for i in $(seq 1 60); do
+            a=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get deploy coredns -n kube-system -o jsonpath='{.status.availableReplicas}' 2>/dev/null)
+            d=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get deploy coredns -n kube-system -o jsonpath='{.spec.replicas}' 2>/dev/null)
+            if [ -n "$a" ] && [ "$a" = "$d" ] && [ "$a" != "0" ]; then
+              echo "COREDNS_READY_$a" && exit 0
+            fi
+            sleep 5
+          done
+          echo "TIMEOUT_WAITING_COREDNS" && exit 1
+      register: coredns_ready
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ─── 8. Verify effective IPPool CIDR ───────────────────────
+    - name: Verify Calico IPPool CIDR
+      ansible.builtin.shell:
+        cmd: |
+          cidr=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get ippool default-ipv4-ippool -o jsonpath='{.spec.cidr}' 2>/dev/null)
+          echo "IPPOOL_CIDR=$cidr"
+          [ "$cidr" = "{{ expected_pool_cidr }}" ] && echo IPPOOL_OK || exit 1
+      register: ippool_check
+      changed_when: false
+      run_once: true
+      delegate_to: node-01

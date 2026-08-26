@@ -1,0 +1,5 @@
+=== GIT SCOPE AUDIT ===
+ M images.lock
+?? ansible/playbooks/files/calico-v3.32.0.yaml
+?? ansible/playbooks/p4a-calico-cni-foundation.yml
+?? evidence/P4/

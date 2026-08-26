@@ -26,3 +26,27 @@ images:
     source_registry: ghcr.io
     internal_registry: NOT_VERIFIED
     verified: true
+
+  - component: calico-node
+    image: quay.io/calico/node
+    tag: "v3.32.0"
+    digest: "sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a"
+    source_registry: quay.io
+    internal_registry: NOT_VERIFIED
+    verified: true
+
+  - component: calico-cni
+    image: quay.io/calico/cni
+    tag: "v3.32.0"
+    digest: "sha256:1cfc6aa9c4dad3575fdf36b78185fd7d68bcd4acc95778f8342be4fb6a851a14"
+    source_registry: quay.io
+    internal_registry: NOT_VERIFIED
+    verified: true
+
+  - component: calico-kube-controllers
+    image: quay.io/calico/kube-controllers
+    tag: "v3.32.0"
+    digest: "sha256:adf0ac895796d21bca5383bc81c4cd2614be3a4308085b47857d7999f4cc2b1f"
+    source_registry: quay.io
+    internal_registry: NOT_VERIFIED
+    verified: true

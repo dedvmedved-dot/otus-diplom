@@ -1,0 +1,19 @@
+=== NETWORKMANAGER GATE ===
+--- node . ---
+NM: active
+STATE       CONNECTIVITY  WIFI-HW      WIFI      WWAN-HW      WWAN     
+подключено  полностью     отсутствует  включено  отсутствует  включено 
+--- node . ---
+NM: active
+STATE       CONNECTIVITY  WIFI-HW      WIFI      WWAN-HW      WWAN     
+подключено  полностью     отсутствует  включено  отсутствует  включено 
+--- node . ---
+NM: active
+STATE       CONNECTIVITY  WIFI-HW      WIFI      WWAN-HW      WWAN     
+подключено  полностью     отсутствует  включено  отсутствует  включено 
+--- node .: calico-related NM profiles ---
+NONE (no cali/tunl/vxlan/ipip profiles)
+--- node .: calico-related NM profiles ---
+NONE (no cali/tunl/vxlan/ipip profiles)
+--- node .: calico-related NM profiles ---
+NONE (no cali/tunl/vxlan/ipip profiles)

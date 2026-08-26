@@ -1,0 +1,22 @@
+=== CALICO IMAGE DIGESTS (manifest-list digest) ===
+COMPONENT: node
+IMAGE: quay.io/calico/node:v3.32.0
+TAG: v3.32.0
+  VERIFIED ON node .38: sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a
+  VERIFIED ON node .40: sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a
+  VERIFIED ON node .39: sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a
+
+COMPONENT: cni
+IMAGE: quay.io/calico/cni:v3.32.0
+TAG: v3.32.0
+  VERIFIED ON node .38: sha256:1cfc6aa9c4dad3575fdf36b78185fd7d68bcd4acc95778f8342be4fb6a851a14
+  VERIFIED ON node .40: sha256:1cfc6aa9c4dad3575fdf36b78185fd7d68bcd4acc95778f8342be4fb6a851a14
+  VERIFIED ON node .39: sha256:1cfc6aa9c4dad3575fdf36b78185fd7d68bcd4acc95778f8342be4fb6a851a14
+
+COMPONENT: kube-controllers
+IMAGE: quay.io/calico/kube-controllers:v3.32.0
+TAG: v3.32.0
+  VERIFIED ON node .38: sha256:adf0ac895796d21bca5383bc81c4cd2614be3a4308085b47857d7999f4cc2b1f
+  VERIFIED ON node .40: sha256:adf0ac895796d21bca5383bc81c4cd2614be3a4308085b47857d7999f4cc2b1f
+  VERIFIED ON node .39: sha256:adf0ac895796d21bca5383bc81c4cd2614be3a4308085b47857d7999f4cc2b1f
+

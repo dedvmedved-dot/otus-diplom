@@ -1,0 +1,22 @@
+=== KERNEL/CNI PRECHECK ===
+--- node . ---
+kernel=6.1.158-1-generic arch=x86_64
+containerd=active kubelet=active
+/etc/cni/net.d: 4 entries
+/opt/cni/bin: 20 files
+ip_forward=1
+nf_conntrack=1048576
+--- node . ---
+kernel=6.1.158-1-generic arch=x86_64
+containerd=active kubelet=active
+/etc/cni/net.d: 4 entries
+/opt/cni/bin: 20 files
+ip_forward=1
+nf_conntrack=1048576
+--- node . ---
+kernel=6.1.158-1-generic arch=x86_64
+containerd=active kubelet=active
+/etc/cni/net.d: 4 entries
+/opt/cni/bin: 20 files
+ip_forward=1
+nf_conntrack=1048576
