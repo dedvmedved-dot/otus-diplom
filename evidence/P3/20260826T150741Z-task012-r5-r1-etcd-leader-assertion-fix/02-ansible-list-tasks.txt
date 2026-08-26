@@ -1,0 +1,9 @@
+=== LIST-TASKS ===
+      Graceful stop controller-manager (exact dynamic ID)	TAGS: []
+      Graceful stop scheduler (exact dynamic ID)	TAGS: []
+      Post-injection 0/5 gate	TAGS: []
+      API stability 30/30	TAGS: []
+      API write during failure	TAGS: []
+      API read during failure	TAGS: []
+      readyz during failure	TAGS: []
+      Fail automation if ANY flag set	TAGS: []

@@ -1,0 +1,18 @@
+# TASK-012-R5-R1 — etcd Leader Source Static Audit
+
+RUN_ID: 20260826T150741Z
+
+JSON-AWARE LEADER PARSER: PRESENT (python3 json.load, не grep|wc)
+
+UNIQUE NON-ZERO LEADER ID ASSERT: PRESENT
+  (lids = {leader per endpoint}; discard 0; assert len(lids)==1)
+
+ACTUAL LEADER ENDPOINT COUNT ASSERT: PRESENT
+  (member_id == leader_id != 0; assert count==1)
+
+OLD GREP/WC LEADER FIELD COUNT ACCEPTANCE: ABSENT
+  (grep -o '"leader":[1-9][0-9]*' | wc -l — 0 occurrences)
+
+RECOVERY ETCD FAILURE SET TRUE: task012_recovery_etcd_failed=true
+
+RESULT: PASS

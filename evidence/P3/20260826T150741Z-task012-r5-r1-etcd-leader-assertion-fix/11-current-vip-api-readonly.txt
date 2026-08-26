@@ -1,0 +1,8 @@
+=== VIP + API ===
+node .38 VIP=0
+node .40 VIP=1
+node .39 VIP=0
+node .38 livez=ok
+node .40 livez=ok
+node .39 livez=ok
+readyz: ok

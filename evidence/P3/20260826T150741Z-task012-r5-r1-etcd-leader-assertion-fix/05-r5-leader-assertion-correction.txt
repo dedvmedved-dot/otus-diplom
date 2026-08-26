@@ -1,0 +1,21 @@
+# TASK-012-R5-R1 — R5 Leader Assertion Correction
+
+R5 HISTORICAL ASSERTION:
+count textual non-zero "leader" fields == 1
+
+R5 DEFECT:
+each endpoint status record contains the current leader ID;
+textual occurrence count is not actual leader count.
+
+CORRECT SEMANTICS:
+unique non-zero leader IDs == 1
+AND
+actual endpoints where member_id == leader_id == 1
+
+R5 HISTORICAL EVIDENCE MODIFIED:
+NO
+
+IMPACT:
+R5 runtime health remains valid.
+Only automation assertion semantics corrected.
+No new HA failure run required.

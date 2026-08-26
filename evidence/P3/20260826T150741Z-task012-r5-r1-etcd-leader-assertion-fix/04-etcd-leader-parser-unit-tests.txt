@@ -1,0 +1,28 @@
+# TASK-012-R5-R1 — etcd Leader Parser Unit Tests
+
+RUN_ID: 20260826T150741Z
+
+Parser: JSON-aware (python3 json). Gate A = unique non-zero leader IDs; Gate B = actual
+leader endpoints (member_id == leader_id != 0).
+
+CASE A healthy (member A/B/C, leader A):
+  learners=0 unique_leaders=1 actual_leaders=1 leader_id=111
+  Gate A: 1 == 1 OK; Gate B: 1 == 1 OK
+  -> PASS
+
+CASE B no leader (all leader=0):
+  learners=0 unique_leaders=0 actual_leaders=0 leader_id=0
+  Gate A: 0 != 1; Gate B: 0 != 1
+  -> EXPECTED FAIL -> PASS (корректно отвергнут)
+
+CASE C inconsistent (leader A,B,A):
+  learners=0 unique_leaders=2 actual_leaders=2 leader_id=222
+  Gate A: 2 != 1
+  -> EXPECTED FAIL -> PASS (корректно отвергнут)
+
+CASE D multiple actual (A=A, B=B, C=A):
+  learners=0 unique_leaders=2 actual_leaders=2 leader_id=222
+  Gate B: 2 != 1
+  -> EXPECTED FAIL -> PASS (корректно отвергнут)
+
+OVERALL: 4/4 PASS

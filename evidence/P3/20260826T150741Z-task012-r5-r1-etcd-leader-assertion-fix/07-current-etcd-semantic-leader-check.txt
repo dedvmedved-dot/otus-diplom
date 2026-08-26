@@ -1,0 +1,16 @@
+# TASK-012-R5-R1 — Current etcd Semantic Leader Check
+
+RUN_ID: 20260826T150741Z
+
+MEMBERS: 3
+HEALTHY: 3
+LEARNERS: 0
+UNIQUE NON-ZERO LEADER IDS: 1
+LEADER ID: 14296685853265834734 (hex c6680809554332ee)
+ACTUAL LEADER ENDPOINT COUNT: 1
+ACTUAL LEADER NODE/ENDPOINT: node-01 (https://172.30.140.101:2379)
+
+JSON-aware parser результат (на реальном endpoint status -w json):
+  learners=0 unique_leaders=1 actual_leaders=1 leader_id=14296685853265834734
+
+RESULT: PASS
