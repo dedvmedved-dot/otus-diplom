@@ -1,0 +1,9 @@
+namespace/p4b-netpol-validation created
+namespace/p4b-netpol-validation labeled
+pod/p4b-client created
+pod/p4b-observer created
+pod/p4b-server created
+NAME           READY   STATUS    RESTARTS   AGE   IP              NODE      NOMINATED NODE   READINESS GATES
+p4b-client     1/1     Running   0          20s   10.244.190.2    node-01   <none>           <none>
+p4b-observer   1/1     Running   0          20s   10.244.184.2    node-02   <none>           <none>
+p4b-server     1/1     Running   0          20s   10.244.254.69   node-03   <none>           <none>

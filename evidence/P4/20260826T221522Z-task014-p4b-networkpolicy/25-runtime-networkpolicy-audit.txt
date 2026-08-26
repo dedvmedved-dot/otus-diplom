@@ -1,0 +1,120 @@
+=== RUNTIME NETWORKPOLICY AUDIT ===
+apiVersion: v1
+items:
+- apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"networking.k8s.io/v1","kind":"NetworkPolicy","metadata":{"annotations":{},"labels":{"managed-by":"otus-diplom","profile":"baseline","stage":"P4B"},"name":"baseline-allow-dns-egress","namespace":"p4b-netpol-validation"},"spec":{"egress":[{"ports":[{"port":53,"protocol":"UDP"},{"port":53,"protocol":"TCP"}],"to":[{"namespaceSelector":{"matchLabels":{"kubernetes.io/metadata.name":"kube-system"}},"podSelector":{"matchLabels":{"k8s-app":"kube-dns"}}}]}],"podSelector":{},"policyTypes":["Egress"]}}
+    creationTimestamp: "2026-08-26T22:20:08Z"
+    generation: 1
+    labels:
+      managed-by: otus-diplom
+      profile: baseline
+      stage: P4B
+    name: baseline-allow-dns-egress
+    namespace: p4b-netpol-validation
+    resourceVersion: "631656"
+    uid: a18d0984-6c0a-4a02-88a4-bc71a2062570
+  spec:
+    egress:
+    - ports:
+      - port: 53
+        protocol: UDP
+      - port: 53
+        protocol: TCP
+      to:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: kube-system
+        podSelector:
+          matchLabels:
+            k8s-app: kube-dns
+    podSelector: {}
+    policyTypes:
+    - Egress
+- apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"networking.k8s.io/v1","kind":"NetworkPolicy","metadata":{"annotations":{},"labels":{"managed-by":"otus-diplom","profile":"baseline","stage":"P4B"},"name":"baseline-default-deny-all","namespace":"p4b-netpol-validation"},"spec":{"podSelector":{},"policyTypes":["Ingress","Egress"]}}
+    creationTimestamp: "2026-08-26T22:20:08Z"
+    generation: 1
+    labels:
+      managed-by: otus-diplom
+      profile: baseline
+      stage: P4B
+    name: baseline-default-deny-all
+    namespace: p4b-netpol-validation
+    resourceVersion: "631655"
+    uid: 3b5313f4-248c-446b-94ce-fefab011b652
+  spec:
+    podSelector: {}
+    policyTypes:
+    - Ingress
+    - Egress
+- apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"networking.k8s.io/v1","kind":"NetworkPolicy","metadata":{"annotations":{},"labels":{"managed-by":"otus-diplom","profile":"validation","stage":"P4B"},"name":"validation-allow-client-egress-to-server","namespace":"p4b-netpol-validation"},"spec":{"egress":[{"ports":[{"port":8080,"protocol":"TCP"}],"to":[{"podSelector":{"matchLabels":{"role":"server"}}}]}],"podSelector":{"matchLabels":{"role":"client"}},"policyTypes":["Egress"]}}
+    creationTimestamp: "2026-08-26T22:22:51Z"
+    generation: 1
+    labels:
+      managed-by: otus-diplom
+      profile: validation
+      stage: P4B
+    name: validation-allow-client-egress-to-server
+    namespace: p4b-netpol-validation
+    resourceVersion: "632173"
+    uid: 5d782f5c-5dbf-4317-9d56-4ad0fbc6b860
+  spec:
+    egress:
+    - ports:
+      - port: 8080
+        protocol: TCP
+      to:
+      - podSelector:
+          matchLabels:
+            role: server
+    podSelector:
+      matchLabels:
+        role: client
+    policyTypes:
+    - Egress
+- apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"networking.k8s.io/v1","kind":"NetworkPolicy","metadata":{"annotations":{},"labels":{"managed-by":"otus-diplom","profile":"validation","stage":"P4B"},"name":"validation-allow-server-ingress-from-client","namespace":"p4b-netpol-validation"},"spec":{"ingress":[{"from":[{"podSelector":{"matchLabels":{"role":"client"}}}],"ports":[{"port":8080,"protocol":"TCP"}]}],"podSelector":{"matchLabels":{"role":"server"}},"policyTypes":["Ingress"]}}
+    creationTimestamp: "2026-08-26T22:22:51Z"
+    generation: 1
+    labels:
+      managed-by: otus-diplom
+      profile: validation
+      stage: P4B
+    name: validation-allow-server-ingress-from-client
+    namespace: p4b-netpol-validation
+    resourceVersion: "632174"
+    uid: d1120525-49a1-43e6-befa-7d1ea75291bd
+  spec:
+    ingress:
+    - from:
+      - podSelector:
+          matchLabels:
+            role: client
+      ports:
+      - port: 8080
+        protocol: TCP
+    podSelector:
+      matchLabels:
+        role: server
+    policyTypes:
+    - Ingress
+kind: List
+metadata:
+  resourceVersion: ""

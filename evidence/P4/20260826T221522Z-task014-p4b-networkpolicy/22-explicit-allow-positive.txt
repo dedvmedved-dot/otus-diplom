@@ -1,0 +1,3 @@
+=== EXPLICIT ALLOW POSITIVE ===
+client->server PodIP: 3/3
+client->server Service: 3/3

@@ -1,0 +1,26 @@
+=== LIST-TASKS ===
+
+playbook: ansible/playbooks/p4b-networkpolicy-baseline.yml
+
+  play #1 (all): P4B baseline NetworkPolicy enforcement and validation	TAGS: []
+    tasks:
+      PHASE 0 — nodes Ready 3/3 + readyz	TAGS: []
+      PHASE 1 — ensure validation namespace does NOT pre-exist	TAGS: []
+      PHASE 2 — validate CoreDNS selector (pod k8s-app=kube-dns, ns label)	TAGS: []
+      PHASE 3 — stage policy manifests on node-01	TAGS: []
+      PHASE 3 — server-side dry-run each policy	TAGS: []
+      PHASE 4 — create validation namespace (labeled)	TAGS: []
+      PHASE 4 — create 3 deterministic pods (client/observer/server)	TAGS: []
+      PHASE 5 — create p4b-server Service (selector role=server)	TAGS: []
+      PHASE 6 — pre-policy direct 6/6 (local HTTP + cross HTTP)	TAGS: []
+      PHASE 6 — pre-policy Service 3/3 + DNS 3/3+3/3	TAGS: []
+      PHASE 7 — apply baseline policies (2)	TAGS: []
+      PHASE 8 — default-deny direct 6/6 expected block (3 attempts each)	TAGS: []
+      PHASE 8 — default-deny Service 3/3 blocked + DNS preserved	TAGS: []
+      PHASE 9 — apply explicit allow policies (total 4)	TAGS: []
+      PHASE 10 — client->server positive (PodIP + Service) x3	TAGS: []
+      PHASE 10 — unauthorized paths 6/6 expected block	TAGS: []
+      PHASE 11 — runtime NetworkPolicy audit (exactly 4)	TAGS: []
+      PHASE 12 — verify no TASK-014 policies in system namespaces	TAGS: []
+      PHASE 14 — post-cleanup 60s stability	TAGS: []
+      PHASE 14 — final gate summary	TAGS: []

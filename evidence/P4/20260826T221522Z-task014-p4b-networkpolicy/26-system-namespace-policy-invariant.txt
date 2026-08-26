@@ -1,0 +1,5 @@
+=== SYSTEM NAMESPACE INVARIANT ===
+default: TASK-014 policies = 0
+kube-system: TASK-014 policies = 0
+kube-public: TASK-014 policies = 0
+kube-node-lease: TASK-014 policies = 0

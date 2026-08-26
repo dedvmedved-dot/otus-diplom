@@ -1,0 +1,9 @@
+=== SERVER DRY-RUN (после создания ns; временно) ===
+--- baseline-default-deny-all ---
+networkpolicy.networking.k8s.io/baseline-default-deny-all created (dry run)
+--- baseline-allow-dns-egress ---
+networkpolicy.networking.k8s.io/baseline-allow-dns-egress created (dry run)
+--- validation-allow-client-egress-to-server ---
+networkpolicy.networking.k8s.io/validation-allow-client-egress-to-server created (dry run)
+--- validation-allow-server-ingress-from-client ---
+networkpolicy.networking.k8s.io/validation-allow-server-ingress-from-client created (dry run)

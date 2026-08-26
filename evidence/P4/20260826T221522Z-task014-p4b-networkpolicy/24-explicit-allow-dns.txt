@@ -1,0 +1,4 @@
+=== DNS AFTER EXPLICIT ALLOW ===
+p4b-client: kube=3
+p4b-observer: kube=3
+p4b-server: kube=3

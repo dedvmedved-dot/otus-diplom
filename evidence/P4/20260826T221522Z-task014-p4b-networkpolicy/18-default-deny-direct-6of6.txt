@@ -1,0 +1,7 @@
+=== DEFAULT-DENY DIRECT 6/6 (3 attempts each) ===
+p4b-client->10.244.184.2 BLOCKED x3
+p4b-client->10.244.254.69 BLOCKED x3
+p4b-observer->10.244.190.2 BLOCKED x3
+p4b-observer->10.244.254.69 BLOCKED x3
+p4b-server->10.244.190.2 BLOCKED x3
+p4b-server->10.244.184.2 BLOCKED x3

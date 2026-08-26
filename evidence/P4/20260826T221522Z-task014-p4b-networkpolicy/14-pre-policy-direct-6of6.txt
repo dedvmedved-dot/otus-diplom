@@ -1,0 +1,7 @@
+=== PRE-POLICY DIRECT 6/6 ===
+client->observer: p4b-observer
+client->server: p4b-server
+observer->client: p4b-client
+observer->server: p4b-server
+server->client: p4b-client
+server->observer: p4b-observer

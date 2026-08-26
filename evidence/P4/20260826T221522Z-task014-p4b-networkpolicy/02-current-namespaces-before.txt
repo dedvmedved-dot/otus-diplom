@@ -1,0 +1,6 @@
+=== NAMESPACES BEFORE ===
+NAME              STATUS   AGE    LABELS
+default           Active   2d8h   kubernetes.io/metadata.name=default
+kube-node-lease   Active   2d8h   kubernetes.io/metadata.name=kube-node-lease
+kube-public       Active   2d8h   kubernetes.io/metadata.name=kube-public
+kube-system       Active   2d8h   kubernetes.io/metadata.name=kube-system

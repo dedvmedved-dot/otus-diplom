@@ -1,0 +1,5 @@
+=== APPLY BASELINE ===
+networkpolicy.networking.k8s.io/baseline-default-deny-all created
+networkpolicy.networking.k8s.io/baseline-allow-dns-egress created
+policy count: 2
+converged

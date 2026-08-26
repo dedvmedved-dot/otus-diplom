@@ -1,0 +1,13 @@
+# TASK-014 / P4B — Validation Policy Static Audit
+
+VALIDATION POLICIES: 2
+
+policy A (validation-allow-client-egress-to-server):
+  select role=client, egress to podSelector role=server, TCP/8080, same namespace
+
+policy B (validation-allow-server-ingress-from-client):
+  select role=server, ingress from podSelector role=client, TCP/8080, same namespace
+
+НЕТ: podSelector={} / namespaceSelector={} / all ports / all protocols / 0.0.0.0/0
+
+RESULT: PASS

@@ -1,0 +1,14 @@
+# TASK-014 / P4B — Baseline Policy Static Audit
+
+API: networking.k8s.io/v1
+BASELINE POLICIES: 2
+
+DEFAULT DENY: Ingress + Egress, podSelector={}
+DNS ALLOW: Egress only, namespace kube-system exact selector, pod k8s-app=kube-dns exact selector, UDP/53, TCP/53
+
+0.0.0.0/0: 0
+EMPTY NAMESPACE SELECTOR: 0
+GLOBALNETWORKPOLICY: 0
+CALICO PROPRIETARY POLICY: 0
+
+RESULT: PASS

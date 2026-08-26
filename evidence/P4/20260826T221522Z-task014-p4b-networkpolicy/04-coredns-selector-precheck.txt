@@ -1,0 +1,4 @@
+=== COREDNS SELECTOR ===
+{"k8s-app":"kube-dns","pod-template-hash":"589f44dc88"}
+{"k8s-app":"kube-dns","pod-template-hash":"589f44dc88"}
+{"kubernetes.io/metadata.name":"kube-system"}

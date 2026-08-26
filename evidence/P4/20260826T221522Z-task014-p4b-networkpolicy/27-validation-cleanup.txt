@@ -1,0 +1,3 @@
+=== CLEANUP ===
+namespace "p4b-netpol-validation" deleted
+CLEANUP_OK_NOTFOUND

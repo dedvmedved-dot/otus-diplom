@@ -1,0 +1,4 @@
+=== DNS PRESERVED UNDER DENY ===
+p4b-client: kube=3 svc=1
+p4b-observer: kube=3 svc=1
+p4b-server: kube=3 svc=1

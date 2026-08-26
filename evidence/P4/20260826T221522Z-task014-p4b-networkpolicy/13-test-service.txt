@@ -1,0 +1,7 @@
+=== TEST SERVICE ===
+service/p4b-server created
+NAME         TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE   SELECTOR
+p4b-server   ClusterIP   10.103.108.3   <none>        8080/TCP   0s    role=server
+Warning: v1 Endpoints is deprecated in v1.33+; use discovery.k8s.io/v1 EndpointSlice
+NAME         ENDPOINTS            AGE
+p4b-server   10.244.254.69:8080   0s

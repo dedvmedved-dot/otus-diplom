@@ -1,0 +1,5 @@
+=== P4A REGRESSION ===
+10.244.0.0/16 Always true
+quay.io/calico/node:v3.32.0
+quay.io/calico/node:v3.32.0
+quay.io/calico/node:v3.32.0

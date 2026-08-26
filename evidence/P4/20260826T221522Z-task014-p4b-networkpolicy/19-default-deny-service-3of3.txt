@@ -1,0 +1,4 @@
+=== DEFAULT-DENY SERVICE 3/3 ===
+p4b-client->Service BLOCKED x3
+p4b-observer->Service BLOCKED x3
+p4b-server->Service BLOCKED x3

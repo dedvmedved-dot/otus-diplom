@@ -1,0 +1,4 @@
+=== PRE-POLICY SERVICE 3/3 + DNS ===
+p4b-client->Service: p4b-server
+p4b-observer->Service: p4b-server
+p4b-server->Service: p4b-server

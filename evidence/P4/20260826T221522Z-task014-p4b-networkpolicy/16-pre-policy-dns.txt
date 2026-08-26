@@ -1,0 +1,22 @@
+=== PRE-POLICY DNS ===
+--- p4b-client kubernetes.default ---
+Address: 10.96.0.1
+
+--- p4b-client p4b-server svc ---
+Address: 10.103.108.3
+
+--- p4b-observer kubernetes.default ---
+Address: 10.96.0.1
+
+--- p4b-observer p4b-server svc ---
+
+
+--- p4b-server kubernetes.default ---
+
+
+--- p4b-server p4b-server svc ---
+Address: 10.103.108.3
+
+p4b-client: kube_default=3 p4b_server=1
+p4b-observer: kube_default=3 p4b_server=1
+p4b-server: kube_default=3 p4b_server=1

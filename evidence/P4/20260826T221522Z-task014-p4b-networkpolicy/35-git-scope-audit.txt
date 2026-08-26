@@ -1,0 +1,5 @@
+=== GIT SCOPE AUDIT ===
+?? ansible/playbooks/files/networkpolicy/
+?? ansible/playbooks/p4b-networkpolicy-baseline.yml
+?? docs/network/P4B-NETWORKPOLICY-BASELINE.md
+?? evidence/P4/20260826T221522Z-task014-p4b-networkpolicy/

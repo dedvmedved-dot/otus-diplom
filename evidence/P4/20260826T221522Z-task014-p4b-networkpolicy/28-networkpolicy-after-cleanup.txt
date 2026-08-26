@@ -1,0 +1,2 @@
+=== NETWORKPOLICY AFTER CLEANUP ===
+No resources found

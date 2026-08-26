@@ -1,0 +1,5 @@
+=== APPLY EXPLICIT ALLOW ===
+networkpolicy.networking.k8s.io/validation-allow-client-egress-to-server created
+networkpolicy.networking.k8s.io/validation-allow-server-ingress-from-client created
+total policy count: 4
+converged
