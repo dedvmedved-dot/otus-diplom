@@ -1,0 +1,11 @@
+=== CNI + etcd membership ===
+NAMESPACE     NAME         DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
+kube-system   kube-proxy   3         3         3       3            3           kubernetes.io/os=linux   41h
+---members---
++------------------+---------+---------+-----------------------------+-----------------------------+------------+
+|        ID        | STATUS  |  NAME   |         PEER ADDRS          |        CLIENT ADDRS         | IS LEARNER |
++------------------+---------+---------+-----------------------------+-----------------------------+------------+
+|  cf1ee7f696207f4 | started | node-03 | https://172.30.140.103:2380 | https://172.30.140.103:2379 |      false |
+| a96306f57a39ca3e | started | node-02 | https://172.30.140.102:2380 | https://172.30.140.102:2379 |      false |
+| c6680809554332ee | started | node-01 | https://172.30.140.101:2380 | https://172.30.140.101:2379 |      false |
++------------------+---------+---------+-----------------------------+-----------------------------+------------+

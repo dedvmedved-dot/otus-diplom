@@ -1,0 +1,27 @@
+# TASK-012-R3 — etcd Leader Calculation
+
+OLD_LEADER: node-03 (member_id cf1ee7f696207f4)
+
+TARGET_ETCD_DOWN_MS: 1787730369124
+(первый sample после baseline, где endpoint https://172.30.140.103:2379 отсутствует/unreachable;
+предыдущий sample с .103 = 1787730367894)
+
+NEW_LEADER: node-01 (member_id c6680809554332ee)
+
+ETCD_NEW_LEADER_MS: 1787730369124
+
+T_ETCD_LEADER_MS: 0
+T_ETCD_LEADER_SECONDS: 0.0
+
+OLD_RAFT_TERM: 4
+NEW_RAFT_TERM: 4
+
+THRESHOLD_MS: 15000
+RESULT: PASS
+
+Примечание (важно): etcd sampler interval = 1s. Target etcd (node-03) перестал
+отвечать между sample 1787730367894 (ещё с .103) и 1787730369124 (без .103).
+В sample 1787730369124 endpoint .103 уже отсутствует И новый leader node-01
+уже избран — т.е. election завершился в пределах одного sampling интервала (~1.2s).
+Это верхняя граница: реальный T_ETCD_LEADER ≤ ~1230 ms (интервал между сэмплами).
+Оба reference points recalculable из raw TSV 24-etcd-leader-samples.tsv.

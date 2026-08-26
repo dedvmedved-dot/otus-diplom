@@ -1,0 +1,12 @@
+# TASK-012-R3 — Sampler Cleanup
+
+RUN_ID: 20260826T073946Z
+
+Реальные background sampler процессы (ps aux | grep task012-r3-*-sampler.sh, исключая grep):
+  node-01: 0
+  node-02: 0
+  node-03: 0
+
+Временные файлы удалены (/tmp/task012-r3-*-sampler.sh, /tmp/task012-r3-*-samples.tsv).
+
+RESULT: PASS (no orphan sampler processes)

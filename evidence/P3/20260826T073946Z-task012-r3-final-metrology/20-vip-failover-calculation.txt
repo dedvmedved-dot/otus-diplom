@@ -1,0 +1,20 @@
+# TASK-012-R3 — VIP Failover Calculation
+
+TARGET: node-03
+
+VIP_LOSS_MS: 1787730361432
+VIP_NEW_OWNER_MS: 1787730361917
+NEW_OWNER: node-02
+
+T_VIP_FAILOVER_MS: 485
+T_VIP_FAILOVER_SECONDS: 0.485
+
+THRESHOLD_MS: 15000
+MAX_OWNER_COUNT: 1
+SPLIT_OBSERVED: NO
+
+RESULT: PASS
+
+Примечание: VIP_LOSS_MS — первый sample где target node-03 has_vip 1->0.
+VIP_NEW_OWNER_MS — первый sample где node-02 has_vip 0->1 (survivor, single owner).
+Оба значения recalculable из raw TSV 19-vip-owner-samples.tsv.

@@ -1,0 +1,4 @@
+=== PROBE CLEANUP ===
+configmap "task012-ha-probe" deleted from kube-system namespace
+Error from server (NotFound): configmaps "task012-ha-probe" not found
+NotFound verified

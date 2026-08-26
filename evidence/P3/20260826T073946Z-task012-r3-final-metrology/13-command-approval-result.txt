@@ -1,0 +1,12 @@
+# TASK-012-R3 — Command Approval Result
+
+ACTION: node-03 kubelet/control-plane failure injection
+ARCHITECT AUTHORIZATION: YES
+PLATFORM APPROVAL REQUIRED: YES
+PLATFORM APPROVAL RESULT: APPROVED
+APPROVAL UTC: 2026-08-26T07:42:00Z
+BYPASS ATTEMPTED: NO
+
+Примечание: destructive операция выполняется через проектный Ansible path
+(systemd module + host-key verification, StrictHostKeyChecking=yes), НЕ через
+sshpass -p / StrictHostKeyChecking=no.

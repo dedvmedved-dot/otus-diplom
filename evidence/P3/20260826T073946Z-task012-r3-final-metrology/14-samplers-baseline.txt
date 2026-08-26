@@ -1,0 +1,16 @@
+=== SAMPLERS BASELINE ===
+VIP (target node-03 has_vip последние 3):
+1787730330515	1
+1787730330725	1
+1787730330935	1
+VIP (survivor node-01 has_vip последние 3):
+1787730331628	0
+1787730331839	0
+1787730332049	0
+API последние 3:
+1787730331832	PASS
+1787730332369	PASS
+1787730332912	PASS
+ETCD последние 2 (leader check):
+1787730332201	[{"Endpoint":"https://172.30.140.101:2379","Status":{"header":{"cluster_id":15018683188226078538,"member_id":14296685853265834734,"revision":463354,"raft_term":4},"version":"3.6.8","dbSi
+1787730333427	[{"Endpoint":"https://172.30.140.101:2379","Status":{"header":{"cluster_id":15018683188226078538,"member_id":14296685853265834734,"revision":463361,"raft_term":4},"version":"3.6.8","dbSi

@@ -1,0 +1,8 @@
+=== INJECTION node-03 kubelet stop ===
+    }
+}
+node-03 | CHANGED | rc=0 >>
+kubelet: inactive
+running: 2
+node-03 | CHANGED | rc=0 >>
+running: 0

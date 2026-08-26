@@ -1,0 +1,4 @@
+=== RECOVERY VIP OWNER ===
+node .38 = 0
+node .40 = 1
+node .39 = 0

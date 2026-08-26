@@ -1,0 +1,4 @@
+=== dead-man на TARGET node-03 ===
+Running timer as unit: task012-auto-recover.timer
+Will run service as unit: task012-auto-recover.service
+timer: active

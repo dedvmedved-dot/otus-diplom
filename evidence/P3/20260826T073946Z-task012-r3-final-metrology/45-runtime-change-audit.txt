@@ -1,0 +1,19 @@
+# TASK-012-R3 — Runtime Change Audit
+
+REBOOT: NO
+SECOND NODE FAILURE: NO
+NETWORK CHANGES: NONE
+STORAGE CHANGES: NONE
+PACKAGE CHANGES: NONE
+KERNEL CHANGES: NONE
+ETCD MEMBERSHIP CHANGES: NONE
+STATIC MANIFEST CHANGES: NONE
+
+TEMPORARY ONLY:
+- target node-03 kubelet stop/start
+- exact 5 dynamically discovered RUNNING container stops (node-03)
+- kube-system/task012-ha-probe
+- dead-man timer/service (task012-auto-recover) on node-03
+- 3 sampler types (vip/api/etcd) + TSV files — остановлены и удалены
+
+TEMP OBJECTS/PROCESSES LEFT: NONE

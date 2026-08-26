@@ -1,0 +1,17 @@
+# TASK-012-R3 — Sampler Host & Local etcd Container
+
+RUN_ID: 20260826T073946Z
+
+SAMPLER_HOST: node-01 (SURVIVOR_A)
+ASSERT SAMPLER_HOST != TARGET: PASS
+
+LOCAL SURVIVOR ETCD CONTAINER (RUNNING) on node-01:
+  container id: 36ad39f2c2614db699dab803037347574bfd062ad006030cbd193f2f2cd9f289
+  image: registry.k8s.io/etcd:3.6.8-0
+  running task: yes (RUNNING)
+
+etcdctl via ctr tasks exec (target-independent): VERIFIED (etcdctl version 3.6.8)
+
+ПРИМЕЧАНИЕ: на node-01 есть второй stopped etcd container (fa060244...) — metadata
+от предыдущего run, НЕ running. Для sampler используется только RUNNING task
+36ad39f2... (задача §11 требует exactly 1 RUNNING).

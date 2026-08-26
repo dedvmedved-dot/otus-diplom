@@ -1,0 +1,5 @@
+=== probe ===
+Error from server (NotFound): configmaps "task012-ha-probe" not found
+absent OK
+configmap/task012-ha-probe created
+phase=baseline

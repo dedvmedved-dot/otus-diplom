@@ -1,0 +1,2 @@
+iter 1: node-03 control-plane Running = 5
+RECOVERED 5/5

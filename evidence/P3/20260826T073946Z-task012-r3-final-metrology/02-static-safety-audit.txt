@@ -1,0 +1,37 @@
+# TASK-012-R3 — Static Safety Audit
+
+RUN_ID: 20260826T073946Z
+
+hardcoded target container IDs (64-hex literals): 0
+hardcoded sampler etcd node (etcd-node-01/02/03): 0 в sampler logic
+failed_when:false на destructive stop: 0
+ignore_errors на destructive stop: 0
+
+dynamic target selection: PASS (owner==leader assert)
+dynamic survivors: PASS (2 non-target nodes)
+sampler host != target: PASS (assert в evidence 10)
+dynamic RUNNING 5/5 target discovery: PASS (ctr tasks list, running=1 each)
+dynamic local survivor etcd ID: PASS (RUNNING task 36ad39f2...)
+
+VIP sampler pre-injection: PASS
+API sampler pre-injection: PASS
+ETCD sampler pre-injection: PASS (target-independent, local survivor container)
+
+VIP raw TSV: PASS
+API raw TSV: PASS
+ETCD raw TSV: PASS
+
+real recovery block/rescue flags: PASS (10 flags, все с block/rescue)
+real sampler cleanup: PASS (block/rescue + pgrep verification)
+probe cleanup verification: PASS
+dead-man state verification: PASS (is-active check, не только || true)
+
+10 failure flags: task012_test_failed, injection_failed, recovery_kubelet_failed,
+recovery_components_failed, recovery_etcd_failed, recovery_vip_failed,
+recovery_api_failed, probe_cleanup_failed, deadman_cleanup_failed, sampler_cleanup_failed.
+
+second node failure actions: 0
+etcd membership ops: 0
+network/storage changes: 0
+
+ВЫВОД: static audit PASS — разрешён execution R3 run.

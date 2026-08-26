@@ -1,0 +1,4 @@
+=== READYZ DURING FAILURE ===
+[+]ping ok
+[+]etcd ok
+[+]etcd-readiness ok

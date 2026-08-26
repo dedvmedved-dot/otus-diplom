@@ -36,6 +36,7 @@
         task012_recovery_api_failed: false
         task012_probe_cleanup_failed: false
         task012_deadman_cleanup_failed: false
+        task012_sampler_cleanup_failed: false
       run_once: true
       delegate_to: node-01
       delegate_facts: true
@@ -382,7 +383,7 @@
               delegate_to: node-01
               delegate_facts: true
 
-        # ─── CLEANUP dead-man (independent) ────────────────────
+        # ─── CLEANUP dead-man (independent, с state verification) ──
         - name: Cleanup dead-man timer
           block:
             - name: Stop/reset dead-man timer
@@ -394,6 +395,18 @@
                   systemctl reset-failed task012-auto-recover.service 2>/dev/null || true
                   echo CLEANED
               when: inventory_hostname == task012_target
+            - name: Verify dead-man timer inactive/not-found
+              ansible.builtin.shell:
+                cmd: |
+                  t=$(systemctl is-active task012-auto-recover.timer 2>&1)
+                  s=$(systemctl is-active task012-auto-recover.service 2>&1)
+                  if [ "$t" = "inactive" ] || [ "$t" = "unknown" ] || [ "$t" = "failed" ]; then t_ok=1; else t_ok=0; fi
+                  if [ "$s" = "inactive" ] || [ "$s" = "unknown" ] || [ "$s" = "failed" ]; then s_ok=1; else s_ok=0; fi
+                  echo "timer=$t service=$s"
+                  [ "$t_ok" = "1" ] && [ "$s_ok" = "1" ] && echo VERIFIED || exit 1
+              register: deadman_verify
+              changed_when: false
+              when: inventory_hostname == task012_target
           rescue:
             - name: Record dead-man cleanup failure
               ansible.builtin.set_fact:
@@ -402,9 +415,38 @@
               delegate_to: node-01
               delegate_facts: true
 
+        # ─── CLEANUP samplers (independent) ─────────────────────
+        - name: Cleanup background samplers
+          block:
+            - name: Stop sampler processes on all nodes
+              ansible.builtin.shell:
+                cmd: |
+                  pkill -f task012-r3-vip-sampler 2>/dev/null || true
+                  pkill -f task012-r3-api-sampler 2>/dev/null || true
+                  pkill -f task012-r3-etcd-sampler 2>/dev/null || true
+                  pkill -f task012-r2-measure 2>/dev/null || true
+                  sleep 1
+                  echo STOPPED
+              changed_when: false
+            - name: Verify no sampler processes remain
+              ansible.builtin.shell:
+                cmd: |
+                  n=$(pgrep -fc 'task012-r[23]-(vip|api|etcd)-sampler|task012-r2-measure' 2>/dev/null || echo 0)
+                  echo "sampler_procs=$n"
+                  [ "$n" = "0" ] && echo VERIFIED || exit 1
+              register: sampler_verify
+              changed_when: false
+          rescue:
+            - name: Record sampler cleanup failure
+              ansible.builtin.set_fact:
+                task012_sampler_cleanup_failed: true
+              run_once: true
+              delegate_to: node-01
+              delegate_facts: true
+
     - name: Fail automation if ANY flag set
       ansible.builtin.fail:
-        msg: "TASK-012-R2 HA validation failed — see controlled task results; no secrets logged."
+        msg: "TASK-012-R3 HA validation failed — see controlled task results; no secrets logged."
       when:
         - task012_test_failed
           or task012_injection_failed
@@ -415,5 +457,6 @@
           or task012_recovery_api_failed
           or task012_probe_cleanup_failed
           or task012_deadman_cleanup_failed
+          or task012_sampler_cleanup_failed
       run_once: true
       delegate_to: node-01

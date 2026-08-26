@@ -1,0 +1,17 @@
+# TASK-012-R3 — Survivor Invariants (during failure)
+
+RUN_ID: 20260826T073946Z
+
+SURVIVOR_A = node-01:
+  kubelet: active
+  kube-vip: running=1 (container 0ffce9e8...)
+
+SURVIVOR_B = node-02:
+  kubelet: active
+  kube-vip: running=1 (container 6e34dbdd...)
+
+etcd survivors health:
+  https://172.30.140.101:2379 is healthy
+  https://172.30.140.102:2379 is healthy
+
+RESULT: PASS (оба survivor не деградировали)

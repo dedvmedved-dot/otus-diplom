@@ -1,0 +1,17 @@
+# TASK-012-R3 — API Recovery Calculation
+
+API_INTERRUPTION_OBSERVED: YES
+
+API_FIRST_FAIL_MS: 1787730361569
+API_STABLE_RECOVERY_MS: 1787730363096
+T_API_RECOVERY_MS: 1527
+
+FAILED_PROBES: 1
+THRESHOLD_MS: 15000
+STABLE_RECOVERY_RULE: first PASS beginning 3 consecutive PASS samples
+RESULT: PASS
+
+Примечание: API sampler (sampler host node-01, 500ms interval).
+Всего 1 FAIL sample (1787730361569), затем непрерывный PASS (начиная 1787730363096).
+T_API_RECOVERY = 1787730363096 - 1787730361569 = 1527 ms.
+Recalculable из raw TSV 21-api-probes.tsv.

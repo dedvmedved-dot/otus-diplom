@@ -1,0 +1,4 @@
+=== VIP OWNER ===
+node .38 = 0
+node .40 = 0
+node .39 = 1

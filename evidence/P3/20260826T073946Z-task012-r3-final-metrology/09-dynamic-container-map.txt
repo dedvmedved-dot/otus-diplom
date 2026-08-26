@@ -1,0 +1,6 @@
+=== DYNAMIC RUNNING CONTAINER MAP (target node-03) ===
+409475994bdff6add35147708acb339e1c26548f9e9fecabd1fd1247a7257a3e  ghcr.io/kube-vip/kube-vip:v1.2.0  running=1
+47406e01d9d13d28c64c853009b2059498d2fe88be8e05a61acda533e27899c2  registry.k8s.io/kube-scheduler:v1.36.2  running=1
+8cf0e6695cec84a27939ff8f0dd6f8ebfcf92ef05e973f03aedc039f1cbaf11c  registry.k8s.io/kube-controller-manager:v1.36.2  running=1
+a4802d0491b5dc243b9a752d5e89cee774befa3e4310eeb3c1cef3b4a30b79dd  registry.k8s.io/kube-apiserver:v1.36.2  running=1
+cf8dabb1c5d6344e6aae4dac5a9b248df35c60b2f95a2aefe6c386972051173e  registry.k8s.io/etcd:3.6.8-0  running=1
