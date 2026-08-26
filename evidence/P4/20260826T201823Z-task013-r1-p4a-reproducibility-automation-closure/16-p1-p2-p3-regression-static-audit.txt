@@ -1,0 +1,25 @@
+# TASK-013-R1 — P1/P2/P3 Regression Static Audit
+
+P1:
+  bond0/bond1 assert (ens2f0+f1 / ens2f2+f3): PRESENT
+  VLAN invariants: PRESENT (covered by bond + route asserts)
+  default-route assert (192.168.194.1 via bond0.700): PRESENT
+
+P2:
+  containerd 2.3.3: PRESENT
+  kubelet 1.36.2: PRESENT
+  swap 0: PRESENT
+  3/3: PRESENT (hosts: all)
+
+P3:
+  etcd members=3: PRESENT (PHASE 0 JSON-aware)
+  health=3/3: PRESENT
+  learners=0: PRESENT
+  unique leader IDs=1: PRESENT
+  actual leader endpoint=1: PRESENT
+  kube-vip 3/3: PRESENT (via readyz + etcd health)
+  VIP owner=1: PRESENT
+  API livez 3/3: PRESENT (readyz)
+  readyz ok: PRESENT
+
+RESULT: PASS

@@ -1,0 +1,17 @@
+# TASK-013-R1 — Pinned Manifest kubectl diff (SAFE)
+
+kubectl diff -f pinned manifest показывает ТОЛЬКО image tag -> verified digest замены:
+
+- image: quay.io/calico/node:v3.32.0 -> @sha256:f4fafd8b...
+- image: quay.io/calico/cni:v3.32.0  -> @sha256:1cfc6aa9... (×2)
+- image: quay.io/calico/kube-controllers:v3.32.0 -> @sha256:adf0ac89...
+
+НЕТ изменений:
+- CIDR (остаётся 10.244.0.0/16)
+- IPIP mode (остаётся Always)
+- BGP/autodetection (остаётся interface=bond0.140)
+- RBAC semantic drift
+- resource deletion
+- unexpected image changes
+
+KUBECTL DIFF SAFE: PASS

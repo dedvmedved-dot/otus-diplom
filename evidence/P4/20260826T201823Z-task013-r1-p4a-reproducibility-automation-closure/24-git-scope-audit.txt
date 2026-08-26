@@ -1,0 +1,4 @@
+=== GIT SCOPE AUDIT ===
+ M ansible/playbooks/files/calico-v3.32.0.yaml
+ M ansible/playbooks/p4a-calico-cni-foundation.yml
+?? evidence/P4/20260826T201823Z-task013-r1-p4a-reproducibility-automation-closure/

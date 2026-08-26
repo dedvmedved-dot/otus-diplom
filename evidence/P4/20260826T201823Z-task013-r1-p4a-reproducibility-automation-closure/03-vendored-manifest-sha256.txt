@@ -1,0 +1,2 @@
+VENDORED SHA256: 8d4b2b1bb97a36d7bf196cc84047aafa41fea5152d678a3fe3994604e8ade3c1
+VENDORED PATH: ansible/playbooks/files/calico-v3.32.0.yaml

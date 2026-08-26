@@ -1,0 +1,14 @@
+# TASK-013-R1 — Validation Topology Static Audit
+
+NAMESPACE: p4a-net-validation
+VALIDATION PODS: 3
+
+NODE-01 PINNING: PRESENT (nodeName=node-01, via kubectl run --overrides)
+NODE-02 PINNING: PRESENT (nodeName=node-02)
+NODE-03 PINNING: PRESENT (nodeName=node-03)
+
+CONTROL-PLANE TAINT HANDLING: PRESENT (tolerations NoSchedule on control-plane role)
+POD IP CIDR ASSERT: 10.244.0.0/16
+UNIQUE IP ASSERT: PRESENT (sort -u count == 3)
+
+RESULT: PASS

@@ -1,0 +1,31 @@
+=== LIST-TASKS ===
+
+playbook: ansible/playbooks/p4a-calico-cni-foundation.yml
+
+  play #1 (all): P4A Calico CNI foundation (v3.32.0, full acceptance workflow)	TAGS: []
+    tasks:
+      PHASE 0 — readyz	TAGS: []
+      PHASE 0 — etcd members=3 health=3/3 learners=0 leader=1 (JSON-aware)	TAGS: []
+      PHASE 1 — stage vendored manifest on node-01	TAGS: []
+      PHASE 1 — validate image pins (tag-only=0, expected digests present)	TAGS: []
+      PHASE 1 — validate manifest CIDR + autodetection	TAGS: []
+      PHASE 2 — server-side dry-run	TAGS: []
+      PHASE 3 — apply Calico manifest	TAGS: []
+      PHASE 4 — wait calico-node DS ready	TAGS: []
+      PHASE 4 — wait calico-kube-controllers ready	TAGS: []
+      PHASE 5 — nodes Ready 3/3 for 60s	TAGS: []
+      PHASE 6 — CoreDNS ready for 60s	TAGS: []
+      PHASE 7 — verify IPPool CIDR 10.244.0.0/16	TAGS: []
+      PHASE 8 — create validation namespace (labeled)	TAGS: []
+      PHASE 8 — create 3 pods pinned to node-01/02/03	TAGS: []
+      PHASE 9 — validate pod IPs in 10.244.0.0/16, unique	TAGS: []
+      PHASE 10 — cross-node ICMP 6/6	TAGS: []
+      PHASE 11 — create p4a-echo service + verify 3 endpoints	TAGS: []
+      PHASE 11 — ClusterIP service connectivity 3/3	TAGS: []
+      PHASE 12 — DNS kubernetes.default 3/3	TAGS: []
+      PHASE 12 — DNS p4a-echo 3/3	TAGS: []
+      PHASE 14 — post-cleanup 60s stability	TAGS: []
+      PHASE 15 — P2 regression (containerd/kubelet/swap)	TAGS: []
+      PHASE 15 — P1 regression (bond/VLAN/default route)	TAGS: []
+      PHASE 15 — P3 regression (etcd/kube-vip/API)	TAGS: []
+      PHASE 16 — final gate summary	TAGS: []

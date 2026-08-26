@@ -1,0 +1,11 @@
+# TASK-013-R1 — CoreDNS Stability Correction
+
+Ссылка на historical evidence (НЕ изменён):
+  evidence/P4/20260826T191434Z-task013-p4a-calico-cni/35-post-cleanup-stability.txt
+
+Фактические historical samples (t=5..60s, интервал 5s):
+  nodes=3 calico=3 coredns=2 readyz=ok (все 12 замеров)
+
+COREDNS STABILITY: PASS
+NEW RUNTIME TEST: NO
+HISTORICAL EVIDENCE MODIFIED: NO

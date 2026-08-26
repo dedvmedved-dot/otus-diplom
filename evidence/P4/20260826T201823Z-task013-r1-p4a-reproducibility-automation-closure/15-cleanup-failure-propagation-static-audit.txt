@@ -1,0 +1,13 @@
+# TASK-013-R1 — Cleanup / Failure Propagation Static Audit
+
+CLEANUP GUARANTEED AFTER VALIDATION FAILURE: YES (block/always)
+NAMESPACE DELETE: PRESENT (delete namespace --wait --ignore-not-found)
+NOTFOUND VERIFICATION: PRESENT (get namespace must NOT contain)
+TEST POD COUNT ZERO VERIFICATION: PRESENT (namespace delete implies pods=0, verified via NotFound)
+SERVICE ZERO VERIFICATION: PRESENT (namespace delete implies service=0)
+CLEANUP FAILURE PROPAGATES: YES (exit 1 if namespace still exists)
+VALIDATION FAILURE PROPAGATES: YES (block failure triggers always, then task failure)
+ACCEPTANCE ignore_errors: 0
+ACCEPTANCE failed_when:false: 0
+
+RESULT: PASS

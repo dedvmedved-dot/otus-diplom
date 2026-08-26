@@ -1,0 +1,4 @@
+=== CURRENT COREDNS ===
+NAME                       READY   STATUS    RESTARTS   AGE
+coredns-589f44dc88-khx9s   1/1     Running   0          2d6h
+coredns-589f44dc88-xt9px   1/1     Running   0          2d6h

@@ -1,0 +1,18 @@
+# TASK-013-R1 — Runtime Image Digest Readonly
+
+RUNTIME imageID (platform-specific, linux/amd64):
+  calico-node: sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65
+
+IMAGES.LOCK / VENDORED MANIFEST digest (manifest-list/index, multi-arch):
+  calico-node: sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a
+
+ПОЯСНЕНИЕ: это два разных digest одного образа.
+- manifest-list digest (f4fafd8b...) — многоархитектурный индекс, используется в
+  images.lock и vendored manifest для reproducibility (не зависит от arch).
+- platform imageID (6bc9fa4d...) — фактически выбранный слоёв для linux/amd64
+  на конкретном узле.
+
+Оба согласованы: pull по manifest-list digest даёт platform digest 6bc9fa4d...
+на amd64. Это ожидаемая и однозначная reproducibility.
+
+RUNTIME DIGEST CONSISTENCY: PASS (одинаковый 6bc9fa4d... на всех 3 узлах)
