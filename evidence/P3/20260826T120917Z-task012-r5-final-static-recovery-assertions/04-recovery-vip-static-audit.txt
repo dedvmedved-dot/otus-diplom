@@ -1,0 +1,15 @@
+# TASK-012-R5 — Recovery kube-vip Static Audit
+
+RUN_ID: 20260826T120917Z
+
+RECOVERY KUBE-VIP block (independent block/rescue):
+- 3/3 Running assertion: PASS (kubectl get pods, 'kube-vip.*Running' count = 3)
+- node-01 owner check: PASS (ip addr bond0.140, 172.30.140.100/32)
+- node-02 owner check: PASS
+- node-03 owner check: PASS
+- owner_count=1 assertion: PASS (сумма по 3 узлам = 1)
+- SET TRUE path: PASS (rescue → task012_recovery_vip_failed=true)
+
+Конкретный owner не форсируется (проверяется только owner_count=1).
+
+ВЫВОД: PASS

@@ -1,0 +1,17 @@
+# TASK-012-R5 — Live Flags Regression
+
+RUN_ID: 20260826T120917Z
+
+FLAG | INIT FALSE | SET TRUE PATH | FINAL FAIL REF
+task012_test_failed | yes | outer rescue | yes
+task012_injection_failed | yes | injection nested block/rescue | yes
+task012_recovery_kubelet_failed | yes | recovery kubelet block/rescue | yes
+task012_recovery_components_failed | yes | recovery components block/rescue | yes
+task012_recovery_etcd_failed | yes | recovery etcd block/rescue | yes
+task012_recovery_vip_failed | yes | recovery kube-vip block/rescue | yes
+task012_recovery_api_failed | yes | recovery API block/rescue | yes
+task012_probe_cleanup_failed | yes | probe cleanup block/rescue | yes
+task012_deadman_cleanup_failed | yes | dead-man cleanup block/rescue | yes
+task012_sampler_cleanup_failed | yes | sampler cleanup block/rescue | yes
+
+10/10 PASS

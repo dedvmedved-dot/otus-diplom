@@ -1,0 +1,3 @@
+=== GIT SCOPE AUDIT ===
+ M ansible/playbooks/p3c-ha-single-control-plane-failure-validation.yml
+?? evidence/P3/20260826T120917Z-task012-r5-final-static-recovery-assertions/

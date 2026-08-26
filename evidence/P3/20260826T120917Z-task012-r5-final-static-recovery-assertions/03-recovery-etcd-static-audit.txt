@@ -1,0 +1,14 @@
+# TASK-012-R5 — Recovery etcd Static Audit
+
+RUN_ID: 20260826T120917Z
+
+RECOVERY ETCD block (independent block/rescue):
+- members=3 assertion: PASS (etcdctl member list -w json, grep '"ID"' = 3)
+- health=3/3 assertion: PASS (endpoint health, 'is healthy' count = 3)
+- learners=0 assertion: PASS (endpoint status json, grep '"isLearner":true' = 0)
+- leader_count=1 assertion: PASS (grep '"leader":[1-9][0-9]*' = 1, ID != 0)
+- SET TRUE path: PASS (rescue → task012_recovery_etcd_failed=true)
+
+Запрещённые операции отсутствуют: member add/remove/promote/move-leader/force-new-cluster/snapshot = 0.
+
+ВЫВОД: PASS

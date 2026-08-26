@@ -1,0 +1,2 @@
+
+playbook: ansible/playbooks/p3c-ha-single-control-plane-failure-validation.yml

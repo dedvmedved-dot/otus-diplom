@@ -1,0 +1,13 @@
+# TASK-012-R5 — Recovery API Static Audit
+
+RUN_ID: 20260826T120917Z
+
+RECOVERY API block (independent block/rescue):
+- node-01 VIP API check: PASS (curl -k https://172.30.140.100:6443/livez via ssh node-01)
+- node-02 VIP API check: PASS (ssh node-02)
+- node-03 VIP API check: PASS (ssh node-03)
+- 3/3 assertion: PASS (pass_count = 3)
+- readyz assertion: PASS (kubectl get --raw=/readyz = ok)
+- SET TRUE path: PASS (rescue → task012_recovery_api_failed=true)
+
+ВЫВОД: PASS

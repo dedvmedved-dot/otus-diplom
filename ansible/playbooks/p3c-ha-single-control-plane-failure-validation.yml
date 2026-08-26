@@ -443,15 +443,30 @@
         # ─── RECOVERY block 3 — etcd (independent) ──────────────
         - name: Recovery etcd
           block:
-            - name: Verify etcd 3/3 healthy, 0 learners, 1 leader
+            - name: Verify etcd members=3, health=3/3, learners=0, leader_count=1
               ansible.builtin.shell:
                 cmd: |
+                  EP="--endpoints=https://172.30.140.101:2379,https://172.30.140.102:2379,https://172.30.140.103:2379"
+                  CAC="--cacert={{ etcd_ca }} --cert={{ etcd_cert }} --key={{ etcd_key }}"
+                  # members = 3
+                  m=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-node-01 -- \
+                    etcdctl $EP $CAC member list -w json 2>/dev/null | grep -c '"ID"')
+                  echo "members=$m"
+                  [ "$m" = "3" ] || exit 1
+                  # health = 3/3
                   h=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-node-01 -- \
-                    etcdctl --endpoints=https://172.30.140.101:2379,https://172.30.140.102:2379,https://172.30.140.103:2379 \
-                    --cacert={{ etcd_ca }} --cert={{ etcd_cert }} --key={{ etcd_key }} \
-                    endpoint health 2>/dev/null | grep -c 'is healthy')
+                    etcdctl $EP $CAC endpoint health 2>/dev/null | grep -c 'is healthy')
                   echo "healthy=$h"
-                  [ "$h" = "3" ] && echo ETCD_3_3 || exit 1
+                  [ "$h" = "3" ] || exit 1
+                  # learners = 0, leader_count = 1, leader ID != 0
+                  st=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-node-01 -- \
+                    etcdctl $EP $CAC endpoint status -w json 2>/dev/null)
+                  learners=$(echo "$st" | grep -o '"isLearner":true' | wc -l)
+                  leaders=$(echo "$st" | grep -o '"leader":[1-9][0-9]*' | wc -l)
+                  echo "learners=$learners leader_count=$leaders"
+                  [ "$learners" = "0" ] || exit 1
+                  [ "$leaders" = "1" ] || exit 1
+                  echo ETCD_RECOVERED
               register: recovery_etcd
               changed_when: false
               run_once: true
@@ -467,12 +482,23 @@
         # ─── RECOVERY block 4 — kube-vip (independent) ──────────
         - name: Recovery kube-vip
           block:
-            - name: Verify kube-vip 3/3 and VIP single owner
+            - name: Verify kube-vip 3/3 Running and VIP owner_count=1
               ansible.builtin.shell:
                 cmd: |
                   pods=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system 2>/dev/null | grep -c 'kube-vip.*Running')
                   echo "kube-vip running=$pods"
-                  [ "$pods" = "3" ] && echo VIP_3_3 || exit 1
+                  [ "$pods" = "3" ] || exit 1
+                  # owner count по каждому узлу (172.30.140.100/32 на bond0.140)
+                  owner_count=0
+                  for n in node-01 node-02 node-03; do
+                    o=$(ssh -o StrictHostKeyChecking=yes -o ConnectTimeout=8 "$n" \
+                      "ip -4 addr show dev bond0.140 2>/dev/null | grep -c '172.30.140.100/32'" 2>/dev/null)
+                    echo "$n owner=$o"
+                    owner_count=$((owner_count + o))
+                  done
+                  echo "owner_count=$owner_count"
+                  [ "$owner_count" = "1" ] || exit 1
+                  echo VIP_RECOVERED
               register: recovery_vip
               changed_when: false
               run_once: true
@@ -488,13 +514,22 @@
         # ─── RECOVERY block 5 — API (independent) ───────────────
         - name: Recovery API
           block:
-            - name: Verify API VIP /livez and readyz
+            - name: Verify API VIP 3/3 (node-01/node-02/node-03) and readyz
               ansible.builtin.shell:
                 cmd: |
-                  lz=$(curl -k --connect-timeout 3 -s https://172.30.140.100:6443/livez 2>/dev/null)
+                  pass_count=0
+                  for n in node-01 node-02 node-03; do
+                    r=$(ssh -o StrictHostKeyChecking=yes -o ConnectTimeout=8 "$n" \
+                      "curl -k --connect-timeout 3 -s https://172.30.140.100:6443/livez 2>/dev/null" 2>/dev/null)
+                    echo "$n livez=$r"
+                    [ "$r" = "ok" ] && pass_count=$((pass_count+1))
+                  done
+                  echo "pass_count=$pass_count"
+                  [ "$pass_count" = "3" ] || exit 1
                   rz=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get --raw='/readyz' 2>/dev/null)
-                  echo "livez=$lz readyz=$rz"
-                  [ "$lz" = "ok" ] && [ "$rz" = "ok" ] && echo API_OK || exit 1
+                  echo "readyz=$rz"
+                  [ "$rz" = "ok" ] || exit 1
+                  echo API_RECOVERED
               register: recovery_api
               changed_when: false
               run_once: true

@@ -1,0 +1,4 @@
+=== API 3nodes + readyz ===
+node .38 livez=ok
+node .40 livez=ok
+node .39 livez=ok

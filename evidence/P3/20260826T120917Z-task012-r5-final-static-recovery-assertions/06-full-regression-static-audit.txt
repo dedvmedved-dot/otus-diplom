@@ -1,0 +1,24 @@
+# TASK-012-R5 — Full Regression Static Audit
+
+RUN_ID: 20260826T120917Z
+
+RUNNING-state target discovery: PASS (ctr tasks list -q + container.name label)
+hardcoded target IDs: 0
+ctr containers list target mapping: 0
+exact 5 unique assert: PASS
+
+recovery kubelet block/rescue: PASS
+recovery components block/rescue: PASS
+recovery etcd block/rescue: PASS (members=3, health=3/3, learners=0, leader=1)
+recovery vip block/rescue: PASS (3/3 + owner_count=1)
+recovery api block/rescue: PASS (3/3 + readyz)
+
+probe cleanup block/rescue: PASS
+dead-man cleanup block/rescue: PASS
+sampler cleanup block/rescue: PASS
+
+injection nested block/rescue: PASS
+live flags: 10/10
+all final fail refs: PASS
+
+ВЫВОД: PASS
