@@ -1,0 +1,19 @@
+# TASK-012-R4 — Forbidden-Pattern Audit
+
+RUN_ID: 20260826T101635Z
+
+Проверки playbook p3c-ha-single-control-plane-failure-validation.yml:
+
+hardcoded target runtime 64-hex IDs: 0
+target mapping via 'ctr containers list': 0 (заменено на RUNNING-state tasks list)
+failed_when:false на destructive stop: 0
+ignore_errors на destructive stop: 0
+
+kubeadm reset: 0
+etcd member add/remove: 0
+force-new-cluster: 0
+reboot/shutdown: 0
+network mutation: 0
+storage mutation: 0
+
+ВЫВОД: PASS

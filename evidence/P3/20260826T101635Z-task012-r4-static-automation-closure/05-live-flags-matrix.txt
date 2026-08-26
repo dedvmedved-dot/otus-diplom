@@ -1,0 +1,17 @@
+# TASK-012-R4 — Live Flags Matrix (Dead-flag audit)
+
+RUN_ID: 20260826T101635Z
+
+FLAG | INIT FALSE | SET TRUE PATH | FINAL FAIL REF | RESULT
+task012_test_failed | yes | outer rescue (main block) | yes | LIVE
+task012_injection_failed | yes | injection nested block/rescue | yes | LIVE
+task012_recovery_kubelet_failed | yes | recovery kubelet block/rescue | yes | LIVE
+task012_recovery_components_failed | yes | recovery components block/rescue | yes | LIVE
+task012_recovery_etcd_failed | yes | recovery etcd block/rescue | yes | LIVE
+task012_recovery_vip_failed | yes | recovery kube-vip block/rescue | yes | LIVE
+task012_recovery_api_failed | yes | recovery API block/rescue | yes | LIVE
+task012_probe_cleanup_failed | yes | probe cleanup block/rescue | yes | LIVE
+task012_deadman_cleanup_failed | yes | dead-man cleanup block/rescue | yes | LIVE
+task012_sampler_cleanup_failed | yes | sampler cleanup block/rescue | yes | LIVE
+
+10/10 PASS — нет dead flags. Каждый flag имеет INIT FALSE + реальный SET TRUE path + final fail reference.

@@ -1,0 +1,21 @@
+=== CONTROL-PLANE READONLY ===
+NAME      STATUS     ROLES           AGE   VERSION
+node-01   NotReady   control-plane   44h   v1.36.2
+node-02   NotReady   control-plane   43h   v1.36.2
+node-03   NotReady   control-plane   33h   v1.36.2
+---pods---
+etcd-node-01                      1/1     Running   1 (19h ago)    44h
+etcd-node-02                      1/1     Running   1 (14h ago)    43h
+etcd-node-03                      1/1     Running   1 (153m ago)   33h
+kube-apiserver-node-01            1/1     Running   1 (19h ago)    44h
+kube-apiserver-node-02            1/1     Running   1 (14h ago)    43h
+kube-apiserver-node-03            1/1     Running   1 (153m ago)   33h
+kube-controller-manager-node-01   1/1     Running   1 (19h ago)    44h
+kube-controller-manager-node-02   1/1     Running   1 (14h ago)    43h
+kube-controller-manager-node-03   1/1     Running   1 (154m ago)   33h
+kube-scheduler-node-01            1/1     Running   1 (19h ago)    44h
+kube-scheduler-node-02            1/1     Running   1 (14h ago)    43h
+kube-scheduler-node-03            1/1     Running   1 (154m ago)   33h
+kube-vip-node-01                  1/1     Running   1 (19h ago)    44h
+kube-vip-node-02                  1/1     Running   1 (14h ago)    43h
+kube-vip-node-03                  1/1     Running   1 (154m ago)   33h

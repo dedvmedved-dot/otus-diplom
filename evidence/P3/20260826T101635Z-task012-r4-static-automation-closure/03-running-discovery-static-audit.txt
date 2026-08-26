@@ -1,0 +1,20 @@
+# TASK-012-R4 — Running-Discovery Static Audit
+
+RUN_ID: 20260826T101635Z
+
+DISCOVERY SOURCE = RUNNING tasks (ctr tasks list -q), НЕ container metadata.
+
+Проверки (grep по playbook):
+- 'ctr -n k8s.io containers list' для target destructive mapping: 0
+- 'ctr -n k8s.io tasks list -q' (RUNNING-state): 5 (по одному на компонент)
+- 'io.kubernetes.container.name' label matching: 5
+- hardcoded target runtime 64-hex IDs: 0
+
+Каждый component discovery:
+  for id in $(ctr tasks list -q); do
+    if containers info "$id" | grep container.name == <component>; then echo $id; fi
+  done
+
+RUNNING count = exactly 1 (для каждого component по label).
+
+ВЫВОД: RUNNING-state discovery PASS, ctr containers list target mapping = 0.

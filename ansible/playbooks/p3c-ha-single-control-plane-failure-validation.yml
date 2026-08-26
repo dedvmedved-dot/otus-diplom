@@ -138,38 +138,65 @@
           run_once: true
           delegate_to: node-01
 
-        # ─── 3. DYNAMIC CONTAINER DISCOVERY (на TARGET) ────────
-        - name: Discover kube-vip container ID
+        # ─── 3. DYNAMIC RUNNING-STATE CONTAINER DISCOVERY (на TARGET) ──
+        # Источник: RUNNING tasks (ctr tasks list), НЕ container metadata.
+        # Имя из label io.kubernetes.container.name (ctr containers info).
+        - name: Discover RUNNING kube-vip container ID
           ansible.builtin.shell:
-            cmd: "ctr -n k8s.io containers list 2>/dev/null | grep 'kube-vip/kube-vip' | awk '{print $1}'"
+            cmd: >-
+              for id in $(ctr -n k8s.io tasks list -q 2>/dev/null); do
+                if ctr -n k8s.io containers info "$id" 2>/dev/null | grep -q 'io.kubernetes.container.name": "kube-vip"'; then
+                  echo "$id"
+                fi
+              done
           register: disc_kubevip
           changed_when: false
           when: inventory_hostname == task012_target
 
-        - name: Discover kube-apiserver container ID
+        - name: Discover RUNNING kube-apiserver container ID
           ansible.builtin.shell:
-            cmd: "ctr -n k8s.io containers list 2>/dev/null | grep 'kube-apiserver' | awk '{print $1}'"
+            cmd: >-
+              for id in $(ctr -n k8s.io tasks list -q 2>/dev/null); do
+                if ctr -n k8s.io containers info "$id" 2>/dev/null | grep -q 'io.kubernetes.container.name": "kube-apiserver"'; then
+                  echo "$id"
+                fi
+              done
           register: disc_apiserver
           changed_when: false
           when: inventory_hostname == task012_target
 
-        - name: Discover etcd container ID
+        - name: Discover RUNNING etcd container ID
           ansible.builtin.shell:
-            cmd: "ctr -n k8s.io containers list 2>/dev/null | grep 'etcd:' | awk '{print $1}'"
+            cmd: >-
+              for id in $(ctr -n k8s.io tasks list -q 2>/dev/null); do
+                if ctr -n k8s.io containers info "$id" 2>/dev/null | grep -q 'io.kubernetes.container.name": "etcd"'; then
+                  echo "$id"
+                fi
+              done
           register: disc_etcd
           changed_when: false
           when: inventory_hostname == task012_target
 
-        - name: Discover controller-manager container ID
+        - name: Discover RUNNING controller-manager container ID
           ansible.builtin.shell:
-            cmd: "ctr -n k8s.io containers list 2>/dev/null | grep 'kube-controller-manager' | awk '{print $1}'"
+            cmd: >-
+              for id in $(ctr -n k8s.io tasks list -q 2>/dev/null); do
+                if ctr -n k8s.io containers info "$id" 2>/dev/null | grep -q 'io.kubernetes.container.name": "kube-controller-manager"'; then
+                  echo "$id"
+                fi
+              done
           register: disc_controller
           changed_when: false
           when: inventory_hostname == task012_target
 
-        - name: Discover scheduler container ID
+        - name: Discover RUNNING scheduler container ID
           ansible.builtin.shell:
-            cmd: "ctr -n k8s.io containers list 2>/dev/null | grep 'kube-scheduler' | awk '{print $1}'"
+            cmd: >-
+              for id in $(ctr -n k8s.io tasks list -q 2>/dev/null); do
+                if ctr -n k8s.io containers info "$id" 2>/dev/null | grep -q 'io.kubernetes.container.name": "kube-scheduler"'; then
+                  echo "$id"
+                fi
+              done
           register: disc_scheduler
           changed_when: false
           when: inventory_hostname == task012_target
@@ -237,67 +264,76 @@
           failed_when: "'active' not in deadman_arm.stdout"
           when: inventory_hostname == task012_target
 
-        # ─── 5. FAILURE INJECTION (approval-controlled) ────────
-        - name: Record FAILURE_T0 (ms + UTC)
-          ansible.builtin.shell:
-            cmd: "date -u +%s%3N; date -u +%Y-%m-%dT%H:%M:%S.%3NZ"
-          register: failure_t0
-          changed_when: false
-          when: inventory_hostname == task012_target
+        # ─── 5. FAILURE INJECTION (approval-controlled, nested block/rescue) ──
+        - name: Failure injection flow
+          block:
+            - name: Record FAILURE_T0 (ms + UTC)
+              ansible.builtin.shell:
+                cmd: "date -u +%s%3N; date -u +%Y-%m-%dT%H:%M:%S.%3NZ"
+              register: failure_t0
+              changed_when: false
+              when: inventory_hostname == task012_target
 
-        - name: Stop kubelet on target
-          ansible.builtin.systemd:
-            name: kubelet
-            state: stopped
-          when: inventory_hostname == task012_target
+            - name: Stop kubelet on target
+              ansible.builtin.systemd:
+                name: kubelet
+                state: stopped
+              when: inventory_hostname == task012_target
 
-        - name: Verify kubelet inactive
-          ansible.builtin.command:
-            cmd: "systemctl is-active kubelet"
-          register: kubelet_state
-          changed_when: false
-          failed_when: "'inactive' not in kubelet_state.stdout and 'failed' not in kubelet_state.stdout"
-          when: inventory_hostname == task012_target
+            - name: Verify kubelet inactive
+              ansible.builtin.command:
+                cmd: "systemctl is-active kubelet"
+              register: kubelet_state
+              changed_when: false
+              failed_when: "'inactive' not in kubelet_state.stdout and 'failed' not in kubelet_state.stdout"
+              when: inventory_hostname == task012_target
 
-        - name: Graceful stop kube-vip (exact dynamic ID)
-          ansible.builtin.command:
-            cmd: "ctr -n k8s.io tasks kill -s SIGTERM {{ disc_kubevip.stdout | trim }}"
-          changed_when: false
-          when: inventory_hostname == task012_target
+            - name: Graceful stop kube-vip (exact dynamic ID)
+              ansible.builtin.command:
+                cmd: "ctr -n k8s.io tasks kill -s SIGTERM {{ disc_kubevip.stdout | trim }}"
+              changed_when: false
+              when: inventory_hostname == task012_target
 
-        - name: Graceful stop kube-apiserver (exact dynamic ID)
-          ansible.builtin.command:
-            cmd: "ctr -n k8s.io tasks kill -s SIGTERM {{ disc_apiserver.stdout | trim }}"
-          changed_when: false
-          when: inventory_hostname == task012_target
+            - name: Graceful stop kube-apiserver (exact dynamic ID)
+              ansible.builtin.command:
+                cmd: "ctr -n k8s.io tasks kill -s SIGTERM {{ disc_apiserver.stdout | trim }}"
+              changed_when: false
+              when: inventory_hostname == task012_target
 
-        - name: Graceful stop etcd (exact dynamic ID)
-          ansible.builtin.command:
-            cmd: "ctr -n k8s.io tasks kill -s SIGTERM {{ disc_etcd.stdout | trim }}"
-          changed_when: false
-          when: inventory_hostname == task012_target
+            - name: Graceful stop etcd (exact dynamic ID)
+              ansible.builtin.command:
+                cmd: "ctr -n k8s.io tasks kill -s SIGTERM {{ disc_etcd.stdout | trim }}"
+              changed_when: false
+              when: inventory_hostname == task012_target
 
-        - name: Graceful stop controller-manager (exact dynamic ID)
-          ansible.builtin.command:
-            cmd: "ctr -n k8s.io tasks kill -s SIGTERM {{ disc_controller.stdout | trim }}"
-          changed_when: false
-          when: inventory_hostname == task012_target
+            - name: Graceful stop controller-manager (exact dynamic ID)
+              ansible.builtin.command:
+                cmd: "ctr -n k8s.io tasks kill -s SIGTERM {{ disc_controller.stdout | trim }}"
+              changed_when: false
+              when: inventory_hostname == task012_target
 
-        - name: Graceful stop scheduler (exact dynamic ID)
-          ansible.builtin.command:
-            cmd: "ctr -n k8s.io tasks kill -s SIGTERM {{ disc_scheduler.stdout | trim }}"
-          changed_when: false
-          when: inventory_hostname == task012_target
+            - name: Graceful stop scheduler (exact dynamic ID)
+              ansible.builtin.command:
+                cmd: "ctr -n k8s.io tasks kill -s SIGTERM {{ disc_scheduler.stdout | trim }}"
+              changed_when: false
+              when: inventory_hostname == task012_target
 
-        - name: Post-injection 0/5 gate
-          ansible.builtin.shell:
-            cmd: |
-              sleep 2
-              ctr -n k8s.io tasks list 2>/dev/null | grep -cE '{{ disc_kubevip.stdout | trim }}|{{ disc_apiserver.stdout | trim }}|{{ disc_etcd.stdout | trim }}|{{ disc_controller.stdout | trim }}|{{ disc_scheduler.stdout | trim }}' || echo 0
-          register: post_injection
-          changed_when: false
-          failed_when: "post_injection.stdout | trim | int != 0"
-          when: inventory_hostname == task012_target
+            - name: Post-injection 0/5 gate
+              ansible.builtin.shell:
+                cmd: |
+                  sleep 2
+                  ctr -n k8s.io tasks list 2>/dev/null | grep -cE '{{ disc_kubevip.stdout | trim }}|{{ disc_apiserver.stdout | trim }}|{{ disc_etcd.stdout | trim }}|{{ disc_controller.stdout | trim }}|{{ disc_scheduler.stdout | trim }}' || echo 0
+              register: post_injection
+              changed_when: false
+              failed_when: "post_injection.stdout | trim | int != 0"
+              when: inventory_hostname == task012_target
+          rescue:
+            - name: Record injection failure
+              ansible.builtin.set_fact:
+                task012_injection_failed: true
+              run_once: true
+              delegate_to: node-01
+              delegate_facts: true
 
         # ─── 6. HA MEASUREMENT + WRITE/READ ────────────────────
         - name: API stability 30/30
@@ -352,20 +388,124 @@
           delegate_facts: true
 
       always:
-        # ─── RECOVERY (mandatory, all exit paths) ──────────────
-        - name: RECOVERY — start kubelet on target
-          ansible.builtin.systemd:
-            name: kubelet
-            state: started
-          when: inventory_hostname == task012_target
+        # ─── RECOVERY block 1 — kubelet (independent) ──────────
+        - name: Recovery kubelet
+          block:
+            - name: Start kubelet on target
+              ansible.builtin.systemd:
+                name: kubelet
+                state: started
+              when: inventory_hostname == task012_target
+            - name: Verify kubelet active
+              ansible.builtin.command:
+                cmd: "systemctl is-active kubelet"
+              register: recovery_kubelet
+              changed_when: false
+              failed_when: "'active' not in recovery_kubelet.stdout"
+              when: inventory_hostname == task012_target
+          rescue:
+            - name: Record kubelet recovery failure
+              ansible.builtin.set_fact:
+                task012_recovery_kubelet_failed: true
+              run_once: true
+              delegate_to: node-01
+              delegate_facts: true
 
-        - name: RECOVERY — verify kubelet active
-          ansible.builtin.command:
-            cmd: "systemctl is-active kubelet"
-          register: recovery_kubelet
-          changed_when: false
-          failed_when: "'active' not in recovery_kubelet.stdout"
-          when: inventory_hostname == task012_target
+        # ─── RECOVERY block 2 — exact 5 components (independent) ──
+        - name: Recovery exact five components
+          block:
+            - name: Verify exact 5 components Running (RUNNING-state)
+              ansible.builtin.shell:
+                cmd: |
+                  rc=0
+                  for comp in kube-apiserver etcd kube-controller-manager kube-scheduler kube-vip; do
+                    n=0
+                    for id in $(ctr -n k8s.io tasks list -q 2>/dev/null); do
+                      if ctr -n k8s.io containers info "$id" 2>/dev/null | grep -q "io.kubernetes.container.name\": \"$comp\""; then
+                        n=$((n+1))
+                      fi
+                    done
+                    echo "$comp running=$n"
+                    [ "$n" = "1" ] || rc=1
+                  done
+                  [ "$rc" = "0" ] && echo ALL_5_RUNNING || exit 1
+              register: recovery_components
+              changed_when: false
+              when: inventory_hostname == task012_target
+          rescue:
+            - name: Record components recovery failure
+              ansible.builtin.set_fact:
+                task012_recovery_components_failed: true
+              run_once: true
+              delegate_to: node-01
+              delegate_facts: true
+
+        # ─── RECOVERY block 3 — etcd (independent) ──────────────
+        - name: Recovery etcd
+          block:
+            - name: Verify etcd 3/3 healthy, 0 learners, 1 leader
+              ansible.builtin.shell:
+                cmd: |
+                  h=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-node-01 -- \
+                    etcdctl --endpoints=https://172.30.140.101:2379,https://172.30.140.102:2379,https://172.30.140.103:2379 \
+                    --cacert={{ etcd_ca }} --cert={{ etcd_cert }} --key={{ etcd_key }} \
+                    endpoint health 2>/dev/null | grep -c 'is healthy')
+                  echo "healthy=$h"
+                  [ "$h" = "3" ] && echo ETCD_3_3 || exit 1
+              register: recovery_etcd
+              changed_when: false
+              run_once: true
+              delegate_to: node-01
+          rescue:
+            - name: Record etcd recovery failure
+              ansible.builtin.set_fact:
+                task012_recovery_etcd_failed: true
+              run_once: true
+              delegate_to: node-01
+              delegate_facts: true
+
+        # ─── RECOVERY block 4 — kube-vip (independent) ──────────
+        - name: Recovery kube-vip
+          block:
+            - name: Verify kube-vip 3/3 and VIP single owner
+              ansible.builtin.shell:
+                cmd: |
+                  pods=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system 2>/dev/null | grep -c 'kube-vip.*Running')
+                  echo "kube-vip running=$pods"
+                  [ "$pods" = "3" ] && echo VIP_3_3 || exit 1
+              register: recovery_vip
+              changed_when: false
+              run_once: true
+              delegate_to: node-01
+          rescue:
+            - name: Record kube-vip recovery failure
+              ansible.builtin.set_fact:
+                task012_recovery_vip_failed: true
+              run_once: true
+              delegate_to: node-01
+              delegate_facts: true
+
+        # ─── RECOVERY block 5 — API (independent) ───────────────
+        - name: Recovery API
+          block:
+            - name: Verify API VIP /livez and readyz
+              ansible.builtin.shell:
+                cmd: |
+                  lz=$(curl -k --connect-timeout 3 -s https://172.30.140.100:6443/livez 2>/dev/null)
+                  rz=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get --raw='/readyz' 2>/dev/null)
+                  echo "livez=$lz readyz=$rz"
+                  [ "$lz" = "ok" ] && [ "$rz" = "ok" ] && echo API_OK || exit 1
+              register: recovery_api
+              changed_when: false
+              run_once: true
+              delegate_to: node-01
+          rescue:
+            - name: Record API recovery failure
+              ansible.builtin.set_fact:
+                task012_recovery_api_failed: true
+              run_once: true
+              delegate_to: node-01
+              delegate_facts: true
 
         # ─── CLEANUP probe (independent) ───────────────────────
         - name: Cleanup probe ConfigMap
@@ -373,6 +513,14 @@
             - name: Delete probe ConfigMap
               ansible.builtin.command:
                 cmd: "kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system delete configmap task012-ha-probe"
+              run_once: true
+              delegate_to: node-01
+            - name: Verify probe NotFound
+              ansible.builtin.command:
+                cmd: "kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system get configmap task012-ha-probe"
+              register: probe_gone
+              changed_when: false
+              failed_when: probe_gone.rc == 0
               run_once: true
               delegate_to: node-01
           rescue:

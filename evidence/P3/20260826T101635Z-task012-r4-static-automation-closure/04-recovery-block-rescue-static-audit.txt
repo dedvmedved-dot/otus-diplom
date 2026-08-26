@@ -1,0 +1,22 @@
+# TASK-012-R4 — Recovery Block/Rescue Static Audit
+
+RUN_ID: 20260826T101635Z
+
+Каждый recovery/cleanup Gate — отдельный block/rescue, failure не блокирует остальные.
+
+| Блок | block | rescue SET TRUE | Independent |
+| --- | --- | --- | --- |
+| Recovery kubelet | block (start + verify active) | task012_recovery_kubelet_failed | YES |
+| Recovery exact 5 components | block (RUNNING-state 5/5) | task012_recovery_components_failed | YES |
+| Recovery etcd | block (health 3/3) | task012_recovery_etcd_failed | YES |
+| Recovery kube-vip | block (3/3 + single owner) | task012_recovery_vip_failed | YES |
+| Recovery API | block (livez + readyz) | task012_recovery_api_failed | YES |
+| Injection flow | nested block (stop + 0/5 gate) | task012_injection_failed | YES |
+| Cleanup probe | block (delete + NotFound verify) | task012_probe_cleanup_failed | YES |
+| Cleanup dead-man | block (stop + state verify) | task012_deadman_cleanup_failed | YES |
+| Cleanup samplers | block (pkill + pgrep verify) | task012_sampler_cleanup_failed | YES |
+| Outer aggregate | rescue main block | task012_test_failed | YES |
+
+Все rescue используют delegate_to: node-01 + delegate_facts: true (та же модель, что init).
+
+ВЫВОД: 10/10 recovery/cleanup блоков имеют реальный block/rescue SET TRUE path.
