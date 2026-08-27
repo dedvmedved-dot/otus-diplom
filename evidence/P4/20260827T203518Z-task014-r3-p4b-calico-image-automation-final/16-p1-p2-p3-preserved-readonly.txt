@@ -1,0 +1,7 @@
+# TASK-014-R3 — P1/P2/P3 Preserved (read-only)
+
+P1: exact VLAN 3/3 (node-01/02/03 exact адреса + default route count=1)
+P2: containerd=v2.3.3 kubelet=v1.36.2 swap=0 (3/3)
+P3: etcd mc=3 ml=0 h=3 el=0 ul=1 al=1 kv=3 readyz=ok; VIP_owner=1 API_livez=3/3
+
+RESULT: PASS

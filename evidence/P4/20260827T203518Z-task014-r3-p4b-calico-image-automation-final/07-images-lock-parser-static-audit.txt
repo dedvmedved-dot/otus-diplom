@@ -1,0 +1,19 @@
+# TASK-014-R3 — images.lock Parser Static Audit
+
+PHASE 15 теперь структурно загружает репозиторный images.lock через
+lookup('ansible.builtin.file', playbook_dir + '/../../images.lock') | from_yaml
+(controller-side, delegate_to localhost, run_once).
+
+Exact assertions (fail-closed, duplicates=0, missing=0):
+  calico-node: image=quay.io/calico/node, tag=v3.32.0,
+    digest=sha256:f4fafd8b..., verified=true (ровно 1 запись)
+  calico-cni: image=quay.io/calico/cni, tag=v3.32.0,
+    digest=sha256:1cfc6aa9..., verified=true (ровно 1)
+  calico-kube-controllers: image=quay.io/calico/kube-controllers, tag=v3.32.0,
+    digest=sha256:adf0ac89..., verified=true (ровно 1)
+
+Не evidence-only сравнение: реальный файл читается и парсится структурно.
+
+images.lock expected vars unused: 0
+
+RESULT: PASS

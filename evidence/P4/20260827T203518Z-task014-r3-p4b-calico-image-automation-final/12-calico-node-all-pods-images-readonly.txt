@@ -1,0 +1,8 @@
+# TASK-014-R3 — Calico Node All-Pods Images (read-only)
+
+3 calico-node pods, all containers/initContainers:
+  node image occurrences = 6 (2/pod × 3)
+  cni image occurrences  = 6 (2/pod × 3)
+  other Calico image = 0
+
+RESULT: PASS

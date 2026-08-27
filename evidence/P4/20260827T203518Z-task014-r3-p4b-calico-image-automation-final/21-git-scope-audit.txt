@@ -1,0 +1,3 @@
+=== GIT SCOPE AUDIT ===
+ M ansible/playbooks/p4b-networkpolicy-baseline.yml
+?? evidence/P4/20260827T203518Z-task014-r3-p4b-calico-image-automation-final/

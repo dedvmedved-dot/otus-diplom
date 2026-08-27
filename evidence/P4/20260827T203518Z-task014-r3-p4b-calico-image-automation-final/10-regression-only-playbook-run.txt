@@ -1,0 +1,163 @@
+No config file found; using defaults
+
+PLAY [P4B baseline NetworkPolicy enforcement and validation (R1)] **************
+
+TASK [Gathering Facts] *********************************************************
+[WARNING]: Platform linux on host node-02 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+[WARNING]: Platform linux on host node-03 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+[WARNING]: Platform linux on host node-01 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-02]
+ok: [node-03]
+ok: [node-01]
+
+TASK [MODE GATE — validate p4b_mode (normal | regression-only)] ****************
+ok: [node-01] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [PHASE 0 — etcd full + kube-vip + nodes/calico/coredns/ippool (kubectl only)] ***
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 0 — VIP owner local check (per node)] ******************************
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+skipping: [node-02] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+skipping: [node-03] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 0 — API livez local check (per node)] ******************************
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+skipping: [node-02] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+skipping: [node-03] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 0 — aggregate VIP owner + API livez (3/3)] *************************
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 1 — capture namespaces + NetworkPolicy fingerprint] ****************
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 2 — CoreDNS selector full validation] ******************************
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 3 — stage policy manifests] ****************************************
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 3 — policy manifest static audit] **********************************
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 4 — ensure namespace absent + create labeled] **********************
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 5 — server-side dry-run (namespace now exists)] ********************
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 6 — create 3 deterministic pods] ***********************************
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 6 — pod IP unique + in CIDR + local HTTP 3/3] **********************
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 6 — create p4b-server Service + EndpointSlice JSON semantic] *******
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 7 — pre-policy direct 6/6 + Service 3/3] ***************************
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 7 — pre-policy DNS 18/18] ******************************************
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 8 — apply baseline policies (count=2)] *****************************
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 9 — default-deny direct 6/6 blocked + Service 3/3 blocked] *********
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 9 — default-deny DNS 18/18] ****************************************
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 10 — apply explicit allow policies (total=4)] **********************
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 11 — client->server positive (PodIP + Service x3)] *****************
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 11 — unauthorized paths 6/6 blocked x3] ****************************
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 11 — explicit DNS 18/18] *******************************************
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 12 — runtime policy exact audit (4)] *******************************
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 12 — system namespace fail-closed audit] ***************************
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 13 — delete validation namespace + verify NotFound] ****************
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 14 — post-cleanup 60s stability] ***********************************
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 15 — P4A full regression (IPPool + BGP node IPs + autodetection + images)] ***
+ok: [node-01] => {"changed": false, "cmd": "ipjson=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get ippool default-ipv4-ippool -o json 2>/dev/null)\nipm=$(printf '%s' \"$ipjson\" | python3 -c 'import json,sys; d=json.load(sys.stdin); s=d.get(\"spec\",{}); print(s.get(\"cidr\",\"\"), s.get(\"ipipMode\",\"\"), s.get(\"natOutgoing\",False), s.get(\"disabled\",False))')\nread cidr ipip nat dis <<< \"$ipm\"\npools=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get ippool -o name 2>/dev/null | grep -c ippool)\ncn=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=calico-node 2>/dev/null | grep -c '1/1')\nctrl=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=calico-kube-controllers 2>/dev/null | grep -c '1/1')\n# BGP node IPs (Calico v3.32.0 Kubernetes datastore: annotation projectcalico.org/IPv4Address\n# на Kubernetes Node; CRD nodes.crd.projectcalico.org отсутствует в этой версии).\n# JSON-aware, normalize CIDR suffix (split('/')[0]).\nnodes_json=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get nodes -o json 2>/dev/null)\n[ -n \"$nodes_json\" ] || { echo \"CALICO_NODE_API_FAIL\"; exit 1; }\nbgp=$(printf '%s' \"$nodes_json\" | python3 -c 'import json,sys; d=json.load(sys.stdin); out={}; [out.__setitem__(it[\"metadata\"][\"name\"], (it[\"metadata\"].get(\"annotations\",{}).get(\"projectcalico.org/IPv4Address\",\"\") or \"\").split(\"/\")[0]) for it in d.get(\"items\",[])]; print(\" \".join(f\"{k}={v}\" for k,v in sorted(out.items())))')\necho \"P4A bgp: $bgp\"\necho \"$bgp\" | grep -q 'node-01=172.30.140.101' || exit 1\necho \"$bgp\" | grep -q 'node-02=172.30.140.102' || exit 1\necho \"$bgp\" | grep -q 'node-03=172.30.140.103' || exit 1\n# IP_AUTODETECTION_METHOD\nauto=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get ds calico-node -n kube-system -o jsonpath='{.spec.template.spec.containers[0].env}' 2>/dev/null | grep -o 'interface=bond0.140' | head -1)\n# DaemonSet template image multiset (fail-closed exact counts)\ndsjson=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get ds calico-node -n kube-system -o json 2>/dev/null)\n[ -n \"$dsjson\" ] || { echo \"DS_API_FAIL\"; exit 1; }\ndsmulti=$(printf '%s' \"$dsjson\" | python3 -c 'import json,sys; d=json.load(sys.stdin); spec=d[\"spec\"][\"template\"][\"spec\"]; imgs=[c.get(\"image\",\"\") for c in spec.get(\"initContainers\",[])]+[c.get(\"image\",\"\") for c in spec.get(\"containers\",[])]; print(imgs.count(\"quay.io/calico/node:v3.32.0\"), imgs.count(\"quay.io/calico/cni:v3.32.0\"), len([i for i in imgs if i.startswith(\"quay.io/calico/\")]), len([i for i in imgs if i.startswith(\"quay.io/calico/\") and i not in (\"quay.io/calico/node:v3.32.0\",\"quay.io/calico/cni:v3.32.0\")]))')\nread ds_node ds_cni ds_total ds_unexp <<< \"$dsmulti\"\necho \"P4A ds_multiset node=$ds_node cni=$ds_cni total=$ds_total unexpected=$ds_unexp\"\n[ \"$ds_node\" = \"2\" ] && [ \"$ds_cni\" = \"2\" ] && [ \"$ds_total\" = \"4\" ] && [ \"$ds_unexp\" = \"0\" ] || exit 1\n# ALL calico-node pods (3): every container/initContainer image + imageID via grep-count\npodsjson=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=calico-node -o json 2>/dev/null)\n[ -n \"$podsjson\" ] || { echo \"PODS_API_FAIL\"; exit 1; }\npod_count=$(printf '%s' \"$podsjson\" | python3 -c 'import json,sys; print(len(json.load(sys.stdin).get(\"items\",[])))')\nall_imgs=$(printf '%s' \"$podsjson\" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(\" \".join(c.get(\"image\",\"\") for it in d.get(\"items\",[]) for c in (it[\"spec\"].get(\"initContainers\",[])+it[\"spec\"].get(\"containers\",[]))))')\nall_iids=$(printf '%s' \"$podsjson\" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(\" \".join(c.get(\"imageID\",\"\") for it in d.get(\"items\",[]) for c in (it[\"status\"].get(\"initContainerStatuses\",[])+it[\"status\"].get(\"containerStatuses\",[]))))')\nnode_img_cnt=$(echo \"$all_imgs\" | tr ' ' '\\n' | grep -c 'quay.io/calico/node:v3.32.0')\ncni_img_cnt=$(echo \"$all_imgs\" | tr ' ' '\\n' | grep -c 'quay.io/calico/cni:v3.32.0')\nother_img_cnt=$(echo \"$all_imgs\" | tr ' ' '\\n' | grep 'quay.io/calico/' | grep -vcE 'quay.io/calico/(node|cni):v3.32.0')\nnode_iid_cnt=$(echo \"$all_iids\" | tr ' ' '\\n' | grep -c 'sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65')\ncni_iid_cnt=$(echo \"$all_iids\" | tr ' ' '\\n' | grep -c 'sha256:d456a937d6e7445d4785ca592e5fffc2aa390cb578d7778f17e5a016201cceb4')\necho \"P4A calico-node pods=$pod_count node_img=$node_img_cnt cni_img=$cni_img_cnt other_img=$other_img_cnt node_iid=$node_iid_cnt cni_iid=$cni_iid_cnt\"\n[ \"$pod_count\" = \"3\" ] && [ \"$node_img_cnt\" = \"6\" ] && [ \"$cni_img_cnt\" = \"6\" ] && [ \"$other_img_cnt\" = \"0\" ] && [ \"$node_iid_cnt\" = \"6\" ] && [ \"$cni_iid_cnt\" = \"6\" ] || exit 1\n# controllers (1 replica) image + imageID\nctrljson=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=calico-kube-controllers -o json 2>/dev/null)\n[ -n \"$ctrljson\" ] || { echo \"CTRL_API_FAIL\"; exit 1; }\nctrlchk=$(printf '%s' \"$ctrljson\" | python3 -c 'import json,sys; d=json.load(sys.stdin); items=d.get(\"items\",[]); ok=sum(1 for it in items if len(it[\"spec\"].get(\"containers\",[]))>0 and it[\"spec\"][\"containers\"][0].get(\"image\")==\"quay.io/calico/kube-controllers:v3.32.0\" and len(it[\"status\"].get(\"containerStatuses\",[]))>0 and it[\"status\"][\"containerStatuses\"][0].get(\"imageID\")==\"sha256:e67ce8d034ec572033278ceaee634ca98bc7c7d422b9f4b39a5a66e1aab98e11\"); print(len(items), ok)')\nread ctrl_replicas ctrl_ok <<< \"$ctrlchk\"\necho \"P4A controllers replicas=$ctrl_replicas ok=$ctrl_ok\"\n[ \"$ctrl_replicas\" = \"1\" ] && [ \"$ctrl_ok\" = \"1\" ] || exit 1\necho \"P4A ippool cidr=$cidr ipip=$ipip nat=$nat dis=$dis pools=$pools calico=$cn ctrl=$ctrl\"\necho \"P4A autodetect=$auto\"\n[ \"$cidr\" = \"10.244.0.0/16\" ] && [ \"$ipip\" = \"Always\" ] && [ \"$nat\" = \"True\" ] && [ \"$dis\" = \"False\" ] && [ \"$pools\" = \"1\" ] && [ \"$cn\" = \"3\" ] && [ \"$ctrl\" = \"1\" ] || exit 1\n[ \"$auto\" = \"interface=bond0.140\" ] || exit 1\necho PHASE15_P4A_OK\n", "delta": "0:00:01.513553", "end": "2026-08-27 23:40:03.154471", "msg": "", "rc": 0, "start": "2026-08-27 23:40:01.640918", "stderr": "", "stderr_lines": [], "stdout": "P4A bgp: node-01=172.30.140.101 node-02=172.30.140.102 node-03=172.30.140.103\nP4A ds_multiset node=2 cni=2 total=4 unexpected=0\nP4A calico-node pods=3 node_img=6 cni_img=6 other_img=0 node_iid=6 cni_iid=6\nP4A controllers replicas=1 ok=1\nP4A ippool cidr=10.244.0.0/16 ipip=Always nat=True dis=False pools=1 calico=3 ctrl=1\nP4A autodetect=interface=bond0.140\nPHASE15_P4A_OK", "stdout_lines": ["P4A bgp: node-01=172.30.140.101 node-02=172.30.140.102 node-03=172.30.140.103", "P4A ds_multiset node=2 cni=2 total=4 unexpected=0", "P4A calico-node pods=3 node_img=6 cni_img=6 other_img=0 node_iid=6 cni_iid=6", "P4A controllers replicas=1 ok=1", "P4A ippool cidr=10.244.0.0/16 ipip=Always nat=True dis=False pools=1 calico=3 ctrl=1", "P4A autodetect=interface=bond0.140", "PHASE15_P4A_OK"]}
+
+TASK [PHASE 15 — images.lock structural validation (controller-side, fail-closed)] ***
+ok: [node-01 -> localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+
+TASK [PHASE 15 — P3 full regression (etcd + kube-vip, kubectl only)] ***********
+ok: [node-01] => {"changed": false, "cmd": "EP=\"--endpoints=https://172.30.140.101:2379,https://172.30.140.102:2379,https://172.30.140.103:2379\"\nCAC=\"--cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernetes/pki/etcd/healthcheck-client.key\"\nmembers_json=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-node-01 -- etcdctl $EP $CAC member list -w json 2>/dev/null)\nmm=$(printf '%s' \"$members_json\" | python3 -c 'import json,sys; d=json.load(sys.stdin); ms=d.get(\"members\"); sys.exit(2) if not isinstance(ms,list) else None; sys.exit(3) if any(\"ID\" not in m for m in ms) else None; print(len(ms), sum(1 for m in ms if m.get(\"isLearner\") is True))')\nread mc ml <<< \"$mm\"\nh=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-node-01 -- etcdctl $EP $CAC endpoint health 2>/dev/null | grep -c 'is healthy')\nst=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-node-01 -- etcdctl $EP $CAC endpoint status -w json 2>/dev/null)\nsm=$(printf '%s' \"$st\" | python3 -c 'import json,sys; d=json.load(sys.stdin); lr=sum(1 for x in d if x.get(\"Status\",{}).get(\"isLearner\") is True); lids={int(x.get(\"Status\",{}).get(\"leader\",0) or 0) for x in d}; lids.discard(0); act=sum(1 for x in d if ((int(x.get(\"Status\",{}).get(\"leader\",0) or 0)!=0) and (int(x.get(\"Status\",{}).get(\"header\",{}).get(\"member_id\",0) or 0)==int(x.get(\"Status\",{}).get(\"leader\",0) or 0)))); print(lr, len(lids), act)')\nread el ul al <<< \"$sm\"\nkv=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system 2>/dev/null | grep -c 'kube-vip.*Running')\nrz=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get --raw='/readyz' 2>/dev/null)\necho \"P3 etcd mc=$mc ml=$ml h=$h el=$el ul=$ul al=$al kv=$kv readyz=$rz\"\n[ \"$mc\" = \"3\" ] && [ \"$ml\" = \"0\" ] && [ \"$h\" = \"3\" ] && [ \"$el\" = \"0\" ] && [ \"$ul\" = \"1\" ] && [ \"$al\" = \"1\" ] && [ \"$kv\" = \"3\" ] && [ \"$rz\" = \"ok\" ] || exit 1\necho PHASE15_P3_PARTIAL_OK\n", "delta": "0:00:01.269126", "end": "2026-08-27 23:40:06.360012", "msg": "", "rc": 0, "start": "2026-08-27 23:40:05.090886", "stderr": "", "stderr_lines": [], "stdout": "P3 etcd mc=3 ml=0 h=3 el=0 ul=1 al=1 kv=3 readyz=ok\nPHASE15_P3_PARTIAL_OK", "stdout_lines": ["P3 etcd mc=3 ml=0 h=3 el=0 ul=1 al=1 kv=3 readyz=ok", "PHASE15_P3_PARTIAL_OK"]}
+
+TASK [PHASE 15 — VIP owner local check (per node, regression)] *****************
+ok: [node-02] => {"changed": false, "cmd": "ip -4 addr show dev bond0.140 2>/dev/null | grep -c '172.30.140.100/32' || true", "delta": "0:00:00.011035", "end": "2026-08-27 23:40:08.312449", "failed_when_result": false, "msg": "", "rc": 0, "start": "2026-08-27 23:40:08.301414", "stderr": "", "stderr_lines": [], "stdout": "1", "stdout_lines": ["1"]}
+ok: [node-01] => {"changed": false, "cmd": "ip -4 addr show dev bond0.140 2>/dev/null | grep -c '172.30.140.100/32' || true", "delta": "0:00:00.011726", "end": "2026-08-27 23:40:08.308116", "failed_when_result": false, "msg": "", "rc": 0, "start": "2026-08-27 23:40:08.296390", "stderr": "", "stderr_lines": [], "stdout": "0", "stdout_lines": ["0"]}
+ok: [node-03] => {"changed": false, "cmd": "ip -4 addr show dev bond0.140 2>/dev/null | grep -c '172.30.140.100/32' || true", "delta": "0:00:00.011475", "end": "2026-08-27 23:40:08.310442", "failed_when_result": false, "msg": "", "rc": 0, "start": "2026-08-27 23:40:08.298967", "stderr": "", "stderr_lines": [], "stdout": "0", "stdout_lines": ["0"]}
+
+TASK [PHASE 15 — API livez local check (per node, regression)] *****************
+ok: [node-01] => {"changed": false, "cmd": "curl -k --connect-timeout 3 -s https://172.30.140.100:6443/livez 2>/dev/null || true", "delta": "0:00:00.041766", "end": "2026-08-27 23:40:10.078484", "failed_when_result": false, "msg": "", "rc": 0, "start": "2026-08-27 23:40:10.036718", "stderr": "", "stderr_lines": [], "stdout": "ok", "stdout_lines": ["ok"]}
+ok: [node-02] => {"changed": false, "cmd": "curl -k --connect-timeout 3 -s https://172.30.140.100:6443/livez 2>/dev/null || true", "delta": "0:00:00.040232", "end": "2026-08-27 23:40:10.129952", "failed_when_result": false, "msg": "", "rc": 0, "start": "2026-08-27 23:40:10.089720", "stderr": "", "stderr_lines": [], "stdout": "ok", "stdout_lines": ["ok"]}
+ok: [node-03] => {"changed": false, "cmd": "curl -k --connect-timeout 3 -s https://172.30.140.100:6443/livez 2>/dev/null || true", "delta": "0:00:00.039556", "end": "2026-08-27 23:40:10.176575", "failed_when_result": false, "msg": "", "rc": 0, "start": "2026-08-27 23:40:10.137019", "stderr": "", "stderr_lines": [], "stdout": "ok", "stdout_lines": ["ok"]}
+
+TASK [PHASE 15 — aggregate VIP owner + API livez (regression)] *****************
+ok: [node-01] => {"changed": false, "cmd": "v1=0\nv2=1\nv3=0\na1=ok\na2=ok\na3=ok\nvoc=$((v1+v2+v3))\napiok=0\n[ \"$a1\" = \"ok\" ] && apiok=$((apiok+1))\n[ \"$a2\" = \"ok\" ] && apiok=$((apiok+1))\n[ \"$a3\" = \"ok\" ] && apiok=$((apiok+1))\necho \"P3 VIP_owner_count=$voc API_livez=$apiok/3\"\n[ \"$voc\" = \"1\" ] && [ \"$apiok\" = \"3\" ] || exit 1\necho PHASE15_P3_OK\n", "delta": "0:00:00.006369", "end": "2026-08-27 23:40:11.958659", "msg": "", "rc": 0, "start": "2026-08-27 23:40:11.952290", "stderr": "", "stderr_lines": [], "stdout": "P3 VIP_owner_count=1 API_livez=3/3\nPHASE15_P3_OK", "stdout_lines": ["P3 VIP_owner_count=1 API_livez=3/3", "PHASE15_P3_OK"]}
+
+TASK [PHASE 15 — P2 regression] ************************************************
+ok: [node-01] => {"changed": false, "cmd": "cv=$(containerd --version 2>/dev/null | awk '{print $3}')\nkv=$(kubelet --version 2>/dev/null | awk '{print $2}')\nsw=$(swapon --show 2>/dev/null | wc -l)\necho \"P2 containerd=$cv kubelet=$kv swap=$sw\"\n[ \"$cv\" = \"v2.3.3\" ] && [ \"$kv\" = \"v1.36.2\" ] && [ \"$sw\" = \"0\" ] || exit 1\necho PHASE15_P2_OK\n", "delta": "0:00:00.109550", "end": "2026-08-27 23:40:13.756666", "msg": "", "rc": 0, "start": "2026-08-27 23:40:13.647116", "stderr": "", "stderr_lines": [], "stdout": "P2 containerd=v2.3.3 kubelet=v1.36.2 swap=0\nPHASE15_P2_OK", "stdout_lines": ["P2 containerd=v2.3.3 kubelet=v1.36.2 swap=0", "PHASE15_P2_OK"]}
+ok: [node-02] => {"changed": false, "cmd": "cv=$(containerd --version 2>/dev/null | awk '{print $3}')\nkv=$(kubelet --version 2>/dev/null | awk '{print $2}')\nsw=$(swapon --show 2>/dev/null | wc -l)\necho \"P2 containerd=$cv kubelet=$kv swap=$sw\"\n[ \"$cv\" = \"v2.3.3\" ] && [ \"$kv\" = \"v1.36.2\" ] && [ \"$sw\" = \"0\" ] || exit 1\necho PHASE15_P2_OK\n", "delta": "0:00:00.120948", "end": "2026-08-27 23:40:13.885701", "msg": "", "rc": 0, "start": "2026-08-27 23:40:13.764753", "stderr": "", "stderr_lines": [], "stdout": "P2 containerd=v2.3.3 kubelet=v1.36.2 swap=0\nPHASE15_P2_OK", "stdout_lines": ["P2 containerd=v2.3.3 kubelet=v1.36.2 swap=0", "PHASE15_P2_OK"]}
+ok: [node-03] => {"changed": false, "cmd": "cv=$(containerd --version 2>/dev/null | awk '{print $3}')\nkv=$(kubelet --version 2>/dev/null | awk '{print $2}')\nsw=$(swapon --show 2>/dev/null | wc -l)\necho \"P2 containerd=$cv kubelet=$kv swap=$sw\"\n[ \"$cv\" = \"v2.3.3\" ] && [ \"$kv\" = \"v1.36.2\" ] && [ \"$sw\" = \"0\" ] || exit 1\necho PHASE15_P2_OK\n", "delta": "0:00:00.108462", "end": "2026-08-27 23:40:13.908714", "msg": "", "rc": 0, "start": "2026-08-27 23:40:13.800252", "stderr": "", "stderr_lines": [], "stdout": "P2 containerd=v2.3.3 kubelet=v1.36.2 swap=0\nPHASE15_P2_OK", "stdout_lines": ["P2 containerd=v2.3.3 kubelet=v1.36.2 swap=0", "PHASE15_P2_OK"]}
+
+TASK [PHASE 15 — P1 regression (bond + exact VLAN addresses + default route)] ***
+ok: [node-01] => {"changed": false, "cmd": "exp140=\"172.30.140.101/24\"\nexp141=\"172.30.141.101/24\"\nexp143=\"172.30.143.101/24\"\nexp700=\"192.168.194.38/24\"\nb0=$(cat /sys/class/net/bond0/bonding/slaves 2>/dev/null | tr -d '\\n')\nb1=$(cat /sys/class/net/bond1/bonding/slaves 2>/dev/null | tr -d '\\n')\na140=$(ip -4 -o addr show bond0.140 2>/dev/null | grep -v '/32' | awk '{print $4}')\na141=$(ip -4 -o addr show bond1.141 2>/dev/null | grep -v '/32' | awk '{print $4}')\na143=$(ip -4 -o addr show bond0.143 2>/dev/null | grep -v '/32' | awk '{print $4}')\na700=$(ip -4 -o addr show bond0.700 2>/dev/null | grep -v '/32' | awk '{print $4}')\ndrc=$(ip -4 route show default 2>/dev/null | wc -l)\ndr=$(ip -4 route show default 2>/dev/null)\necho \"P1 host=$(hostname) bond0=$b0 bond1=$b1\"\necho \"P1 v140=$a140 v141=$a141 v143=$a143 v700=$a700 default_count=$drc default=$dr\"\n[ \"$b0\" = \"ens2f0 ens2f1\" ] || exit 1\n[ \"$b1\" = \"ens2f2 ens2f3\" ] || exit 1\n[ \"$a140\" = \"$exp140\" ] || exit 1\n[ \"$a141\" = \"$exp141\" ] || exit 1\n[ \"$a143\" = \"$exp143\" ] || exit 1\n[ \"$a700\" = \"$exp700\" ] || exit 1\n[ \"$drc\" = \"1\" ] || exit 1\necho \"$dr\" | grep -q '192.168.194.1' || exit 1\necho \"$dr\" | grep -q 'bond0.700' || exit 1\necho PHASE15_P1_OK\n", "delta": "0:00:00.060279", "end": "2026-08-27 23:40:15.752426", "msg": "", "rc": 0, "start": "2026-08-27 23:40:15.692147", "stderr": "", "stderr_lines": [], "stdout": "P1 host=node-01 bond0=ens2f0 ens2f1 bond1=ens2f2 ens2f3\nP1 v140=172.30.140.101/24 v141=172.30.141.101/24 v143=172.30.143.101/24 v700=192.168.194.38/24 default_count=1 default=default via 192.168.194.1 dev bond0.700 proto static metric 400 \nPHASE15_P1_OK", "stdout_lines": ["P1 host=node-01 bond0=ens2f0 ens2f1 bond1=ens2f2 ens2f3", "P1 v140=172.30.140.101/24 v141=172.30.141.101/24 v143=172.30.143.101/24 v700=192.168.194.38/24 default_count=1 default=default via 192.168.194.1 dev bond0.700 proto static metric 400 ", "PHASE15_P1_OK"]}
+ok: [node-02] => {"changed": false, "cmd": "exp140=\"172.30.140.102/24\"\nexp141=\"172.30.141.102/24\"\nexp143=\"172.30.143.102/24\"\nexp700=\"192.168.194.40/24\"\nb0=$(cat /sys/class/net/bond0/bonding/slaves 2>/dev/null | tr -d '\\n')\nb1=$(cat /sys/class/net/bond1/bonding/slaves 2>/dev/null | tr -d '\\n')\na140=$(ip -4 -o addr show bond0.140 2>/dev/null | grep -v '/32' | awk '{print $4}')\na141=$(ip -4 -o addr show bond1.141 2>/dev/null | grep -v '/32' | awk '{print $4}')\na143=$(ip -4 -o addr show bond0.143 2>/dev/null | grep -v '/32' | awk '{print $4}')\na700=$(ip -4 -o addr show bond0.700 2>/dev/null | grep -v '/32' | awk '{print $4}')\ndrc=$(ip -4 route show default 2>/dev/null | wc -l)\ndr=$(ip -4 route show default 2>/dev/null)\necho \"P1 host=$(hostname) bond0=$b0 bond1=$b1\"\necho \"P1 v140=$a140 v141=$a141 v143=$a143 v700=$a700 default_count=$drc default=$dr\"\n[ \"$b0\" = \"ens2f0 ens2f1\" ] || exit 1\n[ \"$b1\" = \"ens2f2 ens2f3\" ] || exit 1\n[ \"$a140\" = \"$exp140\" ] || exit 1\n[ \"$a141\" = \"$exp141\" ] || exit 1\n[ \"$a143\" = \"$exp143\" ] || exit 1\n[ \"$a700\" = \"$exp700\" ] || exit 1\n[ \"$drc\" = \"1\" ] || exit 1\necho \"$dr\" | grep -q '192.168.194.1' || exit 1\necho \"$dr\" | grep -q 'bond0.700' || exit 1\necho PHASE15_P1_OK\n", "delta": "0:00:00.060074", "end": "2026-08-27 23:40:15.797074", "msg": "", "rc": 0, "start": "2026-08-27 23:40:15.737000", "stderr": "", "stderr_lines": [], "stdout": "P1 host=node-02 bond0=ens2f0 ens2f1 bond1=ens2f2 ens2f3\nP1 v140=172.30.140.102/24 v141=172.30.141.102/24 v143=172.30.143.102/24 v700=192.168.194.40/24 default_count=1 default=default via 192.168.194.1 dev bond0.700 proto static metric 400 \nPHASE15_P1_OK", "stdout_lines": ["P1 host=node-02 bond0=ens2f0 ens2f1 bond1=ens2f2 ens2f3", "P1 v140=172.30.140.102/24 v141=172.30.141.102/24 v143=172.30.143.102/24 v700=192.168.194.40/24 default_count=1 default=default via 192.168.194.1 dev bond0.700 proto static metric 400 ", "PHASE15_P1_OK"]}
+ok: [node-03] => {"changed": false, "cmd": "exp140=\"172.30.140.103/24\"\nexp141=\"172.30.141.103/24\"\nexp143=\"172.30.143.103/24\"\nexp700=\"192.168.194.39/24\"\nb0=$(cat /sys/class/net/bond0/bonding/slaves 2>/dev/null | tr -d '\\n')\nb1=$(cat /sys/class/net/bond1/bonding/slaves 2>/dev/null | tr -d '\\n')\na140=$(ip -4 -o addr show bond0.140 2>/dev/null | grep -v '/32' | awk '{print $4}')\na141=$(ip -4 -o addr show bond1.141 2>/dev/null | grep -v '/32' | awk '{print $4}')\na143=$(ip -4 -o addr show bond0.143 2>/dev/null | grep -v '/32' | awk '{print $4}')\na700=$(ip -4 -o addr show bond0.700 2>/dev/null | grep -v '/32' | awk '{print $4}')\ndrc=$(ip -4 route show default 2>/dev/null | wc -l)\ndr=$(ip -4 route show default 2>/dev/null)\necho \"P1 host=$(hostname) bond0=$b0 bond1=$b1\"\necho \"P1 v140=$a140 v141=$a141 v143=$a143 v700=$a700 default_count=$drc default=$dr\"\n[ \"$b0\" = \"ens2f0 ens2f1\" ] || exit 1\n[ \"$b1\" = \"ens2f2 ens2f3\" ] || exit 1\n[ \"$a140\" = \"$exp140\" ] || exit 1\n[ \"$a141\" = \"$exp141\" ] || exit 1\n[ \"$a143\" = \"$exp143\" ] || exit 1\n[ \"$a700\" = \"$exp700\" ] || exit 1\n[ \"$drc\" = \"1\" ] || exit 1\necho \"$dr\" | grep -q '192.168.194.1' || exit 1\necho \"$dr\" | grep -q 'bond0.700' || exit 1\necho PHASE15_P1_OK\n", "delta": "0:00:00.059778", "end": "2026-08-27 23:40:15.848181", "msg": "", "rc": 0, "start": "2026-08-27 23:40:15.788403", "stderr": "", "stderr_lines": [], "stdout": "P1 host=node-03 bond0=ens2f0 ens2f1 bond1=ens2f2 ens2f3\nP1 v140=172.30.140.103/24 v141=172.30.141.103/24 v143=172.30.143.103/24 v700=192.168.194.39/24 default_count=1 default=default via 192.168.194.1 dev bond0.700 proto static metric 400 \nPHASE15_P1_OK", "stdout_lines": ["P1 host=node-03 bond0=ens2f0 ens2f1 bond1=ens2f2 ens2f3", "P1 v140=172.30.140.103/24 v141=172.30.141.103/24 v143=172.30.143.103/24 v700=192.168.194.39/24 default_count=1 default=default via 192.168.194.1 dev bond0.700 proto static metric 400 ", "PHASE15_P1_OK"]}
+
+TASK [PHASE 15 — policy preservation (fingerprint after == before, normal mode)] ***
+skipping: [node-01] => {"changed": false, "false_condition": "p4b_mode == \"normal\"", "skip_reason": "Conditional result was False"}
+
+TASK [PHASE 15 — policy final-state check (regression-only, fail-closed)] ******
+ok: [node-01] => {"changed": false, "cmd": "# validation namespace NotFound\nout=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get namespace p4b-netpol-validation -o json 2>&1)\nrc=$?\nif [ \"$rc\" = \"0\" ]; then echo \"VALIDATION_NS_STILL_EXISTS\"; exit 1; fi\necho \"$out\" | grep -q 'NotFound' || { echo \"NS_API_ERROR\"; exit 1; }\necho \"validation_namespace=NotFound\"\n# TASK-014/stage=P4B policies cluster-wide = 0\ntnp=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get networkpolicy -A -l stage=P4B -o json 2>/dev/null)\n[ -n \"$tnp\" ] || { echo \"NP_API_FAIL\"; exit 1; }\ntcnt=$(printf '%s' \"$tnp\" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(len(d.get(\"items\",[])))')\necho \"task014_policies_clusterwide=$tcnt\"\n[ \"$tcnt\" = \"0\" ] || exit 1\n# system namespaces 0 TASK-014 policies (fail-closed)\nfor ns in default kube-system kube-public kube-node-lease; do\n  json=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get networkpolicy -n $ns -l stage=P4B -o json 2>/dev/null)\n  rc=$?\n  [ \"$rc\" = \"0\" ] || { echo \"SYSTEM_NS_API_FAIL_$ns\"; exit 1; }\n  cnt=$(printf '%s' \"$json\" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(len(d.get(\"items\",[])))')\n  echo \"$ns: stage=P4B policies=$cnt\"\n  [ \"$cnt\" = \"0\" ] || { echo \"POLICY_IN_SYSTEM_NS_$ns\"; exit 1; }\ndone\necho PHASE15_FINAL_STATE_OK\n", "delta": "0:00:00.898241", "end": "2026-08-27 23:40:18.400592", "msg": "", "rc": 0, "start": "2026-08-27 23:40:17.502351", "stderr": "", "stderr_lines": [], "stdout": "validation_namespace=NotFound\ntask014_policies_clusterwide=0\ndefault: stage=P4B policies=0\nkube-system: stage=P4B policies=0\nkube-public: stage=P4B policies=0\nkube-node-lease: stage=P4B policies=0\nPHASE15_FINAL_STATE_OK", "stdout_lines": ["validation_namespace=NotFound", "task014_policies_clusterwide=0", "default: stage=P4B policies=0", "kube-system: stage=P4B policies=0", "kube-public: stage=P4B policies=0", "kube-node-lease: stage=P4B policies=0", "PHASE15_FINAL_STATE_OK"]}
+
+TASK [PHASE 16 — final gate summary] *******************************************
+ok: [node-01] => {
+    "msg": "P4B baseline NetworkPolicy R2 completed — mode=regression-only"
+}
+
+PLAY RECAP *********************************************************************
+node-01                    : ok=12   changed=0    unreachable=0    failed=0    skipped=27   rescued=0    ignored=0   
+node-02                    : ok=5    changed=0    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0   
+node-03                    : ok=5    changed=0    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0   
+

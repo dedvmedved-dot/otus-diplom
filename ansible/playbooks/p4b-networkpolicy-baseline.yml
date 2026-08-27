@@ -602,31 +602,66 @@
           echo "$bgp" | grep -q 'node-03=172.30.140.103' || exit 1
           # IP_AUTODETECTION_METHOD
           auto=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get ds calico-node -n kube-system -o jsonpath='{.spec.template.spec.containers[0].env}' 2>/dev/null | grep -o 'interface=bond0.140' | head -1)
-          # configured image set
-          node_img=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=calico-node -o jsonpath='{.items[0].spec.containers[0].image}' 2>/dev/null)
-          node_init=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=calico-node -o jsonpath='{.items[0].spec.initContainers[0].image}' 2>/dev/null)
-          ctrl_img=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=calico-kube-controllers -o jsonpath='{.items[0].spec.containers[0].image}' 2>/dev/null)
-          # runtime platform imageIDs
-          node_iid=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=calico-node -o jsonpath='{.items[0].status.containerStatuses[0].imageID}' 2>/dev/null)
-          node_init_iid=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=calico-node -o jsonpath='{.items[0].status.initContainerStatuses[0].imageID}' 2>/dev/null)
-          ctrl_iid=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=calico-kube-controllers -o jsonpath='{.items[0].status.containerStatuses[0].imageID}' 2>/dev/null)
+          # DaemonSet template image multiset (fail-closed exact counts)
+          dsjson=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get ds calico-node -n kube-system -o json 2>/dev/null)
+          [ -n "$dsjson" ] || { echo "DS_API_FAIL"; exit 1; }
+          dsmulti=$(printf '%s' "$dsjson" | python3 -c 'import json,sys; d=json.load(sys.stdin); spec=d["spec"]["template"]["spec"]; imgs=[c.get("image","") for c in spec.get("initContainers",[])]+[c.get("image","") for c in spec.get("containers",[])]; print(imgs.count("quay.io/calico/node:v3.32.0"), imgs.count("quay.io/calico/cni:v3.32.0"), len([i for i in imgs if i.startswith("quay.io/calico/")]), len([i for i in imgs if i.startswith("quay.io/calico/") and i not in ("quay.io/calico/node:v3.32.0","quay.io/calico/cni:v3.32.0")]))')
+          read ds_node ds_cni ds_total ds_unexp <<< "$dsmulti"
+          echo "P4A ds_multiset node=$ds_node cni=$ds_cni total=$ds_total unexpected=$ds_unexp"
+          [ "$ds_node" = "2" ] && [ "$ds_cni" = "2" ] && [ "$ds_total" = "4" ] && [ "$ds_unexp" = "0" ] || exit 1
+          # ALL calico-node pods (3): every container/initContainer image + imageID via grep-count
+          podsjson=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=calico-node -o json 2>/dev/null)
+          [ -n "$podsjson" ] || { echo "PODS_API_FAIL"; exit 1; }
+          pod_count=$(printf '%s' "$podsjson" | python3 -c 'import json,sys; print(len(json.load(sys.stdin).get("items",[])))')
+          all_imgs=$(printf '%s' "$podsjson" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(" ".join(c.get("image","") for it in d.get("items",[]) for c in (it["spec"].get("initContainers",[])+it["spec"].get("containers",[]))))')
+          all_iids=$(printf '%s' "$podsjson" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(" ".join(c.get("imageID","") for it in d.get("items",[]) for c in (it["status"].get("initContainerStatuses",[])+it["status"].get("containerStatuses",[]))))')
+          node_img_cnt=$(echo "$all_imgs" | tr ' ' '\n' | grep -c 'quay.io/calico/node:v3.32.0')
+          cni_img_cnt=$(echo "$all_imgs" | tr ' ' '\n' | grep -c 'quay.io/calico/cni:v3.32.0')
+          other_img_cnt=$(echo "$all_imgs" | tr ' ' '\n' | grep 'quay.io/calico/' | grep -vcE 'quay.io/calico/(node|cni):v3.32.0')
+          node_iid_cnt=$(echo "$all_iids" | tr ' ' '\n' | grep -c 'sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65')
+          cni_iid_cnt=$(echo "$all_iids" | tr ' ' '\n' | grep -c 'sha256:d456a937d6e7445d4785ca592e5fffc2aa390cb578d7778f17e5a016201cceb4')
+          echo "P4A calico-node pods=$pod_count node_img=$node_img_cnt cni_img=$cni_img_cnt other_img=$other_img_cnt node_iid=$node_iid_cnt cni_iid=$cni_iid_cnt"
+          [ "$pod_count" = "3" ] && [ "$node_img_cnt" = "6" ] && [ "$cni_img_cnt" = "6" ] && [ "$other_img_cnt" = "0" ] && [ "$node_iid_cnt" = "6" ] && [ "$cni_iid_cnt" = "6" ] || exit 1
+          # controllers (1 replica) image + imageID
+          ctrljson=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=calico-kube-controllers -o json 2>/dev/null)
+          [ -n "$ctrljson" ] || { echo "CTRL_API_FAIL"; exit 1; }
+          ctrlchk=$(printf '%s' "$ctrljson" | python3 -c 'import json,sys; d=json.load(sys.stdin); items=d.get("items",[]); ok=sum(1 for it in items if len(it["spec"].get("containers",[]))>0 and it["spec"]["containers"][0].get("image")=="quay.io/calico/kube-controllers:v3.32.0" and len(it["status"].get("containerStatuses",[]))>0 and it["status"]["containerStatuses"][0].get("imageID")=="sha256:e67ce8d034ec572033278ceaee634ca98bc7c7d422b9f4b39a5a66e1aab98e11"); print(len(items), ok)')
+          read ctrl_replicas ctrl_ok <<< "$ctrlchk"
+          echo "P4A controllers replicas=$ctrl_replicas ok=$ctrl_ok"
+          [ "$ctrl_replicas" = "1" ] && [ "$ctrl_ok" = "1" ] || exit 1
           echo "P4A ippool cidr=$cidr ipip=$ipip nat=$nat dis=$dis pools=$pools calico=$cn ctrl=$ctrl"
           echo "P4A autodetect=$auto"
-          echo "P4A node_img=$node_img cni_img=$node_init ctrl_img=$ctrl_img"
-          echo "P4A node_iid=$node_iid cni_iid=$node_init_iid ctrl_iid=$ctrl_iid"
           [ "$cidr" = "10.244.0.0/16" ] && [ "$ipip" = "Always" ] && [ "$nat" = "True" ] && [ "$dis" = "False" ] && [ "$pools" = "1" ] && [ "$cn" = "3" ] && [ "$ctrl" = "1" ] || exit 1
           [ "$auto" = "interface=bond0.140" ] || exit 1
-          [ "$node_img" = "{{ expected_calico_node_img }}" ] || exit 1
-          [ "$node_init" = "{{ expected_calico_cni_img }}" ] || exit 1
-          [ "$ctrl_img" = "{{ expected_calico_ctrl_img }}" ] || exit 1
-          [ "$node_iid" = "{{ expected_node_imageid }}" ] || exit 1
-          [ "$node_init_iid" = "{{ expected_cni_imageid }}" ] || exit 1
-          [ "$ctrl_iid" = "{{ expected_ctrl_imageid }}" ] || exit 1
           echo PHASE15_P4A_OK
       register: ph15_p4a
       changed_when: false
       run_once: true
       delegate_to: node-01
+
+    - name: PHASE 15 — images.lock structural validation (controller-side, fail-closed)
+      ansible.builtin.assert:
+        that:
+          - (images_lock.images | selectattr('component', 'equalto', 'calico-node') | list | length) == 1
+          - (images_lock.images | selectattr('component', 'equalto', 'calico-cni') | list | length) == 1
+          - (images_lock.images | selectattr('component', 'equalto', 'calico-kube-controllers') | list | length) == 1
+          - ((images_lock.images | selectattr('component', 'equalto', 'calico-node') | first).image == 'quay.io/calico/node')
+          - ((images_lock.images | selectattr('component', 'equalto', 'calico-node') | first).tag == 'v3.32.0')
+          - ((images_lock.images | selectattr('component', 'equalto', 'calico-node') | first).digest == 'sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a')
+          - ((images_lock.images | selectattr('component', 'equalto', 'calico-node') | first).verified == true)
+          - ((images_lock.images | selectattr('component', 'equalto', 'calico-cni') | first).image == 'quay.io/calico/cni')
+          - ((images_lock.images | selectattr('component', 'equalto', 'calico-cni') | first).tag == 'v3.32.0')
+          - ((images_lock.images | selectattr('component', 'equalto', 'calico-cni') | first).digest == 'sha256:1cfc6aa9c4dad3575fdf36b78185fd7d68bcd4acc95778f8342be4fb6a851a14')
+          - ((images_lock.images | selectattr('component', 'equalto', 'calico-cni') | first).verified == true)
+          - ((images_lock.images | selectattr('component', 'equalto', 'calico-kube-controllers') | first).image == 'quay.io/calico/kube-controllers')
+          - ((images_lock.images | selectattr('component', 'equalto', 'calico-kube-controllers') | first).tag == 'v3.32.0')
+          - ((images_lock.images | selectattr('component', 'equalto', 'calico-kube-controllers') | first).digest == 'sha256:adf0ac895796d21bca5383bc81c4cd2614be3a4308085b47857d7999f4cc2b1f')
+          - ((images_lock.images | selectattr('component', 'equalto', 'calico-kube-controllers') | first).verified == true)
+        fail_msg: "images.lock Calico entries missing/duplicated/mismatched"
+      vars:
+        images_lock: "{{ lookup('ansible.builtin.file', playbook_dir + '/../../images.lock') | from_yaml }}"
+      run_once: true
+      delegate_to: localhost
 
     - name: PHASE 15 — P3 full regression (etcd + kube-vip, kubectl only)
       ansible.builtin.shell:

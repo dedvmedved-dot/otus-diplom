@@ -1,0 +1,13 @@
+# TASK-014-R3 — Calico DS Template Image Static Audit
+
+PHASE 15 P4A теперь проверяет DaemonSet calico-node template image multiset (fail-closed exact):
+  quay.io/calico/node:v3.32.0 = 2 (ebpf-bootstrap init + calico-node main)
+  quay.io/calico/cni:v3.32.0  = 2 (upgrade-ipam init + install-cni init)
+  TOTAL CALICO IMAGE REFS = 4
+  UNEXPECTED = 0
+
+Не инспектирует только первый initContainer (JSON-aware multiset).
+
+.items[0] CALICO IMAGE ACCEPTANCE: 0
+
+RESULT: PASS

@@ -1,0 +1,7 @@
+# TASK-014-R3 — Calico Controller Image (read-only)
+
+calico-kube-controllers: 1 replica
+configured image: quay.io/calico/kube-controllers:v3.32.0
+runtime imageID: sha256:e67ce8d034ec572033278ceaee634ca98bc7c7d422b9f4b39a5a66e1aab98e11
+
+RESULT: PASS

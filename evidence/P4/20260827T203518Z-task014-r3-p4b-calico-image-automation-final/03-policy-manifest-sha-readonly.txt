@@ -1,0 +1,5 @@
+=== POLICY MANIFEST SHA ===
+7646284193344224426e496e94f47b13f8285e8705dc0dd0cfe000666eccf375  ansible/playbooks/files/networkpolicy/baseline-default-deny-all.yaml
+5216b881220d1d750d57a569013d836853dd101023ddb86ea7a6a7590aac44ba  ansible/playbooks/files/networkpolicy/baseline-allow-dns-egress.yaml
+50c90560a2b109fd43fd8338da18460dffcfb6d4f6bcc6051eedd3993e37f023  ansible/playbooks/files/networkpolicy/validation-allow-client-egress-to-server.yaml
+858d12ee6491cddb2e94638ae3426146c76a41e19da88a475798ef6630c10416  ansible/playbooks/files/networkpolicy/validation-allow-server-ingress-from-client.yaml

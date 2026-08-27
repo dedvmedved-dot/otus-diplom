@@ -1,0 +1,19 @@
+# TASK-014-R3 — Scope
+
+MODE: SOURCE CORRECTION + STATIC VALIDATION + ONE REGRESSION-ONLY READ-ONLY RUN
+
+MODIFIED SOURCE (only):
+  ansible/playbooks/p4b-networkpolicy-baseline.yml
+
+READ-ONLY:
+  images.lock / versions.lock / inventory/
+  ansible/playbooks/files/networkpolicy/
+  ansible/playbooks/files/calico-v3.32.0.yaml
+  ansible/playbooks/p4a-calico-cni-foundation.yml
+  docs/network/P4B-NETWORKPOLICY-BASELINE.md
+  historical evidence
+
+NO: normal P4B run, validation namespace, NetworkPolicy apply/delete, Calico apply/restart, P5.
+
+NEW EVIDENCE:
+  evidence/P4/20260827T203518Z-task014-r3-p4b-calico-image-automation-final/

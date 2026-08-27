@@ -1,0 +1,15 @@
+# TASK-014-R3 — Calico All-Pods ImageID Static Audit
+
+PHASE 15 P4A теперь парсит ВСЕ 3 calico-node pods (не .items[0]):
+  pod count == 3 (fail-closed)
+  all containers using node image => expected node imageID (6 вхождений: 2/pod × 3)
+  all initContainers using CNI image => expected CNI imageID (6 вхождений)
+  other/unexpected Calico image = 0
+  controllers: 1 replica, exact image + exact imageID
+
+Fail closed: pod count != 3 / missing imageID / unexpected image / JSON/API error.
+
+single-pod imageID proof: 0
+.items[0] CALICO IMAGE ACCEPTANCE: 0
+
+RESULT: PASS

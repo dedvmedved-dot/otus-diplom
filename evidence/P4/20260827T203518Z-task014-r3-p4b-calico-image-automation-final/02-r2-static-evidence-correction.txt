@@ -1,0 +1,12 @@
+# TASK-014-R3 — R2 Static Evidence Correction
+
+R2 CLAIM: P4A IMAGES.LOCK checked in full regression automation.
+R2 SOURCE ACTUAL: expected digest vars declared, but actual images.lock not read/asserted.
+
+R2 CLAIM: runtime imageIDs exact.
+R2 SOURCE ACTUAL: .items[0] checked one calico-node pod only.
+
+R3 CORRECTION: all DaemonSet pods + all relevant container/initContainer imageIDs +
+actual images.lock structural validation.
+
+HISTORICAL R2 EVIDENCE MODIFIED: NO

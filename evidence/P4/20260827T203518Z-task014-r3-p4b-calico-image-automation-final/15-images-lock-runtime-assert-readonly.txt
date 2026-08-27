@@ -1,0 +1,13 @@
+# TASK-014-R3 — images.lock Runtime Assert (read-only)
+
+PHASE 15 assert прочитал репозиторный images.lock (lookup + from_yaml) и подтвердил:
+  calico-node: image=quay.io/calico/node, tag=v3.32.0,
+    digest=sha256:f4fafd8b..., verified=true (ровно 1)
+  calico-cni: image=quay.io/calico/cni, tag=v3.32.0,
+    digest=sha256:1cfc6aa9..., verified=true (ровно 1)
+  calico-kube-controllers: image=quay.io/calico/kube-controllers, tag=v3.32.0,
+    digest=sha256:adf0ac89..., verified=true (ровно 1)
+
+duplicates=0, missing=0
+
+RESULT: PASS

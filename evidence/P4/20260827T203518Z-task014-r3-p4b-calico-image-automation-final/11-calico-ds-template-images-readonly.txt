@@ -1,0 +1,9 @@
+# TASK-014-R3 — Calico DS Template Images (read-only)
+
+DaemonSet calico-node template image multiset:
+  node:v3.32.0 = 2 (ebpf-bootstrap init + calico-node main)
+  cni:v3.32.0  = 2 (upgrade-ipam init + install-cni init)
+  total Calico refs = 4
+  unexpected = 0
+
+RESULT: PASS

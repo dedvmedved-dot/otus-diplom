@@ -1,0 +1,10 @@
+# TASK-014-R3 — Calico Node All-Pods ImageIDs (read-only)
+
+3 calico-node pods, all runtime platform imageIDs:
+  node imageID = sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65 (6 вхождений)
+  cni imageID  = sha256:d456a937d6e7445d4785ca592e5fffc2aa390cb578d7778f17e5a016201cceb4 (6 вхождений)
+
+ALL NODE IMAGEID OCCURRENCES: PASS
+ALL CNI IMAGEID OCCURRENCES: PASS
+
+RESULT: PASS
