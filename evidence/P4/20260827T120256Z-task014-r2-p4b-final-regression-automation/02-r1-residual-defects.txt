@@ -1,0 +1,9 @@
+# TASK-014-R2 — R1 Residual Defects
+
+A. P1 FULL regression не проверяет exact VLAN700/140/141/143 addresses.
+B. P4A FULL regression не проверяет BGP node IPs и не верифицирует неизменный
+   Calico configured image set / runtime imageIDs.
+
+Оба дефекта исправляются в R2 playbook + добавлен regression-only mode.
+
+HISTORICAL EVIDENCE MODIFIED: NO

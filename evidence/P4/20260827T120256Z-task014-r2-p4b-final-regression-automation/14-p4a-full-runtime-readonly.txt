@@ -1,0 +1,7 @@
+# TASK-014-R2 — P4A Full Runtime (read-only)
+
+IPPool: cidr=10.244.0.0/16 ipip=Always nat=True dis=False pools=1
+calico-node=3 calico-kube-controllers=1
+IP_AUTODETECTION_METHOD=interface=bond0.140
+
+RESULT: PASS

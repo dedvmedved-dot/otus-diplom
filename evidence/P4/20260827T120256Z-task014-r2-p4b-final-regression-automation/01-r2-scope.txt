@@ -1,0 +1,19 @@
+# TASK-014-R2 — Scope
+
+MODE: SOURCE CORRECTION + STATIC VALIDATION + READ-ONLY REGRESSION EXECUTION
+
+MODIFIED SOURCE (only):
+  ansible/playbooks/p4b-networkpolicy-baseline.yml
+
+READ-ONLY:
+  ansible/playbooks/files/networkpolicy/ (4 manifests)
+  ansible/playbooks/files/calico-v3.32.0.yaml
+  ansible/playbooks/p4a-calico-cni-foundation.yml
+  docs/network/P4B-NETWORKPOLICY-BASELINE.md
+  images.lock / versions.lock / inventory/
+  historical evidence
+
+NO: normal P4B run, validation namespace, NetworkPolicy apply/delete, Calico apply/restart.
+
+NEW EVIDENCE:
+  evidence/P4/20260827T120256Z-task014-r2-p4b-final-regression-automation/

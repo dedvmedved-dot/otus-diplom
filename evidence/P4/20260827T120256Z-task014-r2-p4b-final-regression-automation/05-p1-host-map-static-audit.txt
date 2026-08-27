@@ -1,0 +1,15 @@
+# TASK-014-R2 — P1 Host Map Static Audit
+
+expected_network_by_host (explicit host-keyed map):
+  node-01: .101/.101/.101/.38
+  node-02: .102/.102/.102/.40
+  node-03: .103/.103/.103/.39
+
+PHASE 15 P1: fail-closed assert bond0/bond1 slaves + exact bond0.140/bond1.141/
+bond0.143/bond0.700 addresses + default route count=1 gw=192.168.194.1 dev=bond0.700
+на каждом узле.
+
+NESTED TERNARY: 0
+P1 EXACT VLAN CHECKS MISSING: 0
+
+RESULT: PASS

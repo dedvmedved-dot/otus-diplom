@@ -1,0 +1,3 @@
+=== GIT SCOPE AUDIT ===
+ M ansible/playbooks/p4b-networkpolicy-baseline.yml
+?? evidence/P4/20260827T120256Z-task014-r2-p4b-final-regression-automation/

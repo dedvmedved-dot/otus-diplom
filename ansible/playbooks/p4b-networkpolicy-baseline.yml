@@ -19,9 +19,50 @@
     dns_kube_name: "kubernetes.default.svc.cluster.local"
     dns_kube_ip: "10.96.0.1"
     dns_svc_name: "p4b-server.p4b-netpol-validation.svc.cluster.local"
+    # mode: normal | regression-only (unknown => fail before mutation)
+    p4b_mode: "normal"
+    # P1 expected per-node addresses (explicit host-keyed map, no nested ternary)
+    expected_network_by_host:
+      node-01:
+        bond0_140: "172.30.140.101/24"
+        bond1_141: "172.30.141.101/24"
+        bond0_143: "172.30.143.101/24"
+        bond0_700: "192.168.194.38/24"
+      node-02:
+        bond0_140: "172.30.140.102/24"
+        bond1_141: "172.30.141.102/24"
+        bond0_143: "172.30.143.102/24"
+        bond0_700: "192.168.194.40/24"
+      node-03:
+        bond0_140: "172.30.140.103/24"
+        bond1_141: "172.30.141.103/24"
+        bond0_143: "172.30.143.103/24"
+        bond0_700: "192.168.194.39/24"
+    # Accepted Calico image set (v3.32.0 exact)
+    expected_calico_node_img: "quay.io/calico/node:v3.32.0"
+    expected_calico_cni_img: "quay.io/calico/cni:v3.32.0"
+    expected_calico_ctrl_img: "quay.io/calico/kube-controllers:v3.32.0"
+    # Accepted runtime platform imageIDs (amd64)
+    expected_node_imageid: "sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65"
+    expected_cni_imageid: "sha256:d456a937d6e7445d4785ca592e5fffc2aa390cb578d7778f17e5a016201cceb4"
+    expected_ctrl_imageid: "sha256:e67ce8d034ec572033278ceaee634ca98bc7c7d422b9f4b39a5a66e1aab98e11"
+    # images.lock manifest-list digests (read-only reference)
+    expected_node_digest: "sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a"
+    expected_cni_digest: "sha256:1cfc6aa9c4dad3575fdf36b78185fd7d68bcd4acc95778f8342be4fb6a851a14"
+    expected_ctrl_digest: "sha256:adf0ac895796d21bca5383bc81c4cd2614be3a4308085b47857d7999f4cc2b1f"
   tasks:
-    # ═══ PHASE 0 — full P4A/P3 preflight ═══
+    # ═══ MODE GATE — unknown mode fails before any mutation ═══
+    - name: MODE GATE — validate p4b_mode (normal | regression-only)
+      ansible.builtin.assert:
+        that:
+          - p4b_mode in ['normal', 'regression-only']
+        fail_msg: "p4b_mode must be 'normal' or 'regression-only', got '{{ p4b_mode }}'"
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 0 — full P4A/P3 preflight (normal mode only) ═══
     - name: PHASE 0 — etcd full + kube-vip + nodes/calico/coredns/ippool (kubectl only)
+      when: p4b_mode == "normal"
       ansible.builtin.shell:
         cmd: |
           EP="--endpoints=https://172.30.140.101:2379,https://172.30.140.102:2379,https://172.30.140.103:2379"
@@ -60,6 +101,7 @@
       delegate_to: node-01
 
     - name: PHASE 0 — VIP owner local check (per node)
+      when: p4b_mode == "normal"
       ansible.builtin.shell:
         cmd: "ip -4 addr show dev bond0.140 2>/dev/null | grep -c '172.30.140.100/32' || true"
       register: ph0_vip_owner
@@ -67,6 +109,7 @@
       failed_when: false
 
     - name: PHASE 0 — API livez local check (per node)
+      when: p4b_mode == "normal"
       ansible.builtin.shell:
         cmd: "curl -k --connect-timeout 3 -s https://172.30.140.100:6443/livez 2>/dev/null || true"
       register: ph0_api_livez
@@ -74,6 +117,7 @@
       failed_when: false
 
     - name: PHASE 0 — aggregate VIP owner + API livez (3/3)
+      when: p4b_mode == "normal"
       ansible.builtin.shell:
         cmd: |
           v1={{ hostvars['node-01'].ph0_vip_owner.stdout | trim | default('0') }}
@@ -97,6 +141,7 @@
 
     # ═══ PHASE 1 — namespaces + NetworkPolicy fingerprint ═══
     - name: PHASE 1 — capture namespaces + NetworkPolicy fingerprint
+      when: p4b_mode == "normal"
       ansible.builtin.shell:
         cmd: |
           ns=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get namespaces -o json 2>/dev/null)
@@ -116,6 +161,7 @@
 
     # ═══ PHASE 2 — CoreDNS selector full validation ═══
     - name: PHASE 2 — CoreDNS selector full validation
+      when: p4b_mode == "normal"
       ansible.builtin.shell:
         cmd: |
           nslabel=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get namespace kube-system -o jsonpath='{.metadata.labels.kubernetes\.io/metadata\.name}' 2>/dev/null)
@@ -134,6 +180,7 @@
 
     # ═══ PHASE 3 — local policy static audit ═══
     - name: PHASE 3 — stage policy manifests
+      when: p4b_mode == "normal"
       ansible.builtin.copy:
         src: "files/networkpolicy/"
         dest: "/tmp/netpol/"
@@ -142,6 +189,7 @@
       delegate_to: node-01
 
     - name: PHASE 3 — policy manifest static audit
+      when: p4b_mode == "normal"
       ansible.builtin.shell:
         cmd: |
           bad=0
@@ -160,6 +208,7 @@
 
     # ═══ PHASE 4..13 — fail-safe validation block ═══
     - name: PHASE 4..13 — validation workflow (block/always)
+      when: p4b_mode == "normal"
       block:
         - name: PHASE 4 — ensure namespace absent + create labeled
           ansible.builtin.shell:
@@ -512,6 +561,7 @@
 
     # ═══ PHASE 14 — post-cleanup stability ═══
     - name: PHASE 14 — post-cleanup 60s stability
+      when: p4b_mode == "normal"
       ansible.builtin.shell:
         cmd: |
           for i in $(seq 1 12); do
@@ -531,7 +581,7 @@
       delegate_to: node-01
 
     # ═══ PHASE 15 — full regressions ═══
-    - name: PHASE 15 — P4A full regression
+    - name: PHASE 15 — P4A full regression (IPPool + BGP node IPs + autodetection + images)
       ansible.builtin.shell:
         cmd: |
           ipjson=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get ippool default-ipv4-ippool -o json 2>/dev/null)
@@ -540,8 +590,38 @@
           pools=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get ippool -o name 2>/dev/null | grep -c ippool)
           cn=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=calico-node 2>/dev/null | grep -c '1/1')
           ctrl=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=calico-kube-controllers 2>/dev/null | grep -c '1/1')
+          # BGP node IPs (Calico v3.32.0 Kubernetes datastore: annotation projectcalico.org/IPv4Address
+          # на Kubernetes Node; CRD nodes.crd.projectcalico.org отсутствует в этой версии).
+          # JSON-aware, normalize CIDR suffix (split('/')[0]).
+          nodes_json=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get nodes -o json 2>/dev/null)
+          [ -n "$nodes_json" ] || { echo "CALICO_NODE_API_FAIL"; exit 1; }
+          bgp=$(printf '%s' "$nodes_json" | python3 -c 'import json,sys; d=json.load(sys.stdin); out={}; [out.__setitem__(it["metadata"]["name"], (it["metadata"].get("annotations",{}).get("projectcalico.org/IPv4Address","") or "").split("/")[0]) for it in d.get("items",[])]; print(" ".join(f"{k}={v}" for k,v in sorted(out.items())))')
+          echo "P4A bgp: $bgp"
+          echo "$bgp" | grep -q 'node-01=172.30.140.101' || exit 1
+          echo "$bgp" | grep -q 'node-02=172.30.140.102' || exit 1
+          echo "$bgp" | grep -q 'node-03=172.30.140.103' || exit 1
+          # IP_AUTODETECTION_METHOD
+          auto=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get ds calico-node -n kube-system -o jsonpath='{.spec.template.spec.containers[0].env}' 2>/dev/null | grep -o 'interface=bond0.140' | head -1)
+          # configured image set
+          node_img=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=calico-node -o jsonpath='{.items[0].spec.containers[0].image}' 2>/dev/null)
+          node_init=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=calico-node -o jsonpath='{.items[0].spec.initContainers[0].image}' 2>/dev/null)
+          ctrl_img=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=calico-kube-controllers -o jsonpath='{.items[0].spec.containers[0].image}' 2>/dev/null)
+          # runtime platform imageIDs
+          node_iid=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=calico-node -o jsonpath='{.items[0].status.containerStatuses[0].imageID}' 2>/dev/null)
+          node_init_iid=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=calico-node -o jsonpath='{.items[0].status.initContainerStatuses[0].imageID}' 2>/dev/null)
+          ctrl_iid=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=calico-kube-controllers -o jsonpath='{.items[0].status.containerStatuses[0].imageID}' 2>/dev/null)
           echo "P4A ippool cidr=$cidr ipip=$ipip nat=$nat dis=$dis pools=$pools calico=$cn ctrl=$ctrl"
+          echo "P4A autodetect=$auto"
+          echo "P4A node_img=$node_img cni_img=$node_init ctrl_img=$ctrl_img"
+          echo "P4A node_iid=$node_iid cni_iid=$node_init_iid ctrl_iid=$ctrl_iid"
           [ "$cidr" = "10.244.0.0/16" ] && [ "$ipip" = "Always" ] && [ "$nat" = "True" ] && [ "$dis" = "False" ] && [ "$pools" = "1" ] && [ "$cn" = "3" ] && [ "$ctrl" = "1" ] || exit 1
+          [ "$auto" = "interface=bond0.140" ] || exit 1
+          [ "$node_img" = "{{ expected_calico_node_img }}" ] || exit 1
+          [ "$node_init" = "{{ expected_calico_cni_img }}" ] || exit 1
+          [ "$ctrl_img" = "{{ expected_calico_ctrl_img }}" ] || exit 1
+          [ "$node_iid" = "{{ expected_node_imageid }}" ] || exit 1
+          [ "$node_init_iid" = "{{ expected_cni_imageid }}" ] || exit 1
+          [ "$ctrl_iid" = "{{ expected_ctrl_imageid }}" ] || exit 1
           echo PHASE15_P4A_OK
       register: ph15_p4a
       changed_when: false
@@ -618,16 +698,29 @@
       register: ph15_p2
       changed_when: false
 
-    - name: PHASE 15 — P1 regression (bond/VLAN/default route)
+    - name: PHASE 15 — P1 regression (bond + exact VLAN addresses + default route)
       ansible.builtin.shell:
         cmd: |
+          exp140="{{ expected_network_by_host[inventory_hostname].bond0_140 }}"
+          exp141="{{ expected_network_by_host[inventory_hostname].bond1_141 }}"
+          exp143="{{ expected_network_by_host[inventory_hostname].bond0_143 }}"
+          exp700="{{ expected_network_by_host[inventory_hostname].bond0_700 }}"
           b0=$(cat /sys/class/net/bond0/bonding/slaves 2>/dev/null | tr -d '\n')
           b1=$(cat /sys/class/net/bond1/bonding/slaves 2>/dev/null | tr -d '\n')
+          a140=$(ip -4 -o addr show bond0.140 2>/dev/null | grep -v '/32' | awk '{print $4}')
+          a141=$(ip -4 -o addr show bond1.141 2>/dev/null | grep -v '/32' | awk '{print $4}')
+          a143=$(ip -4 -o addr show bond0.143 2>/dev/null | grep -v '/32' | awk '{print $4}')
+          a700=$(ip -4 -o addr show bond0.700 2>/dev/null | grep -v '/32' | awk '{print $4}')
           drc=$(ip -4 route show default 2>/dev/null | wc -l)
           dr=$(ip -4 route show default 2>/dev/null)
-          echo "P1 host=$(hostname) bond0=$b0 bond1=$b1 default_count=$drc default=$dr"
+          echo "P1 host=$(hostname) bond0=$b0 bond1=$b1"
+          echo "P1 v140=$a140 v141=$a141 v143=$a143 v700=$a700 default_count=$drc default=$dr"
           [ "$b0" = "ens2f0 ens2f1" ] || exit 1
           [ "$b1" = "ens2f2 ens2f3" ] || exit 1
+          [ "$a140" = "$exp140" ] || exit 1
+          [ "$a141" = "$exp141" ] || exit 1
+          [ "$a143" = "$exp143" ] || exit 1
+          [ "$a700" = "$exp700" ] || exit 1
           [ "$drc" = "1" ] || exit 1
           echo "$dr" | grep -q '192.168.194.1' || exit 1
           echo "$dr" | grep -q 'bond0.700' || exit 1
@@ -635,7 +728,8 @@
       register: ph15_p1
       changed_when: false
 
-    - name: PHASE 15 — policy preservation (fingerprint after == before)
+    - name: PHASE 15 — policy preservation (fingerprint after == before, normal mode)
+      when: p4b_mode == "normal"
       ansible.builtin.shell:
         cmd: |
           np=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get networkpolicy -A -o json 2>/dev/null)
@@ -656,9 +750,40 @@
       run_once: true
       delegate_to: node-01
 
+    - name: PHASE 15 — policy final-state check (regression-only, fail-closed)
+      when: p4b_mode == "regression-only"
+      ansible.builtin.shell:
+        cmd: |
+          # validation namespace NotFound
+          out=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get namespace {{ validation_ns }} -o json 2>&1)
+          rc=$?
+          if [ "$rc" = "0" ]; then echo "VALIDATION_NS_STILL_EXISTS"; exit 1; fi
+          echo "$out" | grep -q 'NotFound' || { echo "NS_API_ERROR"; exit 1; }
+          echo "validation_namespace=NotFound"
+          # TASK-014/stage=P4B policies cluster-wide = 0
+          tnp=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get networkpolicy -A -l stage=P4B -o json 2>/dev/null)
+          [ -n "$tnp" ] || { echo "NP_API_FAIL"; exit 1; }
+          tcnt=$(printf '%s' "$tnp" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(len(d.get("items",[])))')
+          echo "task014_policies_clusterwide=$tcnt"
+          [ "$tcnt" = "0" ] || exit 1
+          # system namespaces 0 TASK-014 policies (fail-closed)
+          for ns in default kube-system kube-public kube-node-lease; do
+            json=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get networkpolicy -n $ns -l stage=P4B -o json 2>/dev/null)
+            rc=$?
+            [ "$rc" = "0" ] || { echo "SYSTEM_NS_API_FAIL_$ns"; exit 1; }
+            cnt=$(printf '%s' "$json" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(len(d.get("items",[])))')
+            echo "$ns: stage=P4B policies=$cnt"
+            [ "$cnt" = "0" ] || { echo "POLICY_IN_SYSTEM_NS_$ns"; exit 1; }
+          done
+          echo PHASE15_FINAL_STATE_OK
+      register: ph15_final_state
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
     # ═══ PHASE 16 — final gate ═══
     - name: PHASE 16 — final gate summary
       ansible.builtin.debug:
-        msg: "P4B baseline NetworkPolicy R1 validation completed — PHASE 0..15 all PASS"
+        msg: "P4B baseline NetworkPolicy R2 completed — mode={{ p4b_mode }}"
       run_once: true
       delegate_to: node-01

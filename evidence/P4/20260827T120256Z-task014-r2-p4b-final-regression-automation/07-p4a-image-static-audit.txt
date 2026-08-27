@@ -1,0 +1,19 @@
+# TASK-014-R2 — P4A Image Static Audit
+
+PHASE 15 P4A теперь проверяет:
+  configured image set exact v3.32.0:
+    quay.io/calico/node:v3.32.0
+    quay.io/calico/cni:v3.32.0 (initContainer)
+    quay.io/calico/kube-controllers:v3.32.0
+  runtime platform imageIDs (amd64):
+    node: sha256:6bc9fa4d...
+    cni:  sha256:d456a937...
+    ctrl: sha256:e67ce8d0...
+  images.lock manifest-list digests (read-only reference):
+    node: sha256:f4fafd8b..., cni: sha256:1cfc6aa9..., ctrl: sha256:adf0ac89...
+
+Не путает platform imageID с manifest-list digest.
+
+P4A IMAGE/IMAGEID CHECK MISSING: 0
+
+RESULT: PASS

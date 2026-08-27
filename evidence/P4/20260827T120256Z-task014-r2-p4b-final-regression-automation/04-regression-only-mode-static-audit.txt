@@ -1,0 +1,14 @@
+# TASK-014-R2 — Regression-only Mode Static Audit
+
+MODE GATE: PRESENT (assert p4b_mode in ['normal','regression-only'], fail before mutation)
+NORMAL MODE: PHASE 0-14 полный workflow, PHASE 15 fingerprint preservation
+REGRESSION-ONLY MODE: только PHASE 15 (P4A/P3/P2/P1 regression) + PHASE 15 final-state policy check
+
+regression-only НЕ выполняет:
+  namespace creation (PHASE 4: when normal)
+  pods/Service (PHASE 6: when normal)
+  NetworkPolicy dry-run/apply/delete (PHASE 5/8/10/13: when normal)
+  DNS/connectivity (PHASE 7/9/11: when normal)
+  post-cleanup stability (PHASE 14: when normal)
+
+RESULT: PASS

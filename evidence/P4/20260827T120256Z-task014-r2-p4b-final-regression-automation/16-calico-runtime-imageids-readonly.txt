@@ -1,0 +1,13 @@
+# TASK-014-R2 — Calico Runtime ImageIDs (read-only)
+
+Configured image set (exact v3.32.0):
+  node: quay.io/calico/node:v3.32.0
+  cni:  quay.io/calico/cni:v3.32.0 (initContainer)
+  ctrl: quay.io/calico/kube-controllers:v3.32.0
+
+Runtime platform imageIDs (amd64):
+  node: sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65
+  cni:  sha256:d456a937d6e7445d4785ca592e5fffc2aa390cb578d7778f17e5a016201cceb4
+  ctrl: sha256:e67ce8d034ec572033278ceaee634ca98bc7c7d422b9f4b39a5a66e1aab98e11
+
+RESULT: PASS (exact accepted values)

@@ -1,0 +1,11 @@
+# TASK-014-R2 — P4A BGP Static Audit
+
+PHASE 15 P4A теперь проверяет:
+  BGP node IPs через nodes.crd.projectcalico.org (JSON-aware, CIDR normalize split('/')[0])
+  node-01=172.30.140.101, node-02=172.30.140.102, node-03=172.30.140.103
+  missing/unexpected node => FAIL, API/JSON error => FAIL
+  IP_AUTODETECTION_METHOD=interface=bond0.140 (DaemonSet env)
+
+P4A BGP CHECK MISSING: 0
+
+RESULT: PASS

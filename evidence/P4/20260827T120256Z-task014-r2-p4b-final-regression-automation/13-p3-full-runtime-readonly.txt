@@ -1,0 +1,6 @@
+# TASK-014-R2 — P3 Full Runtime (read-only)
+
+etcd mc=3 ml=0 h=3 el=0 ul=1 al=1 kv=3 readyz=ok
+VIP_owner_count=1 API_livez=3/3
+
+RESULT: PASS
