@@ -1,0 +1,17 @@
+# TASK-015-R1 — Upstream v2.10.6 Image Config
+
+SOURCE: official Piraeus Operator v2.10.6 (piraeusdatastore/piraeus-operator tag v2.10.6)
++ official changelog (piraeus.io/docs).
+
+Component set for v2.10.6:
+  LINSTOR         1.33.2   (piraeus-server:v1.33.2)
+  LINSTOR CSI     1.11.0   (piraeus-csi:v1.11.0)
+  DRBD            9.3.2    (drbd9-resolute:v9.3.2)
+  Affinity        1.4.0    (linstor-affinity-controller:v1.4.0)
+
+Astra Linux НЕ является explicit OS match в image configuration operator 2.10.6.
+Fallback loader image: quay.io/piraeusdatastore/drbd9-resolute:v9.3.2
+(Fallback selection НЕ является compatibility proof — требуется compile-only
+валидация против live kernel headers.)
+
+NOTE: точные registry digest'ы фиксируются на этапе image pull (§9 loader / §16 satellite).

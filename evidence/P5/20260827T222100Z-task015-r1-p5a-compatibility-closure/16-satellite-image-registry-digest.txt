@@ -1,0 +1,4 @@
+application/vnd.oci.image.index.v1+json sha256:0db38ed0388b06ac1e3e013b14c2dcf47798cf27e69f3eab3fded0814996ad10
+Completed pull from OCI Registry (quay.io/piraeusdatastore/piraeus-server:v1.33.2)	elapsed: 55.0s	total:  284.5 	(5.2 MiB/s)	
+--- digest ---
+quay.io/piraeusdatastore/piraeus-server:v1.33.2                                                                 application/vnd.oci.image.index.v1+json                   sha256:0db38ed0388b06ac1e3e013b14c2dcf47798cf27e69f3eab3fded0814996ad10 284.5 MiB linux/amd64,linux/arm64                                                                                             io.cri-containerd.image=managed                                 

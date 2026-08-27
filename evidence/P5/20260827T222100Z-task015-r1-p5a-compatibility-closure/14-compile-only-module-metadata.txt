@@ -1,0 +1,4 @@
+=== CONSOLIDATED MODULE METADATA (3 nodes) ===
+version:        9.3.2 vermagic:       6.1.158-1-generic SMP preempt mod_unload modversions  node=node-01
+version:        9.3.2 vermagic:       6.1.158-1-generic SMP preempt mod_unload modversions  node=node-02
+version:        9.3.2 vermagic:       6.1.158-1-generic SMP preempt mod_unload modversions  node=node-03

@@ -1,6 +1,8 @@
 # ADR-PROPOSAL-P5-DRBD-DEPLOYMENT-MODEL
 
-STATUS: PROPOSED / NOT APPROVED
+STATUS: REJECTED / SUPERSEDED
+SUPERSEDED BY: ADR-003-P5-drbd-operator-version-alignment.md
+REASON: upstream factual version mapping correction
 
 ## Context
 P5A выявил несовместимость locked DRBD 9.2.18 с in-kernel DRBD 8.4.11 в Astra

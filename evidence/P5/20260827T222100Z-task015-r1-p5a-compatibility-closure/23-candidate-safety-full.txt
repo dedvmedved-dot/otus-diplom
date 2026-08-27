@@ -1,0 +1,21 @@
+# TASK-015-R1 — Candidate Full Safety (6/6)
+
+Каждый из 6 кандидатов (sdb+sdc × 3 узла):
+  no child partitions = PASS
+  not mounted = PASS
+  not swap = PASS
+  not root/boot/home ancestor = PASS
+  not LVM PV/VG/LV backing = PASS
+  not MD RAID member = PASS
+  not multipath member = PASS
+  not dm-crypt = PASS
+  no holders = PASS
+  not active DRBD = PASS
+  not Ceph OSD/backing = PASS
+  not referenced by Kubernetes PV/local = PASS
+  wipefs -n = clean (no signature)
+  blkid -p = clean
+
+(Проверено в TASK-015 и переподтверждено read-only в TASK-015-R1; state не изменился.)
+
+RESULT: 6/6 PASS

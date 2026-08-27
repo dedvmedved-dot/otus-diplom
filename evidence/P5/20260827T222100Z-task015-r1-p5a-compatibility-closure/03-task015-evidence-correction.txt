@@ -1,0 +1,16 @@
+# TASK-015-R1 — TASK-015 Evidence Correction
+
+ORIGINAL FALSE CLAIM:
+piraeus-operator 2.10.6 bundles DRBD 9.2.18
+
+OFFICIAL FACT:
+piraeus-operator v2.10.6 uses DRBD 9.3.2
+
+ORIGINAL FALSE CLAIM:
+VERSION MAPPING UNAMBIGUOUS for DRBD 9.2.18
+
+CORRECTION:
+versions.lock DRBD baseline realigned to 9.3.2 by ADR-003
+
+HISTORICAL EVIDENCE MODIFIED:
+NO

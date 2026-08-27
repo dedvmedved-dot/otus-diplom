@@ -19,7 +19,8 @@ components:
   linstor_operator:    "2.10.6"
   linstor:             "1.33.2"
   linstor_csi:         "1.11.0"
-  drbd:                "9.2.18"
+  drbd:                "9.3.2"
+  drbd_utils:          "9.34.3"
   metallb:             "0.16.1"
   envoy_gateway:       "1.8.3"
   cloudnative_pg:      "1.29.1"
@@ -35,3 +36,5 @@ components:
 notes:
   - "Astra/kernel/DRBD compatibility must be verified before P5."
   - "Availability of these versions from approved/internal sources is NOT_VERIFIED."
+  - "DRBD baseline realigned to 9.3.2 by ADR-003 (aligns P5 with piraeus-operator v2.10.6 component set); Astra/kernel compatibility verified by TASK-015-R1 before P5B."
+  - "drbd_utils 9.34.3 supplied by digest-pinned piraeus-server:v1.33.2 image (sha256:0db38ed0...); no separate host drbd-utils package."

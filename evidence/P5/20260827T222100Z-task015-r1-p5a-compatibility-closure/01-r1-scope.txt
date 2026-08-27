@@ -1,0 +1,24 @@
+# TASK-015-R1 — Scope
+
+MODE: SOURCE/DOCUMENT CORRECTION + READ-ONLY REGRESSION + AUTHORIZED DIAGNOSTIC
+      PACKAGE INSTALL + COMPILE-ONLY DRBD VALIDATION.
+
+ALLOWED:
+  source/document correction
+  official upstream research
+  temporary container image pull
+  compile-only DRBD build (no install, no load)
+  approved diagnostic package install (smartmontools/sg3-utils/lsscsi only)
+  read-only SMART/SCSI health queries
+  read-only regressions
+
+FORBIDDEN:
+  wipefs write / blkdiscard / dd of= / partition write / mkfs / mkswap /
+  pvcreate/vgcreate/lvcreate / ceph-volume zap
+  insmod / modprobe drbd / rmmod / make install / dkms add/install /
+  copy .ko to /lib/modules / depmod
+  Piraeus/LINSTOR Kubernetes install / CRD apply / StorageClass/PV/PVC /
+  DRBD metadata / LINSTOR storage-pool / P5B
+
+NEW EVIDENCE:
+  evidence/P5/20260827T222100Z-task015-r1-p5a-compatibility-closure/

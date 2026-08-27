@@ -1,0 +1,19 @@
+# TASK-015-R1 — Upstream v2.10.6 Changelog
+
+SOURCE: https://piraeus.io/docs/v2.10.8/CHANGELOG/ (official Piraeus Datastore)
+
+v2.10.6 (2026-05-05):
+  Added:
+    - Image configuration for Ubuntu 26.04 (Resolute Raccoon)
+  Fixed:
+    - Fixed NFS Server DaemonSet capabilities.
+  Changed — Updated images:
+    - LINSTOR 1.33.2
+    - LINSTOR CSI 1.11.0
+    - DRBD 9.3.2
+    - LINSTOR Affinity Controller 1.4.0
+
+CONFIRMED: piraeus-operator v2.10.6 uses DRBD 9.3.2 (NOT 9.2.18).
+
+(Forum post "LINSTOR Operator 2.10.6" listing "DRBD 9.2.18" is superseded by the
+authoritative project changelog which states 9.3.2.)

@@ -1,0 +1,19 @@
+# TASK-015-R1 — Kubernetes 1.36.2 Static Compatibility
+
+Manifest: https://charts.linstor.io/static/v2.10.6.yaml (official, 3109 lines)
+
+apiVersion/kind, использованные в manifest:
+  admissionregistration.k8s.io/v1   (ValidatingWebhookConfiguration)
+  apiextensions.k8s.io/v1           (CustomResourceDefinition x4)
+  apps/v1                           (Deployment x2)
+  rbac.authorization.k8s.io/v1      (ClusterRole/Binding, Role/Binding)
+  v1                                (Namespace, ConfigMap, Service, ServiceAccount)
+
+Live api-versions на кластере (kubectl api-versions): все 5 групп присутствуют.
+
+CRD apiVersions: apiextensions.k8s.io/v1 (совместимо с K8s 1.36.2).
+Server-side dry-run CRD-объектов невозможен (CRDs не установлены, установка
+запрещена в P5A) — ограничение задокументировано; CRD-схемы валидируются
+статически по входящему manifest (apiextensions.k8s.io/v1, структурные схемы).
+
+KUBERNETES 1.36.2 API COMPATIBILITY: PASS

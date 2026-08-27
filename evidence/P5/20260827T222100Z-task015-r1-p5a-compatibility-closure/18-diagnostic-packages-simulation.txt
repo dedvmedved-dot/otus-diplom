@@ -1,0 +1,25 @@
+# TASK-015-R1 — Diagnostic Packages Simulation + Result
+
+SIMULATION (apt-get -s install --no-install-recommends smartmontools sg3-utils lsscsi):
+  E: Невозможно найти пакет smartmontools
+  E: Невозможно найти пакет sg3-utils
+  E: Невозможно найти пакет lsscsi
+
+ROOT CAUSE:
+  Astra repositories закомментированы в /etc/apt/sources.list:
+    #deb https://download.astralinux.ru/astra/stable/1.8_x86-64/repository-main/ ...
+    #deb https://download.astralinux.ru/astra/stable/1.8_x86-64/repository-extended/ ...
+  Активные репозитории: только docker.com + pkgs.k8s.io (не содержат smartmontools/sg3-utils/lsscsi).
+  /var/lib/apt/lists/ содержит индексы только docker + k8s.
+  CDROM (/dev/sr0) не содержит носителя (mount: не найден носитель).
+  download.astralinux.ru отвечает HTTP 403 (нет доступа с узлов).
+
+DECISION (по §10): установка невозможна без изменения репозиториев.
+"Do not add/change repositories" + "If indexes are insufficient, STOP and report".
+
+ALTERNATIVE (read-only, authorized by §5/§13):
+  sg_inq / sg_logs / lsscsi присутствуют в официальном image
+  quay.io/piraeusdatastore/piraeus-server:v1.33.2 (ephemeral chroot, no host install).
+
+RESULT: apt diagnostic package install NOT POSSIBLE (repos commented, no media, 403).
+        Health gate uses read-only SCSI tooling from official Piraeus server image.

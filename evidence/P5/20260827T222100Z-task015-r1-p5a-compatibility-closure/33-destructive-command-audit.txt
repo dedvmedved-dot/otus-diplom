@@ -1,0 +1,41 @@
+# TASK-015-R1 — Destructive Command Audit
+
+Проверка исходников playbook + helper scripts (вручную выверено):
+
+ansible/playbooks/p5a-linstor-drbd-preflight.yml:
+  wipefs write: 0 (только "wipefs -n" read-only)
+  blkdiscard: 0
+  dd of=: 0 (только "dd if=$dev ... | sha256sum")
+  partition write: 0
+  mkfs/mkswap: 0
+  pvcreate/vgcreate/lvcreate: 0
+  ceph-volume zap: 0
+  insmod: 0
+  modprobe drbd: 0
+  rmmod: 0
+  make install: 0
+  dkms install: 0
+  copy .ko to /lib/modules: 0
+  depmod: 0
+  kubectl apply: 0
+  helm install: 0
+
+ansible/playbooks/files/p5a-drbd-compile-only.sh:
+  insmod: 0
+  modprobe drbd: 0
+  make install: 0
+  dkms install: 0
+  copy-to-/lib/modules: 0
+  depmod: 0
+  (make CONFIG_GCC_PLUGINS=n → compile-only, output в /tmp/TASK-015-R1)
+
+ansible/playbooks/files/p5a-candidate-health.sh:
+  smartctl -t: 0
+  sg_format / sg_write* / sdparm --set: 0
+  (только sg_inq + sg_logs read-only)
+
+DESTRUCTIVE COMMANDS: 0
+DRBD MODULE LOADED: NO
+STORAGE MUTATION: NONE
+
+RESULT: PASS

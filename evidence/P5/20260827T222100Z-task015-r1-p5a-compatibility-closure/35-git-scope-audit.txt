@@ -1,0 +1,12 @@
+=== GIT SCOPE AUDIT ===
+ M ansible/playbooks/p5a-linstor-drbd-preflight.yml
+ M docs/architecture/ADR-PROPOSAL-P5-drbd-deployment-model.md
+ M docs/storage/P5A-DESTRUCTIVE-DEVICE-PREFLIGHT.md
+ M docs/storage/P5A-LINSTOR-DRBD-COMPATIBILITY.md
+ M docs/storage/P5B-IMPLEMENTATION-PREREQUISITES.md
+ M inventory/storage-p5-candidates.yaml
+ M versions.lock
+?? ansible/playbooks/files/p5a-candidate-health.sh
+?? ansible/playbooks/files/p5a-drbd-compile-only.sh
+?? docs/architecture/ADR-003-P5-drbd-operator-version-alignment.md
+?? evidence/P5/20260827T222100Z-task015-r1-p5a-compatibility-closure/

@@ -1,0 +1,6 @@
+node=node-03 kernel=6.1.158-1-generic
+drbd.ko produced
+version:        9.3.2
+vermagic:       6.1.158-1-generic SMP preempt mod_unload modversions 
+module loaded: 0
+module installed in /lib/modules: 1 (in-kernel 8.4.11 only)

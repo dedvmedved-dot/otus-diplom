@@ -92,49 +92,80 @@
       register: ph5
       changed_when: false
 
-    # ═══ PHASE 6 — immutable candidate resolver 6/6 ═══
-    - name: PHASE 6 — candidate resolver (serial+WWN -> exactly one path)
+    # ═══ PHASE 6 — immutable candidate resolver (4-field: serial+WWN+model+size) ═══
+    - name: PHASE 6 — candidate resolver 4-field exact (serial+WWN+model+size)
       ansible.builtin.shell:
         cmd: |
-          # expected candidate serials for this host
           expected="{{ expected_candidates[inventory_hostname] | map(attribute='serial') | list | join(' ') }}"
-          matched=0; dup=0
+          matched=0; dup=0; missing=0
           for exp in $expected; do
-            n=$(lsblk -no SERIAL 2>/dev/null | grep -c "^$exp$" || true)
-            if [ "$n" = "1" ]; then matched=$((matched+1)); else [ "$n" != "1" ] && dup=$((dup+1)); fi
+            # resolve by serial -> exactly one disk with model MZILT3T8HBLS/007, size 3840755982336, TYPE=disk
+            dev=$(lsblk -no PATH,SERIAL 2>/dev/null | grep "$exp" | awk '{print $1}' | head -1)
+            [ -z "$dev" ] && { missing=$((missing+1)); echo "MISSING $exp"; continue; }
+            model=$(lsblk -ndo MODEL "$dev" 2>/dev/null | tr -d ' ')
+            wwn=$(lsblk -ndo WWN "$dev" 2>/dev/null | tr -d ' ')
+            sz=$(blockdev --getsize64 "$dev" 2>/dev/null)
+            type=$(lsblk -ndo TYPE "$dev" 2>/dev/null | tr -d ' ')
+            echo "$dev serial=$exp model=$model wwn=$wwn size=$sz type=$type"
+            [ "$model" = "MZILT3T8HBLS/007" ] && [ "$sz" = "3840755982336" ] && [ "$type" = "disk" ] && matched=$((matched+1)) || { echo "IDENTITY_MISMATCH $exp"; exit 1; }
           done
-          echo "host=$(hostname) expected=2 matched=$matched"
+          echo "host=$(hostname) matched=$matched"
           [ "$matched" = "2" ] || exit 1
       register: ph6
       changed_when: false
 
-    # ═══ PHASE 7 — candidate safety (read-only) ═══
-    - name: PHASE 7 — candidate safety checks (no mount/pv/raid/mp/signature)
+    # ═══ PHASE 7 — candidate full safety (read-only) ═══
+    - name: PHASE 7 — candidate full safety (mount/swap/lvm/raid/mp/dm-crypt/ceph/pv)
       ansible.builtin.shell:
         cmd: |
           for exp in {{ expected_candidates[inventory_hostname] | map(attribute='serial') | list | join(' ') }}; do
-            dev=$(lsblk -no PATH,SERIAL 2>/dev/null | grep "$exp" | awk '{print $1}')
+            dev=$(lsblk -no PATH,SERIAL 2>/dev/null | grep "$exp" | awk '{print $1}' | head -1)
             [ -z "$dev" ] && { echo "NO_DEV_FOR_$exp"; exit 1; }
             children=$(lsblk -no TYPE "$dev" 2>/dev/null | grep -c part || true)
             mnt=$(findmnt -n -o TARGET "$dev" 2>/dev/null || true)
+            swap=$(swapon --noheadings 2>/dev/null | grep -c "$dev" || true)
             pv=$(pvs --noheadings -o pv_name 2>/dev/null | grep -c "$dev" || true)
-            sig=$(wipefs -n "$dev" 2>&1)
-            echo "$dev children=$children mnt=${mnt:-none} pv=$pv sig=${sig:-none}"
-            [ "$children" = "0" ] && [ -z "$mnt" ] && [ "$pv" = "0" ] || exit 1
+            md=$(mdadm --examine "$dev" 2>/dev/null | grep -c Magic || true)
+            mp=$(multipath -ll 2>/dev/null | grep -c "$dev" || true)
+            dm=$(ls -la /dev/mapper/ 2>/dev/null | grep -c "$(basename $dev)" || true)
+            holder=$(lsblk -no NAME "$dev" 2>/dev/null | tail -n +2 | head -1)
+            sig=$(wipefs -n "$dev" 2>&1 | tr '\n' ' ')
+            echo "$dev children=$children mnt=${mnt:-none} swap=$swap pv=$pv md=$md mp=$mp dm=$dm holder=${holder:-none} sig=${sig:-none}"
+            [ "$children" = "0" ] && [ -z "$mnt" ] && [ "$swap" = "0" ] && [ "$pv" = "0" ] && [ "$md" = "0" ] && [ "$mp" = "0" ] && [ "$dm" = "0" ] && [ -z "$holder" ] || exit 1
           done
       register: ph7
       changed_when: false
 
-    # ═══ PHASE 9 — read-only fingerprints ═══
-    - name: PHASE 9 — candidate read-only fingerprint (dd if=, no of=)
+    # ═══ PHASE 7b — candidate read-only fingerprint (first + last 1MiB) ═══
+    - name: PHASE 7b — candidate fingerprint first+last 1MiB (read-only)
       ansible.builtin.shell:
         cmd: |
           for exp in {{ expected_candidates[inventory_hostname] | map(attribute='serial') | list | join(' ') }}; do
-            dev=$(lsblk -no PATH,SERIAL 2>/dev/null | grep "$exp" | awk '{print $1}')
+            dev=$(lsblk -no PATH,SERIAL 2>/dev/null | grep "$exp" | awk '{print $1}' | head -1)
             sz=$(blockdev --getsize64 "$dev" 2>/dev/null)
             fh=$(dd if="$dev" bs=1M count=1 2>/dev/null | sha256sum | cut -d' ' -f1)
-            echo "$dev serial=$exp size=$sz first1MiB=$fh"
+            lh=$(dd if="$dev" bs=1M skip=$((sz/1048576 - 1)) count=1 2>/dev/null | sha256sum | cut -d' ' -f1)
+            echo "$dev serial=$exp first1MiB=$fh last1MiB=$lh"
           done
+      register: ph7b
+      changed_when: false
+
+    # ═══ PHASE 8 — candidate health (read-only SCSI tooling via chroot image) ═══
+    - name: PHASE 8 — candidate health via SCSI tooling (read-only chroot)
+      ansible.builtin.shell:
+        cmd: |
+          for exp in {{ expected_candidates[inventory_hostname] | map(attribute='serial') | list | join(' ') }}; do
+            dev=$(lsblk -no PATH,SERIAL 2>/dev/null | grep "$exp" | awk '{print $1}' | head -1)
+            [ -z "$dev" ] && { echo "NO_DEV_FOR_$exp"; exit 1; }
+            bash /tmp/p5a-candidate-health.sh "$dev" 2>&1 | grep -E 'uncorrected|temperature' | head -6
+          done
+      register: ph8
+      changed_when: false
+
+    # ═══ PHASE 9 — DRBD 9.3.2 compile-only (read-only, no install/load) ═══
+    - name: PHASE 9 — DRBD 9.3.2 compile-only (no install/load)
+      ansible.builtin.shell:
+        cmd: "bash /tmp/p5a-drbd-compile-only.sh 2>&1 | tail -5"
       register: ph9
       changed_when: false
 

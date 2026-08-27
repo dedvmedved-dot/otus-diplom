@@ -1,0 +1,23 @@
+# TASK-015-R1 — Candidate Health Summary
+
+HEALTH SOURCE: sg_inq (SCSI VPD identity) + sg_logs (SCSI log pages: 0x0d temp,
+0x02 write errors, 0x03 read errors, 0x06 non-medium errors), read-only,
+из официального image quay.io/piraeusdatastore/piraeus-server:v1.33.2
+(ephemeral chroot, без установки на host, без SMART self-test).
+
+node-01 /dev/sdb  S5G0NC0T407845  21 C  uncorrected_rw=0  HEALTH=PASS
+node-01 /dev/sdc  S5G0NC0T407844  21 C  uncorrected_rw=0  HEALTH=PASS
+node-02 /dev/sdb  S5G0NC0T407077  20 C  uncorrected_rw=0  HEALTH=PASS
+node-02 /dev/sdc  S5G0NC0T407075  20 C  uncorrected_rw=0  HEALTH=PASS
+node-03 /dev/sdb  S5G0NC0T403246  19 C  uncorrected_rw=0  HEALTH=PASS
+node-03 /dev/sdc  S5G0NC0T403289  19 C  uncorrected_rw=0  HEALTH=PASS
+
+CRITICAL FAULTS: 0
+MEDIA ERRORS (uncorrected read/write): 0
+WEAR/ENDURANCE: not exposed via SCSI log pages (Samsung PM1633 SAS SSD)
+TEMPERATURE: 19-21 C (reference threshold 74 C)
+
+Non-medium error count (0x06): 23-41 — командно-коммуникационные счётчики,
+не media faults; uncorrected media errors = 0.
+
+RESULT: HEALTH VERIFIED 6/6 PASS. UNKNOWN=0, FAILED=0.

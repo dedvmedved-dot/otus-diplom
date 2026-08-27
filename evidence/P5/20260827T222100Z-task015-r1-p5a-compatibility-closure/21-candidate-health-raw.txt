@@ -1,0 +1,129 @@
+=== CANDIDATE HEALTH RAW ===
+----- node-01 /dev/sdb -----
+=== /dev/sdb identity (sg_inq) ===
+ Vendor identification: SAMSUNG 
+ Product identification: MZILT3T8HBLS/007
+ Product revision level: GXA0
+ Unit serial number: S5G0NC0T407845      
+=== /dev/sdb temperature (sg_logs -p 0x0d) ===
+Temperature page  [0xd]
+  Current temperature = 21 C
+  Reference temperature = 74 C
+=== /dev/sdb write errors (sg_logs -p 0x02) ===
+  Total errors corrected = 0
+  Total uncorrected errors = 0
+=== /dev/sdb read errors (sg_logs -p 0x03) ===
+  Total errors corrected = 0
+  Total uncorrected errors = 0
+=== /dev/sdb non-medium errors (sg_logs -p 0x06) ===
+Non-medium error page  [0x6]
+  Non-medium error count = 41
+HEALTH_QUERY_DONE
+----- node-01 /dev/sdc -----
+=== /dev/sdc identity (sg_inq) ===
+ Vendor identification: SAMSUNG 
+ Product identification: MZILT3T8HBLS/007
+ Product revision level: GXA0
+ Unit serial number: S5G0NC0T407844      
+=== /dev/sdc temperature (sg_logs -p 0x0d) ===
+Temperature page  [0xd]
+  Current temperature = 21 C
+  Reference temperature = 74 C
+=== /dev/sdc write errors (sg_logs -p 0x02) ===
+  Total errors corrected = 0
+  Total uncorrected errors = 0
+=== /dev/sdc read errors (sg_logs -p 0x03) ===
+  Total errors corrected = 0
+  Total uncorrected errors = 0
+=== /dev/sdc non-medium errors (sg_logs -p 0x06) ===
+Non-medium error page  [0x6]
+  Non-medium error count = 41
+HEALTH_QUERY_DONE
+----- node-02 /dev/sdb -----
+no piraeus-server rootfs at /tmp/sat-inspect/rootfs
+----- node-02 /dev/sdc -----
+no piraeus-server rootfs at /tmp/sat-inspect/rootfs
+----- node-03 /dev/sdb -----
+no piraeus-server rootfs at /tmp/sat-inspect/rootfs
+----- node-03 /dev/sdc -----
+no piraeus-server rootfs at /tmp/sat-inspect/rootfs
+----- node-02 /dev/sdb -----
+=== /dev/sdb identity (sg_inq) ===
+ Vendor identification: SAMSUNG 
+ Product identification: MZILT3T8HBLS/007
+ Product revision level: GXA0
+ Unit serial number: S5G0NC0T407077      
+=== /dev/sdb temperature (sg_logs -p 0x0d) ===
+Temperature page  [0xd]
+  Current temperature = 20 C
+  Reference temperature = 74 C
+=== /dev/sdb write errors (sg_logs -p 0x02) ===
+  Total errors corrected = 0
+  Total uncorrected errors = 0
+=== /dev/sdb read errors (sg_logs -p 0x03) ===
+  Total errors corrected = 0
+  Total uncorrected errors = 0
+=== /dev/sdb non-medium errors (sg_logs -p 0x06) ===
+Non-medium error page  [0x6]
+  Non-medium error count = 23
+HEALTH_QUERY_DONE
+----- node-02 /dev/sdc -----
+=== /dev/sdc identity (sg_inq) ===
+ Vendor identification: SAMSUNG 
+ Product identification: MZILT3T8HBLS/007
+ Product revision level: GXA0
+ Unit serial number: S5G0NC0T407075      
+=== /dev/sdc temperature (sg_logs -p 0x0d) ===
+Temperature page  [0xd]
+  Current temperature = 20 C
+  Reference temperature = 74 C
+=== /dev/sdc write errors (sg_logs -p 0x02) ===
+  Total errors corrected = 0
+  Total uncorrected errors = 0
+=== /dev/sdc read errors (sg_logs -p 0x03) ===
+  Total errors corrected = 0
+  Total uncorrected errors = 0
+=== /dev/sdc non-medium errors (sg_logs -p 0x06) ===
+Non-medium error page  [0x6]
+  Non-medium error count = 23
+HEALTH_QUERY_DONE
+----- node-03 /dev/sdb -----
+=== /dev/sdb identity (sg_inq) ===
+ Vendor identification: SAMSUNG 
+ Product identification: MZILT3T8HBLS/007
+ Product revision level: GXA0
+ Unit serial number: S5G0NC0T403246      
+=== /dev/sdb temperature (sg_logs -p 0x0d) ===
+Temperature page  [0xd]
+  Current temperature = 19 C
+  Reference temperature = 74 C
+=== /dev/sdb write errors (sg_logs -p 0x02) ===
+  Total errors corrected = 0
+  Total uncorrected errors = 0
+=== /dev/sdb read errors (sg_logs -p 0x03) ===
+  Total errors corrected = 0
+  Total uncorrected errors = 0
+=== /dev/sdb non-medium errors (sg_logs -p 0x06) ===
+Non-medium error page  [0x6]
+  Non-medium error count = 24
+HEALTH_QUERY_DONE
+----- node-03 /dev/sdc -----
+=== /dev/sdc identity (sg_inq) ===
+ Vendor identification: SAMSUNG 
+ Product identification: MZILT3T8HBLS/007
+ Product revision level: GXA0
+ Unit serial number: S5G0NC0T403289      
+=== /dev/sdc temperature (sg_logs -p 0x0d) ===
+Temperature page  [0xd]
+  Current temperature = 19 C
+  Reference temperature = 74 C
+=== /dev/sdc write errors (sg_logs -p 0x02) ===
+  Total errors corrected = 0
+  Total uncorrected errors = 0
+=== /dev/sdc read errors (sg_logs -p 0x03) ===
+  Total errors corrected = 0
+  Total uncorrected errors = 0
+=== /dev/sdc non-medium errors (sg_logs -p 0x06) ===
+Non-medium error page  [0x6]
+  Non-medium error count = 24
+HEALTH_QUERY_DONE

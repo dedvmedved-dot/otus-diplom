@@ -1,0 +1,3 @@
+ENTRYPOINT: ['/bin/sh', '-c', '/entry.sh']
+CMD: None
+ENV: ['LB_HOW=compile']

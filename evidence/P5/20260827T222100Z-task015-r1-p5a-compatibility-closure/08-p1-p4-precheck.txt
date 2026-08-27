@@ -1,0 +1,8 @@
+=== P1-P4 PRECHECK ===
+nodes: 3
+calico-node: 3
+controllers: 1
+coredns: 2/2/2
+readyz: ok
+etcd: 3
+kube-vip: 3

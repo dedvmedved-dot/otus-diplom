@@ -24,8 +24,9 @@ STATUS: PROPOSED / NOT AUTHORIZED
 - not active DRBD backing, not Kubernetes PV
 - no filesystem/partition/LVM/RAID signature (wipefs -n + blkid -p clean)
 
-## Health (NOT VERIFIED — BLOCKER)
-smartctl/sg3-utils absent on all nodes; health gate cannot be verified read-only.
+## Health (6/6 PASS — read-only SCSI tooling)
+sg_inq + sg_logs (0x0d/0x02/0x03) из официального piraeus-server:v1.33.2 image:
+uncorrected media errors = 0, temperature 19-21 C (ref 74 C).
 
 ## Protected classes (NOT TARGETED)
 - OS disks (sda 447G, root/boot/swap LVM)

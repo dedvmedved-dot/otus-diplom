@@ -1,0 +1,4 @@
+=== MODULE NOT LOADED (3 nodes) ===
+node .38 drbd_loaded=0
+node .40 drbd_loaded=0
+node .39 drbd_loaded=0

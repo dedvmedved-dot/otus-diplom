@@ -2,21 +2,13 @@
 
 STATUS: PROPOSED / NOT AUTHORIZED. Ничего не выполняется в P5A.
 
-## Blockers, требующие Architect решения ДО P5B
+## Resolution status (после TASK-015-R1)
 
-1. DRBD 9.2.18 deployment model:
-   - Astra in-kernel DRBD = 8.4.11 (несовместим с LINSTOR 1.33.2, который требует DRBD 9).
-   - Нужен out-of-tree DRBD 9.2.18: LINBIT drbd-9.2.18 source + DKMS, либо prebuilt
-     LINBIT package для Astra/kernel 6.1.158.
-   - Build toolchain (gcc/make/dkms) отсутствует → P5B должен установить их (host package)
-     или использовать prebuilt module. Архитектурное решение требуется.
-
-2. Candidate health verification:
-   - smartmontools/sg3-utils отсутствуют. P5B должен получить разрешение установить
-     их (read-only tools) до destructive init, либо принять альтернативный метод.
-
-3. DRBD userspace version:
-   - versions.lock не фиксирует drbd-utils. Требуется explicit lock перед P5B.
+Все блокеры TASK-015 закрыты:
+1. DRBD deployment model: locked 9.3.2, compile-only PASS (loader image
+   drbd9-resolute:v9.3.2, gcc-15 внутри, host toolchain НЕ требуется).
+2. Candidate health: verified 6/6 (read-only SCSI tooling).
+3. DRBD userspace: drbd-utils 9.34.3 зафиксирован.
 
 ## Required packages/artifacts (exact)
 
@@ -25,13 +17,12 @@ STATUS: PROPOSED / NOT AUTHORIZED. Ничего не выполняется в P
   - helm: linstor/linstor-operator
 - linstor-server 1.33.2 (bundled)
 - linstor-csi 1.11.0 (bundled)
-- drbd 9.2.18 (out-of-tree kernel module)
-- drbd-utils (version TBD — Architect lock required)
-- gcc / make / dkms / linux-headers (build prerequisites, if DKMS model)
+- drbd 9.3.2 (out-of-tree kernel module, loader image drbd9-resolute:v9.3.2)
+- drbd-utils 9.34.3 (bundled in piraeus-server:v1.33.2)
+- build toolchain: supplied by loader image (gcc-15); host gcc/make/dkms not required
 
 ## Kernel prerequisites
 - headers 6.1.158-1-generic (уже установлены, build link valid)
-- toolchain gcc/make/dkms (ОТСУТСТВУЮТ — требуется установка в P5B)
 - module signing: MODULE_SIG=y (no FORCE), modules_disabled=0, lockdown=none
   → unsigned out-of-tree module load technically permitted.
 

@@ -1,5 +1,5 @@
 status: PROPOSED_NOT_AUTHORIZED
-source_task: TASK-015
+source_task: TASK-015-R1
 destructive_authorized: false
 
 nodes:
@@ -11,6 +11,7 @@ nodes:
         exact_size_bytes: 3840755982336
         current_kernel_path: /dev/sdb
         eligible: true
+        eligibility_reason: "P5A_VERIFIED"
         destructive_authorized: false
       - model: MZILT3T8HBLS/007
         serial: S5G0NC0T407844
@@ -18,6 +19,7 @@ nodes:
         exact_size_bytes: 3840755982336
         current_kernel_path: /dev/sdc
         eligible: true
+        eligibility_reason: "P5A_VERIFIED"
         destructive_authorized: false
   node-02:
     candidates:
@@ -27,6 +29,7 @@ nodes:
         exact_size_bytes: 3840755982336
         current_kernel_path: /dev/sdb
         eligible: true
+        eligibility_reason: "P5A_VERIFIED"
         destructive_authorized: false
       - model: MZILT3T8HBLS/007
         serial: S5G0NC0T407075
@@ -34,6 +37,7 @@ nodes:
         exact_size_bytes: 3840755982336
         current_kernel_path: /dev/sdc
         eligible: true
+        eligibility_reason: "P5A_VERIFIED"
         destructive_authorized: false
   node-03:
     candidates:
@@ -43,6 +47,7 @@ nodes:
         exact_size_bytes: 3840755982336
         current_kernel_path: /dev/sdb
         eligible: true
+        eligibility_reason: "P5A_VERIFIED"
         destructive_authorized: false
       - model: MZILT3T8HBLS/007
         serial: S5G0NC0T403289
@@ -50,4 +55,5 @@ nodes:
         exact_size_bytes: 3840755982336
         current_kernel_path: /dev/sdc
         eligible: true
+        eligibility_reason: "P5A_VERIFIED"
         destructive_authorized: false

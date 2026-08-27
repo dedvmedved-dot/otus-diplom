@@ -1,0 +1,17 @@
+=== ANSIBLE LIST-TASKS ===
+playbook: ansible/playbooks/p5a-linstor-drbd-preflight.yml
+
+  play #1 (all): P5A LINSTOR/DRBD compatibility and destructive storage preflight (READ-ONLY)	TAGS: []
+    tasks:
+      PHASE 0 — nodes Ready + readyz (kubectl read-only)	TAGS: []
+      PHASE 1 — Astra release + kernel + arch	TAGS: []
+      PHASE 2 — existing DRBD state (read-only)	TAGS: []
+      PHASE 4 — DRBD network bond + MTU + address	TAGS: []
+      PHASE 5 — lsblk block inventory	TAGS: []
+      PHASE 6 — candidate resolver 4-field exact (serial+WWN+model+size)	TAGS: []
+      PHASE 7 — candidate full safety (mount/swap/lvm/raid/mp/dm-crypt/ceph/pv)	TAGS: []
+      PHASE 7b — candidate fingerprint first+last 1MiB (read-only)	TAGS: []
+      PHASE 8 — candidate health via SCSI tooling (read-only chroot)	TAGS: []
+      PHASE 9 — DRBD 9.3.2 compile-only (no install/load)	TAGS: []
+      PHASE 10 — Kubernetes storage state	TAGS: []
+      PHASE 12 — final preflight gate summary	TAGS: []

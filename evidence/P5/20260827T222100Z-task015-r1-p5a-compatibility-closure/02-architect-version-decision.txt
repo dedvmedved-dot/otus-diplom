@@ -1,0 +1,12 @@
+# TASK-015-R1 — Architect Version Decision
+
+APPROVED baseline correction:
+  linstor_operator: 2.10.6   unchanged
+  linstor:          1.33.2   unchanged
+  linstor_csi:      1.11.0   unchanged
+  drbd:             9.3.2     (was 9.2.18)
+
+Official piraeus-operator v2.10.6 component set:
+  LINSTOR 1.33.2 / LINSTOR CSI 1.11.0 / DRBD 9.3.2 / Affinity 1.4.0
+
+P5B remains NOT AUTHORIZED.

@@ -1,0 +1,22 @@
+      1 apiVersion: admissionregistration.k8s.io/v1
+      4 apiVersion: apiextensions.k8s.io/v1
+      2 apiVersion: apps/v1
+      8 apiVersion: rbac.authorization.k8s.io/v1
+      5 apiVersion: v1
+      2 kind: ClusterRole
+      2 kind: ClusterRoleBinding
+      1 kind: ConfigMap
+      4 kind: CustomResourceDefinition
+      2 kind: Deployment
+      1 kind: Namespace
+      2 kind: Role
+      2 kind: RoleBinding
+      1 kind: Service
+      2 kind: ServiceAccount
+      1 kind: ValidatingWebhookConfiguration
+=== LIVE API VERSIONS CHECK ===
+admissionregistration.k8s.io/v1: 1
+apiextensions.k8s.io/v1: 1
+apps/v1: 1
+rbac.authorization.k8s.io/v1: 1
+v1: 1

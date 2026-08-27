@@ -1,0 +1,15 @@
+# TASK-015-R1 — DRBD Userspace Version (satellite image inspection)
+
+SOURCE IMAGE: quay.io/piraeusdatastore/piraeus-server:v1.33.2
+REGISTRY DIGEST: sha256:0db38ed0388b06ac1e3e013b14c2dcf47798cf27e69f3eab3fded0814996ad10
+
+drbdadm --version (ephemeral chroot, no host install):
+  DRBDADM_BUILDTAG=GIT-hash: 54d5a64e55a5ac38f979848898be727aa8fa2eb4
+  DRBDADM_API_VERSION=2
+  DRBDADM_VERSION_CODE=0x092203
+  DRBDADM_VERSION=9.34.3
+
+drbdsetup present (usr/sbin/drbdsetup)
+
+ВЫВОД: drbd-utils 9.34.3 supplied by digest-pinned piraeus-server:v1.33.2.
+(Версия уникальна и фактична — фиксируется в versions.lock как drbd_utils.)

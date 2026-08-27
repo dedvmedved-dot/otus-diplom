@@ -1,0 +1,10 @@
+# TASK-015-R1 — Diagnostic Packages Installed
+
+apt install smartmontools/sg3-utils/lsscsi: NOT POSSIBLE
+(Astra repositories закомментированы; активны только docker/k8s; CDROM пуст;
+download.astralinux.ru → HTTP 403; §10 требует STOP+report, запрещает менять репозитории.)
+
+Health вместо этого закрыт read-only SCSI tooling (sg_inq/sg_logs) из
+официального piraeus-server:v1.33.2 image — ephemeral chroot, без host install.
+
+Пакеты реально установленные на узлах: 0 (нет изменений системного состояния).
