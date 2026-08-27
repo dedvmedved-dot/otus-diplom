@@ -1,0 +1,13 @@
+=== CEPH LEGACY SAFETY ===
+--- node-01 ---
+ceph-volume NOT AVAILABLE (clean)
+lvm pvs:
+no ceph/candidate PVs
+--- node-02 ---
+ceph-volume NOT AVAILABLE (clean)
+lvm pvs:
+no ceph/candidate PVs
+--- node-03 ---
+ceph-volume NOT AVAILABLE (clean)
+lvm pvs:
+no ceph/candidate PVs

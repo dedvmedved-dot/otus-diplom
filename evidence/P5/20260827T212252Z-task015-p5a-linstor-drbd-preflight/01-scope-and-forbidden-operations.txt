@@ -1,0 +1,17 @@
+# TASK-015 / P5A — Scope and Forbidden Operations
+
+MODE: READ-ONLY (no storage mutation)
+
+AUTHORIZED: только P5A preflight (compatibility + identity + safety).
+НЕ авторизовано: DRBD install/module load, LINSTOR install/operator/CSI,
+StorageClass, PV/PVC, LVM PV/VG/LV, partitioning, filesystem, DRBD metadata,
+wipefs, sgdisk/parted write, dd write, blkdiscard, mkfs, pvcreate/vgcreate/lvcreate,
+drbdadm create-md, drbdsetup new-resource, LINSTOR storage-pool, disk init.
+
+PERMITTED: cat/grep/awk/python, lsblk, blkid -p, wipefs -n, findmnt, pvs/vgs/lvs,
+mdadm read-only, multipath -ll, udevadm info, smartctl read-only, sg_* read-only,
+blockdev --getsize64, ip/ping, ethtool read-only, kubectl get/describe, helm show/
+template/lint, apt-cache, dpkg-query, modinfo, modprobe -n, lsmod, read-only HTTP fetch.
+
+CRITICAL: никогда не таргетировать диск по /dev/sdX — только по serial+WWN
+через live resolver. Все 6 кандидатов — точные identity. Остальные диски PROTECTED.

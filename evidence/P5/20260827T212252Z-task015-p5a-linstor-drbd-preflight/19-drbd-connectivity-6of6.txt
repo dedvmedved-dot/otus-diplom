@@ -1,0 +1,13 @@
+=== DRBD CONNECTIVITY 6/6 ===
+10 packets transmitted, 10 received, 0% packet loss, time 9196ms
+rtt min/avg/max/mdev = 0.145/0.173/0.237/0.025 ms
+10 packets transmitted, 10 received, 0% packet loss, time 9211ms
+rtt min/avg/max/mdev = 0.139/0.168/0.201/0.016 ms
+10 packets transmitted, 10 received, 0% packet loss, time 9216ms
+rtt min/avg/max/mdev = 0.140/0.170/0.238/0.031 ms
+10 packets transmitted, 10 received, 0% packet loss, time 9211ms
+rtt min/avg/max/mdev = 0.148/0.167/0.201/0.014 ms
+10 packets transmitted, 10 received, 0% packet loss, time 9208ms
+rtt min/avg/max/mdev = 0.129/0.161/0.229/0.034 ms
+10 packets transmitted, 10 received, 0% packet loss, time 9210ms
+rtt min/avg/max/mdev = 0.135/0.174/0.283/0.042 ms

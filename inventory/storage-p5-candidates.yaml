@@ -1,0 +1,53 @@
+status: PROPOSED_NOT_AUTHORIZED
+source_task: TASK-015
+destructive_authorized: false
+
+nodes:
+  node-01:
+    candidates:
+      - model: MZILT3T8HBLS/007
+        serial: S5G0NC0T407845
+        wwn: "0x5002538b724752b0"
+        exact_size_bytes: 3840755982336
+        current_kernel_path: /dev/sdb
+        eligible: true
+        destructive_authorized: false
+      - model: MZILT3T8HBLS/007
+        serial: S5G0NC0T407844
+        wwn: "0x5002538b724752a0"
+        exact_size_bytes: 3840755982336
+        current_kernel_path: /dev/sdc
+        eligible: true
+        destructive_authorized: false
+  node-02:
+    candidates:
+      - model: MZILT3T8HBLS/007
+        serial: S5G0NC0T407077
+        wwn: "0x5002538b724722b0"
+        exact_size_bytes: 3840755982336
+        current_kernel_path: /dev/sdb
+        eligible: true
+        destructive_authorized: false
+      - model: MZILT3T8HBLS/007
+        serial: S5G0NC0T407075
+        wwn: "0x5002538b72472290"
+        exact_size_bytes: 3840755982336
+        current_kernel_path: /dev/sdc
+        eligible: true
+        destructive_authorized: false
+  node-03:
+    candidates:
+      - model: MZILT3T8HBLS/007
+        serial: S5G0NC0T403246
+        wwn: "0x5002538b72453970"
+        exact_size_bytes: 3840755982336
+        current_kernel_path: /dev/sdb
+        eligible: true
+        destructive_authorized: false
+      - model: MZILT3T8HBLS/007
+        serial: S5G0NC0T403289
+        wwn: "0x5002538b72453c20"
+        exact_size_bytes: 3840755982336
+        current_kernel_path: /dev/sdc
+        eligible: true
+        destructive_authorized: false

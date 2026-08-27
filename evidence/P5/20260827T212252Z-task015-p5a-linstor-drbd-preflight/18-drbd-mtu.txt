@@ -1,0 +1,7 @@
+=== DRBD MTU ===
+--- node .38 ---
+bond1=1500 bond1.141=1500 ens2f2=1500 ens2f3=1500
+--- node .40 ---
+bond1=1500 bond1.141=1500 ens2f2=1500 ens2f3=1500
+--- node .39 ---
+bond1=1500 bond1.141=1500 ens2f2=1500 ens2f3=1500

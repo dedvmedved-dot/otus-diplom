@@ -1,0 +1,31 @@
+=== KERNEL HEADERS / BUILD PREREQS ===
+--- node .38 ---
+kernel: 6.1.158-1-generic
+modules dir: /lib/modules/6.1.158-1-generic
+build link: /usr/src/linux-headers-6.1.158-1-generic
+build target exists: yes
+headers pkg: 6.1.158-1.astra1+ci8
+gcc: MISSING
+make: MISSING
+perl: /usr/bin/perl
+dkms: MISSING
+--- node .40 ---
+kernel: 6.1.158-1-generic
+modules dir: /lib/modules/6.1.158-1-generic
+build link: /usr/src/linux-headers-6.1.158-1-generic
+build target exists: yes
+headers pkg: 6.1.158-1.astra1+ci8
+gcc: MISSING
+make: MISSING
+perl: /usr/bin/perl
+dkms: MISSING
+--- node .39 ---
+kernel: 6.1.158-1-generic
+modules dir: /lib/modules/6.1.158-1-generic
+build link: /usr/src/linux-headers-6.1.158-1-generic
+build target exists: yes
+headers pkg: 6.1.158-1.astra1+ci8
+gcc: MISSING
+make: MISSING
+perl: /usr/bin/perl
+dkms: MISSING

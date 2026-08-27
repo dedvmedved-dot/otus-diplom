@@ -1,0 +1,35 @@
+=== node-03 platform ===
+hostname: node-03
+--- os-release ---
+PRETTY_NAME="Astra Linux"
+ID=astra
+VERSION_ID=1.8_x86-64
+--- astra release files ---
+1.8.5
+/etc/astra_license
+/etc/astra-safepolicy.conf
+/etc/astra-syslog.conf
+/etc/astra_version
+
+/etc/astra:
+build_version
+
+/etc/astra-event-diagnostics:
+astra-event-diagnostics.yaml
+
+/etc/astra-subscription:
+common.yaml
+
+/etc/astra-system-profiles:
+config.ini
+profiles
+profiles_data
+--- uname ---
+Linux node-03 6.1.158-1-generic #astra1+ci8 SMP PREEMPT_DYNAMIC Tue Feb 10 19:36:35 MSK 2026 x86_64 GNU/Linux
+6.1.158-1-generic
+--- arch ---
+amd64
+x86_64
+--- astra packages ---
+1.1.5+b1
+1.0.5+ci26

@@ -1,0 +1,5 @@
+9b3a93736a356b89cef79f09ec5f0bb2b2e0397a
+branch: main
+origin	https://github.com/dedvmedved-dot/otus-diplom.git (fetch)
+origin	https://github.com/dedvmedved-dot/otus-diplom.git (push)
+worktree: clean

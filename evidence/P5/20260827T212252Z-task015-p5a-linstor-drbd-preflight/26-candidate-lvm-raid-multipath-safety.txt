@@ -1,0 +1,37 @@
+=== CANDIDATE LVM/RAID/MULTIPATH SAFETY ===
+--- node-01 /dev/sdb LVM/RAID/MP ---
+pv: not PV
+vg: not VG member
+md member: 0
+0
+multipath: not mp member
+--- node-01 /dev/sdc LVM/RAID/MP ---
+pv: not PV
+vg: not VG member
+md member: 0
+0
+multipath: not mp member
+--- node-02 /dev/sdb LVM/RAID/MP ---
+pv: not PV
+vg: not VG member
+md member: 0
+0
+multipath: not mp member
+--- node-02 /dev/sdc LVM/RAID/MP ---
+pv: not PV
+vg: not VG member
+md member: 0
+0
+multipath: not mp member
+--- node-03 /dev/sdb LVM/RAID/MP ---
+pv: not PV
+vg: not VG member
+md member: 0
+0
+multipath: not mp member
+--- node-03 /dev/sdc LVM/RAID/MP ---
+pv: not PV
+vg: not VG member
+md member: 0
+0
+multipath: not mp member

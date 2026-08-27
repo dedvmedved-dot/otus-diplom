@@ -1,0 +1,19 @@
+=== node-02 block inventory ===
+NAME                   PATH                           KNAME TYPE   SIZE MODEL            SERIAL         WWN                FSTYPE      MOUNTPOINTS
+sda                    /dev/sda                       sda   disk   447G OS               6CBDF7B9                                      
+├─sda1                 /dev/sda1                      sda1  part   600M                                                    vfat        /boot/efi
+├─sda2                 /dev/sda2                      sda2  part     1G                                                    ext2        /boot
+└─sda3                 /dev/sda3                      sda3  part 445,4G                                                    LVM2_member 
+  ├─astra39539-lv_swap /dev/mapper/astra39539-lv_swap dm-0  lvm     32G                                                    swap        
+  ├─astra39539-lv_home /dev/mapper/astra39539-lv_home dm-1  lvm  328,4G                                                    ext4        /home
+  └─astra39539-lv_root /dev/mapper/astra39539-lv_root dm-2  lvm     40G                                                    ext4        /
+sdb                    /dev/sdb                       sdb   disk   3,5T MZILT3T8HBLS/007 S5G0NC0T407077 0x5002538b724722b0             
+sdc                    /dev/sdc                       sdc   disk   3,5T MZILT3T8HBLS/007 S5G0NC0T407075 0x5002538b72472290             
+sdd                    /dev/sdd                       sdd   disk   1,6T AL15SEB18EQ      12U0A3KVFMCF   0x5000039b686ad4d5             
+sde                    /dev/sde                       sde   disk   1,6T AL15SEB18EQ      12U0A3MSFMCF   0x5000039b686adc19             
+sdf                    /dev/sdf                       sdf   disk   1,6T AL15SEB18EQ      12U0A3JAFMCF   0x5000039b686ace8d             
+sdg                    /dev/sdg                       sdg   disk   1,6T AL15SEB18EQ      12U0A3LUFMCF   0x5000039b686ad72d             
+sdh                    /dev/sdh                       sdh   disk   1,6T AL15SEB18EQ      12U0A3MFFMCF   0x5000039b686ad9f9             
+sdi                    /dev/sdi                       sdi   disk   1,6T AL15SEB18EQ      12U0A3J9FMCF   0x5000039b686ace7d             
+sdj                    /dev/sdj                       sdj   disk     0B Virtual HDisk0   AAAABBBBCCCC3                                 
+sr0                    /dev/sr0                       sr0   rom   1024M Virtual CDROM0   AAAABBBBCCCC1                                 

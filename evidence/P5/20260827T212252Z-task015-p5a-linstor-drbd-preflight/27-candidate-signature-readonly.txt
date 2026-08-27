@@ -1,0 +1,19 @@
+=== CANDIDATE SIGNATURE READONLY ===
+--- node-01 /dev/sdb signature ---
+wipefs -n:
+blkid -p:
+--- node-01 /dev/sdc signature ---
+wipefs -n:
+blkid -p:
+--- node-02 /dev/sdb signature ---
+wipefs -n:
+blkid -p:
+--- node-02 /dev/sdc signature ---
+wipefs -n:
+blkid -p:
+--- node-03 /dev/sdb signature ---
+wipefs -n:
+blkid -p:
+--- node-03 /dev/sdc signature ---
+wipefs -n:
+blkid -p:

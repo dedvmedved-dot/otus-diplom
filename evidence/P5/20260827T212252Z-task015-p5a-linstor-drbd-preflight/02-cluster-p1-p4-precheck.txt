@@ -1,0 +1,14 @@
+=== P1-P4 CLUSTER PRECHECK ===
+nodes: 3
+calico-node: 3
+controllers: 1
+ippool: 10.244.0.0/16 Always true
+coredns: 2/2/2
+readyz: ok
+kube-vip: 3
+--- etcd ---
+3
+--- VIP owner ---
+node .38 VIP=0
+node .40 VIP=1
+node .39 VIP=0

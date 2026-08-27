@@ -1,0 +1,14 @@
+# TASK-015 / P5A — Protected Device Audit
+
+OS disks (sda, 447G): NOT TARGETED (root/boot/swap LVM)
+legacy 1.6T disks (sdd-sdi, AL15SEB18EQ): NOT TARGETED (OUT OF SCOPE, PROTECTED)
+virtual devices (sdj Virtual HDisk0, sr0 Virtual CDROM): NOT TARGETED
+unexpected devices: 0
+
+Candidate resolver target count: exactly 6 (sdb+sdc × 3 nodes, Samsung MZILT3T8HBLS/007)
+
+Destructive commands executed: 0
+DRBD module loaded by task: NO
+Packages installed: 0
+
+RESULT: PASS

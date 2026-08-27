@@ -1,0 +1,17 @@
+=== EXISTING LINSTOR/K8S STORAGE STATE ===
+--- storageclass ---
+No resources found
+--- csidriver ---
+No resources found
+--- pv ---
+No resources found
+--- pvc ---
+No resources found
+--- crd (linstor/piraeus/drbd/linbit) ---
+none
+--- namespaces ---
+NAME              STATUS   AGE
+default           Active   3d7h
+kube-node-lease   Active   3d7h
+kube-public       Active   3d7h
+kube-system       Active   3d7h

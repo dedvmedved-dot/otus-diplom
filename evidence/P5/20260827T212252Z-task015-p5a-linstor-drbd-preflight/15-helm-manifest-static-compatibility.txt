@@ -1,0 +1,15 @@
+# TASK-015 / P5A — Helm/Manifest Static Compatibility
+
+Official manifest for LINSTOR Operator 2.10.6:
+  https://charts.linstor.io/static/v2.10.6.yaml (LINBIT official, cross-referenced
+  in release announcement).
+
+Helm chart: linstor/linstor-operator (repo charts.linstor.io).
+
+P5A НЕ выполнял helm install/upgrade (запрещено). Static render не выполнялся,
+т.к. CRDs LINSTOR не установлены в кластере (server-side dry-run невозможен без
+CRDs; установка CRDs в P5A запрещена — ограничение задокументировано честно).
+
+Manifest availability: VERIFIED (official URL, operator 2.10.6).
+
+RESULT: manifest verified; server-side dry-run NOT performed (CRDs not installed, no install in P5A)

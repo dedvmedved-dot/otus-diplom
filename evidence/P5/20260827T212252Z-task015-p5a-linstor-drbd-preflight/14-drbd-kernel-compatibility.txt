@@ -1,0 +1,18 @@
+# TASK-015 / P5A — DRBD 9.2.18 Kernel Compatibility
+
+LOCKED: DRBD 9.2.18
+ACTUAL in-kernel module: 8.4.11 (Astra Linux SE 1.8.5.46, kernel 6.1.158-1-generic)
+→ DRBD 9.2.18 НЕ присутствует в дереве Astra; требуется out-of-tree модуль (LINBIT DKMS/package).
+
+Proof hierarchy attempt:
+1. official vendor package for Astra/kernel 6.1.158 → NOT FOUND (Astra не в списке
+   стандартных LINBIT-пакетов; нужен источник для Astra).
+2. official compatibility statement covering kernel 6.1.158 → NOT FOUND for Astra.
+3. compile-only build DRBD 9.2.18 → IMPOSSIBLE: gcc/make/dkms MISSING на всех узлах,
+   установка запрещена в P5A.
+
+DRBD 9.2.18 KERNEL COMPATIBILITY: NOT VERIFIED
+
+(Не PASS → P5A BLOCKED по §21/§50. Требуется Architect решение о deployment model.)
+
+RESULT: NOT VERIFIED

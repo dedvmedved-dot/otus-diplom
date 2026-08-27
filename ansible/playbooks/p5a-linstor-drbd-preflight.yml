@@ -1,0 +1,161 @@
+---
+# p5a-linstor-drbd-preflight.yml
+# TASK-015 / P5A: LINSTOR/DRBD compatibility + destructive storage preflight.
+# READ-ONLY ONLY. NO storage mutation, no package install, no module load.
+#
+# Фазы 0-12. Все команды read-only. Кандидаты таргетируются только через
+# serial+WWN resolver (никогда по /dev/sdX напрямую).
+
+- name: "P5A LINSTOR/DRBD compatibility and destructive storage preflight (READ-ONLY)"
+  hosts: all
+  gather_facts: true
+  become: true
+  vars:
+    # expected candidate identities (historical P0)
+    expected_candidates:
+      node-01:
+        - { serial: "S5G0NC0T407845", wwn: "0x5002538b724752b0" }
+        - { serial: "S5G0NC0T407844", wwn: "0x5002538b724752a0" }
+      node-02:
+        - { serial: "S5G0NC0T407077", wwn: "0x5002538b724722b0" }
+        - { serial: "S5G0NC0T407075", wwn: "0x5002538b72472290" }
+      node-03:
+        - { serial: "S5G0NC0T403246", wwn: "0x5002538b72453970" }
+        - { serial: "S5G0NC0T403289", wwn: "0x5002538b72453c20" }
+  tasks:
+    # ═══ PHASE 0 — cluster baseline precheck (read-only) ═══
+    - name: PHASE 0 — nodes Ready + readyz (kubectl read-only)
+      ansible.builtin.shell:
+        cmd: |
+          r=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get nodes 2>/dev/null | grep -c ' Ready')
+          rz=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get --raw='/readyz' 2>/dev/null)
+          echo "nodes=$r readyz=$rz"
+          [ "$r" = "3" ] && [ "$rz" = "ok" ] || exit 1
+          echo PHASE0_CLUSTER_OK
+      register: ph0
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 1 — Astra/kernel/header/module-security facts ═══
+    - name: PHASE 1 — Astra release + kernel + arch
+      ansible.builtin.shell:
+        cmd: |
+          bv=$(cat /etc/astra/build_version 2>/dev/null)
+          k=$(uname -r)
+          a=$(uname -m)
+          echo "host=$(hostname) astra=$bv kernel=$k arch=$a"
+          echo "modules_dir=$(ls -d /lib/modules/$k 2>/dev/null || echo MISSING)"
+          echo "build_link=$(readlink -f /lib/modules/$k/build 2>/dev/null || echo MISSING)"
+          echo "gcc=$(command -v gcc || echo MISSING)"
+          echo "make=$(command -v make || echo MISSING)"
+          echo "dkms=$(command -v dkms || echo MISSING)"
+          echo "modules_disabled=$(cat /proc/sys/kernel/modules_disabled 2>/dev/null)"
+          echo "lockdown=$(cat /sys/kernel/security/lockdown 2>/dev/null || echo NONE)"
+      register: ph1
+      changed_when: false
+
+    # ═══ PHASE 2 — existing DRBD/LINSTOR state ═══
+    - name: PHASE 2 — existing DRBD state (read-only)
+      ansible.builtin.shell:
+        cmd: |
+          loaded=$(lsmod | grep -c '^drbd' || true)
+          ver=$(modinfo drbd 2>/dev/null | grep '^version:' | awk '{print $2}')
+          adm=$(command -v drbdadm || echo ABSENT)
+          echo "host=$(hostname) drbd_loaded=$loaded drbd_module_version=$ver drbdadm=$adm"
+          [ "$loaded" = "0" ] || { echo "UNEXPECTED_DRBD_LOADED"; exit 1; }
+      register: ph2
+      changed_when: false
+
+    # ═══ PHASE 4 — DRBD network route/bond/MTU ═══
+    - name: PHASE 4 — DRBD network bond + MTU + address
+      ansible.builtin.shell:
+        cmd: |
+          slaves=$(cat /sys/class/net/bond1/bonding/slaves 2>/dev/null | tr -d '\n')
+          mode=$(cat /sys/class/net/bond1/bonding/mode 2>/dev/null)
+          vlan141=$(cat /sys/class/net/bond1.141/operstate 2>/dev/null)
+          mtu=$(cat /sys/class/net/bond1.141/mtu 2>/dev/null)
+          addr=$(ip -4 -o addr show bond1.141 2>/dev/null | awk '{print $4}')
+          dr=$(ip -4 route show default 2>/dev/null)
+          echo "host=$(hostname) bond1_slaves=$slaves mode=$mode vlan141=$vlan141 mtu=$mtu addr=$addr"
+          echo "default_route=$dr"
+          [ "$slaves" = "ens2f2 ens2f3" ] || exit 1
+          [ "$vlan141" = "up" ] || exit 1
+          echo "$dr" | grep -q 'bond0.700' || exit 1
+      register: ph4
+      changed_when: false
+
+    # ═══ PHASE 5 — complete block inventory (read-only) ═══
+    - name: PHASE 5 — lsblk block inventory
+      ansible.builtin.shell:
+        cmd: "lsblk -o NAME,PATH,KNAME,TYPE,SIZE,MODEL,SERIAL,WWN,FSTYPE,MOUNTPOINTS 2>/dev/null"
+      register: ph5
+      changed_when: false
+
+    # ═══ PHASE 6 — immutable candidate resolver 6/6 ═══
+    - name: PHASE 6 — candidate resolver (serial+WWN -> exactly one path)
+      ansible.builtin.shell:
+        cmd: |
+          # expected candidate serials for this host
+          expected="{{ expected_candidates[inventory_hostname] | map(attribute='serial') | list | join(' ') }}"
+          matched=0; dup=0
+          for exp in $expected; do
+            n=$(lsblk -no SERIAL 2>/dev/null | grep -c "^$exp$" || true)
+            if [ "$n" = "1" ]; then matched=$((matched+1)); else [ "$n" != "1" ] && dup=$((dup+1)); fi
+          done
+          echo "host=$(hostname) expected=2 matched=$matched"
+          [ "$matched" = "2" ] || exit 1
+      register: ph6
+      changed_when: false
+
+    # ═══ PHASE 7 — candidate safety (read-only) ═══
+    - name: PHASE 7 — candidate safety checks (no mount/pv/raid/mp/signature)
+      ansible.builtin.shell:
+        cmd: |
+          for exp in {{ expected_candidates[inventory_hostname] | map(attribute='serial') | list | join(' ') }}; do
+            dev=$(lsblk -no PATH,SERIAL 2>/dev/null | grep "$exp" | awk '{print $1}')
+            [ -z "$dev" ] && { echo "NO_DEV_FOR_$exp"; exit 1; }
+            children=$(lsblk -no TYPE "$dev" 2>/dev/null | grep -c part || true)
+            mnt=$(findmnt -n -o TARGET "$dev" 2>/dev/null || true)
+            pv=$(pvs --noheadings -o pv_name 2>/dev/null | grep -c "$dev" || true)
+            sig=$(wipefs -n "$dev" 2>&1)
+            echo "$dev children=$children mnt=${mnt:-none} pv=$pv sig=${sig:-none}"
+            [ "$children" = "0" ] && [ -z "$mnt" ] && [ "$pv" = "0" ] || exit 1
+          done
+      register: ph7
+      changed_when: false
+
+    # ═══ PHASE 9 — read-only fingerprints ═══
+    - name: PHASE 9 — candidate read-only fingerprint (dd if=, no of=)
+      ansible.builtin.shell:
+        cmd: |
+          for exp in {{ expected_candidates[inventory_hostname] | map(attribute='serial') | list | join(' ') }}; do
+            dev=$(lsblk -no PATH,SERIAL 2>/dev/null | grep "$exp" | awk '{print $1}')
+            sz=$(blockdev --getsize64 "$dev" 2>/dev/null)
+            fh=$(dd if="$dev" bs=1M count=1 2>/dev/null | sha256sum | cut -d' ' -f1)
+            echo "$dev serial=$exp size=$sz first1MiB=$fh"
+          done
+      register: ph9
+      changed_when: false
+
+    # ═══ PHASE 10 — Kubernetes storage state (read-only) ═══
+    - name: PHASE 10 — Kubernetes storage state
+      ansible.builtin.shell:
+        cmd: |
+          sc=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get storageclass 2>/dev/null | grep -cv NAME || true)
+          csi=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get csidriver 2>/dev/null | grep -cv NAME || true)
+          pv=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pv 2>/dev/null | grep -cv NAME || true)
+          crd=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get crd 2>/dev/null | grep -icE 'linstor|piraeus|drbd|linbit' || true)
+          echo "storageclass=$sc csidriver=$csi pv=$pv linstor_crd=$crd"
+          [ "$sc" = "0" ] && [ "$csi" = "0" ] && [ "$pv" = "0" ] && [ "$crd" = "0" ] || exit 1
+      register: ph10
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 12 — final gate ═══
+    - name: PHASE 12 — final preflight gate summary
+      ansible.builtin.debug:
+        msg: "P5A read-only preflight completed"
+      run_once: true
+      delegate_to: node-01

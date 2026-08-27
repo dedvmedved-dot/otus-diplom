@@ -1,0 +1,28 @@
+# TASK-015 / P5A — Upstream Release Availability
+
+Источник: официальные LINBIT/Piraeus release announcements (forums.linbit.com, github.com/piraeusdatastore).
+
+LINSTOR Operator 2.10.6:
+  canonical project: piraeusdatastore/piraeus-operator (LINBIT)
+  release exists: YES
+  release date: May 2026
+  artifact: https://charts.linstor.io/static/v2.10.6.yaml (kustomize manifest)
+  helm chart: linstor/linstor-operator
+  bundled images (официально заявлено в release notes):
+    - LINSTOR 1.33.2
+    - LINSTOR CSI 1.11.0
+    - DRBD 9.2.18
+    - LINSTOR Affinity Controller 1.4.0
+
+LINSTOR 1.33.2:
+  release exists: YES (linstor-server 1.33.2 release announcement)
+  NOTE: LINSTOR 1.34.0 removes etcd database support (важно для P5B, но locked=1.33.2)
+
+LINSTOR CSI 1.11.0:
+  release exists: YES (bundled in operator 2.10.6)
+
+DRBD 9.2.18:
+  release exists: YES (bundled in operator 2.10.6; LINBIT DRBD 9.2.x line)
+
+RESULT: all four locked releases exist upstream and are cross-referenced by the
+official operator 2.10.6 release.

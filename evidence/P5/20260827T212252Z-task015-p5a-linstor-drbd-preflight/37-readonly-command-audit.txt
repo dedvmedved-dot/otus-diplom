@@ -1,0 +1,27 @@
+# TASK-015 / P5A — Readonly Command Audit
+
+Проверка playbook ansible/playbooks/p5a-linstor-drbd-preflight.yml на запрещённые
+destructive-команды (вручную выверено по полному содержимому):
+
+wipefs без -n: 0 (используется только "wipefs -n" — read-only probe)
+blkdiscard: 0
+pvcreate/vgcreate/lvcreate: 0
+mkfs/mkswap: 0
+parted write / sgdisk write / fdisk write: 0
+dd с of=: 0 (только "dd if=$dev ... | sha256sum" — read-only input)
+ceph-volume zap: 0
+drbdadm create-md: 0
+drbdsetup new-resource: 0
+modprobe drbd / insmod: 0
+dkms install: 0
+make install: 0
+kubectl apply: 0
+helm install/upgrade: 0
+linstor create: 0
+
+Разрешённые read-only: cat, grep, lsblk, wipefs -n, findmnt, pvs, blockdev --getsize64,
+dd if= (read), kubectl get, sha256sum, modinfo, lsmod, ip, uname, command -v.
+
+DESTRUCTIVE COMMANDS: 0
+
+RESULT: PASS

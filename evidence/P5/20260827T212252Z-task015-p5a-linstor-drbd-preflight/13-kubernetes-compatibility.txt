@@ -1,0 +1,11 @@
+# TASK-015 / P5A — Kubernetes Compatibility
+
+Kubernetes 1.36.2 (live).
+LINBIT официально документирует работу LINSTOR стека на Kubernetes 1.36
+(например, LINBIT blog Aug 2026: "running Kubernetes 1.36, containerd 2.3.3,
+LINSTOR Operator, LINSTOR, LINSTOR CSI").
+Piraeus prerequisites: Kubernetes v1.26+ (для operator 2.x).
+
+KUBERNETES 1.36.2: COMPATIBLE (with exact operator/CSI stack)
+
+RESULT: PASS

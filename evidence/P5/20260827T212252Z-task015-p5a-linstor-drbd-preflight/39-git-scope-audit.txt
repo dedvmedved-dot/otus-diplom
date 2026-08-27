@@ -1,0 +1,7 @@
+=== GIT SCOPE AUDIT ===
+?? 4-node-01-platform-kernel.txt
+?? ansible/playbooks/p5a-linstor-drbd-preflight.yml
+?? docs/architecture/ADR-PROPOSAL-P5-drbd-deployment-model.md
+?? docs/storage/
+?? evidence/P5/
+?? inventory/storage-p5-candidates.yaml

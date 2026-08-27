@@ -1,0 +1,35 @@
+=== CANDIDATE HEALTH ===
+--- node-01 /dev/sdb ---
+smartctl NOT AVAILABLE
+--- node-01 /dev/sdc ---
+smartctl NOT AVAILABLE
+--- node-02 /dev/sdb ---
+smartctl NOT AVAILABLE
+--- node-02 /dev/sdc ---
+smartctl NOT AVAILABLE
+--- node-03 /dev/sdb ---
+smartctl NOT AVAILABLE
+--- node-03 /dev/sdc ---
+smartctl NOT AVAILABLE
+smartctl:
+ABSENT
+sg_inq:
+ABSENT
+sg_logs:
+ABSENT
+sdparm:
+ABSENT
+smartmontools pkg:
+NOT_INSTALLED
+sg3-utils pkg:
+NOT_INSTALLED
+--- device vpd via sysfs ---
+SAMSUNG 
+MZILT3T8HBLS/007
+GXA0
+--- smart via sysfs (if any) ---
+no sysfs smart/health
+--- apt-cache policy (read-only) ---
+--- lsscsi ---
+lsscsi ABSENT or no match
+--- dmesg disk errors (read-only) ---

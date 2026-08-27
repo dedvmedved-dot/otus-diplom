@@ -1,0 +1,79 @@
+=== CANDIDATE MOUNT/SWAP/ROOT SAFETY ===
+--- node-01 /dev/sdb ---
+children: 0
+0
+mounted: none
+swap: 0
+0
+lvm pv: 0
+0
+md raid: 0
+0
+multipath: 0
+0
+holder: 
+--- node-01 /dev/sdc ---
+children: 0
+0
+mounted: none
+swap: 0
+0
+lvm pv: 0
+0
+md raid: 0
+0
+multipath: 0
+0
+holder: 
+--- node-02 /dev/sdb ---
+children: 0
+0
+mounted: none
+swap: 0
+0
+lvm pv: 0
+0
+md raid: 0
+0
+multipath: 0
+0
+holder: 
+--- node-02 /dev/sdc ---
+children: 0
+0
+mounted: none
+swap: 0
+0
+lvm pv: 0
+0
+md raid: 0
+0
+multipath: 0
+0
+holder: 
+--- node-03 /dev/sdb ---
+children: 0
+0
+mounted: none
+swap: 0
+0
+lvm pv: 0
+0
+md raid: 0
+0
+multipath: 0
+0
+holder: 
+--- node-03 /dev/sdc ---
+children: 0
+0
+mounted: none
+swap: 0
+0
+lvm pv: 0
+0
+md raid: 0
+0
+multipath: 0
+0
+holder: 

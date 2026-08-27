@@ -1,0 +1,32 @@
+# TASK-015 / P5A — Version Mapping
+
+Locked (versions.lock):
+  linstor_operator: 2.10.6
+  linstor:          1.33.2
+  linstor_csi:      1.11.0
+  drbd:             9.2.18
+
+Upstream mapping (официальный release LINSTOR Operator 2.10.6, May 2026):
+  operator 2.10.6 бандлит:
+    - LINSTOR 1.33.2
+    - LINSTOR CSI 1.11.0
+    - DRBD 9.2.18
+    - LINSTOR Affinity Controller 1.4.0
+
+ВЫВОД (unambiguous):
+  linstor_operator 2.10.6 == Piraeus/LINBIT operator image 2.10.6
+  linstor 1.33.2 == linstor-server 1.33.2 (bundled)
+  linstor_csi 1.11.0 == linstor-csi 1.11.0 (bundled)
+  drbd 9.2.18 == DRBD kernel driver 9.2.18 (bundled)
+
+КРИТИЧЕСКОЕ НАБЛЮДЕНИЕ (LIVE):
+  Встроенный в Astra Linux SE 1.8.5.46 DRBD kernel module = 8.4.11
+  (/lib/modules/6.1.158-1-generic/kernel/drivers/block/drbd/drbd.ko, version 8.4.11).
+  Locked DRBD = 9.2.18. Это РАЗНЫЕ мажорные ветки (8.4 vs 9.2).
+  DRBD 9.2.18 требует отдельного out-of-tree модуля (LINBIT DKMS/package),
+  НЕ встроенный в ядро Astra 8.4.11.
+
+DRBD userspace relationship:
+  versions.lock НЕ содержит drbd-utils версию.
+  LINSTOR satellite поставляет свой DRBD userspace API.
+  Требует Architect clarification перед P5B.

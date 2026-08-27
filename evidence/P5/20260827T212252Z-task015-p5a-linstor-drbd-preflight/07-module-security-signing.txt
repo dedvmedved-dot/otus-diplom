@@ -1,0 +1,47 @@
+=== MODULE SECURITY / SIGNING ===
+--- node .38 ---
+modules_disabled: 0
+lockdown: [none] integrity confidentiality
+CONFIG_MODULE_SIG: CONFIG_MODULE_SIG_FORMAT=y
+CONFIG_MODULE_SIG=y
+CONFIG_MODULE_SIG_ALL=y
+mokutil sb-state: tool not available
+--- node .40 ---
+modules_disabled: 0
+lockdown: [none] integrity confidentiality
+CONFIG_MODULE_SIG: CONFIG_MODULE_SIG_FORMAT=y
+CONFIG_MODULE_SIG=y
+CONFIG_MODULE_SIG_ALL=y
+mokutil sb-state: tool not available
+--- node .39 ---
+modules_disabled: 0
+lockdown: [none] integrity confidentiality
+CONFIG_MODULE_SIG: CONFIG_MODULE_SIG_FORMAT=y
+CONFIG_MODULE_SIG=y
+CONFIG_MODULE_SIG_ALL=y
+mokutil sb-state: tool not available
+CONFIG_MODULE_SIG_FORMAT=y
+CONFIG_MODULE_SIG=y
+CONFIG_MODULE_SIG_ALL=y
+CONFIG_MODULE_SIG_SHA512=y
+CONFIG_MODULE_SIG_HASH="sha512"
+CONFIG_MODULE_SIG_KEY="certs/signing_key.pem"
+CONFIG_MODULE_SIG_KEY_TYPE_RSA=y
+--- secure boot/efi ---
+config_table
+efivars
+esrt
+fw_platform_size
+fw_vendor
+runtime
+runtime-map
+systab
+EFI present
+--- existing drbd ---
+no drbd module loaded
+filename:       /lib/modules/6.1.158-1-generic/kernel/drivers/block/drbd/drbd.ko
+alias:          block-major-147-*
+license:        GPL
+--- drbdadm ---
+no drbdadm
+cat: /proc/drbd: Нет такого файла или каталога

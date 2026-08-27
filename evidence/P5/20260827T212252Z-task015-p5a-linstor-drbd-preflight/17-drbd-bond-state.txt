@@ -1,0 +1,22 @@
+=== DRBD BOND STATE ===
+--- node .38 ---
+bond1 slaves: ens2f2 ens2f3
+bond1 mode: 802.3ad 4
+bond1 state: up
+ens2f2: up mii=1
+ens2f3: up mii=1
+vlan141 state: up
+--- node .40 ---
+bond1 slaves: ens2f2 ens2f3
+bond1 mode: 802.3ad 4
+bond1 state: up
+ens2f2: up mii=1
+ens2f3: up mii=1
+vlan141 state: up
+--- node .39 ---
+bond1 slaves: ens2f2 ens2f3
+bond1 mode: 802.3ad 4
+bond1 state: up
+ens2f2: up mii=1
+ens2f3: up mii=1
+vlan141 state: up

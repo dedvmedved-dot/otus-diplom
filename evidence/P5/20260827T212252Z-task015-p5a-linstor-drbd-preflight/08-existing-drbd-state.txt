@@ -1,0 +1,46 @@
+=== EXISTING DRBD STATE ===
+--- node .38 ---
+module loaded: 0
+0
+drbd module version:
+version:        8.4.11
+srcversion:     C718D2C2BEE45E82AD21432
+vermagic:       6.1.158-1-generic SMP preempt mod_unload modversions 
+drbd.ko path: /lib/modules/6.1.158-1-generic/kernel/drivers/block/drbd/drbd.ko
+modprobe -n -v drbd:
+insmod /lib/modules/6.1.158-1-generic/kernel/lib/lru_cache.ko 
+insmod /lib/modules/6.1.158-1-generic/kernel/drivers/block/drbd/drbd.ko 
+drbdadm: ABSENT
+drbdsetup: ABSENT
+/proc/drbd: 
+drbd conf: no config
+--- node .40 ---
+module loaded: 0
+0
+drbd module version:
+version:        8.4.11
+srcversion:     C718D2C2BEE45E82AD21432
+vermagic:       6.1.158-1-generic SMP preempt mod_unload modversions 
+drbd.ko path: /lib/modules/6.1.158-1-generic/kernel/drivers/block/drbd/drbd.ko
+modprobe -n -v drbd:
+insmod /lib/modules/6.1.158-1-generic/kernel/lib/lru_cache.ko 
+insmod /lib/modules/6.1.158-1-generic/kernel/drivers/block/drbd/drbd.ko 
+drbdadm: ABSENT
+drbdsetup: ABSENT
+/proc/drbd: 
+drbd conf: no config
+--- node .39 ---
+module loaded: 0
+0
+drbd module version:
+version:        8.4.11
+srcversion:     C718D2C2BEE45E82AD21432
+vermagic:       6.1.158-1-generic SMP preempt mod_unload modversions 
+drbd.ko path: /lib/modules/6.1.158-1-generic/kernel/drivers/block/drbd/drbd.ko
+modprobe -n -v drbd:
+insmod /lib/modules/6.1.158-1-generic/kernel/lib/lru_cache.ko 
+insmod /lib/modules/6.1.158-1-generic/kernel/drivers/block/drbd/drbd.ko 
+drbdadm: ABSENT
+drbdsetup: ABSENT
+/proc/drbd: 
+drbd conf: no config

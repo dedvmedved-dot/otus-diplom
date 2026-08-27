@@ -1,0 +1,14 @@
+# TASK-015 / P5A — Kubernetes Storage State (read-only)
+
+storageclass: none
+csidriver: none
+pv: none
+pvc: none
+linstor/piraeus/drbd/linbit CRD: none
+namespaces: default, kube-node-lease, kube-public, kube-system
+
+PREEXISTING LINSTOR INSTALLATION: NO
+PREEXISTING LINSTOR CSI: NO
+PREEXISTING LINSTOR STORAGECLASS: NO
+
+RESULT: PASS
