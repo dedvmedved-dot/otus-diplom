@@ -1,0 +1,8 @@
+# TASK-014-R1 — Full P4A/P3 Precheck (from normal run PHASE 0)
+
+etcd members=3 ml=0 h=3 el=0 ul=1 al=1 kv=3 readyz=ok
+nodes=3 calico=3 ctrl=1 coredns=2/2/2
+ippool cidr=10.244.0.0/16 ipip=Always nat=True dis=False pools=1
+VIP_owner_count=1 API_livez=3/3
+
+RESULT: PASS

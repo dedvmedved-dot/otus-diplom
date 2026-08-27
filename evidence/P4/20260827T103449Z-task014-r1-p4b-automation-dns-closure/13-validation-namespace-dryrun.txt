@@ -1,0 +1,12 @@
+# TASK-014-R1 — Validation Namespace Dry-run
+
+PHASE 4 создал namespace p4b-netpol-validation (labeled).
+PHASE 5 выполнил server-side dry-run в существующем namespace для всех 4 manifests:
+  baseline-default-deny-all
+  baseline-allow-dns-egress
+  validation-allow-client-egress-to-server
+  validation-allow-server-ingress-from-client
+
+Все 4 dry-run успешны (см. 18-normal-playbook-run.txt PHASE 5).
+
+RESULT: PASS

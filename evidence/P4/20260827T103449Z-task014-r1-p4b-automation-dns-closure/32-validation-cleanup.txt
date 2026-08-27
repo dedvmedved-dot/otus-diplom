@@ -1,0 +1,6 @@
+# TASK-014-R1 — Validation Cleanup
+
+namespace p4b-netpol-validation deleted
+PHASE13_CLEANUP_NOTFOUND (NotFound verified, fail-closed distinct from API error)
+
+RESULT: PASS

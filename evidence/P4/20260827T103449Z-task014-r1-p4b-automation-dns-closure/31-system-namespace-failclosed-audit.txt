@@ -1,0 +1,10 @@
+# TASK-014-R1 — System Namespace Fail-closed Audit
+
+default: stage=P4B policies=0
+kube-system: stage=P4B policies=0
+kube-public: stage=P4B policies=0
+kube-node-lease: stage=P4B policies=0
+
+(каждая проверка: kubectl rc=0 + JSON parse, no error suppression)
+
+RESULT: PASS

@@ -1,0 +1,6 @@
+# TASK-014-R1 — Default-deny DNS 18/18
+
+default_deny_dns=18/18
+(2 имена × 3 pods × 3 consecutive PASS attempts)
+
+RESULT: PASS

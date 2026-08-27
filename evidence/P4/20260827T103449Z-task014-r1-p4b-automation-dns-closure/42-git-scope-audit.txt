@@ -1,0 +1,3 @@
+=== GIT SCOPE AUDIT ===
+ M ansible/playbooks/p4b-networkpolicy-baseline.yml
+?? evidence/P4/20260827T103449Z-task014-r1-p4b-automation-dns-closure/

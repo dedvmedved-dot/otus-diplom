@@ -1,0 +1,7 @@
+# TASK-014-R1 — Explicit Negative
+
+explicit_negative_blocked=6/6
+(observer->server, observer->Service, server->client, client->observer,
+ observer->client, server->observer — каждый BLOCKED x3)
+
+RESULT: PASS

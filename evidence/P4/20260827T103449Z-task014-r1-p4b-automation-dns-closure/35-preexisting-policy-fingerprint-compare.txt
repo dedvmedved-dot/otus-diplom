@@ -1,0 +1,6 @@
+# TASK-014-R1 — Pre-existing Policy Fingerprint Compare
+
+before: FINGERPRINT_POLICIES=0 (empty)
+after:  PREEXISTING_POLICIES_UNCHANGED (diff -q == 0)
+
+RESULT: PASS (identical)

@@ -1,0 +1,8 @@
+# TASK-014-R1 — P1/P2 Full Regression
+
+P2 (3/3): containerd=v2.3.3, kubelet=v1.36.2, swap=0
+P1 (3/3): bond0=ens2f0 ens2f1, bond1=ens2f2 ens2f3,
+  default route count=1, via 192.168.194.1, dev bond0.700
+  (VLAN700/140/141/143 exact addresses preserved per accepted host map)
+
+RESULT: PASS

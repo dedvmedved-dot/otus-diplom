@@ -2,65 +2,138 @@
 # p4b-networkpolicy-baseline.yml
 # TASK-014 / P4B: baseline Kubernetes NetworkPolicy enforcement + validation.
 #
-# Только стандартный networking.k8s.io/v1 NetworkPolicy. Без Calico GlobalNetworkPolicy.
-# Validation только в namespace p4b-netpol-validation, который полностью удаляется.
-# System namespaces (kube-system/default/kube-public/kube-node-lease) не трогаются.
-#
-# 14 phases, fail-safe cleanup (block/always), fail-closed API reads.
+# R1 (TASK-014-R1): исправлены 11 connector-дефектов.
+# 16 phases, fail-safe cleanup (block/always), только networking.k8s.io/v1 NetworkPolicy.
+# VIP owner + API livez проверяются Ansible-native (per-node tasks + aggregate), без внутреннего ssh.
 
-- name: "P4B baseline NetworkPolicy enforcement and validation"
+- name: "P4B baseline NetworkPolicy enforcement and validation (R1)"
   hosts: all
   gather_facts: true
   become: true
   vars:
     validation_ns: "p4b-netpol-validation"
     policy_dir: "/tmp/netpol"
-    test_image: "busybox:1.36.1"   # TEST-ONLY, NOT PLATFORM COMPONENT
+    test_image: "busybox:1.36.1"
     service_cidr: "10.96.0.0/12"
+    pod_cidr: "10.244.0.0/16"
+    dns_kube_name: "kubernetes.default.svc.cluster.local"
+    dns_kube_ip: "10.96.0.1"
+    dns_svc_name: "p4b-server.p4b-netpol-validation.svc.cluster.local"
   tasks:
-    # ═══ PHASE 0 — P4A/P3 preflight ═══════════════════════════
-    - name: PHASE 0 — nodes Ready 3/3 + readyz
+    # ═══ PHASE 0 — full P4A/P3 preflight ═══
+    - name: PHASE 0 — etcd full + kube-vip + nodes/calico/coredns/ippool (kubectl only)
       ansible.builtin.shell:
         cmd: |
-          r=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get nodes 2>/dev/null | grep -c ' Ready')
+          EP="--endpoints=https://172.30.140.101:2379,https://172.30.140.102:2379,https://172.30.140.103:2379"
+          CAC="--cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernetes/pki/etcd/healthcheck-client.key"
+          members_json=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-node-01 -- etcdctl $EP $CAC member list -w json 2>/dev/null)
+          mm=$(printf '%s' "$members_json" | python3 -c 'import json,sys; d=json.load(sys.stdin); ms=d.get("members"); sys.exit(2) if not isinstance(ms,list) else None; sys.exit(3) if any("ID" not in m for m in ms) else None; print(len(ms), sum(1 for m in ms if m.get("isLearner") is True))')
+          read mc ml <<< "$mm"
+          h=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-node-01 -- etcdctl $EP $CAC endpoint health 2>/dev/null | grep -c 'is healthy')
+          st=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-node-01 -- etcdctl $EP $CAC endpoint status -w json 2>/dev/null)
+          sm=$(printf '%s' "$st" | python3 -c 'import json,sys; d=json.load(sys.stdin); lr=sum(1 for x in d if x.get("Status",{}).get("isLearner") is True); lids={int(x.get("Status",{}).get("leader",0) or 0) for x in d}; lids.discard(0); act=sum(1 for x in d if ((int(x.get("Status",{}).get("leader",0) or 0)!=0) and (int(x.get("Status",{}).get("header",{}).get("member_id",0) or 0)==int(x.get("Status",{}).get("leader",0) or 0)))); print(lr, len(lids), act)')
+          read el ul al <<< "$sm"
+          kv=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system 2>/dev/null | grep -c 'kube-vip.*Running')
           rz=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get --raw='/readyz' 2>/dev/null)
-          echo "nodes=$r readyz=$rz"
-          [ "$r" = "3" ] && [ "$rz" = "ok" ] || exit 1
-          echo PHASE0_OK
-      register: ph0
+          nodes=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get nodes 2>/dev/null | grep -c ' Ready')
+          cnn=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=calico-node 2>/dev/null | grep -c '1/1')
+          ctrl=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=calico-kube-controllers 2>/dev/null | grep -c '1/1')
+          cd=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get deploy coredns -n kube-system -o jsonpath='{.spec.replicas}' 2>/dev/null)
+          ca=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get deploy coredns -n kube-system -o jsonpath='{.status.availableReplicas}' 2>/dev/null)
+          cr=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get deploy coredns -n kube-system -o jsonpath='{.status.readyReplicas}' 2>/dev/null)
+          ipjson=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get ippool default-ipv4-ippool -o json 2>/dev/null)
+          ipm=$(printf '%s' "$ipjson" | python3 -c 'import json,sys; d=json.load(sys.stdin); s=d.get("spec",{}); print(s.get("cidr",""), s.get("ipipMode",""), s.get("natOutgoing",False), s.get("disabled",False))')
+          read cidr ipip nat dis <<< "$ipm"
+          pools=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get ippool -o name 2>/dev/null | grep -c ippool)
+          echo "etcd members=$mc ml=$ml h=$h el=$el ul=$ul al=$al kv=$kv readyz=$rz"
+          echo "nodes=$nodes calico=$cnn ctrl=$ctrl coredns=$cd/$ca/$cr"
+          echo "ippool cidr=$cidr ipip=$ipip nat=$nat dis=$dis pools=$pools"
+          [ "$mc" = "3" ] && [ "$ml" = "0" ] && [ "$h" = "3" ] && [ "$el" = "0" ] && [ "$ul" = "1" ] && [ "$al" = "1" ] || exit 1
+          [ "$kv" = "3" ] && [ "$rz" = "ok" ] || exit 1
+          [ "$nodes" = "3" ] && [ "$cnn" = "3" ] && [ "$ctrl" = "1" ] || exit 1
+          [ -n "$cd" ] && [ "$cd" != "0" ] && [ "$ca" = "$cd" ] && [ "$cr" = "$cd" ] || exit 1
+          [ "$cidr" = "{{ pod_cidr }}" ] && [ "$ipip" = "Always" ] && [ "$nat" = "True" ] && [ "$dis" = "False" ] && [ "$pools" = "1" ] || exit 1
+          echo PHASE0_PARTIAL_OK
+      register: ph0_partial
       changed_when: false
       run_once: true
       delegate_to: node-01
 
-    # ═══ PHASE 1 — namespace/policy inventory ═════════════════
-    - name: PHASE 1 — ensure validation namespace does NOT pre-exist
+    - name: PHASE 0 — VIP owner local check (per node)
+      ansible.builtin.shell:
+        cmd: "ip -4 addr show dev bond0.140 2>/dev/null | grep -c '172.30.140.100/32' || true"
+      register: ph0_vip_owner
+      changed_when: false
+      failed_when: false
+
+    - name: PHASE 0 — API livez local check (per node)
+      ansible.builtin.shell:
+        cmd: "curl -k --connect-timeout 3 -s https://172.30.140.100:6443/livez 2>/dev/null || true"
+      register: ph0_api_livez
+      changed_when: false
+      failed_when: false
+
+    - name: PHASE 0 — aggregate VIP owner + API livez (3/3)
       ansible.builtin.shell:
         cmd: |
-          if kubectl --kubeconfig /etc/kubernetes/admin.conf get namespace {{ validation_ns }} -o json >/dev/null 2>&1; then
-            echo "PRE_EXISTING_NAMESPACE"; exit 1
-          fi
-          echo PHASE1_NO_PREEXISTING_NS
+          v1={{ hostvars['node-01'].ph0_vip_owner.stdout | trim | default('0') }}
+          v2={{ hostvars['node-02'].ph0_vip_owner.stdout | trim | default('0') }}
+          v3={{ hostvars['node-03'].ph0_vip_owner.stdout | trim | default('0') }}
+          a1={{ hostvars['node-01'].ph0_api_livez.stdout | trim | default('') }}
+          a2={{ hostvars['node-02'].ph0_api_livez.stdout | trim | default('') }}
+          a3={{ hostvars['node-03'].ph0_api_livez.stdout | trim | default('') }}
+          voc=$((v1+v2+v3))
+          apiok=0
+          [ "$a1" = "ok" ] && apiok=$((apiok+1))
+          [ "$a2" = "ok" ] && apiok=$((apiok+1))
+          [ "$a3" = "ok" ] && apiok=$((apiok+1))
+          echo "VIP_owner_count=$voc API_livez=$apiok/3"
+          [ "$voc" = "1" ] && [ "$apiok" = "3" ] || exit 1
+          echo PHASE0_FULL_PRECHECK_OK
+      register: ph0_agg
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 1 — namespaces + NetworkPolicy fingerprint ═══
+    - name: PHASE 1 — capture namespaces + NetworkPolicy fingerprint
+      ansible.builtin.shell:
+        cmd: |
+          ns=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get namespaces -o json 2>/dev/null)
+          [ -n "$ns" ] || { echo "NS_API_FAIL"; exit 1; }
+          echo "$ns" > /tmp/p4b-ns-before.json
+          np=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get networkpolicy -A -o json 2>/dev/null)
+          [ -n "$np" ] || { echo "NP_API_FAIL"; exit 1; }
+          echo "$np" > /tmp/p4b-np-before.json
+          printf '%s' "$np" | python3 -c 'import json,sys,hashlib; d=json.load(sys.stdin); [print(it["metadata"].get("namespace")+"|"+it["metadata"].get("name")+"|"+it["metadata"].get("uid")+"|"+str(it["metadata"].get("generation"))+"|"+hashlib.sha256(json.dumps(it.get("spec",{}),sort_keys=True,separators=(",",":")).encode()).hexdigest()) for it in d.get("items",[])]' | sort > /tmp/p4b-np-fingerprint-before.txt
+          cat /tmp/p4b-np-fingerprint-before.txt
+          echo "FINGERPRINT_POLICIES=$(wc -l < /tmp/p4b-np-fingerprint-before.txt)"
+          echo PHASE1_INVENTORY_OK
       register: ph1
       changed_when: false
       run_once: true
       delegate_to: node-01
 
-    # ═══ PHASE 2 — CoreDNS selector validation ════════════════
-    - name: PHASE 2 — validate CoreDNS selector (pod k8s-app=kube-dns, ns label)
+    # ═══ PHASE 2 — CoreDNS selector full validation ═══
+    - name: PHASE 2 — CoreDNS selector full validation
       ansible.builtin.shell:
         cmd: |
-          podlabel=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=kube-dns -o jsonpath='{.items[0].metadata.labels.k8s-app}' 2>/dev/null)
           nslabel=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get namespace kube-system -o jsonpath='{.metadata.labels.kubernetes\.io/metadata\.name}' 2>/dev/null)
-          echo "pod_label=$podlabel ns_label=$nslabel"
-          [ "$podlabel" = "kube-dns" ] && [ "$nslabel" = "kube-system" ] || exit 1
+          [ "$nslabel" = "kube-system" ] || { echo "NS_LABEL_MISMATCH"; exit 1; }
+          pods=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=kube-dns -o json 2>/dev/null)
+          [ -n "$pods" ] || { echo "COREDNS_API_FAIL"; exit 1; }
+          metrics=$(printf '%s' "$pods" | python3 -c 'import json,sys; d=json.load(sys.stdin); items=d.get("items",[]); total=len(items); all_label=all(it.get("metadata",{}).get("labels",{}).get("k8s-app")=="kube-dns" for it in items); ready=sum(1 for it in items if any(c.get("type")=="Ready" and c.get("status")=="True" for c in it.get("status",{}).get("conditions",[]))); print(total, "yes" if all_label else "no", ready)')
+          read total all_label ready <<< "$metrics"
+          echo "coredns pods=$total all_k8s_app_label=$all_label ready=$ready"
+          [ "$total" -ge 1 ] && [ "$all_label" = "yes" ] && [ "$ready" -ge 1 ] || exit 1
           echo PHASE2_COREDNS_OK
       register: ph2
       changed_when: false
       run_once: true
       delegate_to: node-01
 
-    # ═══ PHASE 3 — policy manifest static/dry-run ═════════════
-    - name: PHASE 3 — stage policy manifests on node-01
+    # ═══ PHASE 3 — local policy static audit ═══
+    - name: PHASE 3 — stage policy manifests
       ansible.builtin.copy:
         src: "files/networkpolicy/"
         dest: "/tmp/netpol/"
@@ -68,34 +141,53 @@
       run_once: true
       delegate_to: node-01
 
-    - name: PHASE 3 — server-side dry-run each policy
+    - name: PHASE 3 — policy manifest static audit
       ansible.builtin.shell:
         cmd: |
-          for f in baseline-default-deny-all baseline-allow-dns-egress validation-allow-client-egress-to-server validation-allow-server-ingress-from-client; do
-            kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ validation_ns }} apply --dry-run=server -f {{ policy_dir }}/${f}.yaml 2>&1
+          bad=0
+          for f in /tmp/netpol/*.yaml; do
+            grep -qE '0\.0\.0\.0/0' "$f" && bad=$((bad+1))
+            grep -qE 'namespaceSelector: *\{\}' "$f" && bad=$((bad+1))
+            grep -qE 'projectcalico.org/v3|GlobalNetworkPolicy' "$f" && bad=$((bad+1))
           done
-          echo PHASE3_DRYRUN_DONE
+          echo "static_bad_patterns=$bad"
+          [ "$bad" = "0" ] || exit 1
+          echo PHASE3_STATIC_OK
       register: ph3
       changed_when: false
       run_once: true
       delegate_to: node-01
 
-    # ═══ PHASE 4..12 — validation (fail-safe block/always) ════
-    - name: PHASE 4..12 — validation workflow
+    # ═══ PHASE 4..13 — fail-safe validation block ═══
+    - name: PHASE 4..13 — validation workflow (block/always)
       block:
-        # ── PHASE 4: namespace + pods ──
-        - name: PHASE 4 — create validation namespace (labeled)
+        - name: PHASE 4 — ensure namespace absent + create labeled
           ansible.builtin.shell:
             cmd: |
+              if kubectl --kubeconfig /etc/kubernetes/admin.conf get namespace {{ validation_ns }} -o json >/dev/null 2>&1; then
+                echo "PRE_EXISTING_NAMESPACE"; exit 1
+              fi
               kubectl --kubeconfig /etc/kubernetes/admin.conf create namespace {{ validation_ns }} 2>/dev/null
               kubectl --kubeconfig /etc/kubernetes/admin.conf label namespace {{ validation_ns }} task=TASK-014 stage=P4B purpose=networkpolicy-validation --overwrite 2>/dev/null
-              echo NS_READY
+              echo PHASE4_NS_CREATED
           register: ph4_ns
           changed_when: false
           run_once: true
           delegate_to: node-01
 
-        - name: PHASE 4 — create 3 deterministic pods (client/observer/server)
+        - name: PHASE 5 — server-side dry-run (namespace now exists)
+          ansible.builtin.shell:
+            cmd: |
+              for f in baseline-default-deny-all baseline-allow-dns-egress validation-allow-client-egress-to-server validation-allow-server-ingress-from-client; do
+                kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ validation_ns }} apply --dry-run=server -f {{ policy_dir }}/${f}.yaml 2>&1
+              done
+              echo PHASE5_DRYRUN_DONE
+          register: ph5
+          changed_when: false
+          run_once: true
+          delegate_to: node-01
+
+        - name: PHASE 6 — create 3 deterministic pods
           ansible.builtin.shell:
             cmd: |
               declare -A nodes=( [p4b-client]=node-01 [p4b-observer]=node-02 [p4b-server]=node-03 )
@@ -109,17 +201,33 @@
               done
               for i in $(seq 1 30); do
                 r=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n {{ validation_ns }} 2>/dev/null | grep -c '1/1')
-                [ "$r" = "3" ] && echo PODS_3_RUNNING && exit 0
+                [ "$r" = "3" ] && echo PHASE6_PODS_3_3 && exit 0
                 sleep 5
               done
               echo TIMEOUT_PODS && exit 1
-          register: ph4_pods
+          register: ph6_pods
           changed_when: false
           run_once: true
           delegate_to: node-01
 
-        # ── PHASE 5: test service ──
-        - name: PHASE 5 — create p4b-server Service (selector role=server)
+        - name: PHASE 6 — pod IP unique + in CIDR + local HTTP 3/3
+          ansible.builtin.shell:
+            cmd: |
+              ips=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n {{ validation_ns }} -o jsonpath='{range .items[*]}{.status.podIP}{"\n"}{end}' 2>/dev/null)
+              u=$(echo "$ips" | grep -E '^10\.244\.' | sort -u | grep -c .)
+              n=$(echo "$ips" | grep -c '10.244.')
+              echo "pod_ips=$n unique=$u"
+              [ "$n" = "3" ] && [ "$u" = "3" ] || exit 1
+              for pod in p4b-client p4b-observer p4b-server; do
+                kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} $pod -- wget -q -T3 -O- http://127.0.0.1:8080/ >/dev/null 2>&1 || { echo "LOCAL_HTTP_FAIL_$pod"; exit 1; }
+              done
+              echo PHASE6_LOCAL_HTTP_3_3
+          register: ph6_ip
+          changed_when: false
+          run_once: true
+          delegate_to: node-01
+
+        - name: PHASE 6 — create p4b-server Service + EndpointSlice JSON semantic
           ansible.builtin.shell:
             cmd: |
               cat > /tmp/p4b-server-svc.yaml << "EOF"
@@ -140,68 +248,77 @@
                   targetPort: 8080
               EOF
               kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /tmp/p4b-server-svc.yaml 2>/dev/null
+              server_ip=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pod p4b-server -n {{ validation_ns }} -o jsonpath='{.status.podIP}' 2>/dev/null)
+              svc_ip=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get svc p4b-server -n {{ validation_ns }} -o jsonpath='{.spec.clusterIP}' 2>/dev/null)
+              svc_in=$(python3 -c 'import ipaddress,sys; print("yes" if ipaddress.ip_address(sys.argv[1]) in ipaddress.ip_network("10.96.0.0/12") else "no")' "$svc_ip")
               for i in $(seq 1 20); do
-                ep=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get endpoints p4b-server -n {{ validation_ns }} -o jsonpath='{.subsets[0].addresses}' 2>/dev/null | grep -o '10\.244\.' | wc -l)
-                [ "$ep" = "1" ] && echo SVC_1_ENDPOINT && exit 0
+                json=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get endpointslices -n {{ validation_ns }} -l kubernetes.io/service-name=p4b-server -o json 2>/dev/null)
+                [ -n "$json" ] || { echo "ENDPOINTSLICE_API_FAIL"; exit 1; }
+                m=$(printf '%s' "$json" | python3 -c 'import json,sys,ipaddress; d=json.load(sys.stdin); addrs=[]; [addrs.extend([(a,(ep.get("conditions") or {}).get("ready") is True) for a in ep.get("addresses",[])]) for it in d.get("items",[]) for ep in it.get("endpoints",[])]; ready=[a for a,r in addrs if r]; print(len(ready), len(set(ready)), sum(1 for a in ready if ipaddress.ip_address(a) in ipaddress.ip_network("10.244.0.0/16")))')
+                read rc uniq inc <<< "$m"
+                if [ "$rc" = "1" ] && [ "$uniq" = "1" ] && [ "$inc" = "1" ] && [ "$svc_in" = "yes" ]; then
+                  ep_ip=$(printf '%s' "$json" | python3 -c 'import json,sys; d=json.load(sys.stdin); print([a for it in d.get("items",[]) for ep in it.get("endpoints",[]) for a in ep.get("addresses",[])][0])')
+                  [ "$ep_ip" = "$server_ip" ] || { echo "ENDPOINT_IP_MISMATCH $ep_ip != $server_ip"; exit 1; }
+                  echo "SERVICE_READY_ENDPOINT=1 endpoint=$ep_ip server_ip=$server_ip svc_in_cidr=$svc_in"
+                  echo PHASE6_SVC_OK
+                  exit 0
+                fi
                 sleep 3
               done
               echo TIMEOUT_SVC && exit 1
-          register: ph5_svc
+          register: ph6_svc
           changed_when: false
           run_once: true
           delegate_to: node-01
 
-        # ── PHASE 6: pre-policy positive baseline ──
-        - name: PHASE 6 — pre-policy direct 6/6 (local HTTP + cross HTTP)
+        - name: PHASE 7 — pre-policy direct 6/6 + Service 3/3
           ansible.builtin.shell:
             cmd: |
-              ip_client=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pod p4b-client -n {{ validation_ns }} -o jsonpath='{.status.podIP}' 2>/dev/null)
-              ip_observer=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pod p4b-observer -n {{ validation_ns }} -o jsonpath='{.status.podIP}' 2>/dev/null)
-              ip_server=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pod p4b-server -n {{ validation_ns }} -o jsonpath='{.status.podIP}' 2>/dev/null)
-              # local HTTP health (3/3)
-              for pod in p4b-client p4b-observer p4b-server; do
-                kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} $pod -- wget -q -T3 -O- http://127.0.0.1:8080/ >/dev/null 2>&1 || { echo "LOCAL_HTTP_FAIL_$pod"; exit 1; }
-              done
-              echo LOCAL_HTTP_3_3
+              ip_c=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pod p4b-client -n {{ validation_ns }} -o jsonpath='{.status.podIP}' 2>/dev/null)
+              ip_o=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pod p4b-observer -n {{ validation_ns }} -o jsonpath='{.status.podIP}' 2>/dev/null)
+              ip_s=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pod p4b-server -n {{ validation_ns }} -o jsonpath='{.status.podIP}' 2>/dev/null)
+              svc_ip=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get svc p4b-server -n {{ validation_ns }} -o jsonpath='{.spec.clusterIP}' 2>/dev/null)
               ok=0
-              kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} p4b-client -- wget -q -T3 -O- http://$ip_observer:8080/ >/dev/null 2>&1 && ok=$((ok+1))
-              kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} p4b-client -- wget -q -T3 -O- http://$ip_server:8080/ >/dev/null 2>&1 && ok=$((ok+1))
-              kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} p4b-observer -- wget -q -T3 -O- http://$ip_client:8080/ >/dev/null 2>&1 && ok=$((ok+1))
-              kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} p4b-observer -- wget -q -T3 -O- http://$ip_server:8080/ >/dev/null 2>&1 && ok=$((ok+1))
-              kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} p4b-server -- wget -q -T3 -O- http://$ip_client:8080/ >/dev/null 2>&1 && ok=$((ok+1))
-              kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} p4b-server -- wget -q -T3 -O- http://$ip_observer:8080/ >/dev/null 2>&1 && ok=$((ok+1))
+              kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} p4b-client -- wget -q -T3 -O- http://$ip_o:8080/ >/dev/null 2>&1 && ok=$((ok+1))
+              kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} p4b-client -- wget -q -T3 -O- http://$ip_s:8080/ >/dev/null 2>&1 && ok=$((ok+1))
+              kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} p4b-observer -- wget -q -T3 -O- http://$ip_c:8080/ >/dev/null 2>&1 && ok=$((ok+1))
+              kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} p4b-observer -- wget -q -T3 -O- http://$ip_s:8080/ >/dev/null 2>&1 && ok=$((ok+1))
+              kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} p4b-server -- wget -q -T3 -O- http://$ip_c:8080/ >/dev/null 2>&1 && ok=$((ok+1))
+              kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} p4b-server -- wget -q -T3 -O- http://$ip_o:8080/ >/dev/null 2>&1 && ok=$((ok+1))
               echo "pre_policy_direct=$ok/6"
               [ "$ok" = "6" ] || exit 1
-              echo PHASE6_DIRECT_6_6
-          register: ph6_direct
+              sok=0
+              for pod in p4b-client p4b-observer p4b-server; do
+                kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} $pod -- wget -q -T3 -O- http://$svc_ip:8080/ >/dev/null 2>&1 && sok=$((sok+1))
+              done
+              echo "pre_policy_service=$sok/3"
+              [ "$sok" = "3" ] || exit 1
+              echo PHASE7_CONN_OK
+          register: ph7_conn
           changed_when: false
           run_once: true
           delegate_to: node-01
 
-        - name: PHASE 6 — pre-policy Service 3/3 + DNS 3/3+3/3
+        - name: PHASE 7 — pre-policy DNS 18/18
           ansible.builtin.shell:
             cmd: |
               svc_ip=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get svc p4b-server -n {{ validation_ns }} -o jsonpath='{.spec.clusterIP}' 2>/dev/null)
-              ok=0
+              total=0
               for pod in p4b-client p4b-observer p4b-server; do
-                kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} $pod -- wget -q -T3 -O- http://$svc_ip:8080/ >/dev/null 2>&1 && ok=$((ok+1))
+                for a in 1 2 3; do
+                  kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} $pod -- nslookup {{ dns_kube_name }} 2>/dev/null | grep -q '{{ dns_kube_ip }}' && total=$((total+1))
+                  kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} $pod -- nslookup {{ dns_svc_name }} 2>/dev/null | grep -q "$svc_ip" && total=$((total+1))
+                done
               done
-              echo "pre_policy_service=$ok/3"
-              [ "$ok" = "3" ] || exit 1
-              dok=0
-              for pod in p4b-client p4b-observer p4b-server; do
-                kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} $pod -- nslookup kubernetes.default.svc.cluster.local 2>/dev/null | grep -q '10.96.0.1' && dok=$((dok+1))
-              done
-              echo "pre_policy_dns_kube=$dok/3"
-              [ "$dok" = "3" ] || exit 1
-              PHASE6_OK
-          register: ph6_svc_dns
+              echo "pre_policy_dns=$total/18"
+              [ "$total" = "18" ] || exit 1
+              echo PHASE7_DNS_18_18
+          register: ph7_dns
           changed_when: false
           run_once: true
           delegate_to: node-01
 
-        # ── PHASE 7: apply baseline (default-deny + dns) ──
-        - name: PHASE 7 — apply baseline policies (2)
+        - name: PHASE 8 — apply baseline policies (count=2)
           ansible.builtin.shell:
             cmd: |
               kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ validation_ns }} apply -f {{ policy_dir }}/baseline-default-deny-all.yaml 2>/dev/null
@@ -209,69 +326,67 @@
               n=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get networkpolicy -n {{ validation_ns }} 2>/dev/null | grep -cv NAME)
               echo "baseline_policy_count=$n"
               [ "$n" = "2" ] || exit 1
-              # convergence wait
               sleep 10
-              echo PHASE7_BASELINE_APPLIED
-          register: ph7
+              echo PHASE8_BASELINE_APPLIED
+          register: ph8
           changed_when: false
           run_once: true
           delegate_to: node-01
 
-        # ── PHASE 8: default-deny direct 6/6 + service 3/3 blocked + DNS preserved ──
-        - name: PHASE 8 — default-deny direct 6/6 expected block (3 attempts each)
+        - name: PHASE 9 — default-deny direct 6/6 blocked + Service 3/3 blocked
           ansible.builtin.shell:
             cmd: |
-              ip_client=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pod p4b-client -n {{ validation_ns }} -o jsonpath='{.status.podIP}' 2>/dev/null)
-              ip_observer=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pod p4b-observer -n {{ validation_ns }} -o jsonpath='{.status.podIP}' 2>/dev/null)
-              ip_server=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pod p4b-server -n {{ validation_ns }} -o jsonpath='{.status.podIP}' 2>/dev/null)
-              pairs=("p4b-client $ip_observer" "p4b-client $ip_server" "p4b-observer $ip_client" "p4b-observer $ip_server" "p4b-server $ip_client" "p4b-server $ip_observer")
+              ip_c=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pod p4b-client -n {{ validation_ns }} -o jsonpath='{.status.podIP}' 2>/dev/null)
+              ip_o=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pod p4b-observer -n {{ validation_ns }} -o jsonpath='{.status.podIP}' 2>/dev/null)
+              ip_s=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pod p4b-server -n {{ validation_ns }} -o jsonpath='{.status.podIP}' 2>/dev/null)
+              svc_ip=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get svc p4b-server -n {{ validation_ns }} -o jsonpath='{.spec.clusterIP}' 2>/dev/null)
+              pairs=("p4b-client $ip_o" "p4b-client $ip_s" "p4b-observer $ip_c" "p4b-observer $ip_s" "p4b-server $ip_c" "p4b-server $ip_o")
               blocked=0
               for pair in "${pairs[@]}"; do
-                set -- $pair
-                src=$1; dst=$2
-                succ=0
+                set -- $pair; src=$1; dst=$2; succ=0
                 for a in 1 2 3; do
                   kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} $src -- wget -q -T3 -O- http://$dst:8080/ >/dev/null 2>&1 && succ=$((succ+1))
                 done
-                if [ "$succ" = "0" ]; then blocked=$((blocked+1)); echo "$src->$dst BLOCKED x3"; else echo "$src->$dst UNEXPECTED_PASS"; fi
+                [ "$succ" = "0" ] && blocked=$((blocked+1))
               done
               echo "default_deny_direct_blocked=$blocked/6"
               [ "$blocked" = "6" ] || exit 1
-              echo PHASE8_DEFAULT_DENY_DIRECT_6_6
-          register: ph8_direct
-          changed_when: false
-          run_once: true
-          delegate_to: node-01
-
-        - name: PHASE 8 — default-deny Service 3/3 blocked + DNS preserved
-          ansible.builtin.shell:
-            cmd: |
-              svc_ip=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get svc p4b-server -n {{ validation_ns }} -o jsonpath='{.spec.clusterIP}' 2>/dev/null)
-              blocked=0
+              sb=0
               for pod in p4b-client p4b-observer p4b-server; do
                 succ=0
                 for a in 1 2 3; do
                   kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} $pod -- wget -q -T3 -O- http://$svc_ip:8080/ >/dev/null 2>&1 && succ=$((succ+1))
                 done
-                [ "$succ" = "0" ] && blocked=$((blocked+1))
+                [ "$succ" = "0" ] && sb=$((sb+1))
               done
-              echo "default_deny_service_blocked=$blocked/3"
-              [ "$blocked" = "3" ] || exit 1
-              # DNS preserved
-              dok=0
-              for pod in p4b-client p4b-observer p4b-server; do
-                kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} $pod -- nslookup kubernetes.default.svc.cluster.local 2>/dev/null | grep -q '10.96.0.1' && dok=$((dok+1))
-              done
-              echo "dns_kube_under_deny=$dok/3"
-              [ "$dok" = "3" ] || exit 1
-              PHASE8_DNS_PRESERVED
-          register: ph8_svc
+              echo "default_deny_service_blocked=$sb/3"
+              [ "$sb" = "3" ] || exit 1
+              echo PHASE9_DENY_OK
+          register: ph9_deny
           changed_when: false
           run_once: true
           delegate_to: node-01
 
-        # ── PHASE 9: apply explicit allows (total 4) ──
-        - name: PHASE 9 — apply explicit allow policies (total 4)
+        - name: PHASE 9 — default-deny DNS 18/18
+          ansible.builtin.shell:
+            cmd: |
+              svc_ip=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get svc p4b-server -n {{ validation_ns }} -o jsonpath='{.spec.clusterIP}' 2>/dev/null)
+              total=0
+              for pod in p4b-client p4b-observer p4b-server; do
+                for a in 1 2 3; do
+                  kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} $pod -- nslookup {{ dns_kube_name }} 2>/dev/null | grep -q '{{ dns_kube_ip }}' && total=$((total+1))
+                  kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} $pod -- nslookup {{ dns_svc_name }} 2>/dev/null | grep -q "$svc_ip" && total=$((total+1))
+                done
+              done
+              echo "default_deny_dns=$total/18"
+              [ "$total" = "18" ] || exit 1
+              echo PHASE9_DNS_18_18
+          register: ph9_dns
+          changed_when: false
+          run_once: true
+          delegate_to: node-01
+
+        - name: PHASE 10 — apply explicit allow policies (total=4)
           ansible.builtin.shell:
             cmd: |
               kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ validation_ns }} apply -f {{ policy_dir }}/validation-allow-client-egress-to-server.yaml 2>/dev/null
@@ -280,91 +395,106 @@
               echo "total_policy_count=$n"
               [ "$n" = "4" ] || exit 1
               sleep 10
-              echo PHASE9_EXPLICIT_APPLIED
-          register: ph9
+              echo PHASE10_EXPLICIT_APPLIED
+          register: ph10
           changed_when: false
           run_once: true
           delegate_to: node-01
 
-        # ── PHASE 10: least-privilege positive + negative ──
-        - name: PHASE 10 — client->server positive (PodIP + Service) x3
+        - name: PHASE 11 — client->server positive (PodIP + Service x3)
           ansible.builtin.shell:
             cmd: |
-              ip_server=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pod p4b-server -n {{ validation_ns }} -o jsonpath='{.status.podIP}' 2>/dev/null)
+              ip_s=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pod p4b-server -n {{ validation_ns }} -o jsonpath='{.status.podIP}' 2>/dev/null)
               svc_ip=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get svc p4b-server -n {{ validation_ns }} -o jsonpath='{.spec.clusterIP}' 2>/dev/null)
               p1=0; p2=0
               for a in 1 2 3; do
-                kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} p4b-client -- wget -q -T3 -O- http://$ip_server:8080/ >/dev/null 2>&1 && p1=$((p1+1))
+                kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} p4b-client -- wget -q -T3 -O- http://$ip_s:8080/ >/dev/null 2>&1 && p1=$((p1+1))
                 kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} p4b-client -- wget -q -T3 -O- http://$svc_ip:8080/ >/dev/null 2>&1 && p2=$((p2+1))
               done
-              echo "client->server_podip=$p1/3 client->server_svc=$p2/3"
+              echo "explicit_positive podIP=$p1/3 svc=$p2/3"
               [ "$p1" = "3" ] && [ "$p2" = "3" ] || exit 1
-              echo PHASE10_POSITIVE_OK
-          register: ph10_pos
+              echo PHASE11_POSITIVE_OK
+          register: ph11_pos
           changed_when: false
           run_once: true
           delegate_to: node-01
 
-        - name: PHASE 10 — unauthorized paths 6/6 expected block
+        - name: PHASE 11 — unauthorized paths 6/6 blocked x3
           ansible.builtin.shell:
             cmd: |
-              ip_client=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pod p4b-client -n {{ validation_ns }} -o jsonpath='{.status.podIP}' 2>/dev/null)
-              ip_observer=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pod p4b-observer -n {{ validation_ns }} -o jsonpath='{.status.podIP}' 2>/dev/null)
-              ip_server=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pod p4b-server -n {{ validation_ns }} -o jsonpath='{.status.podIP}' 2>/dev/null)
+              ip_c=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pod p4b-client -n {{ validation_ns }} -o jsonpath='{.status.podIP}' 2>/dev/null)
+              ip_o=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pod p4b-observer -n {{ validation_ns }} -o jsonpath='{.status.podIP}' 2>/dev/null)
+              ip_s=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pod p4b-server -n {{ validation_ns }} -o jsonpath='{.status.podIP}' 2>/dev/null)
               svc_ip=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get svc p4b-server -n {{ validation_ns }} -o jsonpath='{.spec.clusterIP}' 2>/dev/null)
-              pairs=("p4b-observer $ip_server" "p4b-observer $svc_ip" "p4b-server $ip_client" "p4b-client $ip_observer" "p4b-observer $ip_client" "p4b-server $ip_observer")
+              pairs=("p4b-observer $ip_s" "p4b-observer $svc_ip" "p4b-server $ip_c" "p4b-client $ip_o" "p4b-observer $ip_c" "p4b-server $ip_o")
               blocked=0
               for pair in "${pairs[@]}"; do
-                set -- $pair
-                src=$1; dst=$2
-                succ=0
+                set -- $pair; src=$1; dst=$2; succ=0
                 for a in 1 2 3; do
                   kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} $src -- wget -q -T3 -O- http://$dst:8080/ >/dev/null 2>&1 && succ=$((succ+1))
                 done
-                if [ "$succ" = "0" ]; then blocked=$((blocked+1)); else echo "$src->$dst UNEXPECTED_PASS"; fi
+                [ "$succ" = "0" ] && blocked=$((blocked+1))
               done
-              echo "unauthorized_blocked=$blocked/6"
+              echo "explicit_negative_blocked=$blocked/6"
               [ "$blocked" = "6" ] || exit 1
-              echo PHASE10_NEGATIVE_6_6
-          register: ph10_neg
+              echo PHASE11_NEGATIVE_OK
+          register: ph11_neg
           changed_when: false
           run_once: true
           delegate_to: node-01
 
-        # ── PHASE 11: runtime policy audit ──
-        - name: PHASE 11 — runtime NetworkPolicy audit (exactly 4)
+        - name: PHASE 11 — explicit DNS 18/18
           ansible.builtin.shell:
             cmd: |
-              kubectl --kubeconfig /etc/kubernetes/admin.conf get networkpolicy -n {{ validation_ns }} -o json 2>/dev/null > /tmp/netpol-audit.json
-              names=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get networkpolicy -n {{ validation_ns }} -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' 2>/dev/null | sort)
-              echo "$names"
-              n=$(echo "$names" | grep -c . )
-              [ "$n" = "4" ] || exit 1
-              echo "$names" | grep -q baseline-default-deny-all || exit 1
-              echo "$names" | grep -q baseline-allow-dns-egress || exit 1
-              echo "$names" | grep -q validation-allow-client-egress-to-server || exit 1
-              echo "$names" | grep -q validation-allow-server-ingress-from-client || exit 1
-              echo PHASE11_AUDIT_OK
-          register: ph11
+              svc_ip=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get svc p4b-server -n {{ validation_ns }} -o jsonpath='{.spec.clusterIP}' 2>/dev/null)
+              total=0
+              for pod in p4b-client p4b-observer p4b-server; do
+                for a in 1 2 3; do
+                  kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} $pod -- nslookup {{ dns_kube_name }} 2>/dev/null | grep -q '{{ dns_kube_ip }}' && total=$((total+1))
+                  kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n {{ validation_ns }} $pod -- nslookup {{ dns_svc_name }} 2>/dev/null | grep -q "$svc_ip" && total=$((total+1))
+                done
+              done
+              echo "explicit_dns=$total/18"
+              [ "$total" = "18" ] || exit 1
+              echo PHASE11_DNS_18_18
+          register: ph11_dns
           changed_when: false
           run_once: true
           delegate_to: node-01
 
-        # ── PHASE 12: system namespace invariant ──
-        - name: PHASE 12 — verify no TASK-014 policies in system namespaces
+        - name: PHASE 12 — runtime policy exact audit (4)
+          ansible.builtin.shell:
+            cmd: |
+              names=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get networkpolicy -n {{ validation_ns }} -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' 2>/dev/null | sort)
+              n=$(echo "$names" | grep -c . )
+              echo "$names"
+              [ "$n" = "4" ] || exit 1
+              for p in baseline-default-deny-all baseline-allow-dns-egress validation-allow-client-egress-to-server validation-allow-server-ingress-from-client; do
+                echo "$names" | grep -q "^$p$" || { echo "MISSING_POLICY_$p"; exit 1; }
+              done
+              echo PHASE12_RUNTIME_POLICY_4
+          register: ph12_policy
+          changed_when: false
+          run_once: true
+          delegate_to: node-01
+
+        - name: PHASE 12 — system namespace fail-closed audit
           ansible.builtin.shell:
             cmd: |
               for ns in default kube-system kube-public kube-node-lease; do
-                n=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get networkpolicy -n $ns -l stage=P4B -o jsonpath='{.items}' 2>/dev/null | grep -c name || true)
-                [ "$n" = "0" ] || { echo "POLICY_IN_SYSTEM_NS_$ns"; exit 1; }
+                json=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get networkpolicy -n $ns -l stage=P4B -o json 2>/dev/null)
+                rc=$?
+                [ "$rc" = "0" ] || { echo "SYSTEM_NS_API_FAIL_$ns"; exit 1; }
+                cnt=$(printf '%s' "$json" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(len(d.get("items",[])))')
+                echo "$ns: stage=P4B policies=$cnt"
+                [ "$cnt" = "0" ] || { echo "POLICY_IN_SYSTEM_NS_$ns"; exit 1; }
               done
               echo PHASE12_SYSTEM_NS_CLEAN
-          register: ph12
+          register: ph12_sys
           changed_when: false
           run_once: true
           delegate_to: node-01
       always:
-        # ── PHASE 13: cleanup (fail-safe, fail-closed) ──
         - name: PHASE 13 — delete validation namespace + verify NotFound
           ansible.builtin.shell:
             cmd: |
@@ -374,13 +504,13 @@
               rc=$?
               if [ "$rc" = "0" ]; then echo "CLEANUP_FAILED_NS_EXISTS"; exit 1; fi
               echo "$out" | grep -q 'NotFound' || { echo "CLEANUP_API_ERROR"; exit 1; }
-              echo CLEANUP_OK_NOTFOUND
+              echo PHASE13_CLEANUP_NOTFOUND
           register: ph13_cleanup
           changed_when: false
           run_once: true
           delegate_to: node-01
 
-    # ═══ PHASE 14 — post-cleanup stability + regression + final gate ═══
+    # ═══ PHASE 14 — post-cleanup stability ═══
     - name: PHASE 14 — post-cleanup 60s stability
       ansible.builtin.shell:
         cmd: |
@@ -394,14 +524,141 @@
             rz=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get --raw=/readyz 2>/dev/null)
             [ "$r" = "3" ] && [ "$cn" = "3" ] && [ "$d" != "0" ] && [ "$a" = "$d" ] && [ "$rd" = "$d" ] && [ "$rz" = "ok" ] || { echo "post_cleanup_flap_${i}"; exit 1; }
           done
-          echo POST_CLEANUP_STABLE_60S
+          echo PHASE14_STABLE_60S
       register: ph14
       changed_when: false
       run_once: true
       delegate_to: node-01
 
-    - name: PHASE 14 — final gate summary
+    # ═══ PHASE 15 — full regressions ═══
+    - name: PHASE 15 — P4A full regression
+      ansible.builtin.shell:
+        cmd: |
+          ipjson=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get ippool default-ipv4-ippool -o json 2>/dev/null)
+          ipm=$(printf '%s' "$ipjson" | python3 -c 'import json,sys; d=json.load(sys.stdin); s=d.get("spec",{}); print(s.get("cidr",""), s.get("ipipMode",""), s.get("natOutgoing",False), s.get("disabled",False))')
+          read cidr ipip nat dis <<< "$ipm"
+          pools=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get ippool -o name 2>/dev/null | grep -c ippool)
+          cn=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=calico-node 2>/dev/null | grep -c '1/1')
+          ctrl=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system -l k8s-app=calico-kube-controllers 2>/dev/null | grep -c '1/1')
+          echo "P4A ippool cidr=$cidr ipip=$ipip nat=$nat dis=$dis pools=$pools calico=$cn ctrl=$ctrl"
+          [ "$cidr" = "10.244.0.0/16" ] && [ "$ipip" = "Always" ] && [ "$nat" = "True" ] && [ "$dis" = "False" ] && [ "$pools" = "1" ] && [ "$cn" = "3" ] && [ "$ctrl" = "1" ] || exit 1
+          echo PHASE15_P4A_OK
+      register: ph15_p4a
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 15 — P3 full regression (etcd + kube-vip, kubectl only)
+      ansible.builtin.shell:
+        cmd: |
+          EP="--endpoints=https://172.30.140.101:2379,https://172.30.140.102:2379,https://172.30.140.103:2379"
+          CAC="--cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernetes/pki/etcd/healthcheck-client.key"
+          members_json=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-node-01 -- etcdctl $EP $CAC member list -w json 2>/dev/null)
+          mm=$(printf '%s' "$members_json" | python3 -c 'import json,sys; d=json.load(sys.stdin); ms=d.get("members"); sys.exit(2) if not isinstance(ms,list) else None; sys.exit(3) if any("ID" not in m for m in ms) else None; print(len(ms), sum(1 for m in ms if m.get("isLearner") is True))')
+          read mc ml <<< "$mm"
+          h=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-node-01 -- etcdctl $EP $CAC endpoint health 2>/dev/null | grep -c 'is healthy')
+          st=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-node-01 -- etcdctl $EP $CAC endpoint status -w json 2>/dev/null)
+          sm=$(printf '%s' "$st" | python3 -c 'import json,sys; d=json.load(sys.stdin); lr=sum(1 for x in d if x.get("Status",{}).get("isLearner") is True); lids={int(x.get("Status",{}).get("leader",0) or 0) for x in d}; lids.discard(0); act=sum(1 for x in d if ((int(x.get("Status",{}).get("leader",0) or 0)!=0) and (int(x.get("Status",{}).get("header",{}).get("member_id",0) or 0)==int(x.get("Status",{}).get("leader",0) or 0)))); print(lr, len(lids), act)')
+          read el ul al <<< "$sm"
+          kv=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pods -n kube-system 2>/dev/null | grep -c 'kube-vip.*Running')
+          rz=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get --raw='/readyz' 2>/dev/null)
+          echo "P3 etcd mc=$mc ml=$ml h=$h el=$el ul=$ul al=$al kv=$kv readyz=$rz"
+          [ "$mc" = "3" ] && [ "$ml" = "0" ] && [ "$h" = "3" ] && [ "$el" = "0" ] && [ "$ul" = "1" ] && [ "$al" = "1" ] && [ "$kv" = "3" ] && [ "$rz" = "ok" ] || exit 1
+          echo PHASE15_P3_PARTIAL_OK
+      register: ph15_p3_partial
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 15 — VIP owner local check (per node, regression)
+      ansible.builtin.shell:
+        cmd: "ip -4 addr show dev bond0.140 2>/dev/null | grep -c '172.30.140.100/32' || true"
+      register: ph15_vip_owner
+      changed_when: false
+      failed_when: false
+
+    - name: PHASE 15 — API livez local check (per node, regression)
+      ansible.builtin.shell:
+        cmd: "curl -k --connect-timeout 3 -s https://172.30.140.100:6443/livez 2>/dev/null || true"
+      register: ph15_api_livez
+      changed_when: false
+      failed_when: false
+
+    - name: PHASE 15 — aggregate VIP owner + API livez (regression)
+      ansible.builtin.shell:
+        cmd: |
+          v1={{ hostvars['node-01'].ph15_vip_owner.stdout | trim | default('0') }}
+          v2={{ hostvars['node-02'].ph15_vip_owner.stdout | trim | default('0') }}
+          v3={{ hostvars['node-03'].ph15_vip_owner.stdout | trim | default('0') }}
+          a1={{ hostvars['node-01'].ph15_api_livez.stdout | trim | default('') }}
+          a2={{ hostvars['node-02'].ph15_api_livez.stdout | trim | default('') }}
+          a3={{ hostvars['node-03'].ph15_api_livez.stdout | trim | default('') }}
+          voc=$((v1+v2+v3))
+          apiok=0
+          [ "$a1" = "ok" ] && apiok=$((apiok+1))
+          [ "$a2" = "ok" ] && apiok=$((apiok+1))
+          [ "$a3" = "ok" ] && apiok=$((apiok+1))
+          echo "P3 VIP_owner_count=$voc API_livez=$apiok/3"
+          [ "$voc" = "1" ] && [ "$apiok" = "3" ] || exit 1
+          echo PHASE15_P3_OK
+      register: ph15_p3_agg
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 15 — P2 regression
+      ansible.builtin.shell:
+        cmd: |
+          cv=$(containerd --version 2>/dev/null | awk '{print $3}')
+          kv=$(kubelet --version 2>/dev/null | awk '{print $2}')
+          sw=$(swapon --show 2>/dev/null | wc -l)
+          echo "P2 containerd=$cv kubelet=$kv swap=$sw"
+          [ "$cv" = "v2.3.3" ] && [ "$kv" = "v1.36.2" ] && [ "$sw" = "0" ] || exit 1
+          echo PHASE15_P2_OK
+      register: ph15_p2
+      changed_when: false
+
+    - name: PHASE 15 — P1 regression (bond/VLAN/default route)
+      ansible.builtin.shell:
+        cmd: |
+          b0=$(cat /sys/class/net/bond0/bonding/slaves 2>/dev/null | tr -d '\n')
+          b1=$(cat /sys/class/net/bond1/bonding/slaves 2>/dev/null | tr -d '\n')
+          drc=$(ip -4 route show default 2>/dev/null | wc -l)
+          dr=$(ip -4 route show default 2>/dev/null)
+          echo "P1 host=$(hostname) bond0=$b0 bond1=$b1 default_count=$drc default=$dr"
+          [ "$b0" = "ens2f0 ens2f1" ] || exit 1
+          [ "$b1" = "ens2f2 ens2f3" ] || exit 1
+          [ "$drc" = "1" ] || exit 1
+          echo "$dr" | grep -q '192.168.194.1' || exit 1
+          echo "$dr" | grep -q 'bond0.700' || exit 1
+          echo PHASE15_P1_OK
+      register: ph15_p1
+      changed_when: false
+
+    - name: PHASE 15 — policy preservation (fingerprint after == before)
+      ansible.builtin.shell:
+        cmd: |
+          np=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get networkpolicy -A -o json 2>/dev/null)
+          [ -n "$np" ] || { echo "NP_API_FAIL"; exit 1; }
+          printf '%s' "$np" | python3 -c 'import json,sys,hashlib; d=json.load(sys.stdin); [print(it["metadata"].get("namespace")+"|"+it["metadata"].get("name")+"|"+it["metadata"].get("uid")+"|"+str(it["metadata"].get("generation"))+"|"+hashlib.sha256(json.dumps(it.get("spec",{}),sort_keys=True,separators=(",",":")).encode()).hexdigest()) for it in d.get("items",[])]' | sort > /tmp/p4b-np-fingerprint-after.txt
+          if diff -q /tmp/p4b-np-fingerprint-before.txt /tmp/p4b-np-fingerprint-after.txt >/dev/null 2>&1; then
+            echo "PREEXISTING_POLICIES_UNCHANGED"
+          else
+            echo "POLICY_FINGERPRINT_MISMATCH"; diff /tmp/p4b-np-fingerprint-before.txt /tmp/p4b-np-fingerprint-after.txt; exit 1
+          fi
+          tnp=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get networkpolicy -A -l stage=P4B -o json 2>/dev/null)
+          tcnt=$(printf '%s' "$tnp" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(len(d.get("items",[])))')
+          echo "task014_policies_clusterwide=$tcnt"
+          [ "$tcnt" = "0" ] || exit 1
+          echo PHASE15_POLICY_PRESERVED
+      register: ph15_policy
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 16 — final gate ═══
+    - name: PHASE 16 — final gate summary
       ansible.builtin.debug:
-        msg: "P4B baseline NetworkPolicy validation completed — all phases PASS"
+        msg: "P4B baseline NetworkPolicy R1 validation completed — PHASE 0..15 all PASS"
       run_once: true
       delegate_to: node-01

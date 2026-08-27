@@ -1,0 +1,9 @@
+# TASK-014-R1 — Namespace/Policy Inventory Before + Fingerprint
+
+Namespaces (before): default, kube-node-lease, kube-public, kube-system
+NetworkPolicy (before): 0 (empty list)
+
+Pre-existing policy fingerprint:
+FINGERPRINT_POLICIES=0
+
+RESULT: PASS (baseline empty)

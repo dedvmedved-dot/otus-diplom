@@ -1,0 +1,12 @@
+# TASK-014-R1 — Validation Pods + Service
+
+3 pods (deterministic):
+  p4b-client   -> node-01 role=client
+  p4b-observer -> node-02 role=observer
+  p4b-server   -> node-03 role=server
+
+pod IPs unique=3, all in 10.244.0.0/16
+local HTTP 3/3 PASS
+test image: busybox:1.36.1 (TEST-ONLY, not in images.lock)
+
+RESULT: PASS

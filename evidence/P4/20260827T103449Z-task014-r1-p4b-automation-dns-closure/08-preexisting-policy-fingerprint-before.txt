@@ -1,0 +1,5 @@
+# TASK-014-R1 — Pre-existing Policy Fingerprint Before
+
+FINGERPRINT_POLICIES=0
+
+(empty — кластер не имеет pre-existing NetworkPolicy до P4B)

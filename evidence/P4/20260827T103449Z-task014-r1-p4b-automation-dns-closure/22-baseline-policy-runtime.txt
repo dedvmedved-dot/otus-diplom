@@ -1,0 +1,7 @@
+# TASK-014-R1 — Baseline Policy Runtime
+
+baseline-default-deny-all created
+baseline-allow-dns-egress created
+baseline_policy_count=2
+
+RESULT: PASS

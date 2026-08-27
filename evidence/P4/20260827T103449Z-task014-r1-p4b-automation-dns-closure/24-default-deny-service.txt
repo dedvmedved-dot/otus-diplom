@@ -1,0 +1,6 @@
+# TASK-014-R1 — Default-deny Service 3/3
+
+default_deny_service_blocked=3/3
+(3 pods → ClusterIP, 3 consecutive blocked attempts each)
+
+RESULT: PASS

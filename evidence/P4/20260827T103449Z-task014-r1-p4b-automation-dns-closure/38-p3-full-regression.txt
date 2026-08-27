@@ -1,0 +1,8 @@
+# TASK-014-R1 — P3 Full Regression
+
+etcd mc=3 ml=0 h=3 el=0 ul=1 al=1 kv=3 readyz=ok
+VIP_owner_count=1 API_livez=3/3
+
+(etcd JSON-aware full semantics + kube-vip 3/3 + VIP owner=1 + API livez 3/3 + readyz)
+
+RESULT: PASS

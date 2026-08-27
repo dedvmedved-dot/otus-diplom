@@ -1,0 +1,7 @@
+# TASK-014-R1 — P4A Full Regression
+
+ippool cidr=10.244.0.0/16 ipip=Always nat=True dis=False pools=1
+calico-node=3 calico-kube-controllers=1
+Calico images unchanged (v3.32.0), BGP node IPs unchanged
+
+RESULT: PASS

@@ -1,0 +1,14 @@
+# TASK-014-R1 — DNS Test Function Static Audit
+
+DNS TARGETS: 2 (kubernetes.default.svc.cluster.local, p4b-server.p4b-netpol-validation.svc.cluster.local)
+SOURCE PODS: 3 (p4b-client, p4b-observer, p4b-server)
+ATTEMPTS PER NAME PER POD: 3
+TOTAL PER PHASE: 18
+
+PHASE 7  pre-policy DNS: 18/18 gate PRESENT
+PHASE 9  default-deny DNS: 18/18 gate PRESENT
+PHASE 11 explicit DNS:      18/18 gate PRESENT
+
+All three DNS phases use the same loop (2 names × 3 pods × 3 attempts).
+
+RESULT: PASS

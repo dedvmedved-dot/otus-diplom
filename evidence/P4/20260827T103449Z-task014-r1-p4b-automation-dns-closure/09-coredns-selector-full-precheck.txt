@@ -1,0 +1,8 @@
+# TASK-014-R1 — CoreDNS Selector Full Precheck
+
+namespace kube-system label: kubernetes.io/metadata.name=kube-system ✓
+coredns pods=2 all_k8s_app_label=yes ready=2
+
+(все выбранные CoreDNS pods имеют k8s-app=kube-dns, ready >= 1)
+
+RESULT: PASS

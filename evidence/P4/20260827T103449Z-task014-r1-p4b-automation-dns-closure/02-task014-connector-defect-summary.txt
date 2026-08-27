@@ -1,0 +1,15 @@
+# TASK-014-R1 — Connector Defect Summary
+
+D1  bare PHASE marker commands (PHASE6_OK, PHASE8_DNS_PRESERVED) — должны быть echo/удалены
+D2  server-side dry-run до создания namespace — должен быть после создания
+D3  неполный P4A/P3 precheck (только nodes+readyz) — нужен full
+D4  baseline inventory не автоматизирован — нужен fingerprint before/after
+D5  pre-policy DNS неполный (только kubernetes.default) — нужен 18/18
+D6  DNS под default-deny svc=1 не x3 — нужен 18/18
+D7  DNS после explicit allow отсутствует — нужен 18/18
+D8  system namespace audit может false-PASS (2>/dev/null||true) — fail-closed
+D9  Service endpoint слишком текстовый — EndpointSlice JSON semantic
+D10 full post-cleanup regression вне playbook — должен быть в playbook
+D11 P3 evidence должен быть full
+
+Все 11 исправляются в R1 playbook.

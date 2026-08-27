@@ -1,0 +1,6 @@
+# TASK-014-R1 — Default-deny Direct 6/6
+
+default_deny_direct_blocked=6/6
+(6 прямых путей, 3 consecutive blocked attempts each)
+
+RESULT: PASS

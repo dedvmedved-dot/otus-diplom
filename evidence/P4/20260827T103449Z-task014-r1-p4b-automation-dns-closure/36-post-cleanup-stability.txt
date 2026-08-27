@@ -1,0 +1,6 @@
+# TASK-014-R1 — Post-cleanup Stability 60s
+
+PHASE 14: sleep 5; check ×12 (samples t=5..60, last >=t60)
+nodes Ready=3, calico-node=3, CoreDNS desired=available=ready, readyz=ok — 12/12 PASS
+
+RESULT: PASS

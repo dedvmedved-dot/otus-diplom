@@ -1,0 +1,6 @@
+# TASK-014-R1 — Pre-policy DNS 18/18
+
+pre_policy_dns=18/18
+(2 имена × 3 pods × 3 попытки: kubernetes.default + p4b-server Service DNS)
+
+RESULT: PASS

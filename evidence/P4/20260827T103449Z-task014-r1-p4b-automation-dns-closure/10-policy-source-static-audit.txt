@@ -1,0 +1,12 @@
+# TASK-014-R1 — Policy Source Static Audit
+
+API: networking.k8s.io/v1
+BASELINE POLICIES: 2 (default-deny-all, allow-dns-egress)
+VALIDATION POLICIES: 2 (client-egress-to-server, server-ingress-from-client)
+
+0.0.0.0/0: 0
+EMPTY NAMESPACE SELECTOR (namespaceSelector:{}): 0
+GLOBALNETWORKPOLICY / projectcalico.org/v3: 0
+CALICO PROPRIETARY POLICY: 0
+
+RESULT: PASS

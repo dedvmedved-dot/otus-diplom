@@ -1,0 +1,10 @@
+# TASK-014-R1 — Historical Evidence Correction
+
+Original PRE-POLICY DNS claim exceeded playbook automation.
+Original DEFAULT-DENY service DNS had svc=1 per pod, not x3.
+Original explicit-allow DNS lacked Service DNS proof.
+Original source contained bare PHASE6_OK / PHASE8_DNS_PRESERVED.
+Original dry-run evidence was generated after temporary ns outside committed order.
+Full post-cleanup regressions were not implemented in playbook.
+
+HISTORICAL EVIDENCE MODIFIED: NO

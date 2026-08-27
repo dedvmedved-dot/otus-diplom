@@ -1,0 +1,8 @@
+# TASK-014-R1 — Service Endpoint JSON Semantic
+
+SERVICE_READY_ENDPOINT=1 endpoint=10.244.254.71 server_ip=10.244.254.71 svc_in_cidr=yes
+
+(EndpointSlice JSON-aware: Ready endpoints=1, unique addresses=1,
+ endpoint == p4b-server PodIP, endpoint in 10.244.0.0/16, ClusterIP in 10.96.0.0/12)
+
+RESULT: PASS

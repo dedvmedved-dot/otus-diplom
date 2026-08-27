@@ -1,0 +1,6 @@
+# TASK-014-R1 — Explicit Positive
+
+explicit_positive podIP=3/3 svc=3/3
+(client -> server PodIP:8080 PASS x3, client -> server ClusterIP:8080 PASS x3)
+
+RESULT: PASS

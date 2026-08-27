@@ -1,0 +1,5 @@
+# TASK-014-R1 — TASK-014 Policy Zero After Cleanup
+
+task014_policies_clusterwide=0
+
+RESULT: PASS
