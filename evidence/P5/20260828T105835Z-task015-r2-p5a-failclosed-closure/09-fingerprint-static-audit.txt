@@ -1,0 +1,11 @@
+# TASK-015-R2 — Fingerprint Static Audit
+
+Playbook:
+- PHASE 7b: fingerprint BEFORE (first+last 1MiB, re-resolve identity)
+- PHASE 9b: fingerprint AFTER
+- PHASE 9c: programmatic cmp -s compare, fail-closed (exit 1 on mismatch)
+- файлы /tmp/p5a_fp_{before,after}_<host>.txt; 12 hashes total (6 first + 6 last)
+
+before/after fingerprint compare missing: 0
+
+RESULT: PASS

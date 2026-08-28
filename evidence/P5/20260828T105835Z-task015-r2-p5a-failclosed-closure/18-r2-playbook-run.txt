@@ -1,0 +1,94 @@
+
+PLAY [P5A LINSTOR/DRBD preflight (READ-ONLY, FAIL-CLOSED)] *********************
+
+TASK [PHASE 0 — nodes Ready + readyz] ******************************************
+[WARNING]: Platform linux on host node-01 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-01]
+
+TASK [PHASE 1 — Astra release + kernel + arch + module security] ***************
+ok: [node-01]
+[WARNING]: Platform linux on host node-02 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-02]
+[WARNING]: Platform linux on host node-03 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-03]
+
+TASK [PHASE 2 — existing DRBD state (no module loaded)] ************************
+ok: [node-02]
+ok: [node-03]
+ok: [node-01]
+
+TASK [PHASE 4 — DRBD network bond + MTU + address] *****************************
+ok: [node-02]
+ok: [node-03]
+ok: [node-01]
+
+TASK [PHASE 5 — full block inventory (lsblk -J -b)] ****************************
+ok: [node-02]
+ok: [node-03]
+ok: [node-01]
+
+TASK [PHASE 6 — composite resolver (serial+WWN+model+size+type, exact unique)] ***
+ok: [node-03]
+ok: [node-01]
+ok: [node-02]
+
+TASK [PHASE 7 — candidate full safety (re-resolve identity first)] *************
+ok: [node-02]
+ok: [node-03]
+ok: [node-01]
+
+TASK [PHASE 7b — candidate fingerprint BEFORE (first+last 1MiB)] ***************
+ok: [node-02]
+ok: [node-01]
+ok: [node-03]
+
+TASK [PHASE 8 — candidate health (fail-closed, re-resolve identity)] ***********
+ok: [node-03]
+ok: [node-02]
+ok: [node-01]
+
+TASK [PHASE 9 — DRBD 9.3.2 compile-only (rc propagated)] ***********************
+ok: [node-03]
+ok: [node-02]
+ok: [node-01]
+
+TASK [PHASE 9b — candidate fingerprint AFTER (first+last 1MiB)] ****************
+ok: [node-02]
+ok: [node-03]
+ok: [node-01]
+
+TASK [PHASE 9c — fingerprint compare before==after (fail-closed)] **************
+ok: [node-03]
+ok: [node-02]
+ok: [node-01]
+
+TASK [PHASE 10 — Kubernetes storage state (no linstor/drbd)] *******************
+ok: [node-01]
+
+TASK [PHASE 11 — DRBD module still not loaded/installed] ***********************
+ok: [node-03]
+ok: [node-01]
+ok: [node-02]
+
+TASK [PHASE 12 — final preflight gate summary] *********************************
+ok: [node-01] => {
+    "msg": "P5A read-only fail-closed preflight completed"
+}
+
+PLAY RECAP *********************************************************************
+node-01                    : ok=15   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-02                    : ok=12   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-03                    : ok=12   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+

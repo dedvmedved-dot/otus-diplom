@@ -1,0 +1,3 @@
+=== SYNTAX ===
+
+playbook: ansible/playbooks/p5a-linstor-drbd-preflight.yml

@@ -1,0 +1,5 @@
+=== GIT SCOPE ===
+ M ansible/playbooks/files/p5a-candidate-health.sh
+ M ansible/playbooks/files/p5a-drbd-compile-only.sh
+ M ansible/playbooks/p5a-linstor-drbd-preflight.yml
+?? evidence/P5/20260828T105835Z-task015-r2-p5a-failclosed-closure/

@@ -1,0 +1,19 @@
+# TASK-015-R2 — Candidate Health Summary
+
+Fail-closed SCSI tooling (sg_inq + sg_logs 0x0d/0x02/0x03) из официального
+piraeus-server:v1.33.2 image (ephemeral chroot, read-only).
+
+node-01 /dev/sdb  S5G0NC0T407845  22 C  uncorr_w=0 uncorr_r=0  PASS (rc=0)
+node-01 /dev/sdc  S5G0NC0T407844  22 C  uncorr_w=0 uncorr_r=0  PASS (rc=0)
+node-02 /dev/sdb  S5G0NC0T407077  24 C  uncorr_w=0 uncorr_r=0  PASS (rc=0)
+node-02 /dev/sdc  S5G0NC0T407075  23 C  uncorr_w=0 uncorr_r=0  PASS (rc=0)
+node-03 /dev/sdb  S5G0NC0T403246  23 C  uncorr_w=0 uncorr_r=0  PASS (rc=0)
+node-03 /dev/sdc  S5G0NC0T403289  23 C  uncorr_w=0 uncorr_r=0  PASS (rc=0)
+
+identity exact (serial+model via sg_inq): 6/6
+temperature current < reference: 6/6 (19-24 C vs 74 C)
+uncorrected write errors = 0: 6/6
+uncorrected read errors = 0: 6/6
+non-medium error count (informational, not media fault): 23-41
+
+HEALTH VERIFIED 6/6 PASS. UNKNOWN=0, FAILED=0.

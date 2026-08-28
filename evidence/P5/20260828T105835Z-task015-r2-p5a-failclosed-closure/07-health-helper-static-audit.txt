@@ -1,0 +1,17 @@
+# TASK-015-R2 — Health Helper Static Audit
+
+p5a-candidate-health.sh:
+- set -uo pipefail (no rc masking)
+- принимает <device> <expected_serial> <expected_model>
+- sg_inq rc=0 required; serial + model exact asserted
+- temperature page rc=0; current + reference present; current < reference
+- write-error page rc=0; uncorrected write errors == 0
+- read-error page rc=0; uncorrected read errors == 0
+- non-medium error count recorded (informational, not media fault)
+- exit 0 ONLY on full PASS; non-zero otherwise
+- health values asserted, not just printed
+
+health helper rc masked by pipeline: 0
+health values printed but not asserted: 0
+
+RESULT: PASS

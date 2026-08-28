@@ -1,0 +1,21 @@
+# TASK-015-R2 — Forbidden Command Audit
+
+Source check (вручную выверено по playbook + helpers):
+
+compile helper rc masked by pipeline: 0 (rc=$? + exit $rc; set -uo pipefail)
+health helper rc masked by pipeline: 0 (exit non-zero on any FAIL)
+expected WWN unused: 0 (asserted in composite resolver)
+head -1 uniqueness bypass: 0 (lsblk -J -b, len(hits)==1 required)
+required mount || true: 0 (mount --bind fail-closed, no || true)
+full /dev bind in compile helper: 0 (только null/zero/random/urandom char nodes)
+health values printed but not asserted: 0 (rc=0 + serial/model exact + temp cur<ref + uncorr=0)
+before/after fingerprint compare missing: 0 (PHASE 9c cmp -s fail-closed)
+
+DESTRUCTIVE COMMANDS: 0 (wipefs write/blkdiscard/dd of=/partition write/mkfs/mkswap/
+pvcreate/vgcreate/lvcreate/ceph-volume zap/insmod/modprobe drbd/rmmod/make install/
+dkms install/copy .ko to /lib/modules/depmod — все 0)
+
+DRBD MODULE LOADED: NO
+DRBD MODULE INSTALLED: NO
+
+RESULT: PASS

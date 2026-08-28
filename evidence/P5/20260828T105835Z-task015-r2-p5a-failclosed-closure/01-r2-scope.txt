@@ -1,0 +1,23 @@
+# TASK-015-R2 — Scope
+
+MODE: SOURCE CORRECTION + STATIC SAFETY AUDIT + ONE FAIL-CLOSED READ-ONLY CLOSURE RUN.
+
+ALLOWED modifications:
+  ansible/playbooks/p5a-linstor-drbd-preflight.yml
+  ansible/playbooks/files/p5a-drbd-compile-only.sh
+  ansible/playbooks/files/p5a-candidate-health.sh
+  inventory/storage-p5-candidates.yaml
+  docs/storage/P5A-*.md + P5B-IMPLEMENTATION-PREREQUISITES.md
+  evidence/P5/<RUN_ID>-task015-r2-p5a-failclosed-closure/
+
+READ-ONLY:
+  versions.lock, ADR-003, historical evidence, inventory/hosts.yaml,
+  P1-P4 playbooks, images.lock.
+
+FORBIDDEN (unchanged): wipefs write/blkdiscard/dd of=/partition writes/mkfs/mkswap/
+pvcreate/vgcreate/lvcreate/ceph-volume zap; insmod/modprobe drbd/rmmod/make install/
+dkms install/copy .ko to /lib/modules/depmod; Piraeus/LINSTOR install/CRD apply/
+StorageClass/PV/PVC/DRBD metadata/storage-pool/P5B.
+
+VERSION BASELINE PRESERVED: Operator 2.10.6 / LINSTOR 1.33.2 / CSI 1.11.0 /
+DRBD 9.3.2 / drbd-utils 9.34.3.

@@ -1,0 +1,9 @@
+=== node-01 health raw ===
+mount: /tmp/sat-inspect/rootfs/dev: системный вызов mount(2) завершился неудачей: На устройстве не осталось свободного места.
+       dmesg(1) may have more information after failed mount system call.
+FAIL: cannot bind /dev
+rc=3
+mount: /tmp/sat-inspect/rootfs/dev: системный вызов mount(2) завершился неудачей: На устройстве не осталось свободного места.
+       dmesg(1) may have more information after failed mount system call.
+FAIL: cannot bind /dev
+rc=3

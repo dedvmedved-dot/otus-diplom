@@ -1,0 +1,12 @@
+# TASK-015-R2 — Candidate Fingerprint Compare
+
+6 first-1MiB + 6 last-1MiB SHA256. All identical before/after.
+
+first1MiB (6 disks): 30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58
+last1MiB (6 disks):  30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58
+
+12/12 FINGERPRINT PAIRS UNCHANGED.
+
+(playbook PHASE 9c выполнил cmp -s fail-closed: FINGERPRINT_UNCHANGED на всех 3 узлах)
+
+RESULT: PASS

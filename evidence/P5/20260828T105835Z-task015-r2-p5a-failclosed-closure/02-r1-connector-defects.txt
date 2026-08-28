@@ -1,0 +1,12 @@
+# TASK-015-R2 — R1 Connector Defects
+
+D1 — compile pipeline может false-PASS: `bash helper | tail -5` без pipefail
+     маскирует rc helper. Требуется rc helper == rc task.
+D2 — противоречивое node-01 compile evidence (MISSING drbd.ko vs drbd.ko produced).
+D3 — expected WWN не assertится (читается live, но не сравнивается с expected).
+D4 — uniqueness не доказан (resolver использует head -1, дубликат скрывается).
+D5 — health phase печатает, но не assertит (rc/identity/errors/temperature).
+D6 — raw health evidence содержит начальные отказы (rootfs missing) до успешного rerun.
+D7 — playbook fingerprint не делает before+after compare программно.
+D8 — compile chroot монтирует весь host /dev (нужны только /dev/null,zero,random,urandom).
+D9 — required mount failures подавлены `|| true` (должны fail-closed + verified read-only).

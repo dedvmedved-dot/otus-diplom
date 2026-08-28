@@ -1,0 +1,4 @@
+=== MODULE METADATA ===
+version:        9.3.2 vermagic:       6.1.158-1-generic SMP preempt mod_unload modversions  
+version:        9.3.2 vermagic:       6.1.158-1-generic SMP preempt mod_unload modversions  
+version:        9.3.2 vermagic:       6.1.158-1-generic SMP preempt mod_unload modversions  

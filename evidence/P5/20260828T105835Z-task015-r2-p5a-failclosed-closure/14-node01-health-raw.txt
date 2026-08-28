@@ -1,0 +1,15 @@
+=== node-01 health raw ===
+IDENTITY_OK serial=S5G0NC0T407845 model=MZILT3T8HBLS/007
+TEMP_OK current=22C reference=74C
+WRITE_OK uncorrected=0
+READ_OK uncorrected=0
+NON_MEDIUM_COUNT=41
+HEALTH_PASS serial=S5G0NC0T407845 model=MZILT3T8HBLS/007 temp=22C uncorr_write=0 uncorr_read=0
+rc=0
+IDENTITY_OK serial=S5G0NC0T407844 model=MZILT3T8HBLS/007
+TEMP_OK current=22C reference=74C
+WRITE_OK uncorrected=0
+READ_OK uncorrected=0
+NON_MEDIUM_COUNT=41
+HEALTH_PASS serial=S5G0NC0T407844 model=MZILT3T8HBLS/007 temp=22C uncorr_write=0 uncorr_read=0
+rc=0

@@ -1,0 +1,4 @@
+=== node-02 compile raw ===
+=== compile-only DRBD 9.3.2 (read-only) kernel=6.1.158-1-generic host=node-02 ===
+CACHE_HIT drbd.ko version=9.3.2 vermagic=6.1.158-1-generic (already compiled, skipping rebuild)
+COMPILE_ONLY_OK version=9.3.2 vermagic=6.1.158-1-generic

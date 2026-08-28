@@ -1,0 +1,17 @@
+# TASK-015-R2 — Compile Helper Static Audit
+
+p5a-drbd-compile-only.sh:
+- set -uo pipefail
+- required mounts (/usr/src, /lib/modules/<kver>) fail-closed: no `|| true`
+- chroot /dev contains ONLY null/zero/random/urandom (char), block devices = 0 (verified)
+- make rc captured directly (LOG file, `RC=$?`), then tail -15
+- version + vermagic asserted (9.3.2, current kernel)
+- drbd.ko + drbd_transport_tcp.ko existence asserted
+- module NOT installed/loaded
+- exit 0 ONLY on full PASS
+
+compile helper rc masked by pipeline: 0
+required mount || true: 0
+full /dev bind in compile helper: 0
+
+RESULT: PASS

@@ -1,0 +1,11 @@
+# TASK-015-R2 — R1 Evidence Chronology
+
+R1 node-01 initial compile: MISSING drbd.ko (старая версия helper без CONFIG_GCC_PLUGINS=n)
+R1 subsequent node-01 compile: drbd.ko produced (после перезалива исправленного helper)
+
+R1 initial node-02/node-03 health: rootfs missing (scp host-to-host не сработал)
+R1 subsequent health: successful (после pull+extract piraeus-server на каждом узле)
+
+historical evidence modified: NO
+
+R2 purpose: один чистый fail-closed воспроизводимый closure run.

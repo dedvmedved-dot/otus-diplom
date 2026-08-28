@@ -1,0 +1,7 @@
+=== versions.lock (readonly) ===
+  linstor_operator:    "2.10.6"
+  linstor:             "1.33.2"
+  linstor_csi:         "1.11.0"
+  drbd:                "9.3.2"
+  drbd_utils:          "9.34.3"
+  - "drbd_utils 9.34.3 supplied by digest-pinned piraeus-server:v1.33.2 image (sha256:0db38ed0...); no separate host drbd-utils package."

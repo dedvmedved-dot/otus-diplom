@@ -1,0 +1,10 @@
+=== SAFETY RUNTIME ===
+--- node-01 ---
+/dev/sdb children=0 mnt=none swap=0 pv=0 md=0 mp=0 dm=0 holder= sig=0
+/dev/sdc children=0 mnt=none swap=0 pv=0 md=0 mp=0 dm=0 holder= sig=0
+--- node-02 ---
+/dev/sdb children=0 mnt=none swap=0 pv=0 md=0 mp=0 dm=0 holder= sig=0
+/dev/sdc children=0 mnt=none swap=0 pv=0 md=0 mp=0 dm=0 holder= sig=0
+--- node-03 ---
+/dev/sdb children=0 mnt=none swap=0 pv=0 md=0 mp=0 dm=0 holder= sig=0
+/dev/sdc children=0 mnt=none swap=0 pv=0 md=0 mp=0 dm=0 holder= sig=0

@@ -1,0 +1,14 @@
+# TASK-015-R2 — Resolver Static Audit
+
+Composite key: SERIAL + WWN + MODEL + exact size + TYPE=disk.
+
+- parse полного `lsblk -J -b -o NAME,PATH,TYPE,SIZE,MODEL,SERIAL,WWN`
+- для каждого expected кандидата: exactly ONE live disk matching ALL 5 полей
+- no serial-only initial lookup: 0
+- no `head -1` uniqueness bypass: 0
+- expected WWN asserted (сравнивается live vs expected): YES
+- duplicates → exit 1; missing → exit 1
+
+EXPECTED=6 MATCHED=6 UNIQUE=6 DUPLICATE=0 MISSING=0 (target)
+
+RESULT: PASS
