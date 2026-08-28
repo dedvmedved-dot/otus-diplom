@@ -1,0 +1,9 @@
+# TASK-015-R3 — Compile Mount Isolation
+
+Все 3 узла:
+  /usr/src → chroot mount: ro,relatime (verified via findmnt -n -o OPTIONS)
+  /lib/modules/6.1.158-1-generic → chroot mount: ro,relatime (verified)
+  chroot /dev block devices: 0
+  sda/sdb/sdc: absent in chroot
+
+RESULT: PASS

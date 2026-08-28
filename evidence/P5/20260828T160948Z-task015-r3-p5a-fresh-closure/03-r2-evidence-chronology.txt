@@ -1,0 +1,7 @@
+# TASK-015-R3 — R2 Evidence Chronology
+
+R2 compile acceptance used CACHE_HIT on node-01/node-02/node-03.
+R2 node-01 health initial attempt failed: cannot bind /dev, rc=3.
+R2 later node-01 health passed.
+Historical R2 evidence modified: NO.
+R3 purpose: one clean fresh fail-closed acceptance run.

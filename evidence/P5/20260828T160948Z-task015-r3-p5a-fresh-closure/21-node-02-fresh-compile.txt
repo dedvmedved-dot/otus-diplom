@@ -1,0 +1,9 @@
+=== node-02 fresh compile ===
+=== FRESH compile-only DRBD 9.3.2 (read-only) kernel=6.1.158-1-generic host=node-02 ===
+mount /usr/src OPTIONS=ro,relatime
+mount /lib/modules/6.1.158-1-generic OPTIONS=ro,relatime
+chroot /dev block devices: 0
+make rc=0
+vermagic:       6.1.158-1-generic SMP preempt mod_unload modversions 
+vermagic:       6.1.158-1-generic SMP preempt mod_unload modversions 
+FRESH_COMPILE_OK version=9.3.2 vermagic=6.1.158-1-generic

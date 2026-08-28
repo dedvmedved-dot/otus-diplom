@@ -1,0 +1,6 @@
+# TASK-015-R3 — Storage Candidate Map After
+
+inventory/storage-p5-candidates.yaml — eligible: true (6/6), destructive_authorized: false.
+R3 не менял (уже зафиксировано P5A_VERIFIED в R1).
+
+См. inventory/storage-p5-candidates.yaml.

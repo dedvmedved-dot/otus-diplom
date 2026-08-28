@@ -1,0 +1,10 @@
+# TASK-015-R3 — K8s Storage Fail-closed Static Audit
+
+PHASE 10 (Python): kubectl get <kind> -o json для crd/csidriver/storageclass/pv/pvc.
+- rc != 0 → KUBECTL_FAIL exit 1 (не 0 объектов)
+- JSON parse fail → JSON_FAIL exit 1
+- затем count; любой linstor/piraeus/drbd/linbit объект → exit 1
+
+kubectl API error converted to zero: 0
+
+RESULT: PASS

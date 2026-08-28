@@ -1,0 +1,10 @@
+# TASK-015-R3 — Safety Fail-closed Static Audit
+
+PHASE 7 (Python): для каждого composite-resolved кандидата.
+- grep -c (rc=1 при 0) нормализуется в "0" только при rc==1; прочие rc → QUERY_FAIL.
+- findmnt/wipefs -n: ненулевой rc → QUERY_FAIL (не превращается в 0).
+- любой positive finding (children/mnt/swap/pv/md/mp/dm/holder) → SAFETY_FAIL exit 1.
+
+required safety query rc ignored: 0
+
+RESULT: PASS

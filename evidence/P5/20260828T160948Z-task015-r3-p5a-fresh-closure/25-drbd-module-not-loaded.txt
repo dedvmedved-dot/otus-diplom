@@ -1,0 +1,4 @@
+=== DRBD NOT LOADED ===
+node .38 loaded=0
+node .40 loaded=0
+node .39 loaded=0

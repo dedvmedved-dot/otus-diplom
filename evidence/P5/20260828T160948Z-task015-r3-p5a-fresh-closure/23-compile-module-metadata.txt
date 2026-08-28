@@ -1,0 +1,16 @@
+# TASK-015-R3 — Compile Module Metadata + Mount Isolation
+
+Все 3 узла (из /tmp/p5a_compile.log fresh run):
+  mount /usr/src OPTIONS=ro,relatime
+  mount /lib/modules/6.1.158-1-generic OPTIONS=ro,relatime
+  chroot /dev block devices: 0
+  make rc=0
+  drbd.ko version=9.3.2 vermagic=6.1.158-1-generic
+  drbd_transport_tcp.ko vermagic=6.1.158-1-generic
+  FRESH_COMPILE_OK
+
+COMPILE MOUNTS READ-ONLY: PASS (ro,relatime verified via findmnt)
+COMPILE CHROOT BLOCK DEVICES: 0 (sda/sdb/sdc absent)
+CACHE_HIT: 0
+
+RESULT: PASS

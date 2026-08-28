@@ -1,0 +1,16 @@
+# TASK-015-R3 — Health Static Audit
+
+p5a-candidate-health.sh (R3):
+- принимает <resolved_device> <expected_serial> <expected_model>
+- pre-clean stale mounts (mountpoint -q + umount -l loop)
+- minimal char devices (null/zero/random/urandom) + resolved block device via mknod
+- НЕ биндит весь /dev (только proc)
+- trap cleanup: umount proc + rm resolved device node
+- sg_inq rc=0, serial/model exact asserted
+- temp page rc=0, current + reference present, current < reference
+- write/read error pages rc=0, uncorrected == 0
+- exit 0 ONLY on full PASS
+
+health helper rc masked: 0; serial-only path selection: 0
+
+RESULT: PASS

@@ -1,0 +1,8 @@
+# TASK-015-R3 — Fingerprint Static Audit
+
+PHASE 7b/9b (Python): open(dev, "rb"), seek, read exact 1048576 bytes,
+assert len==1048576 (else READ_FAIL), sha256. No unchecked dd|sha256sum.
+
+unchecked dd fingerprint pipeline: 0
+
+RESULT: PASS

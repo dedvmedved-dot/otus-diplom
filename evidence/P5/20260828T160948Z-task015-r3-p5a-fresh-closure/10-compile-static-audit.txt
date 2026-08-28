@@ -1,0 +1,15 @@
+# TASK-015-R3 — Compile Static Audit
+
+p5a-drbd-compile-only.sh (R3):
+- no cache (rm -rf $WORK, asserts no stale .ko) → forced fresh make
+- required mounts (/usr/src, /lib/modules/<kver>) fail-closed, no || true
+- verify effective ro flags via findmnt -n -o OPTIONS (grep '^ro')
+- minimal /dev (null/zero/random/urandom only), block count=0, sda/sdb/sdc absent
+- make rc captured direct (LOG, RC=$?), exit $RC
+- version=9.3.2, vermagic=current kernel asserted
+- module NOT installed/loaded
+- exit 0 ONLY on full PASS
+
+compile CACHE_HIT acceptance: 0; required mount ro unverified: 0
+
+RESULT: PASS

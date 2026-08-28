@@ -1,0 +1,7 @@
+=== ADR-003 (readonly) ===
+# ADR-003 — P5 DRBD Operator Version Alignment
+
+STATUS: APPROVED
+APPROVED BY: Chief Architect
+SOURCE TASK: TASK-015-R1
+

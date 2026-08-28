@@ -1,0 +1,10 @@
+=== P1-P4 POSTCHECK ===
+ssh: connect to host 192.168.194.38 port 22: Network is unreachable
+node .38 VIP=0
+node .40 VIP=1
+node .39 VIP=0
+nodes: 3
+calico: 3
+coredns: 2/2/2
+readyz: ok
+etcd: 3

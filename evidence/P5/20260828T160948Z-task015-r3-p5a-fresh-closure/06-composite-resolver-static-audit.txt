@@ -1,0 +1,10 @@
+# TASK-015-R3 — Composite Resolver Static Audit
+
+Resolver: SERIAL + WWN + MODEL + SIZE + TYPE, exactly 1 match.
+- lsblk -J -b full parse (rc checked, JSON parse checked)
+- no serial-only lookup: 0
+- no head -1: 0
+- expected WWN asserted: YES
+- result cached to /tmp/p5a_resolved_<host>.json, reused by safety/health/fingerprint
+
+RESULT: PASS

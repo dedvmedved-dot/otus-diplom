@@ -1,0 +1,19 @@
+# TASK-015-R3 — Forbidden Command Audit
+
+Source check (вручную выверено):
+
+serial-only device lookup: 0 (composite resolver)
+head -1 identity bypass: 0
+expected WWN unused: 0
+required safety query rc ignored: 0 (QUERY_FAIL на не-grep rc)
+unchecked dd fingerprint pipeline: 0 (Python exact-1MiB read + len assert)
+compile CACHE_HIT acceptance: 0 (fresh make forced)
+required mount ro unverified: 0 (findmnt OPTIONS grep '^ro')
+kubectl API error converted to zero: 0 (rc + JSON parse enforced)
+P1-P4 postcheck outside playbook only: 0 (PHASE 12 в playbook)
+
+DESTRUCTIVE COMMANDS: 0
+DRBD MODULE LOADED: NO
+DRBD MODULE INSTALLED: NO
+
+RESULT: PASS

@@ -1,0 +1,23 @@
+# TASK-015-R3 — Scope
+
+MODE: READ-ONLY CLOSURE + FORCED FRESH COMPILE + NO STORAGE MUTATION +
+NO DRBD MODULE LOAD + NO P5B.
+
+ALLOWED:
+  ansible/playbooks/p5a-linstor-drbd-preflight.yml
+  ansible/playbooks/files/p5a-drbd-compile-only.sh
+  ansible/playbooks/files/p5a-candidate-health.sh
+  inventory/storage-p5-candidates.yaml
+  docs/storage/P5A-*.md + P5B-IMPLEMENTATION-PREREQUISITES.md
+  evidence/P5/<RUN_ID>-task015-r3-p5a-fresh-closure/
+
+READ-ONLY: versions.lock, ADR-003, images.lock, inventory/hosts.yaml,
+P1-P4 playbooks, historical P5 evidence.
+
+FORBIDDEN: wipefs write/blkdiscard/dd of=/partition writes/mkfs/mkswap/
+pvcreate/vgcreate/lvcreate/ceph-volume zap; insmod/modprobe drbd/rmmod/make install/
+dkms install/copy .ko to /lib/modules/depmod; Piraeus/LINSTOR install/CRD apply/
+StorageClass/PV/PVC/DRBD metadata/storage-pool/P5B.
+
+VERSION BASELINE PRESERVED: Operator 2.10.6 / LINSTOR 1.33.2 / CSI 1.11.0 /
+DRBD 9.3.2 / drbd-utils 9.34.3.
