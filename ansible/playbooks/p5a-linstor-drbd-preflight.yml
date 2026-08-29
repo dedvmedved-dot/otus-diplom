@@ -37,13 +37,27 @@
       ansible.builtin.shell:
         cmd: |
           case "{{ p5a_mode }}" in
-            full|final-safety-regression|final-busy-regression) echo "p5a_mode={{ p5a_mode }} OK";;
+            full|final-safety-regression|final-busy-regression|final-dm-ceph) echo "p5a_mode={{ p5a_mode }} OK";;
             *) echo "INVALID_MODE {{ p5a_mode }}"; exit 1;;
           esac
       register: ph0
       changed_when: false
       run_once: true
       delegate_to: node-01
+
+    # ═══ minimal P1-P4 health guard (final-dm-ceph) ═══
+    - name: PHASE 0g — minimal cluster guard (nodes + readyz)
+      ansible.builtin.shell:
+        cmd: |
+          nodes=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get nodes 2>/dev/null | grep -c ' Ready')
+          rz=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get --raw='/readyz' 2>/dev/null)
+          echo "nodes=$nodes readyz=$rz"
+          [ "$nodes" = "3" ] && [ "$rz" = "ok" ] || exit 1
+      register: ph0g
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+      when: p5a_mode == 'final-dm-ceph'
 
     # ═══════════════════ FULL P1-P4 PRECHECK ═══════════════════
     - name: P1 PRE — bond slaves + exact VLAN addresses + default route
@@ -67,6 +81,7 @@
           echo "P1_PRE_OK"
       register: p1pre
       changed_when: false
+      when: p5a_mode != 'final-dm-ceph'
 
     - name: P2 PRE — containerd + kubelet + swap
       ansible.builtin.shell:
@@ -79,6 +94,7 @@
           echo "P2_PRE_OK"
       register: p2pre
       changed_when: false
+      when: p5a_mode != 'final-dm-ceph'
 
     - name: P3 PRE — etcd JSON-aware full semantics
       ansible.builtin.shell:
@@ -133,6 +149,7 @@
       changed_when: false
       run_once: true
       delegate_to: node-01
+      when: p5a_mode != 'final-dm-ceph'
 
     - name: P4A PRE — Nodes/calico/CoreDNS/IPPool/BGP/autodetect
       ansible.builtin.shell:
@@ -185,6 +202,7 @@
       changed_when: false
       run_once: true
       delegate_to: node-01
+      when: p5a_mode != 'final-dm-ceph'
 
     - name: P4B PRE — final-state (validation ns NotFound, 0 policies)
       ansible.builtin.shell:
@@ -207,6 +225,7 @@
       changed_when: false
       run_once: true
       delegate_to: node-01
+      when: p5a_mode != 'final-dm-ceph'
 
     # ═══════════════════ COMPOSITE RESOLVER ═══════════════════
     - name: PHASE 6 — composite resolver (exact unique)
@@ -286,20 +305,25 @@
           for exp in expected:
               d = resolve_now(exp)
               cands.append((exp["serial"], d["path"], d["kname"], majmin(d["path"])))
-          # collect DM deps (structural, via dmsetup deps + /sys)
+          # collect DM deps (structural, fail-closed: rc=0 required)
           dm_maps = []
           r = subprocess.run(["dmsetup","ls"], capture_output=True, text=True)
-          if r.returncode == 0:
-              for line in r.stdout.strip().splitlines():
+          if r.returncode != 0:
+              print(f"DM_QUERY_FAIL dmsetup ls rc={r.returncode}"); sys.exit(1)
+          lines = [l for l in r.stdout.strip().splitlines() if l.strip()]
+          if not lines:
+              print("DM_MAPS=0 PASS")
+          else:
+              import re
+              for line in lines:
                   name = line.split()[0]
                   deps = subprocess.run(["dmsetup","deps",name], capture_output=True, text=True)
-                  # parse "(major:minor)" pairs
-                  import re
+                  if deps.returncode != 0:
+                      print(f"DM_DEPS_FAIL {name} rc={deps.returncode}"); sys.exit(1)
                   pairs = re.findall(r'\((\d+):(\d+)\)', deps.stdout)
+                  print(f"dm_map={name} deps_rc=0 deps={pairs}")
                   for mj,mn in pairs:
                       dm_maps.append((int(mj), int(mn)))
-          if not dm_maps:
-              print("DM_MAPS=0 PASS")
           for serial, dev, kname, mm in cands:
               hit = mm in dm_maps
               print(f"{dev} kname={kname} maj:min={mm[0]}:{mm[1]} dm_dependency={'HIT' if hit else 'clear'}")
@@ -433,16 +457,38 @@
               ceph_tags = [t for t in tags.split(",") if t.startswith("ceph.")]
               print(f"{dev} ceph_tags={ceph_tags or 0}")
               if ceph_tags: print(f"CEPH_FAIL tag {dev}"); sys.exit(1)
-          # OSD block links ancestry
-          osd_links = glob.glob("/var/lib/ceph/osd/ceph-*/block*")
+          # OSD block links ancestry (readlink -f rc=0 + lsblk PKNAME walk)
+          osd_links = glob.glob("/var/lib/ceph/osd/ceph-*/block") + \
+                      glob.glob("/var/lib/ceph/osd/ceph-*/block.db") + \
+                      glob.glob("/var/lib/ceph/osd/ceph-*/block.wal")
+          def norm(p):
+              if not p: return p
+              return p if p.startswith("/dev") else "/dev/" + p
           for l in osd_links:
-              r = subprocess.run(["readlink","-f",l], capture_output=True, text=True)
-              if r.returncode == 0:
-                  tgt = r.stdout.strip()
-                  for exp in expected:
-                      d = resolve_now(exp)
-                      if d["path"] in tgt or tgt.startswith(d["path"]):
-                          print(f"CEPH_FAIL osd link {l} -> {tgt}"); sys.exit(1)
+              rl = subprocess.run(["readlink","-f",l], capture_output=True, text=True)
+              if rl.returncode != 0:
+                  print(f"CEPH_QUERY_FAIL readlink {l} rc={rl.returncode}"); sys.exit(1)
+              tgt = rl.stdout.strip()
+              # resolve target + walk PKNAME ancestry to whole disk
+              chain = []
+              cur = norm(tgt)
+              for _ in range(16):
+                  if not cur: break
+                  chain.append(cur)
+                  r2 = subprocess.run(["lsblk","-no","PKNAME",cur], capture_output=True, text=True)
+                  if r2.returncode != 0:
+                      print(f"CEPH_QUERY_FAIL lsblk {cur} rc={r2.returncode}"); sys.exit(1)
+                  pk = r2.stdout.strip().split("\n")[0]
+                  if not pk: break
+                  nxt = norm(pk)
+                  if nxt == cur: break
+                  cur = nxt
+              chain_knames = {os.path.basename(c) for c in chain}
+              print(f"osd_link={l} target={tgt} ancestry={chain}")
+              for exp in expected:
+                  d = resolve_now(exp)
+                  if d["kname"] in chain_knames:
+                      print(f"CEPH_FAIL osd link {l} ancestry hits candidate {d['kname']}"); sys.exit(1)
           # ceph-volume if present
           cv = subprocess.run(["which","ceph-volume"], capture_output=True, text=True)
           if cv.returncode == 0:
@@ -504,6 +550,7 @@
           echo "P1_POST_OK"
       register: p1post
       changed_when: false
+      when: p5a_mode != 'final-dm-ceph'
 
     - name: P2 POST — containerd + kubelet + swap
       ansible.builtin.shell:
@@ -516,6 +563,7 @@
           echo "P2_POST_OK"
       register: p2post
       changed_when: false
+      when: p5a_mode != 'final-dm-ceph'
 
     - name: P3 POST — etcd JSON-aware + livez + readyz
       ansible.builtin.shell:
@@ -555,6 +603,7 @@
       changed_when: false
       run_once: true
       delegate_to: node-01
+      when: p5a_mode != 'final-dm-ceph'
 
     - name: P4A POST — Nodes/calico/CoreDNS/IPPool/BGP/autodetect
       ansible.builtin.shell:
@@ -595,6 +644,7 @@
       changed_when: false
       run_once: true
       delegate_to: node-01
+      when: p5a_mode != 'final-dm-ceph'
 
     - name: P4B POST — final-state (NotFound, 0 policies)
       ansible.builtin.shell:
@@ -617,12 +667,14 @@
       changed_when: false
       run_once: true
       delegate_to: node-01
+      when: p5a_mode != 'final-dm-ceph'
 
     - name: VIP POST — aggregate owner == 1
       ansible.builtin.shell:
         cmd: "ip -4 addr show dev bond0.140 2>/dev/null | grep -c '172.30.140.100/32' || true"
       register: vipowner
       changed_when: false
+      when: p5a_mode != 'final-dm-ceph'
 
     - name: VIP POST — assert aggregate == 1
       ansible.builtin.shell:
@@ -634,6 +686,7 @@
       changed_when: false
       run_once: true
       delegate_to: node-01
+      when: p5a_mode != 'final-dm-ceph'
 
     - name: PHASE 13 — final gate summary
       ansible.builtin.debug:

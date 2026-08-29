@@ -1,0 +1,14 @@
+# TASK-015-R6 — Ceph Static Audit
+
+PHASE 7c:
+- pvs rc=0 + JSON parse required (candidate-specific ceph.* tags = 0)
+- OSD block/block.db/block.wal: readlink -f rc=0 required → lsblk PKNAME ancestry walk
+  до whole disk → compare candidate kname/major:minor
+- link существует но target не резолвится → CEPH_QUERY_FAIL exit 1
+- ceph-volume: если есть → каждый inventory rc=0 + candidate absent;
+  если нет → UNAVAILABLE
+
+Ceph block link direct-string-only acceptance: 0
+Ceph ancestry query rc ignored: 0
+
+RESULT: PASS

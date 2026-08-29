@@ -1,0 +1,28 @@
+=== DM RUNTIME ===
+--- .38 ---
+dmsetup ls rc + maps:
+astra38644-lv_home	(253:1)
+astra38644-lv_root	(253:2)
+astra38644-lv_swap	(253:0)
+rc=0
+deps astra38644-lv_home: 1 dependencies	: (8, 3) rc=0
+deps astra38644-lv_root: 1 dependencies	: (8, 3) rc=0
+deps astra38644-lv_swap: 1 dependencies	: (8, 3) rc=0
+--- .40 ---
+dmsetup ls rc + maps:
+astra39539-lv_home	(253:1)
+astra39539-lv_root	(253:2)
+astra39539-lv_swap	(253:0)
+rc=0
+deps astra39539-lv_home: 1 dependencies	: (8, 3) rc=0
+deps astra39539-lv_root: 1 dependencies	: (8, 3) rc=0
+deps astra39539-lv_swap: 1 dependencies	: (8, 3) rc=0
+--- .39 ---
+dmsetup ls rc + maps:
+astra03718-lv_home	(253:1)
+astra03718-lv_root	(253:2)
+astra03718-lv_swap	(253:0)
+rc=0
+deps astra03718-lv_home: 1 dependencies	: (8, 3) rc=0
+deps astra03718-lv_root: 1 dependencies	: (8, 3) rc=0
+deps astra03718-lv_swap: 1 dependencies	: (8, 3) rc=0

@@ -1,0 +1,12 @@
+# TASK-015-R6 — Kubernetes Storage State
+
+PHASE 10 (Python, kubectl rc + JSON parse enforced):
+  linstor/piraeus/drbd/linbit CRDs = 0
+  csidriver = 0
+  storageclass = 0
+  pv = 0
+  pvc = 0
+
+K8S_STORAGE_CLEAN (из run transcript).
+
+RESULT: PASS

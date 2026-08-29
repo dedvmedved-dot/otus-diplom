@@ -1,0 +1,20 @@
+# TASK-015-R6 — Forbidden Command Audit
+
+Source check (вручную выверено):
+
+dmsetup ls nonzero can PASS: 0 (rc=0 required, иначе DM_QUERY_FAIL)
+dmsetup deps rc ignored: 0 (каждая map deps rc=0 required)
+Ceph block link direct-string-only acceptance: 0 (readlink -f + lsblk PKNAME ancestry)
+Ceph ancestry query rc ignored: 0 (readlink/lsblk rc проверяются)
+DRBD compile reachable in final-dm-ceph: 0
+health reachable in final-dm-ceph: 0
+fingerprint reachable in final-dm-ceph: 0
+storage mutation reachable: 0
+
+DESTRUCTIVE COMMANDS: 0
+DRBD COMPILE: NOT RERUN
+HEALTH: NOT RERUN
+FINGERPRINT: NOT RERUN
+STORAGE MUTATION: NONE
+
+RESULT: PASS

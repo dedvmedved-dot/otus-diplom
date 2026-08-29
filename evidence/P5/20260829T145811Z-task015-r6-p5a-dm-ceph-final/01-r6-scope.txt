@@ -1,0 +1,23 @@
+# TASK-015-R6 — Scope
+
+MODE: FINAL-DM-CEPH / READ-ONLY (p5a_mode=final-dm-ceph).
+
+MUST RUN: composite resolver, holder proof, DM dependency proof, Ceph exclusion
+proof, Kubernetes storage-state proof, minimal P1-P4 health guard.
+
+MUST NOT RUN: DRBD compile, health, fingerprint, wipefs, blkid, package
+installation, storage mutation.
+
+ALLOWED:
+  ansible/playbooks/p5a-linstor-drbd-preflight.yml
+  docs/storage/P5A-DESTRUCTIVE-DEVICE-PREFLIGHT.md
+  docs/storage/P5B-IMPLEMENTATION-PREREQUISITES.md
+  evidence/P5/<RUN_ID>-task015-r6-p5a-dm-ceph-final/
+
+inventory/storage-p5-candidates.yaml — только factual sync, destructive_authorized: false.
+
+READ-ONLY: versions.lock, images.lock, ADR-003, compile helper, health helper,
+inventory/hosts.yaml, historical evidence.
+
+VERSION BASELINE: Operator 2.10.6 / LINSTOR 1.33.2 / CSI 1.11.0 / DRBD 9.3.2 /
+drbd-utils 9.34.3.

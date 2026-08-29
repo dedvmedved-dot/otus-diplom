@@ -1,0 +1,4 @@
+=== CEPH RUNTIME ===
+pvs_rc=0 ceph_tags=0 osd_block=0 osd_db=0 osd_wal=0 ceph_volume=UNAVAILABLE
+pvs_rc=0 ceph_tags=0 osd_block=0 osd_db=0 osd_wal=0 ceph_volume=UNAVAILABLE
+pvs_rc=0 ceph_tags=0 osd_block=0 osd_db=0 osd_wal=0 ceph_volume=UNAVAILABLE

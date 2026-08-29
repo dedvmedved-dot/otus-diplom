@@ -1,0 +1,9 @@
+# TASK-015-R6 — R5 Connector Defects
+
+D1 — dmsetup ls: rc != 0 → dm_maps остаётся пустым → печатается DM_MAPS=0 PASS
+     (fail-open). И dmsetup deps <name> парсится без проверки returncode==0.
+     Требуется: dmsetup ls rc=0; каждый deps rc=0; только пустой stdout → PASS.
+
+D2 — Ceph block links: readlink -f + прямое сравнение строки с /dev/sdX
+     недостаточно. Требуется: readlink -f rc=0 → lsblk resolve → PKNAME ancestry
+     walk до whole disk → сравнение kname/major:minor.

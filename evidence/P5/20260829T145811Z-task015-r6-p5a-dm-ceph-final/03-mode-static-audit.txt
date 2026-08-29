@@ -1,0 +1,20 @@
+# TASK-015-R6 — Mode Static Audit
+
+p5a_mode: full | final-safety-regression | final-busy-regression | final-dm-ceph.
+R6 runs final-dm-ceph.
+
+final-dm-ceph runs ONLY: composite resolver, holder proof, DM dependency proof,
+Ceph exclusion proof, Kubernetes storage-state proof, minimal P1-P4 health guard
+(PHASE 0g: nodes=3 + readyz=ok).
+
+MUST NOT run: DRBD compile, health, fingerprint, wipefs, blkid, package install,
+storage mutation.
+
+Full P1-P4 regression задачи помечены `when: p5a_mode != 'final-dm-ceph'`.
+
+DRBD compile reachable: 0
+health reachable: 0
+fingerprint reachable: 0
+storage mutation reachable: 0
+
+RESULT: PASS

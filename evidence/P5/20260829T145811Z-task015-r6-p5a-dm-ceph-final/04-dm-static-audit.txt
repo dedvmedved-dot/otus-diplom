@@ -1,0 +1,12 @@
+# TASK-015-R6 — DM Static Audit
+
+PHASE 7d:
+- dmsetup ls rc=0 required (rc != 0 → DM_QUERY_FAIL exit 1)
+- для каждой map: dmsetup deps <name> rc=0 required (иначе DM_DEPS_FAIL exit 1)
+- только успешный пустой stdout → DM_MAPS=0 PASS
+- candidate major:minor сравнивается со всеми успешно распарсенными deps
+
+dmsetup ls nonzero can PASS: 0
+dmsetup deps rc ignored: 0
+
+RESULT: PASS

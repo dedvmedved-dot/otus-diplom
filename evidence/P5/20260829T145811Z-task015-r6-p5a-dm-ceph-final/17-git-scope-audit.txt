@@ -1,0 +1,3 @@
+=== GIT SCOPE ===
+ M ansible/playbooks/p5a-linstor-drbd-preflight.yml
+?? evidence/P5/20260829T145811Z-task015-r6-p5a-dm-ceph-final/
