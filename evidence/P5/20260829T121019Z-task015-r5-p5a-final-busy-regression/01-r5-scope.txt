@@ -1,0 +1,24 @@
+# TASK-015-R5 — Scope
+
+MODE: FINAL-BUSY-REGRESSION / READ-ONLY (p5a_mode=final-busy-regression).
+
+MUST RUN: full P1-P4 PRE, composite resolver, busy/backing/holder safety proof,
+Ceph exclusion proof, Kubernetes storage-state proof, full P1-P4 POST.
+
+MUST NOT RUN: DRBD compile, candidate health, fingerprint reads, package
+installation, storage mutation.
+
+ALLOWED:
+  ansible/playbooks/p5a-linstor-drbd-preflight.yml
+  inventory/storage-p5-candidates.yaml
+  docs/storage/P5A-DESTRUCTIVE-DEVICE-PREFLIGHT.md
+  docs/storage/P5A-LINSTOR-DRBD-COMPATIBILITY.md
+  docs/storage/P5B-IMPLEMENTATION-PREREQUISITES.md
+  evidence/P5/<RUN_ID>-task015-r5-p5a-final-busy-regression/
+
+READ-ONLY: versions.lock, images.lock, ADR-003, p5a-drbd-compile-only.sh,
+p5a-candidate-health.sh, inventory/hosts.yaml, historical evidence,
+P1-P4 playbooks/manifests.
+
+VERSION BASELINE: Operator 2.10.6 / LINSTOR 1.33.2 / CSI 1.11.0 / DRBD 9.3.2 /
+drbd-utils 9.34.3 (не изменяются).

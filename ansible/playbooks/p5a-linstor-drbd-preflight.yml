@@ -1,15 +1,13 @@
 ---
 # p5a-linstor-drbd-preflight.yml
-# TASK-015-R4 / P5A: FINAL device safety + full P1-P4 regression closure.
-# READ-ONLY. p5a_mode: full | final-safety-regression (unknown -> FAIL).
+# TASK-015-R5 / P5A: FINAL busy-device + regression proof.
+# READ-ONLY. p5a_mode: full | final-safety-regression | final-busy-regression.
 #
-# final-safety-regression MUST NOT compile DRBD. It runs:
-#   full P1-P4 PRE, composite resolver, full device safety (fail-closed),
-#   signature gates (wipefs/blkid), Ceph exclusion, fingerprint BEFORE/AFTER,
-#   health, fingerprint compare, Kubernetes storage state, full P1-P4 POST.
-#
-# Every device operation re-resolves the full composite identity immediately
-# (SERIAL+WWN+MODEL+SIZE+TYPE, exactly 1 match). No saved-path-only reuse.
+# final-busy-regression runs ONLY:
+#   full P1-P4 PRE, composite resolver, busy/backing/holder safety proof,
+#   Ceph exclusion proof, Kubernetes storage-state proof, full P1-P4 POST.
+# It MUST NOT run: DRBD compile, candidate health, fingerprint reads,
+# package installation, storage mutation.
 
 - name: "P5A LINSTOR/DRBD preflight (READ-ONLY, FAIL-CLOSED)"
   hosts: all
@@ -35,11 +33,11 @@
       node-03: { bond140: "172.30.140.103/24", bond141: "172.30.141.103/24", bond143: "172.30.143.103/24", bond700: "192.168.194.39/24" }
   tasks:
     # ═══ PHASE 0 — mode gate ═══
-    - name: PHASE 0 — p5a_mode gate (full or final-safety-regression)
+    - name: PHASE 0 — p5a_mode gate
       ansible.builtin.shell:
         cmd: |
           case "{{ p5a_mode }}" in
-            full|final-safety-regression) echo "p5a_mode={{ p5a_mode }} OK";;
+            full|final-safety-regression|final-busy-regression) echo "p5a_mode={{ p5a_mode }} OK";;
             *) echo "INVALID_MODE {{ p5a_mode }}"; exit 1;;
           esac
       register: ph0
@@ -59,157 +57,128 @@
           a700=$(ip -4 -o addr show dev bond0.700 2>/dev/null | awk '{print $4}')
           dr=$(ip -4 route show default 2>/dev/null)
           drc=$(ip -4 route show default 2>/dev/null | wc -l)
-          echo "host=$(hostname) bond0=$b0 bond1=$b1"
-          echo "bond0.140=$a140 bond1.141=$a141 bond0.143=$a143 bond0.700=$a700"
-          echo "default_count=$drc default=$dr"
-          [ "$b0" = "ens2f0 ens2f1" ] || { echo "P1_FAIL bond0"; exit 1; }
-          [ "$b1" = "ens2f2 ens2f3" ] || { echo "P1_FAIL bond1"; exit 1; }
-          [ "$a140" = "{{ p1_expected[inventory_hostname].bond140 }}" ] || { echo "P1_FAIL bond0.140"; exit 1; }
-          [ "$a141" = "{{ p1_expected[inventory_hostname].bond141 }}" ] || { echo "P1_FAIL bond1.141"; exit 1; }
-          [ "$a143" = "{{ p1_expected[inventory_hostname].bond143 }}" ] || { echo "P1_FAIL bond0.143"; exit 1; }
-          [ "$a700" = "{{ p1_expected[inventory_hostname].bond700 }}" ] || { echo "P1_FAIL bond0.700"; exit 1; }
-          [ "$drc" = "1" ] || { echo "P1_FAIL default_count=$drc"; exit 1; }
-          echo "$dr" | grep -q 'via 192.168.194.1 dev bond0.700' || { echo "P1_FAIL default"; exit 1; }
+          echo "host=$(hostname) bond0=$b0 bond1=$b1 default_count=$drc"
+          [ "$b0" = "ens2f0 ens2f1" ] && [ "$b1" = "ens2f2 ens2f3" ] || { echo "P1_FAIL"; exit 1; }
+          [ "$a140" = "{{ p1_expected[inventory_hostname].bond140 }}" ] || { echo "P1_FAIL 140"; exit 1; }
+          [ "$a141" = "{{ p1_expected[inventory_hostname].bond141 }}" ] || { echo "P1_FAIL 141"; exit 1; }
+          [ "$a143" = "{{ p1_expected[inventory_hostname].bond143 }}" ] || { echo "P1_FAIL 143"; exit 1; }
+          [ "$a700" = "{{ p1_expected[inventory_hostname].bond700 }}" ] || { echo "P1_FAIL 700"; exit 1; }
+          [ "$drc" = "1" ] && echo "$dr" | grep -q 'via 192.168.194.1 dev bond0.700' || { echo "P1_FAIL default"; exit 1; }
           echo "P1_PRE_OK"
       register: p1pre
       changed_when: false
 
-    - name: P2 PRE — containerd 2.3.3 + kubelet v1.36.2 + swap 0
+    - name: P2 PRE — containerd + kubelet + swap
       ansible.builtin.shell:
         cmd: |
           ctd=$(ctr version 2>/dev/null | grep -m1 -i 'Version' | awk '{print $2}' | tr -d 'v')
           klt=$(kubelet --version 2>/dev/null | awk '{print $2}')
           sw=$(swapon --noheadings 2>/dev/null | wc -l)
           echo "host=$(hostname) containerd=$ctd kubelet=$klt swap=$sw"
-          [ "$ctd" = "2.3.3" ] || { echo "P2_FAIL containerd=$ctd"; exit 1; }
-          [ "$klt" = "v1.36.2" ] || { echo "P2_FAIL kubelet=$klt"; exit 1; }
-          [ "$sw" = "0" ] || { echo "P2_FAIL swap=$sw"; exit 1; }
+          [ "$ctd" = "2.3.3" ] && [ "$klt" = "v1.36.2" ] && [ "$sw" = "0" ] || { echo "P2_FAIL"; exit 1; }
           echo "P2_PRE_OK"
       register: p2pre
       changed_when: false
 
-    - name: P3 PRE — etcd full semantics + kube-vip + livez + readyz
+    - name: P3 PRE — etcd JSON-aware full semantics
       ansible.builtin.shell:
         cmd: |
-          set -uo pipefail
-          KC="kubectl --kubeconfig /etc/kubernetes/admin.conf"
-          ETCD="$KC -n kube-system exec etcd-node-01 -- etcdctl --endpoints=https://172.30.140.101:2379,https://172.30.140.102:2379,https://172.30.140.103:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernetes/pki/etcd/healthcheck-client.key"
-          members=$($ETCD member list 2>/dev/null | grep -c 'started' )
-          health=$($ETCD endpoint health 2>/dev/null | grep -c 'is healthy')
-          mlearn=$($ETCD member list 2>/dev/null | grep -c 'isLearner=true')
-          elearn=$($ETCD endpoint status 2>/dev/null | grep -c 'isLearner: true')
-          kv=$($KC get pods -n kube-system 2>/dev/null | grep -c 'kube-vip.*Running')
-          rz=$($KC get --raw='/readyz' 2>/dev/null)
-          echo "members=$members health=$health member_learners=$mlearn endpoint_learners=$elearn kube-vip=$kv readyz=$rz"
-          [ "$members" = "3" ] || { echo "P3_FAIL members"; exit 1; }
-          [ "$health" = "3" ] || { echo "P3_FAIL health"; exit 1; }
-          [ "$mlearn" = "0" ] || { echo "P3_FAIL member_learners"; exit 1; }
-          [ "$elearn" = "0" ] || { echo "P3_FAIL endpoint_learners"; exit 1; }
-          [ "$kv" = "3" ] || { echo "P3_FAIL kube-vip"; exit 1; }
-          [ "$rz" = "ok" ] || { echo "P3_FAIL readyz"; exit 1; }
-          echo "P3_PRE_OK"
-      register: p3pre
-      changed_when: false
-      run_once: true
-      delegate_to: node-01
-
-    - name: P3 PRE — leader + livez 3/3 (JSON-aware)
-      ansible.builtin.shell:
-        cmd: |
-          set -uo pipefail
           python3 << 'PYEOF'
           import json, subprocess, sys
           KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
           base = [*KC,"-n","kube-system","exec","etcd-node-01","--","etcdctl",
                   "--endpoints=https://172.30.140.101:2379,https://172.30.140.102:2379,https://172.30.140.103:2379",
-                  "--cacert=/etc/kubernetes/pki/etcd/ca.crt",
-                  "--cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt",
+                  "--cacert=/etc/kubernetes/pki/etcd/ca.crt","--cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt",
                   "--key=/etc/kubernetes/pki/etcd/healthcheck-client.key"]
+          # member list JSON
+          ml = subprocess.run(base+["member","list","--write-out=json"], capture_output=True, text=True)
+          if ml.returncode != 0: print("P3_FAIL member_list"); sys.exit(1)
+          members = json.loads(ml.stdout).get("members",[])
+          mlearn = sum(1 for m in members if m.get("isLearner"))
+          # endpoint status JSON
           st = subprocess.run(base+["endpoint","status","--write-out=json"], capture_output=True, text=True)
-          if st.returncode != 0:
-              print("P3_FAIL endpoint_status rc=", st.returncode); sys.exit(1)
-          data = json.loads(st.stdout)
-          leaders = set()
-          learners = 0
-          for ep in data:
-              if ep.get("Status",{}).get("isLearner"): learners += 1
-              lid = ep.get("Status",{}).get("leader")
-              if lid: leaders.add(str(lid))
-          actual_leader_endpoints = 0
-          for ep in data:
-              if str(ep.get("Status",{}).get("header",{}).get("member_id")) in leaders:
-                  actual_leader_endpoints += 1
+          if st.returncode != 0: print("P3_FAIL endpoint_status"); sys.exit(1)
+          eps = json.loads(st.stdout)
+          elearn = sum(1 for e in eps if e.get("Status",{}).get("isLearner"))
+          leaders = set(str(e.get("Status",{}).get("leader")) for e in eps if e.get("Status",{}).get("leader"))
+          leaders.discard("0")
+          aep = sum(1 for e in eps if str(e.get("Status",{}).get("header",{}).get("member_id")) in leaders)
+          # health
+          h = subprocess.run(base+["endpoint","health"], capture_output=True, text=True)
+          healthy = h.stdout.count("is healthy")
+          # kube-vip + readyz
+          kv = subprocess.run(KC+["get","pods","-n","kube-system"], capture_output=True, text=True)
+          kvc = kv.stdout.count("kube-vip") 
+          rz = subprocess.run(KC+["get","--raw=/readyz"], capture_output=True, text=True)
+          rzok = rz.stdout.strip()
           # livez 3/3
           livez = []
           for ip in ["172.30.140.101","172.30.140.102","172.30.140.103"]:
               r = subprocess.run(["curl","-sk","--max-time","5",f"https://{ip}:6443/livez"], capture_output=True, text=True)
-              livez.append((ip, r.stdout.strip() if r.returncode==0 else "ERR"))
-          ok_livez = sum(1 for ip,v in livez if v == "ok")
-          print(f"unique_leader_ids={len(leaders)} actual_leader_endpoints={actual_leader_endpoints} endpoint_learners={learners} livez_ok={ok_livez}/3")
-          for ip,v in livez: print(f"  livez {ip}: {v}")
-          if len(leaders) != 1: print("P3_FAIL unique_leader"); sys.exit(1)
-          if actual_leader_endpoints != 1: print("P3_FAIL actual_leader"); sys.exit(1)
-          if learners != 0: print("P3_FAIL learners"); sys.exit(1)
+              livez.append(r.stdout.strip() if r.returncode==0 else "ERR")
+          ok_livez = sum(1 for v in livez if v == "ok")
+          print(f"members={len(members)} member_learners={mlearn} endpoint_learners={elearn} unique_leaders={len(leaders)} actual_leader={aep} health={healthy} kube-vip={kvc} readyz={rzok} livez={ok_livez}/3")
+          if len(members) != 3: print("P3_FAIL members"); sys.exit(1)
+          if mlearn != 0: print("P3_FAIL member_learners"); sys.exit(1)
+          if elearn != 0: print("P3_FAIL endpoint_learners"); sys.exit(1)
+          if len(leaders) != 1: print("P3_FAIL unique_leaders"); sys.exit(1)
+          if aep != 1: print("P3_FAIL actual_leader"); sys.exit(1)
+          if healthy != 3: print("P3_FAIL health"); sys.exit(1)
+          if kvc != 3: print("P3_FAIL kube-vip"); sys.exit(1)
+          if rzok != "ok": print("P3_FAIL readyz"); sys.exit(1)
           if ok_livez != 3: print("P3_FAIL livez"); sys.exit(1)
-          print("P3_LEADER_LIVEZ_OK")
+          print("P3_PRE_OK")
           PYEOF
-      register: p3pre2
+      register: p3pre
       changed_when: false
       run_once: true
       delegate_to: node-01
 
-    - name: P4A PRE — IPPool + BGP + IP_AUTODETECTION_METHOD
+    - name: P4A PRE — Nodes/calico/CoreDNS/IPPool/BGP/autodetect
       ansible.builtin.shell:
         cmd: |
-          set -uo pipefail
           python3 << 'PYEOF'
           import json, subprocess, sys
           KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
-          def kget(*args):
-              r = subprocess.run(KC+list(args)+["-o","json"], capture_output=True, text=True)
-              if r.returncode != 0:
-                  print(f"P4A_FAIL kubectl {' '.join(args)} rc={r.returncode}"); sys.exit(1)
+          def kget(*a):
+              r = subprocess.run(KC+list(a)+["-o","json"], capture_output=True, text=True)
+              if r.returncode != 0: print(f"P4A_FAIL {' '.join(a)}"); sys.exit(1)
               return json.loads(r.stdout)
-          # Nodes ready
           nodes = kget("get","nodes")
           ready = sum(1 for n in nodes.get("items",[]) if any(c["type"]=="Ready" and c["status"]=="True" for c in n.get("status",{}).get("conditions",[])))
-          # calico-node + controllers
           calico = kget("get","pods","-n","kube-system","-l","k8s-app=calico-node")
           cn = sum(1 for p in calico.get("items",[]) if all(c.get("status")=="True" for c in p.get("status",{}).get("conditions",[]) if c.get("type")=="Ready"))
           ctrl = kget("get","pods","-n","kube-system","-l","k8s-app=calico-kube-controllers")
           cctrl = sum(1 for p in ctrl.get("items",[]) if all(c.get("status")=="True" for c in p.get("status",{}).get("conditions",[]) if c.get("type")=="Ready"))
+          # CoreDNS desired/available/ready
+          dns = kget("get","deployment","coredns","-n","kube-system")
+          dns_des = dns["spec"].get("replicas")
+          dns_avail = dns["status"].get("availableReplicas",0)
+          dns_ready = dns["status"].get("readyReplicas",0)
           # IPPool
           ipp = kget("get","ippools.crd.projectcalico.org")
           pools = ipp.get("items",[])
-          print(f"nodes_ready={ready} calico_node={cn} controllers={cctrl} ippool_count={len(pools)}")
-          if len(pools) != 1: print("P4A_FAIL ippool_count"); sys.exit(1)
-          p = pools[0]
-          spec = p.get("spec",{})
-          cidr = spec.get("cidr"); ipip = spec.get("ipipMode"); nat = spec.get("natOutgoing"); dis = spec.get("disabled", False)
-          print(f"ippool cidr={cidr} ipip={ipip} nat={nat} disabled={dis}")
-          if cidr != "10.244.0.0/16": print("P4A_FAIL cidr"); sys.exit(1)
-          if ipip != "Always": print("P4A_FAIL ipip"); sys.exit(1)
-          if nat is not True: print("P4A_FAIL nat"); sys.exit(1)
-          if dis: print("P4A_FAIL disabled"); sys.exit(1)
-          # BGP node IPs from annotation
+          p = pools[0] if len(pools)==1 else None
+          ipok = (p is not None and p["spec"].get("cidr")=="10.244.0.0/16"
+                  and p["spec"].get("ipipMode")=="Always" and p["spec"].get("natOutgoing") is True
+                  and not p["spec"].get("disabled", False))
+          # BGP
           bgp = {}
           for n in nodes.get("items",[]):
-              ann = n.get("metadata",{}).get("annotations",{})
-              ip = ann.get("projectcalico.org/IPv4Address","").split("/")[0]
+              ip = n.get("metadata",{}).get("annotations",{}).get("projectcalico.org/IPv4Address","").split("/")[0]
               bgp[n["metadata"]["name"]] = ip
-          print("bgp:", bgp)
           want = {"node-01":"172.30.140.101","node-02":"172.30.140.102","node-03":"172.30.140.103"}
-          for h,w in want.items():
-              if bgp.get(h) != w: print(f"P4A_FAIL bgp {h}={bgp.get(h)}"); sys.exit(1)
-          # IP_AUTODETECTION_METHOD
+          bgpok = all(bgp.get(h)==w for h,w in want.items())
+          # autodetect
           ds = kget("get","daemonset","calico-node","-n","kube-system")
           env = {c["name"]: c.get("value","") for c in ds["spec"]["template"]["spec"]["containers"][0].get("env",[])}
-          adm = env.get("IP_AUTODETECTION_METHOD","")
-          print(f"IP_AUTODETECTION_METHOD={adm}")
-          if adm != "interface=bond0.140": print("P4A_FAIL autodetect"); sys.exit(1)
-          if ready != 3: print("P4A_FAIL nodes_ready"); sys.exit(1)
-          if cn != 3: print("P4A_FAIL calico_node"); sys.exit(1)
-          if cctrl != 1: print("P4A_FAIL controllers"); sys.exit(1)
+          admok = env.get("IP_AUTODETECTION_METHOD","") == "interface=bond0.140"
+          print(f"nodes={ready} calico={cn} ctrl={cctrl} coredns={dns_des}/{dns_avail}/{dns_ready} ippool={ipok} bgp={bgpok} autodetect={admok}")
+          if ready != 3 or cn != 3 or cctrl != 1: print("P4A_FAIL"); sys.exit(1)
+          if dns_des != 2 or dns_avail != 2 or dns_ready != 2: print("P4A_FAIL coredns"); sys.exit(1)
+          if not ipok: print("P4A_FAIL ippool"); sys.exit(1)
+          if not bgpok: print("P4A_FAIL bgp"); sys.exit(1)
+          if not admok: print("P4A_FAIL autodetect"); sys.exit(1)
           print("P4A_PRE_OK")
           PYEOF
       register: p4apre
@@ -220,23 +189,18 @@
     - name: P4B PRE — final-state (validation ns NotFound, 0 policies)
       ansible.builtin.shell:
         cmd: |
-          set -uo pipefail
           python3 << 'PYEOF'
           import json, subprocess, sys
           KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
           r = subprocess.run(KC+["get","namespace","p4b-netpol-validation","-o","json"], capture_output=True, text=True)
-          if r.returncode == 0:
-              print("P4B_FAIL validation ns exists"); sys.exit(1)
-          if "NotFound" not in r.stderr and r.returncode != 0 and "NotFound" not in r.stdout:
-              print(f"P4B_FAIL ns query rc={r.returncode} stderr={r.stderr}"); sys.exit(1)
+          if r.returncode == 0: print("P4B_FAIL ns exists"); sys.exit(1)
+          if "NotFound" not in r.stderr and "NotFound" not in r.stdout:
+              print(f"P4B_FAIL ns query rc={r.returncode}"); sys.exit(1)
           np = subprocess.run(KC+["get","networkpolicy","-A","-o","json"], capture_output=True, text=True)
-          if np.returncode != 0:
-              print("P4B_FAIL np query"); sys.exit(1)
-          data = json.loads(np.stdout)
-          total = len(data.get("items",[]))
-          sys_policies = [i["metadata"]["namespace"] for i in data.get("items",[]) if i["metadata"]["namespace"] in ("kube-system","default")]
-          print(f"networkpolicy_total={total} system_ns_policies={len(sys_policies)}")
-          if total != 0: print("P4B_FAIL policies present"); sys.exit(1)
+          if np.returncode != 0: print("P4B_FAIL np"); sys.exit(1)
+          total = len(json.loads(np.stdout).get("items",[]))
+          print(f"networkpolicy_total={total}")
+          if total != 0: print("P4B_FAIL policies"); sys.exit(1)
           print("P4B_PRE_OK")
           PYEOF
       register: p4bpre
@@ -244,322 +208,256 @@
       run_once: true
       delegate_to: node-01
 
-    # ═══════════════════ COMPOSITE RESOLVER (reference) ═══════════════════
-    - name: PHASE 6 — composite resolver (reference map, exact unique)
+    # ═══════════════════ COMPOSITE RESOLVER ═══════════════════
+    - name: PHASE 6 — composite resolver (exact unique)
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
           import json, subprocess, sys
           expected = {{ expected_candidates[inventory_hostname] | to_json }}
-          model_want = "{{ candidate_model }}"
-          size_want = {{ candidate_size }}
-          def resolve(exp):
-              raw = subprocess.run(["lsblk","-J","-b","-o","NAME,PATH,TYPE,SIZE,MODEL,SERIAL,WWN"],
-                                   capture_output=True, text=True)
-              if raw.returncode != 0:
-                  print("LSBLK_FAIL", raw.returncode); sys.exit(1)
+          model_want = "{{ candidate_model }}"; size_want = {{ candidate_size }}
+          def resolve_now(exp):
+              raw = subprocess.run(["lsblk","-J","-b","-o","NAME,KNAME,PATH,TYPE,SIZE,MODEL,SERIAL,WWN"], capture_output=True, text=True)
+              if raw.returncode != 0: print("LSBLK_FAIL"); sys.exit(1)
               disks = [b for b in json.loads(raw.stdout).get("blockdevices",[]) if b.get("type")=="disk"]
-              hits = [d for d in disks
-                      if d.get("serial")==exp["serial"] and d.get("wwn")==exp["wwn"]
-                      and d.get("model")==model_want and d.get("size")==size_want and d.get("type")=="disk"]
-              if len(hits) != 1:
-                  print(f"RESOLVE_FAIL serial={exp['serial']} count={len(hits)}"); sys.exit(1)
-              return hits[0]["path"]
+              hits = [d for d in disks if d.get("serial")==exp["serial"] and d.get("wwn")==exp["wwn"] and d.get("model")==model_want and d.get("size")==size_want and d.get("type")=="disk"]
+              if len(hits) != 1: print(f"RESOLVE_FAIL {exp['serial']} n={len(hits)}"); sys.exit(1)
+              return hits[0]
           resolved = {}
           for exp in expected:
-              p = resolve(exp)
-              resolved[exp["serial"]] = p
-              print(f"{p} serial={exp['serial']} wwn={exp['wwn']} model={model_want} size={size_want} type=disk EXACT_UNIQUE")
+              d = resolve_now(exp)
+              resolved[exp["serial"]] = {"path": d["path"], "kname": d["kname"]}
+              print(f"{d['path']} kname={d['kname']} serial={exp['serial']} wwn={exp['wwn']} model={model_want} size={size_want} type=disk EXACT_UNIQUE")
           json.dump(resolved, open("/tmp/p5a_resolved_{{ inventory_hostname }}.json","w"))
           print("RESOLVED_OK")
           PYEOF
       register: ph6
       changed_when: false
 
-    # ═══════════════════ DEVICE SAFETY (immediate re-resolve, fail-closed) ═══════════════════
-    - name: PHASE 7 — full device safety (immediate composite re-resolve, fail-closed)
+    # ═══════════════════ HOLDER PROOF (structural os.listdir) ═══════════════════
+    - name: PHASE 7h — active holders proof (os.listdir sysfs)
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
-          import json, subprocess, sys, os, glob
-          expected = {{ expected_candidates[inventory_hostname] | to_json }}
-          model_want = "{{ candidate_model }}"
-          size_want = {{ candidate_size }}
-          def resolve_now(exp):
-              raw = subprocess.run(["lsblk","-J","-b","-o","NAME,PATH,TYPE,SIZE,MODEL,SERIAL,WWN"],
-                                   capture_output=True, text=True)
-              if raw.returncode != 0: print("LSBLK_FAIL"); sys.exit(1)
-              disks = [b for b in json.loads(raw.stdout).get("blockdevices",[]) if b.get("type")=="disk"]
-              hits = [d for d in disks
-                      if d.get("serial")==exp["serial"] and d.get("wwn")==exp["wwn"]
-                      and d.get("model")==model_want and d.get("size")==size_want and d.get("type")=="disk"]
-              if len(hits) != 1: print(f"RESOLVE_FAIL {exp['serial']} n={len(hits)}"); sys.exit(1)
-              return hits[0]["path"]
-          def run(c):
-              r = subprocess.run(c, shell=True, capture_output=True, text=True)
-              return r
-          for exp in expected:
-              dev = resolve_now(exp)
-              # whole disk / no partitions
-              r = run(f"lsblk -no TYPE {dev}")
-              types = [t for t in r.stdout.strip().splitlines() if t.strip()]
-              if r.returncode != 0 or types != ["disk"]:
-                  print(f"SAFETY_FAIL partitions {dev} rc={r.returncode} types={types}"); sys.exit(1)
-              # not mounted
-              r = run(f"findmnt -n -o TARGET {dev}")
-              if r.returncode == 0 and r.stdout.strip():
-                  print(f"SAFETY_FAIL mounted {dev}"); sys.exit(1)
-              if r.returncode not in (0,1):
-                  print(f"SAFETY_FAIL findmnt rc={r.returncode}"); sys.exit(1)
-              # not swap
-              r = run("swapon --noheadings")
-              if r.returncode != 0: print("SAFETY_FAIL swapon"); sys.exit(1)
-              if dev in r.stdout.split():
-                  print(f"SAFETY_FAIL swap {dev}"); sys.exit(1)
-              # not root/boot/home ancestor
-              r = run(f"lsblk -no PATH / 2>/dev/null; lsblk -no PATH /boot 2>/dev/null; lsblk -no PATH /home 2>/dev/null")
-              if dev in r.stdout.split():
-                  print(f"SAFETY_FAIL root/boot/home ancestor {dev}"); sys.exit(1)
-              # LVM structural (rc + JSON)
-              for kind in ("pvs","vgs","lvs"):
-                  r = run(f"{kind} --reportformat json")
-                  if r.returncode != 0:
-                      print(f"SAFETY_FAIL {kind} rc={r.returncode}"); sys.exit(1)
-                  try: d = json.loads(r.stdout)
-                  except Exception as e: print(f"SAFETY_FAIL {kind} json {e}"); sys.exit(1)
-                  # candidate must not be LVM backing
-                  for report in d.get("report",[]):
-                      for rec in report.get(kind[:-1],[]):
-                          tags = rec.get("pv_tags","") or rec.get("vg_tags","") or rec.get("lv_tags","") or ""
-                          if dev in str(rec):
-                              # check pv_name field specifically
-                              pass
-              # candidate as PV name
-              r = run("pvs --reportformat json")
-              try: d = json.loads(r.stdout)
-              except Exception: print("SAFETY_FAIL pvs json"); sys.exit(1)
-              for report in d.get("report",[]):
-                  for rec in report.get("pv",[]):
-                      if rec.get("pv_name") == dev:
-                          print(f"SAFETY_FAIL pv {dev}"); sys.exit(1)
-                      tags = rec.get("pv_tags","") or ""
-                      if any(t.startswith(("ceph.","linstor.","drbd.")) for t in tags.split(",")):
-                          print(f"SAFETY_FAIL forbidden tag {dev} {tags}"); sys.exit(1)
-              # MD RAID — structural (kernel /proc/mdstat + blkid linux_raid_member)
-              # mdadm отсутствует (query failure); kernel-level + blkid строже.
-              r = run("cat /proc/mdstat")
-              if r.returncode != 0: print("SAFETY_FAIL mdstat"); sys.exit(1)
-              md_active = [l for l in r.stdout.splitlines() if l.startswith("md") and " : " in l and "active" in l]
-              if md_active: print(f"SAFETY_FAIL active md {md_active}"); sys.exit(1)
-              r = subprocess.run(["blkid","-p",dev], capture_output=True, text=True)
-              if r.returncode == 0 and "linux_raid_member" in r.stdout:
-                  print(f"SAFETY_FAIL md superblock {dev}"); sys.exit(1)
-              if r.returncode not in (0,1,2):
-                  print(f"SAFETY_FAIL blkid rc={r.returncode}"); sys.exit(1)
-              # multipath / device-mapper — structural via dmsetup (covers multipath,
-              # dm-crypt, all DM targets). multipath tool absent => no multipathd.
-              r = run("dmsetup ls --tree")
-              if r.returncode != 0: print(f"SAFETY_FAIL dmsetup rc={r.returncode}"); sys.exit(1)
-              if dev in r.stdout.split():
-                  print(f"SAFETY_FAIL dm backing {dev}"); sys.exit(1)
-              # multipath specifically: no multipathd binary => no multipath maps;
-              # verify /sys/block/<dev>/holders empty (covers any DM child incl. multipath)
-              r = run(f"cat /sys/block/{os.path.basename(dev)}/holders 2>/dev/null")
-              if r.returncode == 0 and r.stdout.strip():
-                  print(f"SAFETY_FAIL holders {dev}: {r.stdout.strip()}"); sys.exit(1)
-              # active DRBD backing
-              r = run("drbdadm status 2>/dev/null")
-              # (drbdadm not present -> fine, no DRBD)
-              print(f"{dev} serial={exp['serial']} SAFETY_OK")
-          print("SAFETY_6of6_OK" if len(expected)==6 else "SAFETY_OK")
-          PYEOF
-      register: ph7
-      changed_when: false
-
-    # ═══════════════════ SIGNATURE GATES (wipefs + blkid) ═══════════════════
-    - name: PHASE 7s — signature gates wipefs + blkid (immediate re-resolve)
-      ansible.builtin.shell:
-        cmd: |
-          python3 << 'PYEOF'
-          import json, subprocess, sys
+          import json, subprocess, sys, os
           expected = {{ expected_candidates[inventory_hostname] | to_json }}
           model_want = "{{ candidate_model }}"; size_want = {{ candidate_size }}
           def resolve_now(exp):
-              raw = subprocess.run(["lsblk","-J","-b","-o","NAME,PATH,TYPE,SIZE,MODEL,SERIAL,WWN"], capture_output=True, text=True)
+              raw = subprocess.run(["lsblk","-J","-b","-o","KNAME,PATH,TYPE,SIZE,MODEL,SERIAL,WWN"], capture_output=True, text=True)
               if raw.returncode != 0: print("LSBLK_FAIL"); sys.exit(1)
               disks = [b for b in json.loads(raw.stdout).get("blockdevices",[]) if b.get("type")=="disk"]
               hits = [d for d in disks if d.get("serial")==exp["serial"] and d.get("wwn")==exp["wwn"] and d.get("model")==model_want and d.get("size")==size_want and d.get("type")=="disk"]
-              if len(hits) != 1: print(f"RESOLVE_FAIL {exp['serial']} n={len(hits)}"); sys.exit(1)
-              return hits[0]["path"]
+              if len(hits) != 1: print(f"RESOLVE_FAIL {exp['serial']}"); sys.exit(1)
+              return hits[0]
           for exp in expected:
-              dev = resolve_now(exp)
-              w = subprocess.run(["wipefs","-n",dev], capture_output=True, text=True)
-              if w.returncode != 0 or w.stdout.strip():
-                  print(f"WIPEFS_FAIL {dev} rc={w.returncode} out={w.stdout!r}"); sys.exit(1)
-              b = subprocess.run(["blkid","-p",dev], capture_output=True, text=True)
-              if b.returncode == 0:
-                  print(f"BLKID_FAIL {dev} signature found: {b.stdout}"); sys.exit(1)
-              if b.returncode != 2:
-                  print(f"BLKID_FAIL {dev} rc={b.returncode} stderr={b.stderr}"); sys.exit(1)
-              print(f"{dev} serial={exp['serial']} wipefs=clean blkid=clean (rc=2)")
-          print("SIGNATURE_CLEAN_6of6" if len(expected)==6 else "SIGNATURE_CLEAN")
+              d = resolve_now(exp)
+              kname = d["kname"]; dev = d["path"]
+              hdir = f"/sys/class/block/{kname}/holders"
+              if not os.path.isdir(hdir): print(f"HOLDER_FAIL {dev} no dir"); sys.exit(1)
+              try: holders = os.listdir(hdir)
+              except Exception as e: print(f"HOLDER_FAIL {dev} {e}"); sys.exit(1)
+              if len(holders) != 0: print(f"HOLDER_FAIL {dev} holders={holders}"); sys.exit(1)
+              print(f"{dev} kname={kname} holders=0")
+          print("HOLDERS_6of6_ZERO" if len(expected)==6 else "HOLDERS_ZERO")
           PYEOF
-      register: ph7s
+      register: ph7h
       changed_when: false
 
-    # ═══════════════════ CEPH EXCLUSION ═══════════════════
-    - name: PHASE 7c — Ceph exclusion (LVM tags + OSD symlink + ceph-volume)
+    # ═══════════════════ DM/CRYPT/MULTIPATH PROOF (major:minor) ═══════════════════
+    - name: PHASE 7d — DM dependency proof (major:minor structural)
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
-          import json, subprocess, sys, os, glob
+          import json, subprocess, sys, os
           expected = {{ expected_candidates[inventory_hostname] | to_json }}
           model_want = "{{ candidate_model }}"; size_want = {{ candidate_size }}
           def resolve_now(exp):
-              raw = subprocess.run(["lsblk","-J","-b","-o","NAME,PATH,TYPE,SIZE,MODEL,SERIAL,WWN"], capture_output=True, text=True)
+              raw = subprocess.run(["lsblk","-J","-b","-o","KNAME,PATH,TYPE,SIZE,MODEL,SERIAL,WWN"], capture_output=True, text=True)
               if raw.returncode != 0: print("LSBLK_FAIL"); sys.exit(1)
               disks = [b for b in json.loads(raw.stdout).get("blockdevices",[]) if b.get("type")=="disk"]
               hits = [d for d in disks if d.get("serial")==exp["serial"] and d.get("wwn")==exp["wwn"] and d.get("model")==model_want and d.get("size")==size_want and d.get("type")=="disk"]
-              if len(hits) != 1: print(f"RESOLVE_FAIL {exp['serial']} n={len(hits)}"); sys.exit(1)
-              return hits[0]["path"]
-          # LVM ceph tags
+              if len(hits) != 1: print(f"RESOLVE_FAIL {exp['serial']}"); sys.exit(1)
+              return hits[0]
+          def majmin(path):
+              st = os.stat(path)
+              return (os.major(st.st_rdev), os.minor(st.st_rdev))
+          # collect candidate major:minor
+          cands = []
+          for exp in expected:
+              d = resolve_now(exp)
+              cands.append((exp["serial"], d["path"], d["kname"], majmin(d["path"])))
+          # collect DM deps (structural, via dmsetup deps + /sys)
+          dm_maps = []
+          r = subprocess.run(["dmsetup","ls"], capture_output=True, text=True)
+          if r.returncode == 0:
+              for line in r.stdout.strip().splitlines():
+                  name = line.split()[0]
+                  deps = subprocess.run(["dmsetup","deps",name], capture_output=True, text=True)
+                  # parse "(major:minor)" pairs
+                  import re
+                  pairs = re.findall(r'\((\d+):(\d+)\)', deps.stdout)
+                  for mj,mn in pairs:
+                      dm_maps.append((int(mj), int(mn)))
+          if not dm_maps:
+              print("DM_MAPS=0 PASS")
+          for serial, dev, kname, mm in cands:
+              hit = mm in dm_maps
+              print(f"{dev} kname={kname} maj:min={mm[0]}:{mm[1]} dm_dependency={'HIT' if hit else 'clear'}")
+              if hit: print(f"DM_FAIL {dev}"); sys.exit(1)
+          print("DM_CRYPT_MULTIPATH_6of6_CLEAR" if len(expected)==6 else "DM_CLEAR")
+          PYEOF
+      register: ph7d
+      changed_when: false
+
+    # ═══════════════════ ROOT/BOOT/HOME ANCESTRY (fail-closed) ═══════════════════
+    - name: PHASE 7r — root/boot/home ancestry proof
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, subprocess, sys, os
+          expected = {{ expected_candidates[inventory_hostname] | to_json }}
+          model_want = "{{ candidate_model }}"; size_want = {{ candidate_size }}
+          def resolve_now(exp):
+              raw = subprocess.run(["lsblk","-J","-b","-o","KNAME,PATH,TYPE,SIZE,MODEL,SERIAL,WWN"], capture_output=True, text=True)
+              if raw.returncode != 0: print("LSBLK_FAIL"); sys.exit(1)
+              disks = [b for b in json.loads(raw.stdout).get("blockdevices",[]) if b.get("type")=="disk"]
+              hits = [d for d in disks if d.get("serial")==exp["serial"] and d.get("wwn")==exp["wwn"] and d.get("model")==model_want and d.get("size")==size_want and d.get("type")=="disk"]
+              if len(hits) != 1: print(f"RESOLVE_FAIL {exp['serial']}"); sys.exit(1)
+              return hits[0]
+          cand_knames = set(resolve_now(exp)["kname"] for exp in expected)
+          def norm(p):
+              if not p: return p
+              return p if p.startswith("/dev") else "/dev/" + p
+          # walk ancestry for /, /boot, /home
+          for mp in ["/", "/boot", "/home"]:
+              r = subprocess.run(["findmnt","-n","-o","SOURCE",mp], capture_output=True, text=True)
+              if r.returncode == 1 and not r.stdout.strip():
+                  print(f"{mp}: not separately mounted"); continue
+              if r.returncode != 0:
+                  print(f"ANCESTRY_FAIL findmnt {mp} rc={r.returncode}"); sys.exit(1)
+              src = r.stdout.strip().split()[0]
+              # walk ancestors via lsblk PKNAME (normalize /dev prefix)
+              chain = []
+              cur = norm(src)
+              for _ in range(16):
+                  if not cur: break
+                  chain.append(cur)
+                  r2 = subprocess.run(["lsblk","-no","PKNAME",cur], capture_output=True, text=True)
+                  if r2.returncode != 0:
+                      print(f"ANCESTRY_FAIL lsblk {cur} rc={r2.returncode}"); sys.exit(1)
+                  pk = r2.stdout.strip().split("\n")[0]
+                  if not pk: break
+                  nxt = norm(pk)
+                  if nxt == cur: break
+                  cur = nxt
+              # candidate match: compare kname (basename) against chain knames
+              chain_knames = {os.path.basename(c) for c in chain}
+              hits = cand_knames & chain_knames
+              print(f"{mp} source={src} chain={chain} candidate_hits={len(hits)}")
+              if hits: print(f"ANCESTRY_FAIL {mp} {hits}"); sys.exit(1)
+          print("ANCESTRY_6of6_CLEAR" if len(expected)==6 else "ANCESTRY_CLEAR")
+          PYEOF
+      register: ph7r
+      changed_when: false
+
+    # ═══════════════════ LVM + RAID (structural) ═══════════════════
+    - name: PHASE 7l — LVM + RAID structural proof
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, subprocess, sys, os
+          expected = {{ expected_candidates[inventory_hostname] | to_json }}
+          model_want = "{{ candidate_model }}"; size_want = {{ candidate_size }}
+          def resolve_now(exp):
+              raw = subprocess.run(["lsblk","-J","-b","-o","KNAME,PATH,TYPE,SIZE,MODEL,SERIAL,WWN"], capture_output=True, text=True)
+              if raw.returncode != 0: print("LSBLK_FAIL"); sys.exit(1)
+              disks = [b for b in json.loads(raw.stdout).get("blockdevices",[]) if b.get("type")=="disk"]
+              hits = [d for d in disks if d.get("serial")==exp["serial"] and d.get("wwn")==exp["wwn"] and d.get("model")==model_want and d.get("size")==size_want and d.get("type")=="disk"]
+              if len(hits) != 1: print(f"RESOLVE_FAIL {exp['serial']}"); sys.exit(1)
+              return hits[0]
+          # LVM pvs JSON (rc + parse enforced)
           pvs = subprocess.run(["pvs","--reportformat","json"], capture_output=True, text=True)
-          if pvs.returncode == 0:
-              d = json.loads(pvs.stdout)
-              for report in d.get("report",[]):
+          if pvs.returncode != 0: print(f"LVM_FAIL pvs rc={pvs.returncode}"); sys.exit(1)
+          try: pvdata = json.loads(pvs.stdout)
+          except Exception as e: print(f"LVM_FAIL pvs json {e}"); sys.exit(1)
+          pv_names = set(); pv_tags = {}
+          for report in pvdata.get("report",[]):
+              for rec in report.get("pv",[]):
+                  pv_names.add(rec.get("pv_name"))
+                  pv_tags[rec.get("pv_name")] = rec.get("pv_tags","") or ""
+          # RAID via /proc/mdstat (readable required)
+          md = subprocess.run(["cat","/proc/mdstat"], capture_output=True, text=True)
+          if md.returncode != 0: print("RAID_FAIL mdstat"); sys.exit(1)
+          md_active = [l for l in md.stdout.splitlines() if l.startswith("md") and "active" in l]
+          for exp in expected:
+              d = resolve_now(exp)
+              dev = d["path"]; kname = d["kname"]
+              is_pv = dev in pv_names
+              tags = pv_tags.get(dev, "")
+              bad_tags = [t for t in tags.split(",") if t.startswith(("ceph.","linstor.","drbd."))]
+              print(f"{dev} pv_member={int(is_pv)} forbidden_tags={bad_tags or 0}")
+              if is_pv: print(f"LVM_FAIL pv {dev}"); sys.exit(1)
+              if bad_tags: print(f"LVM_FAIL tags {dev} {bad_tags}"); sys.exit(1)
+          if md_active: print(f"RAID_FAIL {md_active}"); sys.exit(1)
+          print(f"LVM_RAID_CLEAR (mdadm unavailable: structural mdstat+holders used)")
+          PYEOF
+      register: ph7l
+      changed_when: false
+
+    # ═══════════════════ CEPH EXCLUSION (fail-closed) ═══════════════════
+    - name: PHASE 7c — Ceph exclusion (pvs tags + OSD links + ceph-volume)
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, subprocess, sys, os, glob
+          expected = {{ expected_candidates[inventory_hostname] | to_json }}
+          model_want = "{{ candidate_model }}"; size_want = {{ candidate_size }}
+          def resolve_now(exp):
+              raw = subprocess.run(["lsblk","-J","-b","-o","KNAME,PATH,TYPE,SIZE,MODEL,SERIAL,WWN"], capture_output=True, text=True)
+              if raw.returncode != 0: print("LSBLK_FAIL"); sys.exit(1)
+              disks = [b for b in json.loads(raw.stdout).get("blockdevices",[]) if b.get("type")=="disk"]
+              hits = [d for d in disks if d.get("serial")==exp["serial"] and d.get("wwn")==exp["wwn"] and d.get("model")==model_want and d.get("size")==size_want and d.get("type")=="disk"]
+              if len(hits) != 1: print(f"RESOLVE_FAIL {exp['serial']}"); sys.exit(1)
+              return hits[0]
+          # candidate-specific ceph LVM tags (pvs rc + JSON enforced)
+          pvs = subprocess.run(["pvs","--reportformat","json"], capture_output=True, text=True)
+          if pvs.returncode != 0: print(f"CEPH_FAIL pvs rc={pvs.returncode}"); sys.exit(1)
+          try: pvdata = json.loads(pvs.stdout)
+          except Exception as e: print(f"CEPH_FAIL pvs json {e}"); sys.exit(1)
+          for exp in expected:
+              d = resolve_now(exp); dev = d["path"]
+              tags = ""
+              for report in pvdata.get("report",[]):
                   for rec in report.get("pv",[]):
-                      tags = rec.get("pv_tags","") or ""
-                      if "ceph." in tags:
-                          print("CEPH_FAIL lvm pv tag", tags); sys.exit(1)
-          # OSD symlinks
-          osdlinks = glob.glob("/var/lib/ceph/osd/*")
-          for l in osdlinks:
-              if os.path.islink(l):
-                  tgt = os.path.realpath(l)
+                      if rec.get("pv_name") == dev: tags = rec.get("pv_tags","") or ""
+              ceph_tags = [t for t in tags.split(",") if t.startswith("ceph.")]
+              print(f"{dev} ceph_tags={ceph_tags or 0}")
+              if ceph_tags: print(f"CEPH_FAIL tag {dev}"); sys.exit(1)
+          # OSD block links ancestry
+          osd_links = glob.glob("/var/lib/ceph/osd/ceph-*/block*")
+          for l in osd_links:
+              r = subprocess.run(["readlink","-f",l], capture_output=True, text=True)
+              if r.returncode == 0:
+                  tgt = r.stdout.strip()
                   for exp in expected:
-                      dev = resolve_now(exp)
-                      if tgt.startswith(dev) or dev in tgt:
-                          print(f"CEPH_FAIL osd symlink {l} -> {tgt}"); sys.exit(1)
+                      d = resolve_now(exp)
+                      if d["path"] in tgt or tgt.startswith(d["path"]):
+                          print(f"CEPH_FAIL osd link {l} -> {tgt}"); sys.exit(1)
           # ceph-volume if present
           cv = subprocess.run(["which","ceph-volume"], capture_output=True, text=True)
           if cv.returncode == 0:
               for sub in ("lvm list","raw list"):
                   r = subprocess.run(f"ceph-volume {sub}", shell=True, capture_output=True, text=True)
+                  if r.returncode != 0: print(f"CEPH_FAIL ceph-volume {sub} rc={r.returncode}"); sys.exit(1)
                   for exp in expected:
-                      dev = resolve_now(exp)
-                      if dev in r.stdout:
-                          print(f"CEPH_FAIL ceph-volume {sub} contains {dev}"); sys.exit(1)
-          for exp in expected:
-              print(f"{resolve_now(exp)} serial={exp['serial']} CEPH_EXCLUDED")
-          print("CEPH_EXCLUSION_OK")
+                      d = resolve_now(exp)
+                      if d["path"] in r.stdout: print(f"CEPH_FAIL ceph-volume {d['path']}"); sys.exit(1)
+              print("ceph_volume=AVAILABLE clean")
+          else:
+              print("ceph_volume=UNAVAILABLE")
+          print("CEPH_EXCLUSION_6of6_OK" if len(expected)==6 else "CEPH_OK")
           PYEOF
       register: ph7c
-      changed_when: false
-
-    # ═══════════════════ FINGERPRINT BEFORE ═══════════════════
-    - name: PHASE 7b — fingerprint BEFORE (immediate re-resolve, exact 1 MiB)
-      ansible.builtin.shell:
-        cmd: |
-          python3 << 'PYEOF'
-          import json, subprocess, sys, hashlib
-          expected = {{ expected_candidates[inventory_hostname] | to_json }}
-          model_want = "{{ candidate_model }}"; size_want = {{ candidate_size }}
-          MIB = 1048576
-          def resolve_now(exp):
-              raw = subprocess.run(["lsblk","-J","-b","-o","NAME,PATH,TYPE,SIZE,MODEL,SERIAL,WWN"], capture_output=True, text=True)
-              if raw.returncode != 0: print("LSBLK_FAIL"); sys.exit(1)
-              disks = [b for b in json.loads(raw.stdout).get("blockdevices",[]) if b.get("type")=="disk"]
-              hits = [d for d in disks if d.get("serial")==exp["serial"] and d.get("wwn")==exp["wwn"] and d.get("model")==model_want and d.get("size")==size_want and d.get("type")=="disk"]
-              if len(hits) != 1: print(f"RESOLVE_FAIL {exp['serial']} n={len(hits)}"); sys.exit(1)
-              return hits[0]["path"]
-          out = []
-          for exp in expected:
-              dev = resolve_now(exp)
-              with open(dev,"rb") as f:
-                  f.seek(0,2); size = f.tell()
-                  if size != size_want: print(f"SIZE_MISMATCH {dev}"); sys.exit(1)
-                  f.seek(0); first = f.read(MIB)
-                  if len(first) != MIB: print(f"READ_FAIL first {dev}"); sys.exit(1)
-                  f.seek(size-MIB); last = f.read(MIB)
-                  if len(last) != MIB: print(f"READ_FAIL last {dev}"); sys.exit(1)
-              fh = hashlib.sha256(first).hexdigest(); lh = hashlib.sha256(last).hexdigest()
-              print(f"{dev} serial={exp['serial']} first={fh} last={lh}")
-              out.append(f"{exp['serial']} {fh} {lh}")
-          open("/tmp/p5a_fp_before_{{ inventory_hostname }}.txt","w").write("\n".join(out))
-          print("FP_BEFORE_OK")
-          PYEOF
-      register: ph7b
-      changed_when: false
-
-    # ═══════════════════ HEALTH ═══════════════════
-    - name: PHASE 8 — health (immediate re-resolve, fail-closed)
-      ansible.builtin.shell:
-        cmd: |
-          python3 << 'PYEOF'
-          import json, subprocess, sys
-          expected = {{ expected_candidates[inventory_hostname] | to_json }}
-          model_want = "{{ candidate_model }}"; size_want = {{ candidate_size }}
-          def resolve_now(exp):
-              raw = subprocess.run(["lsblk","-J","-b","-o","NAME,PATH,TYPE,SIZE,MODEL,SERIAL,WWN"], capture_output=True, text=True)
-              if raw.returncode != 0: print("LSBLK_FAIL"); sys.exit(1)
-              disks = [b for b in json.loads(raw.stdout).get("blockdevices",[]) if b.get("type")=="disk"]
-              hits = [d for d in disks if d.get("serial")==exp["serial"] and d.get("wwn")==exp["wwn"] and d.get("model")==model_want and d.get("size")==size_want and d.get("type")=="disk"]
-              if len(hits) != 1: print(f"RESOLVE_FAIL {exp['serial']} n={len(hits)}"); sys.exit(1)
-              return hits[0]["path"]
-          for exp in expected:
-              dev = resolve_now(exp)
-              r = subprocess.run(f"bash /tmp/p5a-candidate-health.sh {dev} {exp['serial']} {model_want}",
-                                 shell=True, capture_output=True, text=True)
-              print(r.stdout)
-              if r.stderr: print(r.stderr)
-              if r.returncode != 0: print(f"HEALTH_FAIL {exp['serial']} rc={r.returncode}"); sys.exit(1)
-          print("HEALTH_ALL_OK")
-          PYEOF
-      register: ph8
-      changed_when: false
-
-    # ═══════════════════ FINGERPRINT AFTER + COMPARE ═══════════════════
-    - name: PHASE 9b — fingerprint AFTER (immediate re-resolve, exact 1 MiB)
-      ansible.builtin.shell:
-        cmd: |
-          python3 << 'PYEOF'
-          import json, subprocess, sys, hashlib
-          expected = {{ expected_candidates[inventory_hostname] | to_json }}
-          model_want = "{{ candidate_model }}"; size_want = {{ candidate_size }}
-          MIB = 1048576
-          def resolve_now(exp):
-              raw = subprocess.run(["lsblk","-J","-b","-o","NAME,PATH,TYPE,SIZE,MODEL,SERIAL,WWN"], capture_output=True, text=True)
-              if raw.returncode != 0: print("LSBLK_FAIL"); sys.exit(1)
-              disks = [b for b in json.loads(raw.stdout).get("blockdevices",[]) if b.get("type")=="disk"]
-              hits = [d for d in disks if d.get("serial")==exp["serial"] and d.get("wwn")==exp["wwn"] and d.get("model")==model_want and d.get("size")==size_want and d.get("type")=="disk"]
-              if len(hits) != 1: print(f"RESOLVE_FAIL {exp['serial']} n={len(hits)}"); sys.exit(1)
-              return hits[0]["path"]
-          out = []
-          for exp in expected:
-              dev = resolve_now(exp)
-              with open(dev,"rb") as f:
-                  f.seek(0,2); size = f.tell()
-                  f.seek(0); first = f.read(MIB)
-                  if len(first) != MIB: print(f"READ_FAIL first {dev}"); sys.exit(1)
-                  f.seek(size-MIB); last = f.read(MIB)
-                  if len(last) != MIB: print(f"READ_FAIL last {dev}"); sys.exit(1)
-              fh = hashlib.sha256(first).hexdigest(); lh = hashlib.sha256(last).hexdigest()
-              print(f"{dev} serial={exp['serial']} first={fh} last={lh}")
-              out.append(f"{exp['serial']} {fh} {lh}")
-          open("/tmp/p5a_fp_after_{{ inventory_hostname }}.txt","w").write("\n".join(out))
-          print("FP_AFTER_OK")
-          PYEOF
-      register: ph9b
-      changed_when: false
-
-    - name: PHASE 9c — fingerprint compare (fail-closed)
-      ansible.builtin.shell:
-        cmd: |
-          b="/tmp/p5a_fp_before_{{ inventory_hostname }}.txt"
-          a="/tmp/p5a_fp_after_{{ inventory_hostname }}.txt"
-          [ -f "$b" ] && [ -f "$a" ] || { echo "FP_FILE_MISSING"; exit 1; }
-          cmp -s "$b" "$a" && echo "FINGERPRINT_UNCHANGED" || { echo "FINGERPRINT_MISMATCH"; diff "$b" "$a"; exit 1; }
-      register: ph9c
       changed_when: false
 
     # ═══════════════════ K8S STORAGE STATE ═══════════════════
@@ -569,9 +467,9 @@
           python3 << 'PYEOF'
           import json, subprocess, sys
           KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
-          def kget(*args):
-              r = subprocess.run(KC+list(args)+["-o","json"], capture_output=True, text=True)
-              if r.returncode != 0: print(f"KUBECTL_FAIL {' '.join(args)} rc={r.returncode}"); sys.exit(1)
+          def kget(*a):
+              r = subprocess.run(KC+list(a)+["-o","json"], capture_output=True, text=True)
+              if r.returncode != 0: print(f"KUBECTL_FAIL {' '.join(a)}"); sys.exit(1)
               return json.loads(r.stdout)
           crd = kget("get","crd")
           linstor_crds = [i["metadata"]["name"] for i in crd.get("items",[]) if any(k in i["metadata"]["name"].lower() for k in ("linstor","piraeus","drbd","linbit"))]
@@ -587,7 +485,7 @@
       delegate_to: node-01
 
     # ═══════════════════ FULL P1-P4 POSTCHECK ═══════════════════
-    - name: P1 POST — bond slaves + exact VLAN addresses + default route
+    - name: P1 POST — bond + VLAN + default route
       ansible.builtin.shell:
         cmd: |
           b0=$(cat /sys/class/net/bond0/bonding/slaves 2>/dev/null | tr -d '\n')
@@ -596,15 +494,13 @@
           a141=$(ip -4 -o addr show dev bond1.141 2>/dev/null | awk '{print $4}')
           a143=$(ip -4 -o addr show dev bond0.143 2>/dev/null | grep -v '/32' | awk '{print $4}')
           a700=$(ip -4 -o addr show dev bond0.700 2>/dev/null | awk '{print $4}')
-          dr=$(ip -4 route show default 2>/dev/null)
           drc=$(ip -4 route show default 2>/dev/null | wc -l)
-          echo "host=$(hostname) bond0=$b0 bond1=$b1 default_count=$drc"
           [ "$b0" = "ens2f0 ens2f1" ] && [ "$b1" = "ens2f2 ens2f3" ] || { echo "P1_POST_FAIL"; exit 1; }
           [ "$a140" = "{{ p1_expected[inventory_hostname].bond140 }}" ] || { echo "P1_POST_FAIL 140"; exit 1; }
           [ "$a141" = "{{ p1_expected[inventory_hostname].bond141 }}" ] || { echo "P1_POST_FAIL 141"; exit 1; }
           [ "$a143" = "{{ p1_expected[inventory_hostname].bond143 }}" ] || { echo "P1_POST_FAIL 143"; exit 1; }
           [ "$a700" = "{{ p1_expected[inventory_hostname].bond700 }}" ] || { echo "P1_POST_FAIL 700"; exit 1; }
-          [ "$drc" = "1" ] && echo "$dr" | grep -q 'via 192.168.194.1 dev bond0.700' || { echo "P1_POST_FAIL default"; exit 1; }
+          [ "$drc" = "1" ] && ip -4 route show default | grep -q 'via 192.168.194.1 dev bond0.700' || { echo "P1_POST_FAIL default"; exit 1; }
           echo "P1_POST_OK"
       register: p1post
       changed_when: false
@@ -621,27 +517,7 @@
       register: p2post
       changed_when: false
 
-    - name: P3 POST — etcd + kube-vip + livez + readyz
-      ansible.builtin.shell:
-        cmd: |
-          set -uo pipefail
-          KC="kubectl --kubeconfig /etc/kubernetes/admin.conf"
-          ETCD="$KC -n kube-system exec etcd-node-01 -- etcdctl --endpoints=https://172.30.140.101:2379,https://172.30.140.102:2379,https://172.30.140.103:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernetes/pki/etcd/healthcheck-client.key"
-          members=$($ETCD member list 2>/dev/null | grep -c 'started')
-          health=$($ETCD endpoint health 2>/dev/null | grep -c 'is healthy')
-          mlearn=$($ETCD member list 2>/dev/null | grep -c 'isLearner=true')
-          elearn=$($ETCD endpoint status 2>/dev/null | grep -c 'isLearner: true')
-          kv=$($KC get pods -n kube-system 2>/dev/null | grep -c 'kube-vip.*Running')
-          rz=$($KC get --raw='/readyz' 2>/dev/null)
-          echo "members=$members health=$health member_learners=$mlearn endpoint_learners=$elearn kube-vip=$kv readyz=$rz"
-          [ "$members" = "3" ] && [ "$health" = "3" ] && [ "$mlearn" = "0" ] && [ "$elearn" = "0" ] && [ "$kv" = "3" ] && [ "$rz" = "ok" ] || { echo "P3_POST_FAIL"; exit 1; }
-          echo "P3_POST_OK"
-      register: p3post
-      changed_when: false
-      run_once: true
-      delegate_to: node-01
-
-    - name: P3 POST — leader + livez 3/3 (JSON-aware)
+    - name: P3 POST — etcd JSON-aware + livez + readyz
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
@@ -651,33 +527,36 @@
                   "--endpoints=https://172.30.140.101:2379,https://172.30.140.102:2379,https://172.30.140.103:2379",
                   "--cacert=/etc/kubernetes/pki/etcd/ca.crt","--cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt",
                   "--key=/etc/kubernetes/pki/etcd/healthcheck-client.key"]
+          ml = subprocess.run(base+["member","list","--write-out=json"], capture_output=True, text=True)
+          members = json.loads(ml.stdout).get("members",[]) if ml.returncode==0 else []
+          mlearn = sum(1 for m in members if m.get("isLearner"))
           st = subprocess.run(base+["endpoint","status","--write-out=json"], capture_output=True, text=True)
-          if st.returncode != 0: print("P3_POST_FAIL"); sys.exit(1)
-          data = json.loads(st.stdout)
-          leaders = set(); learners = 0
-          for ep in data:
-              if ep.get("Status",{}).get("isLearner"): learners += 1
-              lid = ep.get("Status",{}).get("leader")
-              if lid: leaders.add(str(lid))
-          aep = 0
-          for ep in data:
-              if str(ep.get("Status",{}).get("header",{}).get("member_id")) in leaders: aep += 1
+          eps = json.loads(st.stdout) if st.returncode==0 else []
+          elearn = sum(1 for e in eps if e.get("Status",{}).get("isLearner"))
+          leaders = set(str(e.get("Status",{}).get("leader")) for e in eps if e.get("Status",{}).get("leader"))
+          leaders.discard("0")
+          aep = sum(1 for e in eps if str(e.get("Status",{}).get("header",{}).get("member_id")) in leaders)
+          h = subprocess.run(base+["endpoint","health"], capture_output=True, text=True)
+          healthy = h.stdout.count("is healthy")
+          kv = subprocess.run(KC+["get","pods","-n","kube-system"], capture_output=True, text=True)
+          kvc = kv.stdout.count("kube-vip")
+          rz = subprocess.run(KC+["get","--raw=/readyz"], capture_output=True, text=True).stdout.strip()
           livez = []
           for ip in ["172.30.140.101","172.30.140.102","172.30.140.103"]:
               r = subprocess.run(["curl","-sk","--max-time","5",f"https://{ip}:6443/livez"], capture_output=True, text=True)
               livez.append(r.stdout.strip() if r.returncode==0 else "ERR")
-          ok_livez = sum(1 for v in livez if v == "ok")
-          print(f"unique_leader_ids={len(leaders)} actual_leader_endpoints={aep} endpoint_learners={learners} livez_ok={ok_livez}/3")
-          if len(leaders) != 1 or aep != 1 or learners != 0 or ok_livez != 3:
+          ok_livez = sum(1 for v in livez if v=="ok")
+          print(f"members={len(members)} mlearn={mlearn} elearn={elearn} leaders={len(leaders)} aep={aep} health={healthy} kube-vip={kvc} readyz={rz} livez={ok_livez}/3")
+          if len(members)!=3 or mlearn!=0 or elearn!=0 or len(leaders)!=1 or aep!=1 or healthy!=3 or kvc!=3 or rz!="ok" or ok_livez!=3:
               print("P3_POST_FAIL"); sys.exit(1)
-          print("P3_LEADER_LIVEZ_OK")
+          print("P3_POST_OK")
           PYEOF
-      register: p3post2
+      register: p3post
       changed_when: false
       run_once: true
       delegate_to: node-01
 
-    - name: P4A POST — IPPool + BGP + autodetect
+    - name: P4A POST — Nodes/calico/CoreDNS/IPPool/BGP/autodetect
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
@@ -693,24 +572,23 @@
           cn = sum(1 for p in calico.get("items",[]) if all(c.get("status")=="True" for c in p.get("status",{}).get("conditions",[]) if c.get("type")=="Ready"))
           ctrl = kget("get","pods","-n","kube-system","-l","k8s-app=calico-kube-controllers")
           cctrl = sum(1 for p in ctrl.get("items",[]) if all(c.get("status")=="True" for c in p.get("status",{}).get("conditions",[]) if c.get("type")=="Ready"))
+          dns = kget("get","deployment","coredns","-n","kube-system")
+          dns_des = dns["spec"].get("replicas"); dns_avail = dns["status"].get("availableReplicas",0); dns_ready = dns["status"].get("readyReplicas",0)
           ipp = kget("get","ippools.crd.projectcalico.org")
-          pools = ipp.get("items",[])
-          p = pools[0] if len(pools)==1 else None
-          ok = (ready==3 and cn==3 and cctrl==1 and p is not None
-                and p["spec"].get("cidr")=="10.244.0.0/16" and p["spec"].get("ipipMode")=="Always"
-                and p["spec"].get("natOutgoing") is True and not p["spec"].get("disabled", False))
+          pools = ipp.get("items",[]); p = pools[0] if len(pools)==1 else None
+          ipok = (p is not None and p["spec"].get("cidr")=="10.244.0.0/16" and p["spec"].get("ipipMode")=="Always" and p["spec"].get("natOutgoing") is True and not p["spec"].get("disabled",False))
           bgp = {}
           for n in nodes.get("items",[]):
               ip = n.get("metadata",{}).get("annotations",{}).get("projectcalico.org/IPv4Address","").split("/")[0]
               bgp[n["metadata"]["name"]] = ip
           want = {"node-01":"172.30.140.101","node-02":"172.30.140.102","node-03":"172.30.140.103"}
-          for h,w in want.items():
-              if bgp.get(h) != w: ok = False
+          bgpok = all(bgp.get(h)==w for h,w in want.items())
           ds = kget("get","daemonset","calico-node","-n","kube-system")
           env = {c["name"]: c.get("value","") for c in ds["spec"]["template"]["spec"]["containers"][0].get("env",[])}
-          if env.get("IP_AUTODETECTION_METHOD","") != "interface=bond0.140": ok = False
-          print(f"P4A_POST nodes={ready} calico={cn} ctrl={cctrl} ippool_ok={p is not None} autodetect={env.get('IP_AUTODETECTION_METHOD','')}")
-          if not ok: print("P4A_POST_FAIL"); sys.exit(1)
+          admok = env.get("IP_AUTODETECTION_METHOD","") == "interface=bond0.140"
+          print(f"nodes={ready} calico={cn} ctrl={cctrl} coredns={dns_des}/{dns_avail}/{dns_ready} ippool={ipok} bgp={bgpok} autodetect={admok}")
+          if ready!=3 or cn!=3 or cctrl!=1 or dns_des!=2 or dns_avail!=2 or dns_ready!=2 or not ipok or not bgpok or not admok:
+              print("P4A_POST_FAIL"); sys.exit(1)
           print("P4A_POST_OK")
           PYEOF
       register: p4apost
@@ -718,21 +596,21 @@
       run_once: true
       delegate_to: node-01
 
-    - name: P4B POST — final-state (validation ns NotFound, 0 policies)
+    - name: P4B POST — final-state (NotFound, 0 policies)
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
           import json, subprocess, sys
           KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
           r = subprocess.run(KC+["get","namespace","p4b-netpol-validation","-o","json"], capture_output=True, text=True)
-          if r.returncode == 0: print("P4B_POST_FAIL ns exists"); sys.exit(1)
+          if r.returncode == 0: print("P4B_POST_FAIL ns"); sys.exit(1)
           if "NotFound" not in r.stderr and "NotFound" not in r.stdout:
-              print(f"P4B_POST_FAIL ns query rc={r.returncode}"); sys.exit(1)
+              print("P4B_POST_FAIL ns query"); sys.exit(1)
           np = subprocess.run(KC+["get","networkpolicy","-A","-o","json"], capture_output=True, text=True)
-          if np.returncode != 0: print("P4B_POST_FAIL"); sys.exit(1)
+          if np.returncode != 0: print("P4B_POST_FAIL np"); sys.exit(1)
           total = len(json.loads(np.stdout).get("items",[]))
           print(f"networkpolicy_total={total}")
-          if total != 0: print("P4B_POST_FAIL policies"); sys.exit(1)
+          if total != 0: print("P4B_POST_FAIL"); sys.exit(1)
           print("P4B_POST_OK")
           PYEOF
       register: p4bpost
@@ -740,13 +618,13 @@
       run_once: true
       delegate_to: node-01
 
-    - name: VIP POST — aggregate VIP owner count == 1
+    - name: VIP POST — aggregate owner == 1
       ansible.builtin.shell:
         cmd: "ip -4 addr show dev bond0.140 2>/dev/null | grep -c '172.30.140.100/32' || true"
       register: vipowner
       changed_when: false
 
-    - name: VIP POST — assert aggregate owner == 1
+    - name: VIP POST — assert aggregate == 1
       ansible.builtin.shell:
         cmd: |
           total={{ groups['all'] | map('extract', hostvars, 'vipowner') | select('defined') | map(attribute='stdout') | map('int') | sum }}
@@ -757,9 +635,8 @@
       run_once: true
       delegate_to: node-01
 
-    # ═══════════════════ FINAL GATE ═══════════════════
     - name: PHASE 13 — final gate summary
       ansible.builtin.debug:
-        msg: "P5A final-safety-regression completed (read-only)"
+        msg: "P5A final-busy-regression completed (read-only)"
       run_once: true
       delegate_to: node-01

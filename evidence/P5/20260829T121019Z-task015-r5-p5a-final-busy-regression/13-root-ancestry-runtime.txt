@@ -1,0 +1,19 @@
+=== ROOT ANCESTRY RUNTIME ===
+root:
+/dev/mapper/astra38644-lv_root
+boot:
+/dev/sda2
+home:
+/dev/mapper/astra38644-lv_home
+root:
+/dev/mapper/astra39539-lv_root
+boot:
+/dev/sda2
+home:
+/dev/mapper/astra39539-lv_home
+root:
+/dev/mapper/astra03718-lv_root
+boot:
+/dev/sda2
+home:
+/dev/mapper/astra03718-lv_home

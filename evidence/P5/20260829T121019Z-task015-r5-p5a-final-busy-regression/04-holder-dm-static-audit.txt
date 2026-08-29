@@ -1,0 +1,13 @@
+# TASK-015-R5 — Holder/DM Static Audit
+
+PHASE 7h (holders): os.listdir(/sys/class/block/<kname>/holders), len==0 required.
+  НЕ `cat /sys/block/<dev>/holders` (это директория).
+
+PHASE 7d (DM deps): candidate major:minor (os.stat st_rdev) сравнивается с
+  dmsetup deps <name> "(major:minor)" pairs. literal /dev/sdX поиск НЕ используется.
+  Нет DM maps → DM_MAPS=0 PASS.
+
+cat holders directory acceptance: 0
+literal /dev path dmsetup acceptance: 0
+
+RESULT: PASS

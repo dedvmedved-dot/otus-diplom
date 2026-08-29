@@ -1,0 +1,12 @@
+# TASK-015-R5 — R4 Connector Defects
+
+D1 — holders через `cat /sys/block/<dev>/holders` неверен (это директория).
+     Нужно os.listdir(/sys/class/block/<kname>/holders) == 0.
+D2 — literal /dev/sdX отсутствие в dmsetup ls --tree недостаточно.
+     Нужен structural major:minor через dmsetup deps / sysfs holders.
+D3 — root/boot/home ancestry должен fail closed (findmnt → source → lsblk PKNAME walk).
+D4 — pvs rc + JSON parse обязательны до оценки ceph тегов.
+D5 — Ceph OSD block/block.db/block.wal ссылки должны резолвиться.
+D6 — ceph-volume fail-closed если есть; UNAVAILABLE если нет.
+D7 — CoreDNS desired/available/ready=2 отсутствует в P4A gate.
+D8 — etcd member learner должен быть JSON-aware (member list --write-out=json).

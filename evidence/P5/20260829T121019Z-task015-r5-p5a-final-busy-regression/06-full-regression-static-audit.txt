@@ -1,0 +1,16 @@
+# TASK-015-R5 — Full Regression Static Audit
+
+P1: bond0/1 slaves + exact VLAN addresses + default route (count=1, via GW dev bond0.700)
+P2: containerd 2.3.3 + kubelet v1.36.2 + swap=0
+P3: etcd member list --write-out=json (members=3, member learners=0),
+    endpoint status --write-out=json (endpoint learners=0, unique leader=1,
+    actual leader=1), health=3/3, kube-vip=3/3, livez 3/3, readyz=ok
+P4A: Nodes Ready=3, calico 3/3, controllers 1/1, CoreDNS desired/available/ready=2,
+     IPPool cidr/ipip/nat/disabled, BGP node IPs, IP_AUTODETECTION_METHOD
+P4B: p4b-netpol-validation NotFound, policies=0
+VIP: owner==1
+
+etcd member JSON missing: 0
+CoreDNS PRE/POST missing: 0
+
+RESULT: PASS

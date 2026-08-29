@@ -1,0 +1,4 @@
+=== LVM/RAID RUNTIME ===
+pv_candidates=0 md_active=0
+pv_candidates=0 md_active=0
+pv_candidates=0 md_active=0

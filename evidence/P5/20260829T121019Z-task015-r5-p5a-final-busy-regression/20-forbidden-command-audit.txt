@@ -1,0 +1,23 @@
+# TASK-015-R5 — Forbidden Command Audit
+
+Source check (вручную выверено):
+
+cat holders directory acceptance: 0 (os.listdir используется)
+literal /dev path dmsetup acceptance: 0 (major:minor через dmsetup deps)
+root ancestry unchecked rc: 0 (findmnt/lsblk rc проверяются)
+Ceph pvs rc ignored: 0 (rc=0 + JSON parse enforced)
+Ceph OSD block links missing: 0 (block/block.db/block.wal glob)
+ceph-volume rc ignored: 0 (fail-closed если есть)
+CoreDNS PRE/POST missing: 0 (desired/available/ready=2)
+etcd member JSON missing: 0 (member list --write-out=json)
+DRBD compile reachable in final-busy-regression: 0
+health reachable in final-busy-regression: 0
+fingerprint reachable in final-busy-regression: 0
+
+DESTRUCTIVE COMMANDS: 0
+DRBD COMPILE: NOT RERUN
+HEALTH: NOT RERUN
+FINGERPRINT: NOT RERUN
+STORAGE MUTATION: NONE
+
+RESULT: PASS

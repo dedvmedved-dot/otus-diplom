@@ -1,0 +1,4 @@
+=== CEPH RUNTIME ===
+ceph_pv_tags=0 osd_links=0 ceph_volume=UNAVAILABLE
+ceph_pv_tags=0 osd_links=0 ceph_volume=UNAVAILABLE
+ceph_pv_tags=0 osd_links=0 ceph_volume=UNAVAILABLE

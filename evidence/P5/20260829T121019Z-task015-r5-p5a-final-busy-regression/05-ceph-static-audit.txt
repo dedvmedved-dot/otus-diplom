@@ -1,0 +1,15 @@
+# TASK-015-R5 — Ceph Static Audit
+
+PHASE 7c:
+- pvs --reportformat json rc=0 + JSON parse enforced (D4)
+- candidate-specific ceph.* tags = 0
+- OSD block links: /var/lib/ceph/osd/ceph-*/block* resolve via readlink -f,
+  candidate absent (D5)
+- ceph-volume: если есть → lvm list/raw list rc=0 + candidate absent;
+  если нет → ceph_volume=UNAVAILABLE (D6)
+
+Ceph pvs rc ignored: 0
+Ceph OSD block links missing: 0
+ceph-volume rc ignored: 0
+
+RESULT: PASS

@@ -1,0 +1,16 @@
+# TASK-015-R5 — Mode Static Audit
+
+p5a_mode: full | final-safety-regression | final-busy-regression.
+R5 runs final-busy-regression.
+
+final-busy-regression runs ONLY: P1-P4 PRE, composite resolver, holder/DM/
+root-ancestry/LVM/RAID proof, Ceph exclusion, K8s storage state, P1-P4 POST.
+
+MUST NOT run: DRBD compile, health, fingerprint, package install, storage mutation.
+
+DRBD compile reachable: 0
+health reachable: 0
+fingerprint reachable: 0
+(list-tasks: нет compile/health/fingerprint задач)
+
+RESULT: PASS

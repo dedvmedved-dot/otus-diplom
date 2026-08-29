@@ -1,0 +1,116 @@
+
+PLAY [P5A LINSTOR/DRBD preflight (READ-ONLY, FAIL-CLOSED)] *********************
+
+TASK [PHASE 0 — p5a_mode gate] *************************************************
+[WARNING]: Platform linux on host node-01 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-01]
+
+TASK [P1 PRE — bond slaves + exact VLAN addresses + default route] *************
+ok: [node-01]
+[WARNING]: Platform linux on host node-02 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-02]
+[WARNING]: Platform linux on host node-03 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-03]
+
+TASK [P2 PRE — containerd + kubelet + swap] ************************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [P3 PRE — etcd JSON-aware full semantics] *********************************
+ok: [node-01]
+
+TASK [P4A PRE — Nodes/calico/CoreDNS/IPPool/BGP/autodetect] ********************
+ok: [node-01]
+
+TASK [P4B PRE — final-state (validation ns NotFound, 0 policies)] **************
+ok: [node-01]
+
+TASK [PHASE 6 — composite resolver (exact unique)] *****************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [PHASE 7h — active holders proof (os.listdir sysfs)] **********************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [PHASE 7d — DM dependency proof (major:minor structural)] *****************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [PHASE 7r — root/boot/home ancestry proof] ********************************
+[WARNING]: sftp transfer mechanism failed on [192.168.194.38]. Use
+ANSIBLE_DEBUG=1 to see detailed information
+[WARNING]: sftp transfer mechanism failed on [192.168.194.40]. Use
+ANSIBLE_DEBUG=1 to see detailed information
+[WARNING]: sftp transfer mechanism failed on [192.168.194.39]. Use
+ANSIBLE_DEBUG=1 to see detailed information
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [PHASE 7l — LVM + RAID structural proof] **********************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [PHASE 7c — Ceph exclusion (pvs tags + OSD links + ceph-volume)] **********
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [PHASE 10 — Kubernetes storage state (fail-closed)] ***********************
+ok: [node-01]
+
+TASK [P1 POST — bond + VLAN + default route] ***********************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [P2 POST — containerd + kubelet + swap] ***********************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [P3 POST — etcd JSON-aware + livez + readyz] ******************************
+ok: [node-01]
+
+TASK [P4A POST — Nodes/calico/CoreDNS/IPPool/BGP/autodetect] *******************
+ok: [node-01]
+
+TASK [P4B POST — final-state (NotFound, 0 policies)] ***************************
+ok: [node-01]
+
+TASK [VIP POST — aggregate owner == 1] *****************************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [VIP POST — assert aggregate == 1] ****************************************
+ok: [node-01]
+
+TASK [PHASE 13 — final gate summary] *******************************************
+ok: [node-01] => {
+    "msg": "P5A final-busy-regression completed (read-only)"
+}
+
+PLAY RECAP *********************************************************************
+node-01                    : ok=21   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-02                    : ok=11   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-03                    : ok=11   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
