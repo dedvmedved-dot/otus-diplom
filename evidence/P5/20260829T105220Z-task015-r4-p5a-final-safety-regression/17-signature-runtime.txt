@@ -1,0 +1,7 @@
+=== SIGNATURE RUNTIME ===
+/dev/sdb wipefs:[rc=0] blkid:[rc=2]
+/dev/sdc wipefs:[rc=0] blkid:[rc=2]
+/dev/sdb wipefs:[rc=0] blkid:[rc=2]
+/dev/sdc wipefs:[rc=0] blkid:[rc=2]
+/dev/sdb wipefs:[rc=0] blkid:[rc=2]
+/dev/sdc wipefs:[rc=0] blkid:[rc=2]

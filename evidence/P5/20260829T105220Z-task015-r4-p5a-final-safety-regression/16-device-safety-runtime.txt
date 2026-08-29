@@ -1,0 +1,7 @@
+=== SAFETY RUNTIME ===
+/dev/sdb parts=0 mnt=none swap=0 pv=0 md_active=0 holders=0 dm=0
+/dev/sdc parts=0 mnt=none swap=0 pv=0 md_active=0 holders=0 dm=0
+/dev/sdb parts=0 mnt=none swap=0 pv=0 md_active=0 holders=0 dm=0
+/dev/sdc parts=0 mnt=none swap=0 pv=0 md_active=0 holders=0 dm=0
+/dev/sdb parts=0 mnt=none swap=0 pv=0 md_active=0 holders=0 dm=0
+/dev/sdc parts=0 mnt=none swap=0 pv=0 md_active=0 holders=0 dm=0

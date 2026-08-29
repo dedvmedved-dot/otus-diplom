@@ -1,0 +1,9 @@
+# TASK-015-R4 — Storage Candidate Map After
+
+inventory/storage-p5-candidates.yaml:
+  status: PROPOSED_NOT_AUTHORIZED
+  destructive_authorized: false
+  eligible: true (6/6) — composite identity + full safety + wipefs/blkid clean +
+  Ceph exclusion + health + fingerprint unchanged подтверждены R4.
+
+См. inventory/storage-p5-candidates.yaml.

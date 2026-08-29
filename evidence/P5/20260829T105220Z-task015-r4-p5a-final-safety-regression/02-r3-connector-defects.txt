@@ -1,0 +1,11 @@
+# TASK-015-R4 — R3 Connector Defects
+
+D1 — safety pipeline может fail-open: pvs|grep -c, mdadm|grep -c,
+     multipath|grep -c — rc это финальный grep; upstream ошибка → безопасный 0.
+D2 — wipefs результат печатается но не assertится.
+D3 — blkid -p Gate отсутствует.
+D4 — Ceph exclusion отсутствует (исторический Ceph).
+D5 — нет immediate composite re-resolution перед device-операциями.
+D6 — P1-P4 регрессия неполная (VLAN/containerd/kubelet/etcd/IPPool/BGP/P4B).
+D7 — R3 postcheck evidence содержит network failure (не менять; использовать
+     только Ansible-native in-playbook).

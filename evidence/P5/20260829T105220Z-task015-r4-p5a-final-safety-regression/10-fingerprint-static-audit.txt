@@ -1,0 +1,9 @@
+# TASK-015-R4 — Fingerprint Static Audit
+
+PHASE 7b/9b: resolve_now перед BEFORE и снова перед AFTER read.
+Python open(dev,"rb"), read exact 1048576 (len assert), sha256.
+PHASE 9c: cmp -s fail-closed.
+
+unchecked dd pipeline: 0; saved path without immediate revalidation: 0
+
+RESULT: PASS

@@ -1,0 +1,8 @@
+# TASK-015-R4 — Versions/ADR Readonly
+
+versions.lock:
+  linstor_operator 2.10.6, linstor 1.33.2, linstor_csi 1.11.0,
+  drbd 9.3.2, drbd_utils 9.34.3
+ADR-003: APPROVED (DRBD 9.3.2 alignment)
+
+R4 не изменял versions.lock / ADR-003. DRBD COMPILE RERUN: NO.

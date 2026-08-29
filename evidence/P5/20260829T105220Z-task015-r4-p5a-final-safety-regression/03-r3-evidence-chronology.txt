@@ -1,0 +1,15 @@
+# TASK-015-R4 — R3 Evidence Chronology
+
+R3 fresh compile accepted 3/3.
+
+R3 auxiliary postcheck evidence contained:
+Network is unreachable to 192.168.194.38.
+
+R3 playbook did not depend on that SSH path for VIP owner.
+
+R3 regression source checked only a subset of accepted P1-P4 invariants.
+
+R4 correction:
+Ansible-native full P1-P4 PRE/POST.
+
+HISTORICAL R3 EVIDENCE MODIFIED: NO

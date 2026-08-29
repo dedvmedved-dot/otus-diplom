@@ -1,0 +1,13 @@
+# TASK-015-R4 — Signature + Ceph Static Audit
+
+PHASE 7s (signature):
+  wipefs -n: rc=0 AND stdout empty, иначе FAIL
+  blkid -p: rc=2 → clean PASS; rc=0 → signature FAIL; other rc → FAIL
+PHASE 7c (Ceph):
+  pvs json → no ceph.* tags
+  /var/lib/ceph/osd/* symlink не резолвится в candidate
+  ceph-volume lvm list / raw list (если есть) → candidate absent
+
+wipefs not asserted: 0; blkid Gate missing: 0; Ceph Gate missing: 0
+
+RESULT: PASS

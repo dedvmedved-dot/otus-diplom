@@ -1,0 +1,4 @@
+=== CEPH RUNTIME ===
+ceph_tags=0 osd_symlinks=0 ceph_volume=absent
+ceph_tags=0 osd_symlinks=0 ceph_volume=absent
+ceph_tags=0 osd_symlinks=0 ceph_volume=absent

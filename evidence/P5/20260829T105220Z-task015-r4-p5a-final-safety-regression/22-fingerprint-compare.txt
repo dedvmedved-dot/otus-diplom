@@ -1,0 +1,10 @@
+# TASK-015-R4 — Fingerprint Compare
+
+6 first-1MiB + 6 last-1MiB SHA256 (exact 1 MiB, Python len assert).
+
+first1MiB (6): 30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58
+last1MiB (6):  30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58
+
+12/12 UNCHANGED (playbook PHASE 9c cmp -s fail-closed).
+
+RESULT: PASS

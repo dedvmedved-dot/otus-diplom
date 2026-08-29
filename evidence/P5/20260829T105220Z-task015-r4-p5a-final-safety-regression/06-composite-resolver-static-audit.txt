@@ -1,0 +1,10 @@
+# TASK-015-R4 — Composite Resolver Static Audit
+
+resolve_now() вызывается immediately перед КАЖДОЙ device-операцией (safety,
+signature, ceph, fingerprint before, health, fingerprint after).
+- lsblk -J -b rc=0 + JSON parse
+- SERIAL+WWN+MODEL+SIZE+TYPE exact, match count == 1
+- 0 или >1 → FAIL
+- no serial-only, no head -1, saved map = reference only
+
+RESULT: PASS

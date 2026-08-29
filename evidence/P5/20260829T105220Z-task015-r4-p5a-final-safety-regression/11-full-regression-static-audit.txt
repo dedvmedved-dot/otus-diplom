@@ -1,0 +1,19 @@
+# TASK-015-R4 — Full Regression Static Audit
+
+P1: bond0/1 slaves + exact bond0.140/bond1.141/bond0.143/bond0.700 addresses
+    (per-host map, /32 filtered) + default route count=1 via 192.168.194.1 dev bond0.700
+P2: containerd 2.3.3 + kubelet v1.36.2 + swap=0
+P3: etcd members=3, health=3/3, member learners=0, endpoint learners=0,
+    unique leader=1, actual leader endpoint=1, kube-vip=3/3, livez 3/3, readyz=ok
+P4A: Nodes Ready=3, calico-node 3/3, controllers 1/1, IPPool cidr/ipip/nat/disabled,
+     BGP node IPs (annotation), IP_AUTODETECTION_METHOD=interface=bond0.140
+P4B: p4b-netpol-validation NotFound, policies cluster-wide=0
+VIP: owner==1 (aggregate)
+
+Все как in-playbook PRE и POST задачи (не только evidence).
+
+exact VLAN assertions missing: 0; containerd/kubelet missing: 0;
+etcd full semantics missing: 0; livez 3/3 missing: 0;
+P4A IPPool/BGP/autodetect missing: 0; P4B final-state missing: 0
+
+RESULT: PASS

@@ -1,0 +1,19 @@
+# TASK-015-R4 — Device Safety Static Audit
+
+PHASE 7 (Python): каждый safety check проверяет upstream rc ПЕРЕД парсингом stdout.
+- lsblk (partitions): rc + types==["disk"]
+- findmnt: rc in (0,1), rc=0+stdout => mounted FAIL
+- swapon: rc=0, dev in stdout => FAIL
+- root/boot/home ancestor: dev in lsblk PATH
+- LVM: pvs/vgs/lvs --reportformat json, rc=0 + JSON parse; candidate pv_name => FAIL;
+  forbidden tags (ceph./linstor./drbd.) => FAIL
+- MD RAID: structural — /proc/mdstat (нет активных md) + blkid -p (нет linux_raid_member);
+  mdadm отсутствует (query failure) → kernel-level строже
+- multipath/dm: structural — dmsetup ls --tree (rc=0) covers multipath/dm-crypt/all DM targets;
+  /sys/block/<dev>/holders empty; multipath tool absent => no multipathd
+- holders: /sys/block/<dev>/holders empty
+- drbdadm status (if present)
+
+safety pipeline masking upstream rc: 0
+
+RESULT: PASS

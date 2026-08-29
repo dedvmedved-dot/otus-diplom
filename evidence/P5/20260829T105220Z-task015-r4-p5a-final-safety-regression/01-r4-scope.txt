@@ -1,0 +1,22 @@
+# TASK-015-R4 — Scope
+
+MODE: READ-ONLY FINAL SAFETY/REGRESSION (p5a_mode=final-safety-regression).
+
+MUST NOT: compile DRBD, load/install DRBD, wipe/partition/format disks,
+create LVM/DRBD metadata, install LINSTOR/Piraeus, create k8s storage, start P5B.
+
+ALLOWED:
+  ansible/playbooks/p5a-linstor-drbd-preflight.yml
+  ansible/playbooks/files/p5a-candidate-health.sh
+  inventory/storage-p5-candidates.yaml
+  docs/storage/P5A-DESTRUCTIVE-DEVICE-PREFLIGHT.md
+  docs/storage/P5A-LINSTOR-DRBD-COMPATIBILITY.md
+  docs/storage/P5B-IMPLEMENTATION-PREREQUISITES.md
+  evidence/P5/<RUN_ID>-task015-r4-p5a-final-safety-regression/
+
+READ-ONLY: versions.lock, images.lock, ADR-003,
+ansible/playbooks/files/p5a-drbd-compile-only.sh, inventory/hosts.yaml,
+P1-P4 playbooks/manifests, historical evidence.
+
+VERSION BASELINE PRESERVED: Operator 2.10.6 / LINSTOR 1.33.2 / CSI 1.11.0 /
+DRBD 9.3.2 / drbd-utils 9.34.3.

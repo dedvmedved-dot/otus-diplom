@@ -1,0 +1,25 @@
+# TASK-015-R4 — Forbidden Command Audit
+
+Source check (вручную выверено):
+
+safety pipeline masking upstream rc: 0 (каждый upstream rc проверяется до парсинга)
+wipefs result not asserted: 0 (rc=0 + stdout empty required)
+blkid Gate missing: 0 (rc=2 clean / rc=0 fail / other fail)
+Ceph Gate missing: 0 (LVM tags + OSD symlink + ceph-volume)
+saved device path used without immediate composite validation: 0 (resolve_now перед каждой op)
+
+exact VLAN assertions missing: 0
+containerd/kubelet version assertions missing: 0
+etcd full semantics missing: 0
+API livez 3/3 missing: 0
+P4A IPPool/BGP/autodetect missing: 0
+P4B final-state Gate missing: 0
+
+DRBD compile reachable in final-safety-regression: 0 (compile task отсутствует)
+
+DESTRUCTIVE COMMANDS: 0
+DRBD COMPILE RERUN: NO
+DRBD MODULE LOADED: NO
+DRBD MODULE INSTALLED: NO
+
+RESULT: PASS

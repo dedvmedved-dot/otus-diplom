@@ -1,0 +1,126 @@
+
+PLAY [P5A LINSTOR/DRBD preflight (READ-ONLY, FAIL-CLOSED)] *********************
+
+TASK [PHASE 0 — p5a_mode gate (full or final-safety-regression)] ***************
+[WARNING]: Platform linux on host node-01 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-01]
+
+TASK [P1 PRE — bond slaves + exact VLAN addresses + default route] *************
+ok: [node-01]
+[WARNING]: Platform linux on host node-02 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-02]
+[WARNING]: Platform linux on host node-03 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-03]
+
+TASK [P2 PRE — containerd 2.3.3 + kubelet v1.36.2 + swap 0] ********************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [P3 PRE — etcd full semantics + kube-vip + livez + readyz] ****************
+ok: [node-01]
+
+TASK [P3 PRE — leader + livez 3/3 (JSON-aware)] ********************************
+ok: [node-01]
+
+TASK [P4A PRE — IPPool + BGP + IP_AUTODETECTION_METHOD] ************************
+ok: [node-01]
+
+TASK [P4B PRE — final-state (validation ns NotFound, 0 policies)] **************
+ok: [node-01]
+
+TASK [PHASE 6 — composite resolver (reference map, exact unique)] **************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [PHASE 7 — full device safety (immediate composite re-resolve, fail-closed)] ***
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [PHASE 7s — signature gates wipefs + blkid (immediate re-resolve)] ********
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [PHASE 7c — Ceph exclusion (LVM tags + OSD symlink + ceph-volume)] ********
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [PHASE 7b — fingerprint BEFORE (immediate re-resolve, exact 1 MiB)] *******
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [PHASE 8 — health (immediate re-resolve, fail-closed)] ********************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [PHASE 9b — fingerprint AFTER (immediate re-resolve, exact 1 MiB)] ********
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [PHASE 9c — fingerprint compare (fail-closed)] ****************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [PHASE 10 — Kubernetes storage state (fail-closed)] ***********************
+ok: [node-01]
+
+TASK [P1 POST — bond slaves + exact VLAN addresses + default route] ************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [P2 POST — containerd + kubelet + swap] ***********************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [P3 POST — etcd + kube-vip + livez + readyz] ******************************
+ok: [node-01]
+
+TASK [P3 POST — leader + livez 3/3 (JSON-aware)] *******************************
+ok: [node-01]
+
+TASK [P4A POST — IPPool + BGP + autodetect] ************************************
+ok: [node-01]
+
+TASK [P4B POST — final-state (validation ns NotFound, 0 policies)] *************
+ok: [node-01]
+
+TASK [VIP POST — aggregate VIP owner count == 1] *******************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [VIP POST — assert aggregate owner == 1] **********************************
+ok: [node-01]
+
+TASK [PHASE 13 — final gate summary] *******************************************
+ok: [node-01] => {
+    "msg": "P5A final-safety-regression completed (read-only)"
+}
+
+PLAY RECAP *********************************************************************
+node-01                    : ok=25   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-02                    : ok=13   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-03                    : ok=13   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+

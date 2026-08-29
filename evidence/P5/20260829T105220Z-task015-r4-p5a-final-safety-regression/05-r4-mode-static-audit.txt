@@ -1,0 +1,14 @@
+# TASK-015-R4 — Mode Static Audit
+
+p5a_mode: full | final-safety-regression (unknown -> exit 1 перед device access).
+R4 runs final-safety-regression.
+
+final-safety-regression:
+  - runs: full P1-P4 PRE, composite resolver, full device safety,
+    signature (wipefs/blkid), Ceph exclusion, fingerprint BEFORE/AFTER/compare,
+    health, k8s storage state, full P1-P4 POST.
+  - MUST NOT run: DRBD compile, DRBD source/image extraction.
+
+DRBD compile reachable in final-safety-regression: 0 (нет compile task вообще).
+
+RESULT: PASS
