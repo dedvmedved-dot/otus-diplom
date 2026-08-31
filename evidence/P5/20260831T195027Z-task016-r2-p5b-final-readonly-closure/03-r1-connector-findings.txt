@@ -1,0 +1,14 @@
+# TASK-016-R2 — R1 Connector Findings (recap)
+
+R1 reported:
+  authorization CONSUMED_CLOSED, non-reusable (accepted factual)
+  6/6 composite PV mapped to vg_piraeus (accepted factual)
+  3/3 vg_piraeus, 3/3 thin_piraeus (accepted factual)
+  protected OS PVs preserved (accepted factual)
+  DRBD unloaded (accepted factual)
+  K8s LINSTOR/Piraeus objects absent (accepted factual)
+
+R1 static audit inconsistency:
+  A/B/C/E/F PARTIAL but reported SOURCE HARDENING PASS.
+
+R2 corrects by tombstoning the destructive playbook.

@@ -1,0 +1,22 @@
+
+playbook: ansible/playbooks/p5b-postverify.yml
+
+  play #1 (all): P5B post-destructive full read-only verification	TAGS: []
+    tasks:
+      P1 PRE — bond slaves + exact VLAN + default route	TAGS: []
+      P2 PRE — containerd + kubelet + swap	TAGS: []
+      P3 PRE — etcd JSON-aware full semantics (fail-closed rc+JSON)	TAGS: []
+      P4A PRE — Nodes/calico/CoreDNS/IPPool/BGP/autodetect (exact Ready)	TAGS: []
+      P4B PRE — validation ns NotFound + TASK-014 policies zero	TAGS: []
+      COMPOSITE-PV-MAP — composite resolver + PV membership (6/6)	TAGS: []
+      VG-MEMBERSHIP — actual PV set == expected PV set (exact)	TAGS: []
+      THINPOOL-STRICT — exactly one, thin, active, numeric percents	TAGS: []
+      PROTECTED — non-candidate PVs not in vg_piraeus + sda3 VG check	TAGS: []
+      DRBD — module not loaded, no resources	TAGS: []
+      K8S-STORAGE — LINSTOR/Piraeus objects zero (fail-closed)	TAGS: []
+      P1 POST — bond slaves + exact VLAN + default route	TAGS: []
+      P2 POST — containerd + kubelet + swap	TAGS: []
+      P3 POST — etcd JSON-aware full semantics (fail-closed rc+JSON)	TAGS: []
+      P4A POST — Nodes/calico/CoreDNS/IPPool/BGP/autodetect (exact Ready)	TAGS: []
+      P4B POST — validation ns NotFound + TASK-014 policies zero	TAGS: []
+      FINAL — postverify full read-only closure gate	TAGS: []

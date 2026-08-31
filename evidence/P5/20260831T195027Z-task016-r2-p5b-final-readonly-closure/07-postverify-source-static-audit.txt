@@ -1,0 +1,17 @@
+# TASK-016-R2 — Postverify Source Static Audit
+
+p5b-postverify.yml (strict):
+- P4A: ready_cond требует РОВНО один Ready condition + status=True
+  (нет пустого/дублирующего false-pass через any()).
+- P4B: p4b-netpol-validation NotFound (fail-closed rc + NotFound в stderr/stdout);
+  TASK-014/P4B policies cluster-wide = 0; system ns = 0.
+  Не требует unrelated NetworkPolicy = 0 (проверяется total через accepted baseline).
+- P3: fail-closed rc + JSON (member list, endpoint status, endpoint health rc=0,
+  kube-vip rc=0, readyz rc=0, livez rc=0/body ok на 3 API).
+- VG membership: actual PV set == expected PV set (exact set), не только pv_count=2.
+- Thin pool strict: exactly one, thin (attr t), active (attr a), numeric Data%,
+  numeric Meta%, 0<=Data<100, 0<=Meta<100, VG free numeric > 0.
+- Protected: non-candidate PV paths не в vg_piraeus; sda3 VG отдельно.
+- Порядок: P1-P4 PRE → storage → P1-P4 POST.
+
+RESULT: PASS

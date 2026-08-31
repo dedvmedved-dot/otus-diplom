@@ -1,0 +1,13 @@
+# TASK-016-R2 — R1 Connector Defects
+
+R1 static audit marked A/B/C/E/F as PARTIAL/documentation-only, but reported
+P5B SOURCE HARDENING: PASS — inconsistent.
+
+A. Global all-node prevalidation: PARTIAL (serial:1 in historical playbook)
+B. Computed aggregate Gate: PARTIAL (echo text)
+C. Destructive sequencing after global PASS: PARTIAL
+E. vgcreate re-resolution: documentation-only
+F. lvcreate VG revalidation: documentation-only
+
+R2 decision: do not keep historical destructive implementation as reusable code.
+Tombstone it.

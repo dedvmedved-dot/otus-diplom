@@ -1,0 +1,4 @@
+=== GIT SCOPE ===
+ M ansible/playbooks/p5b-postverify.yml
+ M ansible/playbooks/p5b-storage-preparation.yml
+?? evidence/P5/20260831T195027Z-task016-r2-p5b-final-readonly-closure/

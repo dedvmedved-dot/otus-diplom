@@ -1,0 +1,12 @@
+# TASK-016-R2 — Protected Device State
+
+Кандидаты = 6 composite-resolved дисков (sdb+sdc на каждом узле).
+Все прочие PV-пути (sda3 и legacy) — protected, НЕ в vg_piraeus.
+
+node-01: /dev/sda3 → astra38644 (protected, не в vg_piraeus)
+node-02: /dev/sda3 → astra39539 (protected, не в vg_piraeus)
+node-03: /dev/sda3 → astra03718 (protected, не в vg_piraeus)
+
+PROTECTED DEVICE HITS IN vg_piraeus = 0.
+
+RESULT: PASS

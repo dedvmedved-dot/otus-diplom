@@ -1,0 +1,20 @@
+# TASK-016-R2 — Scope
+
+MODE: READ-ONLY FINAL CLOSURE.
+
+Goals:
+1. Tombstone p5b-storage-preparation.yml (no destructive code, AUTHORIZATION_CONSUMED).
+2. Full read-only verification via p5b-postverify.yml (P1-P4 PRE/POST + storage).
+
+ALLOWED:
+  ansible/playbooks/p5b-storage-preparation.yml
+  ansible/playbooks/p5b-postverify.yml
+  inventory/storage-p5b-authorized-devices.yaml
+  docs/storage/P5B-STORAGE-PREPARATION.md
+  docs/storage/P5B-IMPLEMENTATION-PREREQUISITES.md
+  evidence/P5/<RUN_ID>-task016-r2-p5b-final-readonly-closure/
+
+READ-ONLY: versions.lock, images.lock, ADR-003, inventory/hosts.yaml,
+inventory/storage-p5-candidates.yaml, historical evidence, P1-P4 artifacts.
+
+INFRASTRUCTURE MUTATION: ZERO.

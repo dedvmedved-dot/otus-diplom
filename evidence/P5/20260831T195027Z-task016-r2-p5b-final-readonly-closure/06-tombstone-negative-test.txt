@@ -1,0 +1,15 @@
+=== TOMBSTONE NEGATIVE TEST ===
+
+PLAY [P5B storage preparation (TOMBSTONED — authorization consumed)] ***********
+
+TASK [TOMBSTONE — authorization consumed (fail-closed, no device access)] ******
+fatal: [node-01]: FAILED! => {"changed": false, "msg": "AUTHORIZATION_CONSUMED: TASK-016 destructive storage authorization is CONSUMED_CLOSED and non-reusable. This playbook is tombstoned and contains no destructive code. A NEW Architect task, NEW authorization object and NEW playbook are required for any future destructive storage action. No device was accessed, no storage command was run."}
+fatal: [node-02]: FAILED! => {"changed": false, "msg": "AUTHORIZATION_CONSUMED: TASK-016 destructive storage authorization is CONSUMED_CLOSED and non-reusable. This playbook is tombstoned and contains no destructive code. A NEW Architect task, NEW authorization object and NEW playbook are required for any future destructive storage action. No device was accessed, no storage command was run."}
+fatal: [node-03]: FAILED! => {"changed": false, "msg": "AUTHORIZATION_CONSUMED: TASK-016 destructive storage authorization is CONSUMED_CLOSED and non-reusable. This playbook is tombstoned and contains no destructive code. A NEW Architect task, NEW authorization object and NEW playbook are required for any future destructive storage action. No device was accessed, no storage command was run."}
+
+PLAY RECAP *********************************************************************
+node-01                    : ok=0    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+node-02                    : ok=0    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+node-03                    : ok=0    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+
+EXIT=0

@@ -1,0 +1,18 @@
+# TASK-016-R2 — Tombstone Source Audit
+
+Проверка p5b-storage-preparation.yml:
+
+executable pvcreate: 0 (нет вызова)
+executable vgcreate: 0
+executable lvcreate: 0
+destructive branch: 0
+device access: 0 (become: false, только fail task)
+storage command: 0
+
+Единственная задача: ansible.builtin.fail с msg "AUTHORIZATION_CONSUMED ...".
+
+grep проверка destructive-команд в файле:
+  pvcreate/vgcreate/lvcreate/pvremove/vgremove/lvremove/pvmove/
+  wipefs -a/blkdiscard/dd of=/mkfs/mkswap → 0 вхождений в executable-контексте.
+
+RESULT: PASS (fail-closed tombstone)

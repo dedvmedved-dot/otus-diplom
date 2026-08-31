@@ -1,0 +1,20 @@
+# TASK-016-R2 — Forbidden Command Audit
+
+R2 READ-ONLY. Source check (вручную выверено):
+
+pvcreate/vgcreate/lvcreate/pvremove/vgremove/lvremove/pvmove/vgreduce/vgextend/
+lvextend/lvreduce/lvconvert: 0 (нет executable вызова)
+wipefs write: 0 (только wipefs -n read-only в других playbook, не здесь)
+blkdiscard: 0
+dd of=: 0
+mkfs/mkswap: 0
+partition write: 0
+DRBD load/metadata: 0
+Piraeus/LINSTOR install: 0
+K8s storage mutation: 0
+
+p5b-storage-preparation.yml — tombstoned (fail task, no destructive code).
+
+INFRASTRUCTURE MUTATION: 0
+
+RESULT: PASS

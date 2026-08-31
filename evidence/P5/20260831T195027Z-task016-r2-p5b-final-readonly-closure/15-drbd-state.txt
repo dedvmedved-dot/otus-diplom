@@ -1,0 +1,11 @@
+# TASK-016-R2 — DRBD State
+
+read-only: lsmod | grep '^drbd'
+
+node-01: drbd_loaded=0
+node-02: drbd_loaded=0
+node-03: drbd_loaded=0
+
+DRBD module not loaded, no DRBD resources.
+
+RESULT: PASS (UNCHANGED)
