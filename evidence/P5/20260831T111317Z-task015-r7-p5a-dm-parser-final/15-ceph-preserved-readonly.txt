@@ -1,0 +1,10 @@
+# TASK-015-R7 — Ceph Preserved (readonly)
+
+Ceph gate НЕ изменялся в R7 (только DM parser исправлен).
+
+R6 Connector-verified: pvs rc=0, 0 ceph-тегов, 0 OSD block/block.db/block.wal
+ссылок, ceph-volume UNAVAILABLE. Ceph exclusion 6/6 PASS.
+
+В R7 run PHASE 7c выполнился заново (read-only), результат тот же.
+
+CEPH: PRESERVED PASS

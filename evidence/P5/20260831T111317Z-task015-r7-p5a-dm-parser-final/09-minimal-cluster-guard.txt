@@ -1,0 +1,7 @@
+# TASK-015-R7 — Minimal Cluster Guard
+
+PHASE 0g (nodes + readyz):
+  nodes = 3 (Ready)
+  readyz = ok
+
+Из run transcript. RESULT: PASS

@@ -1,0 +1,43 @@
+=== DM RUNTIME RAW ===
+--- .38 ---
+astra38644-lv_home	(253:1)
+astra38644-lv_root	(253:2)
+astra38644-lv_swap	(253:0)
+ls_rc=0
+map=astra38644-lv_home
+1 dependencies	: (8, 3)
+deps_rc=0
+map=astra38644-lv_root
+1 dependencies	: (8, 3)
+deps_rc=0
+map=astra38644-lv_swap
+1 dependencies	: (8, 3)
+deps_rc=0
+--- .40 ---
+astra39539-lv_home	(253:1)
+astra39539-lv_root	(253:2)
+astra39539-lv_swap	(253:0)
+ls_rc=0
+map=astra39539-lv_home
+1 dependencies	: (8, 3)
+deps_rc=0
+map=astra39539-lv_root
+1 dependencies	: (8, 3)
+deps_rc=0
+map=astra39539-lv_swap
+1 dependencies	: (8, 3)
+deps_rc=0
+--- .39 ---
+astra03718-lv_home	(253:1)
+astra03718-lv_root	(253:2)
+astra03718-lv_swap	(253:0)
+ls_rc=0
+map=astra03718-lv_home
+1 dependencies	: (8, 3)
+deps_rc=0
+map=astra03718-lv_root
+1 dependencies	: (8, 3)
+deps_rc=0
+map=astra03718-lv_swap
+1 dependencies	: (8, 3)
+deps_rc=0

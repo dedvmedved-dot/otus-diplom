@@ -1,0 +1,7 @@
+# TASK-015-R7 — R6 Connector Defect
+
+DM parser: re.findall(r'\((\d+):(\d+)\)', deps.stdout) — colon format.
+Фактический формат `dmsetup deps`: "1 dependencies : (8, 3)" — comma format.
+Regex возвращает 0 пар → dm_maps остаётся пустым → false CLEAR.
+
+Требуется: comma parser + declared-count consistency + dependency ancestry resolution.

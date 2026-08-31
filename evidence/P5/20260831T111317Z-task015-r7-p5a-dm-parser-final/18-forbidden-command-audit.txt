@@ -1,0 +1,28 @@
+# TASK-015-R7 — Forbidden Command Audit
+
+Source check (вручную выверено):
+
+colon-only dependency regex: 0 (comma parser только)
+unknown deps output can PASS: 0 (parse None → DM_PARSE_FAIL)
+dmsetup ls rc ignored: 0
+dmsetup deps rc ignored: 0
+dependency resolution rc ignored: 0
+
+DRBD compile: 0
+DRBD module load/install: 0
+health rerun: 0
+fingerprint rerun: 0
+wipefs write: 0
+blkdiscard: 0
+dd of=: 0
+partition write: 0
+mkfs/mkswap: 0
+pvcreate/vgcreate/lvcreate: 0
+ceph-volume zap: 0
+LINSTOR/Piraeus install: 0
+Kubernetes storage mutation: 0
+P5B: NOT STARTED
+
+STORAGE MUTATION: NONE
+
+RESULT: PASS

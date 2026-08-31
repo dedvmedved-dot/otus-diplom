@@ -1,0 +1,16 @@
+# TASK-015-R7 — DM Parser Count Consistency
+
+Формат dmsetup deps: "1 dependencies : (8, 3)" (comma, tab после "dependencies").
+
+Все 3 узла × 3 map (lv_home/lv_root/lv_swap):
+  declared=1, parsed=1 → EXACT (declared == len(parsed))
+
+raw outputs (из 11-dm-runtime-raw.txt):
+  astra38644-lv_home: "1 dependencies\t: (8, 3)"
+  astra38644-lv_root: "1 dependencies\t: (8, 3)"
+  astra38644-lv_swap: "1 dependencies\t: (8, 3)"
+  (аналогично на node-02/03 с их VG-именами)
+
+DECLARED/PARSED DEP COUNTS: ALL EXACT
+
+RESULT: PASS

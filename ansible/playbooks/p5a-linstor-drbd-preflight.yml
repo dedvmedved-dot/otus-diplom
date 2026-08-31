@@ -282,12 +282,12 @@
       register: ph7h
       changed_when: false
 
-    # ═══════════════════ DM/CRYPT/MULTIPATH PROOF (major:minor) ═══════════════════
-    - name: PHASE 7d — DM dependency proof (major:minor structural)
+    # ═══════════════════ DM/CRYPT/MULTIPATH PROOF (comma parser + ancestry) ═══════════════════
+    - name: PHASE 7d — DM dependency proof (comma parser + declared-count + ancestry)
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
-          import json, subprocess, sys, os
+          import json, subprocess, sys, os, re
           expected = {{ expected_candidates[inventory_hostname] | to_json }}
           model_want = "{{ candidate_model }}"; size_want = {{ candidate_size }}
           def resolve_now(exp):
@@ -300,13 +300,46 @@
           def majmin(path):
               st = os.stat(path)
               return (os.major(st.st_rdev), os.minor(st.st_rdev))
-          # collect candidate major:minor
+          def norm(p):
+              if not p: return p
+              return p if p.startswith("/dev") else "/dev/" + p
+          def whole_disk_ancestry(path):
+              # walk PKNAME ancestry to whole disk; return list of knames
+              chain = []
+              cur = norm(path)
+              for _ in range(16):
+                  if not cur: break
+                  r = subprocess.run(["lsblk","-no","KNAME,PKNAME",cur], capture_output=True, text=True)
+                  if r.returncode != 0:
+                      print(f"DM_DEP_RESOLVE_FAIL lsblk {cur} rc={r.returncode}"); sys.exit(1)
+                  parts = r.stdout.strip().split()
+                  kname = parts[0] if parts else os.path.basename(cur)
+                  chain.append(kname)
+                  pk = parts[1] if len(parts) > 1 else ""
+                  if not pk: break
+                  nxt = norm(pk)
+                  if nxt == cur: break
+                  cur = nxt
+              return chain
+          # collect candidates
           cands = []
           for exp in expected:
               d = resolve_now(exp)
-              cands.append((exp["serial"], d["path"], d["kname"], majmin(d["path"])))
-          # collect DM deps (structural, fail-closed: rc=0 required)
-          dm_maps = []
+              mm = majmin(d["path"])
+              cands.append({"serial": exp["serial"], "wwn": exp["wwn"], "path": d["path"],
+                            "kname": d["kname"], "majmin": mm})
+          # parse dmsetup deps output
+          def parse_deps(text):
+              header = re.match(r'^\s*(\d+)\s+dependenc(?:y|ies)\s*:\s*(.*)$', text)
+              if not header:
+                  return None
+              declared = int(header.group(1))
+              rest = header.group(2)
+              pairs = re.findall(r'\((\d+)\s*,\s*(\d+)\)', rest)
+              return (declared, [(int(a), int(b)) for a, b in pairs])
+          # collect DM deps (fail-closed: rc=0 required, declared==parsed, resolve each)
+          dm_deps = []      # list of (major, minor)
+          dm_ancestry = []  # list of whole-disk ancestry kname sets
           r = subprocess.run(["dmsetup","ls"], capture_output=True, text=True)
           if r.returncode != 0:
               print(f"DM_QUERY_FAIL dmsetup ls rc={r.returncode}"); sys.exit(1)
@@ -314,20 +347,40 @@
           if not lines:
               print("DM_MAPS=0 PASS")
           else:
-              import re
               for line in lines:
                   name = line.split()[0]
+                  if not name:
+                      print(f"DM_MAP_PARSE_FAIL line={line!r}"); sys.exit(1)
                   deps = subprocess.run(["dmsetup","deps",name], capture_output=True, text=True)
                   if deps.returncode != 0:
                       print(f"DM_DEPS_FAIL {name} rc={deps.returncode}"); sys.exit(1)
-                  pairs = re.findall(r'\((\d+):(\d+)\)', deps.stdout)
-                  print(f"dm_map={name} deps_rc=0 deps={pairs}")
-                  for mj,mn in pairs:
-                      dm_maps.append((int(mj), int(mn)))
-          for serial, dev, kname, mm in cands:
-              hit = mm in dm_maps
-              print(f"{dev} kname={kname} maj:min={mm[0]}:{mm[1]} dm_dependency={'HIT' if hit else 'clear'}")
-              if hit: print(f"DM_FAIL {dev}"); sys.exit(1)
+                  raw = deps.stdout.strip()
+                  parsed = parse_deps(raw)
+                  if parsed is None:
+                      print(f"DM_PARSE_FAIL {name} raw={raw!r}"); sys.exit(1)
+                  declared, pairs = parsed
+                  if declared != len(pairs):
+                      print(f"DM_PARSE_FAIL {name} declared={declared} parsed={len(pairs)} raw={raw!r}"); sys.exit(1)
+                  print(f"dm_map={name} deps_rc=0 declared={declared} parsed={len(pairs)} raw={raw!r}")
+                  for mj, mn in pairs:
+                      dm_deps.append((mj, mn))
+                      blk = f"/dev/block/{mj}:{mn}"
+                      if not os.path.exists(blk):
+                          print(f"DM_DEP_RESOLVE_FAIL {blk} missing"); sys.exit(1)
+                      rp = subprocess.run(["realpath", blk], capture_output=True, text=True)
+                      if rp.returncode != 0:
+                          print(f"DM_DEP_RESOLVE_FAIL realpath {blk} rc={rp.returncode}"); sys.exit(1)
+                      resolved = rp.stdout.strip()
+                      ancestry = whole_disk_ancestry(resolved)
+                      dm_ancestry.append(set(ancestry))
+                      print(f"  dep {mj}:{mn} resolved={resolved} ancestry={ancestry}")
+          # candidate comparison
+          for c in cands:
+              direct = c["majmin"] in dm_deps
+              ancestry_hit = any(c["kname"] in anc for anc in dm_ancestry)
+              print(f"{c['path']} serial={c['serial']} wwn={c['wwn']} kname={c['kname']} maj:min={c['majmin'][0]}:{c['majmin'][1]} direct_hit={int(direct)} ancestry_hit={int(ancestry_hit)}")
+              if direct or ancestry_hit:
+                  print(f"DM_FAIL {c['path']}"); sys.exit(1)
           print("DM_CRYPT_MULTIPATH_6of6_CLEAR" if len(expected)==6 else "DM_CLEAR")
           PYEOF
       register: ph7d

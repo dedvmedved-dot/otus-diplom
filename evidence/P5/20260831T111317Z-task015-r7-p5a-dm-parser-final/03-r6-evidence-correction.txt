@@ -1,0 +1,19 @@
+# TASK-015-R7 — R6 Evidence Correction
+
+R6 runtime syntax:
+(8, 3)
+
+R6 source parser:
+(8:3)
+
+Effect:
+actual dependencies were not inserted into dm_maps
+
+R6 DM/CRYPT/MULTIPATH automated Gate:
+NOT ACCEPTED
+
+R6 historical evidence modified:
+NO
+
+R7:
+comma-format parser + declared-count consistency + dependency ancestry

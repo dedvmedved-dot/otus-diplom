@@ -1,0 +1,15 @@
+# TASK-015-R7 — Candidate DM Exclusion
+
+DM dependency: (8:3) = /dev/sda3 (realpath), ancestry = [sda3, sda] (whole disk sda).
+
+Кандидаты (composite-resolved):
+  node-01: /dev/sdb (8:16) S5G0NC0T407845, /dev/sdc (8:32) S5G0NC0T407844
+  node-02: /dev/sdb (8:16) S5G0NC0T407077, /dev/sdc (8:32) S5G0NC0T407075
+  node-03: /dev/sdb (8:16) S5G0NC0T403246, /dev/sdc (8:32) S5G0NC0T403289
+
+direct DM hit (major:minor == (8,3)): 0/6
+DM ancestry hit (kname in {sda3, sda}): 0/6
+
+DM/CRYPT/MULTIPATH: 6/6 CLEAR
+
+RESULT: PASS

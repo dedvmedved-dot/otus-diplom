@@ -1,0 +1,27 @@
+
+playbook: ansible/playbooks/p5a-linstor-drbd-preflight.yml
+
+  play #1 (all): P5A LINSTOR/DRBD preflight (READ-ONLY, FAIL-CLOSED)	TAGS: []
+    tasks:
+      PHASE 0 — p5a_mode gate	TAGS: []
+      PHASE 0g — minimal cluster guard (nodes + readyz)	TAGS: []
+      P1 PRE — bond slaves + exact VLAN addresses + default route	TAGS: []
+      P2 PRE — containerd + kubelet + swap	TAGS: []
+      P3 PRE — etcd JSON-aware full semantics	TAGS: []
+      P4A PRE — Nodes/calico/CoreDNS/IPPool/BGP/autodetect	TAGS: []
+      P4B PRE — final-state (validation ns NotFound, 0 policies)	TAGS: []
+      PHASE 6 — composite resolver (exact unique)	TAGS: []
+      PHASE 7h — active holders proof (os.listdir sysfs)	TAGS: []
+      PHASE 7d — DM dependency proof (comma parser + declared-count + ancestry)	TAGS: []
+      PHASE 7r — root/boot/home ancestry proof	TAGS: []
+      PHASE 7l — LVM + RAID structural proof	TAGS: []
+      PHASE 7c — Ceph exclusion (pvs tags + OSD links + ceph-volume)	TAGS: []
+      PHASE 10 — Kubernetes storage state (fail-closed)	TAGS: []
+      P1 POST — bond + VLAN + default route	TAGS: []
+      P2 POST — containerd + kubelet + swap	TAGS: []
+      P3 POST — etcd JSON-aware + livez + readyz	TAGS: []
+      P4A POST — Nodes/calico/CoreDNS/IPPool/BGP/autodetect	TAGS: []
+      P4B POST — final-state (NotFound, 0 policies)	TAGS: []
+      VIP POST — aggregate owner == 1	TAGS: []
+      VIP POST — assert aggregate == 1	TAGS: []
+      PHASE 13 — final gate summary	TAGS: []

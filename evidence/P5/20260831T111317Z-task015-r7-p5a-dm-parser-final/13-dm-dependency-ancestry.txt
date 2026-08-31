@@ -1,0 +1,43 @@
+=== DM DEPENDENCY ANCESTRY ===
+--- .38 ---
+dep 8:3:
+lrwxrwxrwx 1 root root 7 авг 24 12:16 /dev/block/8:3 -> ../sda3
+realpath:
+/dev/sda3
+ancestry:
+sda3  sda
+dm-0  sda3
+dm-1  sda3
+dm-2  sda3
+sda3  sda
+dm-0  sda3
+dm-1  sda3
+dm-2  sda3
+--- .40 ---
+dep 8:3:
+lrwxrwxrwx 1 root root 7 авг 18 11:06 /dev/block/8:3 -> ../sda3
+realpath:
+/dev/sda3
+ancestry:
+sda3  sda
+dm-0  sda3
+dm-1  sda3
+dm-2  sda3
+sda3  sda
+dm-0  sda3
+dm-1  sda3
+dm-2  sda3
+--- .39 ---
+dep 8:3:
+lrwxrwxrwx 1 root root 7 авг 11 14:40 /dev/block/8:3 -> ../sda3
+realpath:
+/dev/sda3
+ancestry:
+sda3  sda
+dm-0  sda3
+dm-1  sda3
+dm-2  sda3
+sda3  sda
+dm-0  sda3
+dm-1  sda3
+dm-2  sda3

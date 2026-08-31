@@ -1,0 +1,10 @@
+=== PASS cases (must validate OK, exact counts) ===
+[OK] '1 dependencies : (8, 3)'                -> declared=1 parsed=[(8, 3)]
+[OK] '2 dependencies : (8, 3) (8, 4)'         -> declared=2 parsed=[(8, 3), (8, 4)]
+[OK] '0 dependencies :'                       -> declared=0 parsed=[]
+=== FAIL cases (must NOT validate OK) ===
+[OK] '1 dependencies : (8:3)'                 -> declared=1 parsed=[] (ok=False)
+[OK] '1 dependencies : garbage'               -> declared=1 parsed=[] (ok=False)
+[OK] 'unrecognized output'                    -> declared=None parsed=None (ok=False)
+
+ALL_PASS

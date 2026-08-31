@@ -1,0 +1,17 @@
+# TASK-015-R7 — Scope
+
+MODE: FINAL-DM-CEPH / READ-ONLY. Correct ONLY the DM dependency parser.
+
+ALLOWED:
+  ansible/playbooks/p5a-linstor-drbd-preflight.yml
+  evidence/P5/<RUN_ID>-task015-r7-p5a-dm-parser-final/
+
+READ-ONLY: versions.lock, images.lock, ADR-003, inventory/hosts.yaml,
+inventory/storage-p5-candidates.yaml, compile helper, health helper,
+P1-P4 playbooks/manifests, historical evidence.
+
+DO NOT RERUN: DRBD compile, candidate health, fingerprints, wipefs, blkid,
+full P1-P4 regression.
+
+VERSION BASELINE PRESERVED: Operator 2.10.6 / LINSTOR 1.33.2 / CSI 1.11.0 /
+DRBD 9.3.2 / drbd-utils 9.34.3.

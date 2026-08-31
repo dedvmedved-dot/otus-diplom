@@ -1,0 +1,11 @@
+# TASK-015-R7 — Mode Static Audit
+
+p5a_mode=final-dm-ceph (переиспользован после parser fix).
+
+Reachable: minimal cluster guard, composite resolver, holder proof, DM proof,
+root ancestry, LVM/RAID, Ceph exclusion, K8s storage state.
+
+Not reachable: DRBD compile, health, fingerprint, wipefs, blkid,
+full P1-P4 regression (when: p5a_mode != 'final-dm-ceph'), storage mutation.
+
+RESULT: PASS

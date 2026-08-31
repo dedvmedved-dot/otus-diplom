@@ -1,0 +1,19 @@
+# TASK-015-R7 — DM Parser Source Static Audit
+
+parse_deps(text):
+  header = re.match(r'^\s*(\d+)\s+dependenc(?:y|ies)\s*:\s*(.*)$', text)
+  pairs = re.findall(r'\((\d+)\s*,\s*(\d+)\)', rest)
+  declared == len(pairs) assert; mismatch → DM_PARSE_FAIL
+
+colon-only dependency regex: 0 (comma format только)
+comma major/minor parser: PRESENT
+declared dependency count parsed: PRESENT
+declared==parsed assertion: PRESENT
+unknown deps output can PASS: 0 (parse_deps None → DM_PARSE_FAIL)
+dmsetup ls rc ignored: 0
+dmsetup deps rc ignored: 0
+dependency resolution rc ignored: 0 (realpath/lsblk rc checked)
+candidate direct major:minor check: PRESENT
+candidate dependency ancestry check: PRESENT
+
+RESULT: PASS

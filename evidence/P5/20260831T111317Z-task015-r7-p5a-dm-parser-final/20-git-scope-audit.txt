@@ -1,0 +1,3 @@
+=== GIT SCOPE ===
+ M ansible/playbooks/p5a-linstor-drbd-preflight.yml
+?? evidence/P5/20260831T111317Z-task015-r7-p5a-dm-parser-final/
