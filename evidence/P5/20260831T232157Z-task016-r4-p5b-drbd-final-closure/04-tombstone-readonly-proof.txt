@@ -1,0 +1,8 @@
+# TASK-016-R4 — Tombstone Readonly Proof
+
+p5b-storage-preparation.yml остаётся tombstoned (R2), НЕ изменяется в R4.
+
+Единственная задача — ansible.builtin.fail с AUTHORIZATION_CONSUMED. Нет
+executable pvcreate/vgcreate/lvcreate.
+
+RESULT: PASS (tombstone preserved)

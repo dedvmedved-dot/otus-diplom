@@ -1,0 +1,11 @@
+# TASK-016-R4 — DRBD Config Inventory
+
+Read-only per node:
+
+  /etc/drbd.conf: absent (no such file)
+  /etc/drbd.d/: absent (no such directory)
+  /etc/drbd.d/*.res: none
+
+DRBD configured resources: 0.
+
+RESULT: PASS

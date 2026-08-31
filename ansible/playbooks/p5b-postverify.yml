@@ -377,26 +377,51 @@
       register: prot
       changed_when: false
 
-    # ═══════════════ DRBD module + resource state ═══════════════
-    - name: DRBD — module not loaded + no resources (structural)
+    # ═══════════════ DRBD module + resource state (fail-closed) ═══════════════
+    - name: DRBD-FAIL-CLOSED — module absent + /proc absent + drbdadm rc + config
       ansible.builtin.shell:
         cmd: |
-          loaded=$(lsmod | grep -c '^drbd' || true)
-          mod_absent=0
-          [ -e /sys/module/drbd ] && mod_absent=1 || mod_absent=0
-          proc_absent=0
-          [ -e /proc/drbd ] && proc_absent=1 || proc_absent=0
-          if command -v drbdadm >/dev/null 2>&1; then
-            drbd_res=$(drbdadm status 2>&1 || true)
-            echo "drbdadm=AVAILABLE status='$drbd_res'"
-            echo "$drbd_res" | grep -qi 'resource' && { echo "DRBD_RESOURCE_PRESENT"; exit 1; }
-          else
-            echo "drbdadm=UNAVAILABLE"
-          fi
-          echo "host=$(hostname) drbd_loaded=$loaded module_absent=$((1-mod_absent)) proc_absent=$((1-proc_absent))"
-          [ "$loaded" = "0" ] || { echo "DRBD_LOADED"; exit 1; }
-          [ "$mod_absent" = "0" ] || { echo "DRBD_MODULE_PRESENT"; exit 1; }
-          echo "DRBD_OK"
+          python3 << 'PYEOF'
+          import subprocess, sys, os, glob
+          # 1. kernel-state checks (must all pass)
+          sys_mod = os.path.exists("/sys/module/drbd")
+          proc_drbd = os.path.exists("/proc/drbd")
+          lsmod = subprocess.run(["lsmod"], capture_output=True, text=True)
+          if lsmod.returncode != 0: print("DRBD_FAIL lsmod"); sys.exit(1)
+          drbd_lines = [l for l in lsmod.stdout.splitlines() if l.startswith("drbd")]
+          drbd_count = len(drbd_lines)
+          print(f"host=$(hostname) sys_module_present={sys_mod} proc_drbd_present={proc_drbd} lsmod_drbd_count={drbd_count}")
+          if sys_mod: print("DRBD_FAIL /sys/module/drbd present"); sys.exit(1)
+          if proc_drbd: print("DRBD_FAIL /proc/drbd present"); sys.exit(1)
+          if drbd_count != 0: print("DRBD_FAIL lsmod drbd"); sys.exit(1)
+          # 2. drbdadm availability + fail-closed query
+          w = subprocess.run(["sh","-c","command -v drbdadm"], capture_output=True, text=True)
+          if w.returncode != 0 or not w.stdout.strip():
+              print("drbdadm=UNAVAILABLE")
+          else:
+              print("drbdadm=AVAILABLE")
+              r = subprocess.run(["drbdadm","status"], capture_output=True, text=True)
+              print(f"drbdadm_status_rc={r.returncode}")
+              if r.returncode != 0:
+                  print("DRBD_QUERY_FAIL"); sys.exit(1)
+              out = r.stdout.strip()
+              print(f"drbdadm_status_stdout={out!r}")
+              print(f"drbdadm_status_stderr={r.stderr.strip()!r}")
+              if out == "":
+                  print("drbd_resources=0")
+              else:
+                  # structural: no resource/device section present
+                  lines = [l for l in out.splitlines() if l.strip() and not l.strip().startswith(("#","<"))]
+                  if lines:
+                      print("DRBD_FAIL unparseable/unknown output"); sys.exit(1)
+                  print("drbd_resources=0")
+          # 3. config inventory (read-only)
+          conf_files = glob.glob("/etc/drbd.conf") + glob.glob("/etc/drbd.d/*.res")
+          print(f"drbd_config_files={conf_files}")
+          if conf_files:
+              print("DRBD_FAIL config resources present"); sys.exit(1)
+          print("DRBD_OK")
+          PYEOF
       register: drbd
       changed_when: false
 

@@ -1,0 +1,9 @@
+# TASK-016-R4 — R3 Connector Findings
+
+1. `drbdadm status` выполняется с `|| true` → реальный rc теряется.
+2. Детект ресурсов по literal-слову "resource" — не структурное доказательство
+   нуля настроенных ресурсов.
+3. `/proc/drbd` состояние печатается/вычисляется, но не assert'ится.
+4. R3 chronology опустила первоначальную failed kube-vip discovery attempt.
+
+R4 исправляет все четыре, сохраняя принятые R3 gates.

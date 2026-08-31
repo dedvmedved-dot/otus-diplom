@@ -1,0 +1,5 @@
+=== P1-P4 POST FULL ===
+nodes: 3
+calico: 3
+coredns: 2/2/2
+readyz: ok

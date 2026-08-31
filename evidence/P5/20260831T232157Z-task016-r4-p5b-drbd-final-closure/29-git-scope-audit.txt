@@ -1,0 +1,3 @@
+=== GIT SCOPE ===
+ M ansible/playbooks/p5b-postverify.yml
+?? evidence/P5/20260831T232157Z-task016-r4-p5b-drbd-final-closure/

@@ -1,0 +1,21 @@
+# TASK-016-R4 — DRBD Source Static Audit
+
+p5b-postverify.yml DRBD-FAIL-CLOSED task:
+
+Required zero:
+  drbdadm status masked by || true: 0 (subprocess.run без shell || true, rc captured)
+  drbdadm rc ignored: 0 (rc != 0 → DRBD_QUERY_FAIL)
+  literal-word resource used as sole detector: 0 (structural parse: empty stdout
+    или только пустые/комментарные строки → 0 resources; иначе FAIL)
+  /proc/drbd not asserted: 0 (os.path.exists assert → FAIL если present)
+  unknown drbdadm output can PASS: 0 (любая непустая значимая строка → FAIL)
+  DRBD config files ignored: 0 (glob /etc/drbd.conf + /etc/drbd.d/*.res → FAIL)
+
+Required preserved (unchanged from R3):
+  VIP owner PRE/POST: PRESENT
+  kube-vip structural discovery (name-prefix kube-vip-* + Running phase): PRESENT
+  P4B PRE/POST fingerprint: PRESENT
+  OS PV exact map: PRESENT
+  K8s semantic storage filter: PRESENT
+
+RESULT: PASS

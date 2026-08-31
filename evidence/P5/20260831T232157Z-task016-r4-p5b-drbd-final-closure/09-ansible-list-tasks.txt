@@ -1,0 +1,27 @@
+
+playbook: ansible/playbooks/p5b-postverify.yml
+
+  play #1 (all): P5B final semantic read-only verification	TAGS: []
+    tasks:
+      P1 PRE — bond slaves + exact VLAN + default route	TAGS: []
+      P2 PRE — containerd + kubelet + swap	TAGS: []
+      VIP-OWNER-PRE — local bond0.140 172.30.140.100/32 count (0 or 1)	TAGS: []
+      P3 PRE — etcd JSON + kube-vip JSON + readyz/livez + VIP aggregate	TAGS: []
+      VIP-AGG-PRE — aggregate owner count == 1	TAGS: []
+      P4A PRE — Nodes/calico/CoreDNS/IPPool/BGP/autodetect (exact Ready)	TAGS: []
+      P4B PRE — validation ns NotFound + NetworkPolicy fingerprint	TAGS: []
+      COMPOSITE-PV-MAP — composite resolver + PV membership (6/6)	TAGS: []
+      VG-MEMBERSHIP — actual PV set == expected PV set (exact)	TAGS: []
+      THINPOOL-STRICT — exactly one, thin, active, numeric percents	TAGS: []
+      PROTECTED-OS-PV — non-candidate not in vg + sda3 exact VG	TAGS: []
+      DRBD-FAIL-CLOSED — module absent + /proc absent + drbdadm rc + config	TAGS: []
+      K8S-STORAGE-SEMANTIC — related objects only (linstor/piraeus/drbd/linbit)	TAGS: []
+      P1 POST — bond slaves + exact VLAN + default route	TAGS: []
+      P2 POST — containerd + kubelet + swap	TAGS: []
+      VIP-OWNER-POST — local bond0.140 172.30.140.100/32 count (0 or 1)	TAGS: []
+      P3 POST — etcd JSON + kube-vip JSON + readyz/livez	TAGS: []
+      VIP-AGG-POST — aggregate owner count == 1	TAGS: []
+      P4A POST — Nodes/calico/CoreDNS/IPPool/BGP/autodetect (exact Ready)	TAGS: []
+      P4B POST — validation ns NotFound + NetworkPolicy fingerprint	TAGS: []
+      P4B-FP-COMPARE — PRE fingerprint == POST fingerprint	TAGS: []
+      FINAL — postverify semantic closure gate	TAGS: []

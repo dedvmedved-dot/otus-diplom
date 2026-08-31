@@ -1,0 +1,7 @@
+=== node .39 ===
+sys_module_present=false
+proc_drbd_present=false
+lsmod_drbd_count=0
+drbdadm=UNAVAILABLE
+drbd_conf=absent
+drbd_res_files=0

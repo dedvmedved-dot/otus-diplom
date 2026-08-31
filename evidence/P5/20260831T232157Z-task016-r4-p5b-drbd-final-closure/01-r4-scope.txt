@@ -1,0 +1,14 @@
+# TASK-016-R4 — Scope
+
+MODE: READ-ONLY FINAL CLOSURE.
+
+ALLOWED:
+  ansible/playbooks/p5b-postverify.yml
+  evidence/P5/<RUN_ID>-task016-r4-p5b-drbd-final-closure/
+  (опционально docs correction)
+
+READ-ONLY: p5b-storage-preparation.yml (tombstone), storage-p5b-authorized-devices.yaml
+(CONSUMED_CLOSED), storage-p5-candidates.yaml, versions.lock, images.lock, ADR-003,
+inventory/hosts.yaml, historical evidence.
+
+INFRASTRUCTURE MUTATION: 0.

@@ -1,0 +1,10 @@
+# TASK-016-R4 — R3 Run Chronology
+
+TASK-016-R3 RUN_ID: 20260831T224348Z
+R3 initial implementation attempt: FAILED kube-vip discovery (reported kube-vip=0).
+Initial failed raw transcript committed: NO.
+Infrastructure mutation during failed attempt: NO / read-only.
+Correction: kube-vip discovery changed to JSON-aware name-prefix kube-vip-* + Running phase.
+R3 final committed transcript: changed=0 failed=0 unreachable=0.
+Historical R3 evidence modified: NO.
+R4 policy: new RUN_ID; exactly one clean acceptance run after all corrections.

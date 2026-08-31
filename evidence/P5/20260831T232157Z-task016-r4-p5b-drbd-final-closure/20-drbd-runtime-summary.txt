@@ -1,0 +1,17 @@
+# TASK-016-R4 — DRBD Runtime Summary
+
+Per node (17/18/19-drbd-runtime-node0X.txt):
+
+node-01/02/03:
+  /sys/module/drbd: ABSENT (sys_module_present=false)
+  /proc/drbd: ABSENT (proc_drbd_present=false)
+  lsmod drbd count: 0
+  drbdadm: UNAVAILABLE
+  /etc/drbd.conf: absent
+  /etc/drbd.d/*.res: 0 files
+
+DRBD QUERY RC: N/A (drbdadm unavailable — kernel-state checks pass)
+DRBD CONFIGURED RESOURCES: 0
+DRBD ACTIVE RESOURCES: 0
+
+RESULT: PASS
