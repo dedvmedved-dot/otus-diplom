@@ -1,0 +1,5 @@
+=== GIT SCOPE ===
+?? ansible/playbooks/p5b-storage-preparation.yml
+?? docs/storage/P5B-STORAGE-PREPARATION.md
+?? evidence/P5/20260831T132750Z-task016-p5b-storage-preparation/
+?? inventory/storage-p5b-authorized-devices.yaml

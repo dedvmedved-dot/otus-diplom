@@ -1,0 +1,10 @@
+# TASK-016 — node-02 LVM postcheck
+
+pvs: /dev/sda3→astra39539 (protected), /dev/sdb→vg_piraeus, /dev/sdc→vg_piraeus
+vgs: astra39539 (protected), vg_piraeus <6,99t free <715,20g pv_count=2
+lvs: vg_piraeus/thin_piraeus twi-a-tz-- <6,29t data_percent 0.00
+
+exact 2 candidate PVs ✓, VG vg_piraeus ✓, protected disk (sda3) not in VG ✓,
+thin pool exists + active/healthy ✓, VG free > 0 ✓.
+
+LVM_VERIFY_OK.

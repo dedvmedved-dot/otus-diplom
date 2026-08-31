@@ -1,0 +1,40 @@
+=== LVM CLUSTER SUMMARY ===
+--- node .38 ---
+PVs:
+  /dev/sda3  astra38644 <445,40g
+  /dev/sdb   vg_piraeus    3,49t
+  /dev/sdc   vg_piraeus    3,49t
+VGs:
+  astra38644 <445,40g   45,00g   1
+  vg_piraeus   <6,99t <715,20g   2
+LVs:
+  astra38644 lv_home      -wi-ao---- 328,39g       
+  astra38644 lv_root      -wi-ao----  40,00g       
+  astra38644 lv_swap      -wi-a-----  32,00g       
+  vg_piraeus thin_piraeus twi-a-tz--  <6,29t 0,00  
+--- node .40 ---
+PVs:
+  /dev/sda3  astra39539 <445,40g
+  /dev/sdb   vg_piraeus    3,49t
+  /dev/sdc   vg_piraeus    3,49t
+VGs:
+  astra39539 <445,40g   45,00g   1
+  vg_piraeus   <6,99t <715,20g   2
+LVs:
+  astra39539 lv_home      -wi-ao---- 328,39g       
+  astra39539 lv_root      -wi-ao----  40,00g       
+  astra39539 lv_swap      -wi-a-----  32,00g       
+  vg_piraeus thin_piraeus twi-a-tz--  <6,29t 0,00  
+--- node .39 ---
+PVs:
+  /dev/sda3  astra03718 <445,40g
+  /dev/sdb   vg_piraeus    3,49t
+  /dev/sdc   vg_piraeus    3,49t
+VGs:
+  astra03718 <445,40g   45,00g   1
+  vg_piraeus   <6,99t <715,20g   2
+LVs:
+  astra03718 lv_home      -wi-ao---- 328,39g       
+  astra03718 lv_root      -wi-ao----  40,00g       
+  astra03718 lv_swap      -wi-a-----  32,00g       
+  vg_piraeus thin_piraeus twi-a-tz--  <6,29t 0,00  

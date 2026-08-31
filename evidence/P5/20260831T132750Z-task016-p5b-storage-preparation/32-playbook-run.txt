@@ -1,0 +1,204 @@
+
+PLAY [P5B storage preparation (DESTRUCTIVE — AUTHORIZED)] **********************
+
+TASK [PHASE 0 — p5b_mode gate (destructive authorization)] *********************
+[WARNING]: Platform linux on host node-01 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-01]
+
+TASK [PHASE 1 — P1-P4 PRE (bond VLAN containerd kubelet)] **********************
+ok: [node-01]
+
+TASK [PHASE 1b — P1-P4 PRE (nodes readyz)] *************************************
+ok: [node-01]
+
+TASK [PHASE 2 — composite resolver (exact unique, resolve paths)] **************
+ok: [node-01]
+
+TASK [PHASE 3 — protected-device inventory (everything except candidates)] *****
+ok: [node-01]
+
+TASK [PHASE 4 — fresh safety gate (composite re-resolve, fail-closed)] *********
+ok: [node-01]
+
+TASK [PHASE 4b — signature + ceph gate (wipefs blkid ceph)] ********************
+ok: [node-01]
+
+TASK [PHASE 5 — final pre-destruction fingerprints (exact 1 MiB)] **************
+ok: [node-01]
+
+TASK [PHASE 6 — aggregate destructive gate] ************************************
+ok: [node-01]
+
+TASK [PHASE 7 — pvcreate (destructive wrapper, re-resolve identity)] ***********
+ok: [node-01]
+
+TASK [PHASE 7b — verify PVs (structural JSON)] *********************************
+ok: [node-01]
+
+TASK [PHASE 8 — vgcreate vg_piraeus (destructive wrapper)] *********************
+ok: [node-01]
+
+TASK [PHASE 8b — verify VG vg_piraeus] *****************************************
+ok: [node-01]
+
+TASK [PHASE 9 — lvcreate thin pool thin_piraeus (90 percent VG)] ***************
+ok: [node-01]
+
+TASK [PHASE 10 — LVM structural verification] **********************************
+ok: [node-01]
+
+TASK [PHASE 11 — Kubernetes storage unchanged] *********************************
+ok: [node-01]
+
+TASK [PHASE 12 — DRBD unchanged (no module loaded)] ****************************
+ok: [node-01]
+
+TASK [PHASE 13 — P1-P4 POST (nodes readyz)] ************************************
+ok: [node-01]
+
+TASK [PHASE 14 — final gate summary] *******************************************
+ok: [node-01] => {
+    "msg": "P5B destructive LVM thin storage preparation completed"
+}
+
+PLAY [P5B storage preparation (DESTRUCTIVE — AUTHORIZED)] **********************
+
+TASK [PHASE 0 — p5b_mode gate (destructive authorization)] *********************
+[WARNING]: Platform linux on host node-02 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-02]
+
+TASK [PHASE 1 — P1-P4 PRE (bond VLAN containerd kubelet)] **********************
+ok: [node-02]
+
+TASK [PHASE 1b — P1-P4 PRE (nodes readyz)] *************************************
+ok: [node-02 -> node-01(192.168.194.38)]
+
+TASK [PHASE 2 — composite resolver (exact unique, resolve paths)] **************
+ok: [node-02]
+
+TASK [PHASE 3 — protected-device inventory (everything except candidates)] *****
+ok: [node-02]
+
+TASK [PHASE 4 — fresh safety gate (composite re-resolve, fail-closed)] *********
+ok: [node-02]
+
+TASK [PHASE 4b — signature + ceph gate (wipefs blkid ceph)] ********************
+ok: [node-02]
+
+TASK [PHASE 5 — final pre-destruction fingerprints (exact 1 MiB)] **************
+ok: [node-02]
+
+TASK [PHASE 6 — aggregate destructive gate] ************************************
+ok: [node-02]
+
+TASK [PHASE 7 — pvcreate (destructive wrapper, re-resolve identity)] ***********
+ok: [node-02]
+
+TASK [PHASE 7b — verify PVs (structural JSON)] *********************************
+ok: [node-02]
+
+TASK [PHASE 8 — vgcreate vg_piraeus (destructive wrapper)] *********************
+ok: [node-02]
+
+TASK [PHASE 8b — verify VG vg_piraeus] *****************************************
+ok: [node-02]
+
+TASK [PHASE 9 — lvcreate thin pool thin_piraeus (90 percent VG)] ***************
+ok: [node-02]
+
+TASK [PHASE 10 — LVM structural verification] **********************************
+ok: [node-02]
+
+TASK [PHASE 11 — Kubernetes storage unchanged] *********************************
+ok: [node-02 -> node-01(192.168.194.38)]
+
+TASK [PHASE 12 — DRBD unchanged (no module loaded)] ****************************
+ok: [node-02]
+
+TASK [PHASE 13 — P1-P4 POST (nodes readyz)] ************************************
+ok: [node-02 -> node-01(192.168.194.38)]
+
+TASK [PHASE 14 — final gate summary] *******************************************
+ok: [node-02 -> node-01(192.168.194.38)] => {
+    "msg": "P5B destructive LVM thin storage preparation completed"
+}
+
+PLAY [P5B storage preparation (DESTRUCTIVE — AUTHORIZED)] **********************
+
+TASK [PHASE 0 — p5b_mode gate (destructive authorization)] *********************
+[WARNING]: Platform linux on host node-03 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-03]
+
+TASK [PHASE 1 — P1-P4 PRE (bond VLAN containerd kubelet)] **********************
+ok: [node-03]
+
+TASK [PHASE 1b — P1-P4 PRE (nodes readyz)] *************************************
+ok: [node-03 -> node-01(192.168.194.38)]
+
+TASK [PHASE 2 — composite resolver (exact unique, resolve paths)] **************
+ok: [node-03]
+
+TASK [PHASE 3 — protected-device inventory (everything except candidates)] *****
+ok: [node-03]
+
+TASK [PHASE 4 — fresh safety gate (composite re-resolve, fail-closed)] *********
+ok: [node-03]
+
+TASK [PHASE 4b — signature + ceph gate (wipefs blkid ceph)] ********************
+ok: [node-03]
+
+TASK [PHASE 5 — final pre-destruction fingerprints (exact 1 MiB)] **************
+ok: [node-03]
+
+TASK [PHASE 6 — aggregate destructive gate] ************************************
+ok: [node-03]
+
+TASK [PHASE 7 — pvcreate (destructive wrapper, re-resolve identity)] ***********
+ok: [node-03]
+
+TASK [PHASE 7b — verify PVs (structural JSON)] *********************************
+ok: [node-03]
+
+TASK [PHASE 8 — vgcreate vg_piraeus (destructive wrapper)] *********************
+ok: [node-03]
+
+TASK [PHASE 8b — verify VG vg_piraeus] *****************************************
+ok: [node-03]
+
+TASK [PHASE 9 — lvcreate thin pool thin_piraeus (90 percent VG)] ***************
+ok: [node-03]
+
+TASK [PHASE 10 — LVM structural verification] **********************************
+ok: [node-03]
+
+TASK [PHASE 11 — Kubernetes storage unchanged] *********************************
+ok: [node-03 -> node-01(192.168.194.38)]
+
+TASK [PHASE 12 — DRBD unchanged (no module loaded)] ****************************
+ok: [node-03]
+
+TASK [PHASE 13 — P1-P4 POST (nodes readyz)] ************************************
+ok: [node-03 -> node-01(192.168.194.38)]
+
+TASK [PHASE 14 — final gate summary] *******************************************
+ok: [node-03 -> node-01(192.168.194.38)] => {
+    "msg": "P5B destructive LVM thin storage preparation completed"
+}
+
+PLAY RECAP *********************************************************************
+node-01                    : ok=19   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-02                    : ok=19   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-03                    : ok=19   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+

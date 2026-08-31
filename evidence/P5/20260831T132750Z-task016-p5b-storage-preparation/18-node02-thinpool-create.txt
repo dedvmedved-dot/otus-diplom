@@ -1,0 +1,8 @@
+# TASK-016 — node-02 thin pool create
+
+Command class: lvcreate --type thin-pool -l 90%VG -n thin_piraeus vg_piraeus.
+
+Result (post-check lvs):
+  vg_piraeus thin_piraeus  twi-a-tz--  <6,29t  0,00
+
+THINPOOL_CREATE_OK (thin pool active, ~6,29t = 90%VG, data_percent 0.00).

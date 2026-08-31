@@ -1,0 +1,8 @@
+# TASK-016 — All Device Safety Gate (6/6)
+
+PHASE 4 (fail-closed): holders=0, not mounted, not swap, not root/boot/home
+ancestry, not LVM PV (before), not MD RAID, not DM backing.
+
+6/6 devices SAFE (playbook PHASE 4 SAFETY_2of2_OK на каждом узле).
+
+RESULT: PASS

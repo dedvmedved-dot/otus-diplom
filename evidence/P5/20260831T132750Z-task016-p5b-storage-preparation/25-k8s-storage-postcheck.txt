@@ -1,0 +1,5 @@
+=== K8S STORAGE POSTCHECK ===
+crd_linstor: 0
+csidriver: 0
+storageclass: 0
+pv: 0

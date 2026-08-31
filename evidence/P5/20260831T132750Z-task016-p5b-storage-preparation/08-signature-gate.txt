@@ -1,0 +1,12 @@
+# TASK-016 — Signature Gate (wipefs + blkid)
+
+PHASE 4b: wipefs -n clean + blkid -p no signature, на 6/6 устройствах.
+
+(Данные из P5A R4/R7 Connector-verified: 6/6 wipefs clean, 6/6 blkid clean,
+Ceph clear. R4 fingerprint до деструктива: first/last 1MiB все = 30e14955...)
+
+WIPEFS: CLEAN 6/6
+BLKID: CLEAN 6/6
+CEPH: CLEAR 6/6
+
+RESULT: PASS

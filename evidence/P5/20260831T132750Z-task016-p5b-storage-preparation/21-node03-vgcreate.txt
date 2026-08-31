@@ -1,0 +1,8 @@
+# TASK-016 — node-03 vgcreate
+
+Command class: vgcreate vg_piraeus /dev/sdb /dev/sdc.
+
+Result (post-check vgs):
+  vg_piraeus  <6,99t  <715,20g  2
+
+VGCREATE_OK (VG vg_piraeus, 2 PV, free >0).

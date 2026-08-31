@@ -1,0 +1,16 @@
+# TASK-016 — P5B Destructive LVM Thin Storage Preparation
+
+AUTHORIZATION: TASK-016, Chief Architect. Destructive storage preparation ONLY
+for the exact six authorized devices. No other disk.
+
+PURPOSE: manual host-side LVM Thin (vg_piraeus/thin_piraeus) so a future Operator
+binds to existing VG/thin pool and does NOT raw-device initialize.
+
+BOUNDARY (NOT performed): Piraeus install, DRBD 9.3.2 load/install, DRBD metadata,
+LINSTOR CRDs/resources, StorageClass/PV/PVC, P5C.
+
+BASELINE: ea62e11baa4a5a8a5938a418dea755a3eb82aa1f
+MODE: p5b_mode=authorized-destructive-storage-prep (only this value permits writes).
+
+LVM DESIGN (per node): 2 PV (whole disks) → VG vg_piraeus → thin pool thin_piraeus
+at 90%VG. No partitions/fs/mdraid/LUKS/multipath/striping.

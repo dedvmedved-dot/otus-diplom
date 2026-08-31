@@ -1,0 +1,4 @@
+=== PROTECTED DEVICE POSTCHECK ===
+sda3_vg=astra38644 sda3_in_vg_piraeus=0
+sda3_vg=astra39539 sda3_in_vg_piraeus=0
+sda3_vg=astra03718 sda3_in_vg_piraeus=0

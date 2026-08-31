@@ -1,0 +1,18 @@
+# TASK-016 — Forbidden Command Audit
+
+Source check (вручную выверено по playbook):
+
+pvcreate -ff / --force --force: 0 (использован plain pvcreate)
+wipefs -a: 0 (только wipefs -n read-only)
+blkdiscard: 0
+dd of=: 0
+partition writes: 0
+mkfs/mkswap: 0
+modprobe drbd / insmod / drbdadm create-md: 0
+Piraeus/LINSTOR install: 0
+Kubernetes storage mutation: 0
+
+DESTRUCTIVE COMMANDS: pvcreate (6 дисков), vgcreate (3), lvcreate thin-pool (3)
+— только разрешённые TASK-016.
+
+RESULT: PASS

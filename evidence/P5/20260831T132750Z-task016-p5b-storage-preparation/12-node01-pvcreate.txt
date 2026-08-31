@@ -1,0 +1,10 @@
+# TASK-016 — node-01 pvcreate
+
+Command class: pvcreate (composite re-resolved immediately before write).
+Targets: /dev/sdb (S5G0NC0T407845), /dev/sdc (S5G0NC0T407844).
+
+Result (post-check pvs):
+  /dev/sdb  vg_piraeus  3,49t
+  /dev/sdc  vg_piraeus  3,49t
+
+PVCREATE_OK (2/2 PV created, both in vg_piraeus).

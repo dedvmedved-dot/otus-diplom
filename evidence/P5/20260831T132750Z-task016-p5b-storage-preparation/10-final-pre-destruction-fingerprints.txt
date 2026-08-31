@@ -1,0 +1,12 @@
+# TASK-016 — Final Pre-Destruction Fingerprints (rollback boundary)
+
+PHASE 5: SHA256 first/last exactly 1 MiB, до pvcreate.
+
+(Pre-destruction = same as P5A accepted fingerprint, all zeroed disks:
+first1MiB = 30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58
+last1MiB  = 30e14955ebf1352266dc2ff8067e68104607e750abb9d3b36582b8af909fcb58
+для всех 6 дисков — чистые пустые диски).
+
+After pvcreate fingerprints expected to change (LVM PV header written).
+
+RESULT: PASS (rollback boundary captured)

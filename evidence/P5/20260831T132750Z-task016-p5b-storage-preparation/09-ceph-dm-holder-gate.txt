@@ -1,0 +1,10 @@
+# TASK-016 — Ceph/DM/Holder Gate
+
+PHASE 4 + 4b: holders=0, DM backing clear, Ceph clear.
+
+Ceph: pvs rc=0, 0 ceph-тегов, 0 OSD block/block.db/block.wal ссылок,
+ceph-volume UNAVAILABLE (R4 wipefs/blkid CLEAN Connector-verified).
+DM: кандидаты не в dmsetup deps (только sda3 OS-диск).
+Holders: 0 на 6/6.
+
+RESULT: PASS

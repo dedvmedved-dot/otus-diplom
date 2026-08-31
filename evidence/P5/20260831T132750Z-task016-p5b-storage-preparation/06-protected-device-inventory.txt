@@ -1,0 +1,13 @@
+# TASK-016 — Protected Device Inventory
+
+Все диски на 3 узлах. Авторизованы только 6 кандидатов (sdb+sdc на каждом).
+
+node-01: total_disks: OS-диск sda (447G, VG astra38644) + legacy 1.6T sdd-sdi
+         PROTECTED (не авторизованы). Авторизованы: sdb, sdc.
+node-02: аналогично (astra39539), авторизованы sdb, sdc.
+node-03: аналогично (astra03718), авторизованы sdb, sdc.
+
+OS-диск /dev/sda3 → VG astra* (protected, НЕ в vg_piraeus).
+PROTECTED TARGET HITS: 0 (ни один protected-диск не стал PV vg_piraeus).
+
+RESULT: PASS
