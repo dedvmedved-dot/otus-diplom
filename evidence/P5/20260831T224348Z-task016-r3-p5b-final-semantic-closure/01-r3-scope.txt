@@ -1,0 +1,16 @@
+# TASK-016-R3 — Scope
+
+MODE: READ-ONLY FINAL SEMANTIC CLOSURE. ZERO infrastructure mutation.
+
+ALLOWED:
+  ansible/playbooks/p5b-postverify.yml
+  evidence/P5/<RUN_ID>-task016-r3-p5b-final-semantic-closure/
+  (опционально docs/storage/P5B-*.md)
+
+READ-ONLY: p5b-storage-preparation.yml (tombstone), storage-p5b-authorized-devices.yaml,
+storage-p5-candidates.yaml, versions.lock, images.lock, ADR-003, inventory/hosts.yaml,
+historical evidence, P1-P4 artifacts.
+
+Forbidden: LVM create/remove/move/resize, wipefs write, blkdiscard, dd of=,
+partition writes, mkfs/mkswap, DRBD load/install/metadata/resource mutation,
+Piraeus install, kubectl apply/create/delete/patch, network mutation, reboot.

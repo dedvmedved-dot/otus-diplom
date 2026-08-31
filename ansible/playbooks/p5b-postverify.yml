@@ -1,14 +1,13 @@
 ---
 # p5b-postverify.yml
-# TASK-016-R2: READ-ONLY full closure verification (strict).
+# TASK-016-R3: READ-ONLY final semantic closure verification.
 #
-# Proves in order: P1 PRE, P2 PRE, P3 PRE, P4A PRE, P4B PRE,
-# COMPOSITE PV MAP, VG EXACT MEMBERSHIP, THIN POOL STRICT, PROTECTED DEVICE,
-# DRBD BOUNDARY, K8S STORAGE BOUNDARY, then P1 POST .. P4B POST.
+# Proves in order: P1 PRE, P2 PRE, P3 PRE (incl VIP owner), P4A PRE,
+# P4B PRE (fingerprint), storage proofs, P1..P4 POST (incl VIP + P4B fingerprint).
 #
-# NO mutation. NO destructive commands. All kubectl/etcd/lvm rc + JSON fail-closed.
+# NO mutation. All kubectl/etcd/lvm rc + JSON fail-closed.
 
-- name: "P5B post-destructive full read-only verification"
+- name: "P5B final semantic read-only verification"
   hosts: all
   gather_facts: false
   become: true
@@ -19,18 +18,21 @@
       node-01:
         vg: vg_piraeus
         thinpool: thin_piraeus
+        os_pv_vg: astra38644
         devices:
           - { serial: "S5G0NC0T407845", wwn: "0x5002538b724752b0" }
           - { serial: "S5G0NC0T407844", wwn: "0x5002538b724752a0" }
       node-02:
         vg: vg_piraeus
         thinpool: thin_piraeus
+        os_pv_vg: astra39539
         devices:
           - { serial: "S5G0NC0T407077", wwn: "0x5002538b724722b0" }
           - { serial: "S5G0NC0T407075", wwn: "0x5002538b72472290" }
       node-03:
         vg: vg_piraeus
         thinpool: thin_piraeus
+        os_pv_vg: astra03718
         devices:
           - { serial: "S5G0NC0T403246", wwn: "0x5002538b72453970" }
           - { serial: "S5G0NC0T403289", wwn: "0x5002538b72453c20" }
@@ -74,8 +76,18 @@
       register: p2pre
       changed_when: false
 
+    # ═══════════════ VIP owner per node (PRE) ═══════════════
+    - name: VIP-OWNER-PRE — local bond0.140 172.30.140.100/32 count (0 or 1)
+      ansible.builtin.shell:
+        cmd: |
+          c=$(ip -4 -o addr show dev bond0.140 2>/dev/null | grep -c '172.30.140.100/32' || true)
+          echo "vip_owner_local=$c"
+          [ "$c" = "0" ] || [ "$c" = "1" ] || { echo "VIP_LOCAL_BAD"; exit 1; }
+      register: vippre
+      changed_when: false
+
     # ═══════════════ P3 PRE ═══════════════
-    - name: P3 PRE — etcd JSON-aware full semantics (fail-closed rc+JSON)
+    - name: P3 PRE — etcd JSON + kube-vip JSON + readyz/livez + VIP aggregate
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
@@ -86,36 +98,50 @@
                   "--cacert=/etc/kubernetes/pki/etcd/ca.crt","--cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt",
                   "--key=/etc/kubernetes/pki/etcd/healthcheck-client.key"]
           ml = subprocess.run(base+["member","list","--write-out=json"], capture_output=True, text=True)
-          if ml.returncode != 0: print("P3_FAIL member_list rc"); sys.exit(1)
+          if ml.returncode != 0: print("P3_FAIL member_list"); sys.exit(1)
           members = json.loads(ml.stdout).get("members",[])
           mlearn = sum(1 for m in members if m.get("isLearner"))
           st = subprocess.run(base+["endpoint","status","--write-out=json"], capture_output=True, text=True)
-          if st.returncode != 0: print("P3_FAIL endpoint_status rc"); sys.exit(1)
+          if st.returncode != 0: print("P3_FAIL endpoint_status"); sys.exit(1)
           eps = json.loads(st.stdout)
           elearn = sum(1 for e in eps if e.get("Status",{}).get("isLearner"))
           leaders = set(str(e.get("Status",{}).get("leader")) for e in eps if e.get("Status",{}).get("leader"))
           leaders.discard("0")
           aep = sum(1 for e in eps if str(e.get("Status",{}).get("header",{}).get("member_id")) in leaders)
           h = subprocess.run(base+["endpoint","health"], capture_output=True, text=True)
-          if h.returncode != 0: print("P3_FAIL endpoint_health rc"); sys.exit(1)
+          if h.returncode != 0: print("P3_FAIL health"); sys.exit(1)
           healthy = h.stdout.count("is healthy")
-          kv = subprocess.run(KC+["get","pods","-n","kube-system"], capture_output=True, text=True)
-          if kv.returncode != 0: print("P3_FAIL kube-vip query rc"); sys.exit(1)
-          kvc = kv.stdout.count("kube-vip")
+          # structural kube-vip JSON-aware (static pods: no labels, owner Node)
+          kvo = subprocess.run(KC+["get","pods","-n","kube-system","-o","json"], capture_output=True, text=True)
+          if kvo.returncode != 0: print("P3_FAIL kube-vip query"); sys.exit(1)
+          kv_items = [p for p in json.loads(kvo.stdout).get("items",[]) if p.get("metadata",{}).get("name","").startswith("kube-vip-")]
+          kv_running = sum(1 for p in kv_items if p.get("status",{}).get("phase")=="Running")
           rz = subprocess.run(KC+["get","--raw=/readyz"], capture_output=True, text=True)
-          if rz.returncode != 0: print("P3_FAIL readyz rc"); sys.exit(1)
+          if rz.returncode != 0: print("P3_FAIL readyz"); sys.exit(1)
           rzok = rz.stdout.strip()
           livez = []
           for ip in ["172.30.140.101","172.30.140.102","172.30.140.103"]:
               r = subprocess.run(["curl","-sk","--max-time","5",f"https://{ip}:6443/livez"], capture_output=True, text=True)
               livez.append((r.returncode, r.stdout.strip()))
           ok_livez = sum(1 for rc,v in livez if rc==0 and v=="ok")
-          print(f"members={len(members)} mlearn={mlearn} endpoints={len(eps)} elearn={elearn} leaders={len(leaders)} aep={aep} health={healthy} kube-vip={kvc} readyz={rzok} livez={ok_livez}/3")
-          if len(members)!=3 or mlearn!=0 or len(eps)!=3 or elearn!=0 or len(leaders)!=1 or aep!=1 or healthy!=3 or kvc!=3 or rzok!="ok" or ok_livez!=3:
+          print(f"members={len(members)} mlearn={mlearn} endpoints={len(eps)} elearn={elearn} leaders={len(leaders)} aep={aep} health={healthy} kube-vip={len(kv_items)} running={kv_running} readyz={rzok} livez={ok_livez}/3")
+          if len(members)!=3 or mlearn!=0 or len(eps)!=3 or elearn!=0 or len(leaders)!=1 or aep!=1 or healthy!=3 or len(kv_items)!=3 or kv_running!=3 or rzok!="ok" or ok_livez!=3:
               print("P3_FAIL"); sys.exit(1)
           print("P3_PRE_OK")
           PYEOF
       register: p3pre
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══════════════ VIP aggregate (PRE) ═══════════════
+    - name: VIP-AGG-PRE — aggregate owner count == 1
+      ansible.builtin.shell:
+        cmd: |
+          total={{ groups['all'] | map('extract', hostvars, 'vippre') | select('defined') | map(attribute='stdout') | regex_replace('vip_owner_local=','') | map('int') | sum }}
+          echo "vip_owner_aggregate=$total"
+          [ "$total" = "1" ] || { echo "VIP_AGG_FAIL"; exit 1; }
+      register: vipaggpre
       changed_when: false
       run_once: true
       delegate_to: node-01
@@ -132,7 +158,6 @@
               if r.returncode != 0: print(f"P4A_FAIL {' '.join(a)}"); sys.exit(1)
               return json.loads(r.stdout)
           def ready_cond(obj):
-              # exactly one Ready condition, status True (no empty/dup false-pass)
               rcs = [c for c in obj.get("status",{}).get("conditions",[]) if c.get("type")=="Ready"]
               return len(rcs) == 1 and rcs[0].get("status") == "True"
           nodes = kget("get","nodes")
@@ -167,12 +192,12 @@
       run_once: true
       delegate_to: node-01
 
-    # ═══════════════ P4B PRE ═══════════════
-    - name: P4B PRE — validation ns NotFound + TASK-014 policies zero
+    # ═══════════════ P4B PRE (fingerprint) ═══════════════
+    - name: P4B PRE — validation ns NotFound + NetworkPolicy fingerprint
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
-          import json, subprocess, sys
+          import json, subprocess, sys, hashlib
           KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
           r = subprocess.run(KC+["get","namespace","p4b-netpol-validation","-o","json"], capture_output=True, text=True)
           if r.returncode == 0: print("P4B_FAIL ns exists"); sys.exit(1)
@@ -181,11 +206,23 @@
           np = subprocess.run(KC+["get","networkpolicy","-A","-o","json"], capture_output=True, text=True)
           if np.returncode != 0: print("P4B_FAIL np query"); sys.exit(1)
           items = json.loads(np.stdout).get("items",[])
-          # TASK-014/P4B policies: those in p4b-netpol-validation ns or kube-system/default
-          # that reference the P4B test selectors. Baseline = 0 total (accepted).
-          sys_policies = [i["metadata"]["name"] for i in items if i["metadata"].get("namespace") in ("kube-system","default")]
-          print(f"networkpolicy_total={len(items)} system_ns_policies={len(sys_policies)}")
-          if items: print("P4B_FAIL policies present"); sys.exit(1)
+          canon = []
+          for i in items:
+              meta = i.get("metadata",{})
+              spec_norm = json.dumps(i.get("spec",{}), sort_keys=True, separators=(",",":"))
+              canon.append({
+                  "ns": meta.get("namespace",""),
+                  "name": meta.get("name",""),
+                  "uid": meta.get("uid",""),
+                  "gen": meta.get("generation",0),
+                  "sha": hashlib.sha256(spec_norm.encode()).hexdigest(),
+              })
+          canon.sort(key=lambda x: (x["ns"], x["name"]))
+          fp = hashlib.sha256(json.dumps(canon, sort_keys=True).encode()).hexdigest()
+          open("/tmp/p4b_np_fingerprint_pre.txt","w").write(fp)
+          print(f"p4b_np_pre_total={len(items)} fingerprint={fp}")
+          for c in canon:
+              print(f"  {c['ns']}/{c['name']} uid={c['uid'][:8]} gen={c['gen']} sha={c['sha'][:16]}")
           print("P4B_PRE_OK")
           PYEOF
       register: p4bpre
@@ -284,14 +321,12 @@
           if len(found) != 1: print(f"THINPOOL_COUNT_FAIL n={len(found)}"); sys.exit(1)
           rec = found[0]
           attr = rec.get("lv_attr","")
-          dp_raw = rec.get("data_percent",""); mp_raw = rec.get("metadata_percent","")
           def num(v):
               import re as _re
-              v2 = v.replace(',','.')
-              m = _re.search(r'-?\d+(\.\d+)?', v2)
+              m = _re.search(r'-?\d+(\.\d+)?', v.replace(',','.'))
               return float(m.group(0)) if m else None
-          dp = num(dp_raw); mp = num(mp_raw)
-          print(f"{vg}/{tp} attr={attr} data_percent={dp_raw} metadata_percent={mp_raw} size={rec.get('lv_size')}")
+          dp = num(rec.get("data_percent","")); mp = num(rec.get("metadata_percent",""))
+          print(f"{vg}/{tp} attr={attr} data_percent={rec.get('data_percent')} metadata_percent={rec.get('metadata_percent')} size={rec.get('lv_size')}")
           if not attr.startswith("t"): print("THINPOOL_NOT_THIN"); sys.exit(1)
           if "a" not in attr: print("THINPOOL_NOT_ACTIVE"); sys.exit(1)
           if dp is None or mp is None: print("THINPOOL_NON_NUMERIC"); sys.exit(1)
@@ -302,15 +337,15 @@
       register: tp
       changed_when: false
 
-    # ═══════════════ PROTECTED DEVICE ═══════════════
-    - name: PROTECTED — non-candidate PVs not in vg_piraeus + sda3 VG check
+    # ═══════════════ PROTECTED + exact OS PV map ═══════════════
+    - name: PROTECTED-OS-PV — non-candidate not in vg + sda3 exact VG
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
           import json, subprocess, sys
           auth = {{ authorized_devices[inventory_hostname] | to_json }}
           model_want = "{{ model_want }}"; size_want = {{ size_want }}
-          vg = auth["vg"]
+          vg = auth["vg"]; os_vg = auth["os_pv_vg"]
           def resolve_now(dev):
               raw = subprocess.run(["lsblk","-J","-b","-o","KNAME,PATH,TYPE,SIZE,MODEL,SERIAL,WWN"], capture_output=True, text=True)
               if raw.returncode != 0: print("LSBLK_FAIL"); sys.exit(1)
@@ -321,33 +356,52 @@
           cand_paths = set(resolve_now(dev) for dev in auth["devices"])
           pvs = subprocess.run(["pvs","--reportformat","json"], capture_output=True, text=True)
           if pvs.returncode != 0: print("PVS_FAIL"); sys.exit(1)
-          hit = 0
+          pv_vg = {}
           for report in json.loads(pvs.stdout).get("report",[]):
               for rec in report.get("pv",[]):
-                  name = rec.get("pv_name")
-                  if name not in cand_paths and rec.get("vg_name") == vg:
-                      hit += 1
-                      print(f"PROTECTED_HIT {name} in {vg}")
+                  pv_vg[rec.get("pv_name")] = rec.get("vg_name")
+          # protected: non-candidate not in vg_piraeus
+          hit = 0
+          for name, v in pv_vg.items():
+              if name not in cand_paths and v == vg:
+                  hit += 1; print(f"PROTECTED_HIT {name} in {vg}")
           print(f"protected_devices_in_{vg}={hit}")
           if hit != 0: print("PROTECTED_FAIL"); sys.exit(1)
-          print("PROTECTED_OK")
+          # exact OS PV map: /dev/sda3 -> os_vg
+          sda3_vg = pv_vg.get("/dev/sda3")
+          print(f"/dev/sda3 -> {sda3_vg} (expected {os_vg})")
+          if sda3_vg != os_vg: print("OS_PV_MAP_FAIL"); sys.exit(1)
+          if sda3_vg == vg: print("OS_PV_IN_VG_PIRAEUS"); sys.exit(1)
+          print("PROTECTED_OS_PV_OK")
           PYEOF
       register: prot
       changed_when: false
 
-    # ═══════════════ DRBD BOUNDARY ═══════════════
-    - name: DRBD — module not loaded, no resources
+    # ═══════════════ DRBD module + resource state ═══════════════
+    - name: DRBD — module not loaded + no resources (structural)
       ansible.builtin.shell:
         cmd: |
           loaded=$(lsmod | grep -c '^drbd' || true)
-          echo "host=$(hostname) drbd_loaded=$loaded"
+          mod_absent=0
+          [ -e /sys/module/drbd ] && mod_absent=1 || mod_absent=0
+          proc_absent=0
+          [ -e /proc/drbd ] && proc_absent=1 || proc_absent=0
+          if command -v drbdadm >/dev/null 2>&1; then
+            drbd_res=$(drbdadm status 2>&1 || true)
+            echo "drbdadm=AVAILABLE status='$drbd_res'"
+            echo "$drbd_res" | grep -qi 'resource' && { echo "DRBD_RESOURCE_PRESENT"; exit 1; }
+          else
+            echo "drbdadm=UNAVAILABLE"
+          fi
+          echo "host=$(hostname) drbd_loaded=$loaded module_absent=$((1-mod_absent)) proc_absent=$((1-proc_absent))"
           [ "$loaded" = "0" ] || { echo "DRBD_LOADED"; exit 1; }
+          [ "$mod_absent" = "0" ] || { echo "DRBD_MODULE_PRESENT"; exit 1; }
           echo "DRBD_OK"
       register: drbd
       changed_when: false
 
-    # ═══════════════ K8S STORAGE BOUNDARY ═══════════════
-    - name: K8S-STORAGE — LINSTOR/Piraeus objects zero (fail-closed)
+    # ═══════════════ K8S storage semantic filter ═══════════════
+    - name: K8S-STORAGE-SEMANTIC — related objects only (linstor/piraeus/drbd/linbit)
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
@@ -357,13 +411,36 @@
               r = subprocess.run(KC+list(a)+["-o","json"], capture_output=True, text=True)
               if r.returncode != 0: print(f"KUBECTL_FAIL {' '.join(a)}"); sys.exit(1)
               return json.loads(r.stdout)
+          KW = ("linstor","piraeus","drbd","linbit")
+          def related(name):
+              return any(k in str(name).lower() for k in KW)
+          def rel_objs(items, name_fn, inspect_extra=lambda x: ""):
+              out = []
+              for i in items:
+                  nm = name_fn(i)
+                  extra = inspect_extra(i)
+                  if related(nm) or related(extra):
+                      out.append((nm, extra))
+              return out
           crd = kget("get","crd")
-          linstor_crds = [i["metadata"]["name"] for i in crd.get("items",[]) if any(k in i["metadata"]["name"].lower() for k in ("linstor","piraeus","drbd","linbit"))]
-          csi = kget("get","csidriver"); sc = kget("get","storageclass"); pv = kget("get","pv"); pvc = kget("get","pvc","-A")
-          print(f"linstor_crds={len(linstor_crds)} csidriver={len(csi.get('items',[]))} storageclass={len(sc.get('items',[]))} pv={len(pv.get('items',[]))} pvc={len(pvc.get('items',[]))}")
-          if linstor_crds or csi.get("items",[]) or sc.get("items",[]) or pv.get("items",[]) or pvc.get("items",[]):
-              print("K8S_STORAGE_MUTATED"); sys.exit(1)
-          print("K8S_STORAGE_CLEAN")
+          crd_rel = rel_objs(crd.get("items",[]), lambda i: i["metadata"]["name"])
+          csi = kget("get","csidriver")
+          csi_rel = rel_objs(csi.get("items",[]), lambda i: i["metadata"]["name"])
+          sc = kget("get","storageclass")
+          sc_rel = rel_objs(sc.get("items",[]), lambda i: i["metadata"]["name"], lambda i: (i.get("provisioner","") or "") )
+          pv = kget("get","pv")
+          pv_rel = rel_objs(pv.get("items",[]), lambda i: i["metadata"]["name"],
+                            lambda i: json.dumps({"sc": i.get("spec",{}).get("storageClassName",""), "csi": json.dumps(i.get("spec",{}).get("csi",{}))}))
+          pvc = kget("get","pvc","-A")
+          pvc_rel = rel_objs(pvc.get("items",[]), lambda i: i["metadata"]["name"],
+                             lambda i: json.dumps({"sc": i.get("spec",{}).get("storageClassName",""), "ns": i["metadata"]["namespace"]}))
+          print(f"related_crds={len(crd_rel)} related_csi={len(csi_rel)} related_sc={len(sc_rel)} related_pv={len(pv_rel)} related_pvc={len(pvc_rel)}")
+          print(f"unrelated_totals: crd={len(crd.get('items',[]))} csi={len(csi.get('items',[]))} sc={len(sc.get('items',[]))} pv={len(pv.get('items',[]))} pvc={len(pvc.get('items',[]))}")
+          for rel in crd_rel+csi_rel+sc_rel+pv_rel+pvc_rel:
+              print(f"RELATED: {rel}")
+          if crd_rel or csi_rel or sc_rel or pv_rel or pvc_rel:
+              print("K8S_RELATED_STORAGE_PRESENT"); sys.exit(1)
+          print("K8S_RELATED_STORAGE_CLEAN")
           PYEOF
       register: k8s
       changed_when: false
@@ -404,8 +481,18 @@
       register: p2post
       changed_when: false
 
+    # ═══════════════ VIP owner per node (POST) ═══════════════
+    - name: VIP-OWNER-POST — local bond0.140 172.30.140.100/32 count (0 or 1)
+      ansible.builtin.shell:
+        cmd: |
+          c=$(ip -4 -o addr show dev bond0.140 2>/dev/null | grep -c '172.30.140.100/32' || true)
+          echo "vip_owner_local=$c"
+          [ "$c" = "0" ] || [ "$c" = "1" ] || { echo "VIP_LOCAL_BAD"; exit 1; }
+      register: vippost
+      changed_when: false
+
     # ═══════════════ P3 POST ═══════════════
-    - name: P3 POST — etcd JSON-aware full semantics (fail-closed rc+JSON)
+    - name: P3 POST — etcd JSON + kube-vip JSON + readyz/livez
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
@@ -429,9 +516,10 @@
           h = subprocess.run(base+["endpoint","health"], capture_output=True, text=True)
           if h.returncode != 0: print("P3_FAIL"); sys.exit(1)
           healthy = h.stdout.count("is healthy")
-          kv = subprocess.run(KC+["get","pods","-n","kube-system"], capture_output=True, text=True)
-          if kv.returncode != 0: print("P3_FAIL"); sys.exit(1)
-          kvc = kv.stdout.count("kube-vip")
+          kvo = subprocess.run(KC+["get","pods","-n","kube-system","-o","json"], capture_output=True, text=True)
+          if kvo.returncode != 0: print("P3_FAIL"); sys.exit(1)
+          kv_items = [p for p in json.loads(kvo.stdout).get("items",[]) if p.get("metadata",{}).get("name","").startswith("kube-vip-")]
+          kv_running = sum(1 for p in kv_items if p.get("status",{}).get("phase")=="Running")
           rz = subprocess.run(KC+["get","--raw=/readyz"], capture_output=True, text=True)
           if rz.returncode != 0: print("P3_FAIL"); sys.exit(1)
           rzok = rz.stdout.strip()
@@ -440,12 +528,24 @@
               r = subprocess.run(["curl","-sk","--max-time","5",f"https://{ip}:6443/livez"], capture_output=True, text=True)
               livez.append((r.returncode, r.stdout.strip()))
           ok_livez = sum(1 for rc,v in livez if rc==0 and v=="ok")
-          print(f"members={len(members)} mlearn={mlearn} endpoints={len(eps)} elearn={elearn} leaders={len(leaders)} aep={aep} health={healthy} kube-vip={kvc} readyz={rzok} livez={ok_livez}/3")
-          if len(members)!=3 or mlearn!=0 or len(eps)!=3 or elearn!=0 or len(leaders)!=1 or aep!=1 or healthy!=3 or kvc!=3 or rzok!="ok" or ok_livez!=3:
+          print(f"members={len(members)} mlearn={mlearn} endpoints={len(eps)} elearn={elearn} leaders={len(leaders)} aep={aep} health={healthy} kube-vip={len(kv_items)} running={kv_running} readyz={rzok} livez={ok_livez}/3")
+          if len(members)!=3 or mlearn!=0 or len(eps)!=3 or elearn!=0 or len(leaders)!=1 or aep!=1 or healthy!=3 or len(kv_items)!=3 or kv_running!=3 or rzok!="ok" or ok_livez!=3:
               print("P3_FAIL"); sys.exit(1)
           print("P3_POST_OK")
           PYEOF
       register: p3post
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══════════════ VIP aggregate (POST) ═══════════════
+    - name: VIP-AGG-POST — aggregate owner count == 1
+      ansible.builtin.shell:
+        cmd: |
+          total={{ groups['all'] | map('extract', hostvars, 'vippost') | select('defined') | map(attribute='stdout') | regex_replace('vip_owner_local=','') | map('int') | sum }}
+          echo "vip_owner_aggregate=$total"
+          [ "$total" = "1" ] || { echo "VIP_AGG_FAIL"; exit 1; }
+      register: vipaggpost
       changed_when: false
       run_once: true
       delegate_to: node-01
@@ -496,12 +596,12 @@
       run_once: true
       delegate_to: node-01
 
-    # ═══════════════ P4B POST ═══════════════
-    - name: P4B POST — validation ns NotFound + TASK-014 policies zero
+    # ═══════════════ P4B POST (fingerprint) ═══════════════
+    - name: P4B POST — validation ns NotFound + NetworkPolicy fingerprint
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
-          import json, subprocess, sys
+          import json, subprocess, sys, hashlib
           KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
           r = subprocess.run(KC+["get","namespace","p4b-netpol-validation","-o","json"], capture_output=True, text=True)
           if r.returncode == 0: print("P4B_FAIL ns exists"); sys.exit(1)
@@ -510,9 +610,21 @@
           np = subprocess.run(KC+["get","networkpolicy","-A","-o","json"], capture_output=True, text=True)
           if np.returncode != 0: print("P4B_FAIL np query"); sys.exit(1)
           items = json.loads(np.stdout).get("items",[])
-          sys_policies = [i["metadata"]["name"] for i in items if i["metadata"].get("namespace") in ("kube-system","default")]
-          print(f"networkpolicy_total={len(items)} system_ns_policies={len(sys_policies)}")
-          if items: print("P4B_FAIL policies present"); sys.exit(1)
+          canon = []
+          for i in items:
+              meta = i.get("metadata",{})
+              spec_norm = json.dumps(i.get("spec",{}), sort_keys=True, separators=(",",":"))
+              canon.append({
+                  "ns": meta.get("namespace",""),
+                  "name": meta.get("name",""),
+                  "uid": meta.get("uid",""),
+                  "gen": meta.get("generation",0),
+                  "sha": hashlib.sha256(spec_norm.encode()).hexdigest(),
+              })
+          canon.sort(key=lambda x: (x["ns"], x["name"]))
+          fp = hashlib.sha256(json.dumps(canon, sort_keys=True).encode()).hexdigest()
+          open("/tmp/p4b_np_fingerprint_post.txt","w").write(fp)
+          print(f"p4b_np_post_total={len(items)} fingerprint={fp}")
           print("P4B_POST_OK")
           PYEOF
       register: p4bpost
@@ -520,9 +632,24 @@
       run_once: true
       delegate_to: node-01
 
+    # ═══════════════ P4B fingerprint compare ═══════════════
+    - name: P4B-FP-COMPARE — PRE fingerprint == POST fingerprint
+      ansible.builtin.shell:
+        cmd: |
+          a=$(cat /tmp/p4b_np_fingerprint_pre.txt 2>/dev/null)
+          b=$(cat /tmp/p4b_np_fingerprint_post.txt 2>/dev/null)
+          echo "fp_pre=$a"
+          echo "fp_post=$b"
+          [ -n "$a" ] && [ -n "$b" ] && [ "$a" = "$b" ] || { echo "P4B_FP_MISMATCH"; exit 1; }
+          echo "P4B_FP_UNCHANGED"
+      register: p4bfp
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
     # ═══════════════ FINAL ═══════════════
-    - name: FINAL — postverify full read-only closure gate
+    - name: FINAL — postverify semantic closure gate
       ansible.builtin.debug:
-        msg: "P5B full read-only closure verification completed"
+        msg: "P5B final semantic read-only closure completed"
       run_once: true
       delegate_to: node-01

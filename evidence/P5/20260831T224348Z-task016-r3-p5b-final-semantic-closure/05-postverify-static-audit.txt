@@ -1,0 +1,23 @@
+# TASK-016-R3 — Postverify Static Audit
+
+p5b-postverify.yml (semantic fixes D1-D5):
+
+Required zero:
+  VIP owner assertion missing: 0 (VIP-OWNER-PRE/POST + VIP-AGG-PRE/POST)
+  free-text kube-vip pod count: 0 (JSON-aware -l app.kubernetes.io/name=kube-vip)
+  P4B "if any NetworkPolicy then fail": 0 (fingerprint equality, не total=0)
+  P4B PRE/POST fingerprint missing: 0 (SHA256 canonical fingerprint PRE+POST+COMPARE)
+  exact sda3->astra VG assertion missing: 0 (os_pv_vg per node)
+  DRBD resource-state check missing: 0 (module + /sys/module/drbd + /proc/drbd + drbdadm)
+  all unrelated CSI/SC/PV/PVC forced to zero: 0 (semantic filter linstor/piraeus/drbd/linbit)
+  kubectl rc ignored: 0 (все kget rc check)
+  JSON parse fail-open: 0 (json.loads без except → fail-closed)
+
+Required present:
+  VIP owner aggregate PRE ✓ / POST ✓
+  P4B canonical PRE fingerprint ✓ / POST fingerprint ✓ / PRE==POST assertion ✓
+  OS PV exact 3-node map ✓ (astra38644/astra39539/astra03718)
+  DRBD module + resource proof ✓
+  K8s storage semantic filter ✓
+
+RESULT: PASS

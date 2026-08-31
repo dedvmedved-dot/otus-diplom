@@ -1,0 +1,9 @@
+# TASK-016-R3 — R2 Connector Defects
+
+D1 — VIP owner invariant не проверяется (172.30.140.100/32 count == 1).
+D2 — P4B требует все NetworkPolicy=0, противоречит accepted TASK-014 (pre-existing
+     preserved). Нужен PRE/POST fingerprint equality.
+D3 — protected OS PV exact mapping не asserted (sda3 -> astra* per node).
+D4 — DRBD resource state не проверяется (только module load).
+D5 — K8s storage check шире инварианта (fail на любой CSI/SC/PV/PVC).
+     Нужен semantic filter (linstor/piraeus/drbd/linbit only).

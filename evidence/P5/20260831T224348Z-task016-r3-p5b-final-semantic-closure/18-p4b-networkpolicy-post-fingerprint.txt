@@ -1,0 +1,2 @@
+=== P4B NETWORKPOLICY FINGERPRINT ===
+ns_NotFound=1 networkpolicy_total=0

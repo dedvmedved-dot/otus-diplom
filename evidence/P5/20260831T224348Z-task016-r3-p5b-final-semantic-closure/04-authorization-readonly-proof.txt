@@ -1,0 +1,5 @@
+  architect_authorized: false
+  consumed: true
+  consumed_by_commit: efdd3b1831208ccee810d392bbb3ce690b2104b5
+  reusable: false
+  state: CONSUMED_CLOSED

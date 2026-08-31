@@ -1,0 +1,7 @@
+=== K8S STORAGE SEMANTIC ===
+related_crds: 0
+related_csi: 0
+related_sc: 0
+related_pv: 0
+related_pvc: 0
+unrelated_totals: crd=23 csi=0 sc=0 pv=0 pvc=0

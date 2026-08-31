@@ -1,0 +1,13 @@
+# TASK-016-R3 — DRBD Module + Resource State
+
+Read-only structural proof (per node):
+
+node-01/02/03:
+  /sys/module/drbd: absent
+  /proc/drbd: absent
+  lsmod drbd count: 0
+  drbdadm: UNAVAILABLE
+
+DRBD module NOT loaded, no configured/active DRBD resources.
+
+RESULT: PASS

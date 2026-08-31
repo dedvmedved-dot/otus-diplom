@@ -1,0 +1,113 @@
+
+PLAY [P5B final semantic read-only verification] *******************************
+
+TASK [P1 PRE — bond slaves + exact VLAN + default route] ***********************
+[WARNING]: Platform linux on host node-01 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-01]
+[WARNING]: Platform linux on host node-02 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-02]
+[WARNING]: Platform linux on host node-03 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-03]
+
+TASK [P2 PRE — containerd + kubelet + swap] ************************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [VIP-OWNER-PRE — local bond0.140 172.30.140.100/32 count (0 or 1)] ********
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [P3 PRE — etcd JSON + kube-vip JSON + readyz/livez + VIP aggregate] *******
+ok: [node-01]
+
+TASK [VIP-AGG-PRE — aggregate owner count == 1] ********************************
+ok: [node-01]
+
+TASK [P4A PRE — Nodes/calico/CoreDNS/IPPool/BGP/autodetect (exact Ready)] ******
+ok: [node-01]
+
+TASK [P4B PRE — validation ns NotFound + NetworkPolicy fingerprint] ************
+ok: [node-01]
+
+TASK [COMPOSITE-PV-MAP — composite resolver + PV membership (6/6)] *************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [VG-MEMBERSHIP — actual PV set == expected PV set (exact)] ****************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [THINPOOL-STRICT — exactly one, thin, active, numeric percents] ***********
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [PROTECTED-OS-PV — non-candidate not in vg + sda3 exact VG] ***************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [DRBD — module not loaded + no resources (structural)] ********************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [K8S-STORAGE-SEMANTIC — related objects only (linstor/piraeus/drbd/linbit)] ***
+ok: [node-01]
+
+TASK [P1 POST — bond slaves + exact VLAN + default route] **********************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [P2 POST — containerd + kubelet + swap] ***********************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [VIP-OWNER-POST — local bond0.140 172.30.140.100/32 count (0 or 1)] *******
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [P3 POST — etcd JSON + kube-vip JSON + readyz/livez] **********************
+ok: [node-01]
+
+TASK [VIP-AGG-POST — aggregate owner count == 1] *******************************
+ok: [node-01]
+
+TASK [P4A POST — Nodes/calico/CoreDNS/IPPool/BGP/autodetect (exact Ready)] *****
+ok: [node-01]
+
+TASK [P4B POST — validation ns NotFound + NetworkPolicy fingerprint] ***********
+ok: [node-01]
+
+TASK [P4B-FP-COMPARE — PRE fingerprint == POST fingerprint] ********************
+ok: [node-01]
+
+TASK [FINAL — postverify semantic closure gate] ********************************
+ok: [node-01] => {
+    "msg": "P5B final semantic read-only closure completed"
+}
+
+PLAY RECAP *********************************************************************
+node-01                    : ok=22   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-02                    : ok=11   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-03                    : ok=11   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+

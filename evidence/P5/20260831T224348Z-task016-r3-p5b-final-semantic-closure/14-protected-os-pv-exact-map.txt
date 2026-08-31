@@ -1,0 +1,11 @@
+# TASK-016-R3 — Protected OS PV Exact Map
+
+Structural pvs --reportformat json (exact mapping):
+
+node-01: /dev/sda3 -> astra38644 (expected astra38644) ✓, NOT in vg_piraeus ✓
+node-02: /dev/sda3 -> astra39539 (expected astra39539) ✓, NOT in vg_piraeus ✓
+node-03: /dev/sda3 -> astra03718 (expected astra03718) ✓, NOT in vg_piraeus ✓
+
+Non-candidate PV paths (sda3) not in vg_piraeus: PROTECTED DEVICE HITS = 0.
+
+OS PV EXACT MAP: 3/3 PASS.

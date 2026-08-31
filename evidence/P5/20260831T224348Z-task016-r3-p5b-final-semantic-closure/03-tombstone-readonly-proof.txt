@@ -1,0 +1,9 @@
+# TASK-016-R3 — Tombstone Readonly Proof
+
+p5b-storage-preparation.yml остаётся tombstoned (R2), НЕ изменяется в R3.
+
+Подтверждение: grep destructive-команд → только комментарии "NO executable ...",
+нет реальных вызовов pvcreate/vgcreate/lvcreate. Единственная задача —
+ansible.builtin.fail с AUTHORIZATION_CONSUMED.
+
+RESULT: PASS (tombstone preserved)

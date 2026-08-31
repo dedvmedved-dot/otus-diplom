@@ -1,0 +1,22 @@
+# TASK-016-R3 — Forbidden Command Audit
+
+R3 READ-ONLY. Executed infrastructure mutation = 0.
+
+Required zero (source + execution check):
+  pvcreate/vgcreate/lvcreate: 0
+  all LVM destructive/resize: 0
+  wipefs write: 0
+  blkdiscard: 0
+  dd of=: 0
+  partition write: 0
+  mkfs/mkswap: 0
+  modprobe/insmod/rmmod drbd: 0
+  drbdadm create-md: 0
+  drbdsetup mutation: 0
+  Piraeus/LINSTOR install: 0
+  kubectl apply/create/delete/patch: 0
+
+p5b-postverify.yml содержит только read-only query (lsblk/pvs/vgs/lvs/kubectl get/
+ip addr/lsmod/drbdadm status). p5b-storage-preparation.yml — tombstone (не менялся).
+
+RESULT: PASS

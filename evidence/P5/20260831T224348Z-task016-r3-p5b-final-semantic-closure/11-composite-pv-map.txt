@@ -1,0 +1,10 @@
+=== COMPOSITE PV MAP ===
+  /dev/sda3  astra38644 <445,40g
+  /dev/sdb   vg_piraeus    3,49t
+  /dev/sdc   vg_piraeus    3,49t
+  /dev/sda3  astra39539 <445,40g
+  /dev/sdb   vg_piraeus    3,49t
+  /dev/sdc   vg_piraeus    3,49t
+  /dev/sda3  astra03718 <445,40g
+  /dev/sdb   vg_piraeus    3,49t
+  /dev/sdc   vg_piraeus    3,49t
