@@ -1,0 +1,25 @@
+# TASK-016-R1 — Forbidden Command Audit
+
+R1 is READ-ONLY. Source check (вручную выверено):
+
+pvcreate: 0
+vgcreate: 0
+lvcreate: 0
+pvremove: 0
+vgremove: 0
+lvremove: 0
+pvmove: 0
+vgreduce/vgextend: 0
+lvextend/lvreduce/lvconvert: 0
+wipefs write: 0
+blkdiscard: 0
+dd of=: 0
+mkfs/mkswap: 0
+partition write: 0
+DRBD load/metadata: 0
+Piraeus/LINSTOR install: 0
+K8s storage mutation: 0
+
+INFRASTRUCTURE MUTATION IN R1: 0
+
+RESULT: PASS

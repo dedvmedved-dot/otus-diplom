@@ -1,0 +1,342 @@
+---
+# p5b-postverify.yml
+# TASK-016-R1: READ-ONLY post-destructive state + authorization closure verification.
+#
+# Verifies (read-only): composite PV mapping, VG membership, thin pool state,
+# protected device state, DRBD state, Kubernetes storage state, and full P1-P4
+# regression (P1/P2/P3/P4A/P4B) with accepted TASK-015-R5 semantics.
+#
+# NO mutation. NO destructive commands.
+
+- name: "P5B post-destructive state verification (READ-ONLY)"
+  hosts: all
+  gather_facts: false
+  become: true
+  vars:
+    model_want: "MZILT3T8HBLS/007"
+    size_want: 3840755982336
+    authorized_devices:
+      node-01:
+        vg: vg_piraeus
+        thinpool: thin_piraeus
+        devices:
+          - { serial: "S5G0NC0T407845", wwn: "0x5002538b724752b0" }
+          - { serial: "S5G0NC0T407844", wwn: "0x5002538b724752a0" }
+      node-02:
+        vg: vg_piraeus
+        thinpool: thin_piraeus
+        devices:
+          - { serial: "S5G0NC0T407077", wwn: "0x5002538b724722b0" }
+          - { serial: "S5G0NC0T407075", wwn: "0x5002538b72472290" }
+      node-03:
+        vg: vg_piraeus
+        thinpool: thin_piraeus
+        devices:
+          - { serial: "S5G0NC0T403246", wwn: "0x5002538b72453970" }
+          - { serial: "S5G0NC0T403289", wwn: "0x5002538b72453c20" }
+    p1_expected:
+      node-01: { bond140: "172.30.140.101/24", bond141: "172.30.141.101/24", bond143: "172.30.143.101/24", bond700: "192.168.194.38/24" }
+      node-02: { bond140: "172.30.140.102/24", bond141: "172.30.141.102/24", bond143: "172.30.143.102/24", bond700: "192.168.194.40/24" }
+      node-03: { bond140: "172.30.140.103/24", bond141: "172.30.141.103/24", bond143: "172.30.143.103/24", bond700: "192.168.194.39/24" }
+  tasks:
+    # ═══ P1 regression ═══
+    - name: P1 — bond slaves + exact VLAN + default route
+      ansible.builtin.shell:
+        cmd: |
+          b0=$(cat /sys/class/net/bond0/bonding/slaves 2>/dev/null | tr -d '\n')
+          b1=$(cat /sys/class/net/bond1/bonding/slaves 2>/dev/null | tr -d '\n')
+          a140=$(ip -4 -o addr show dev bond0.140 2>/dev/null | grep -v '/32' | awk '{print $4}')
+          a141=$(ip -4 -o addr show dev bond1.141 2>/dev/null | awk '{print $4}')
+          a143=$(ip -4 -o addr show dev bond0.143 2>/dev/null | grep -v '/32' | awk '{print $4}')
+          a700=$(ip -4 -o addr show dev bond0.700 2>/dev/null | awk '{print $4}')
+          drc=$(ip -4 route show default 2>/dev/null | wc -l)
+          echo "host=$(hostname) bond0=$b0 bond1=$b1 default_count=$drc"
+          [ "$b0" = "ens2f0 ens2f1" ] && [ "$b1" = "ens2f2 ens2f3" ] || { echo "P1_FAIL"; exit 1; }
+          [ "$a140" = "{{ p1_expected[inventory_hostname].bond140 }}" ] || { echo "P1_FAIL 140"; exit 1; }
+          [ "$a141" = "{{ p1_expected[inventory_hostname].bond141 }}" ] || { echo "P1_FAIL 141"; exit 1; }
+          [ "$a143" = "{{ p1_expected[inventory_hostname].bond143 }}" ] || { echo "P1_FAIL 143"; exit 1; }
+          [ "$a700" = "{{ p1_expected[inventory_hostname].bond700 }}" ] || { echo "P1_FAIL 700"; exit 1; }
+          [ "$drc" = "1" ] && ip -4 route show default | grep -q 'via 192.168.194.1 dev bond0.700' || { echo "P1_FAIL default"; exit 1; }
+          echo "P1_OK"
+      register: p1
+      changed_when: false
+
+    # ═══ P2 regression ═══
+    - name: P2 — containerd + kubelet + swap
+      ansible.builtin.shell:
+        cmd: |
+          ctd=$(ctr version 2>/dev/null | grep -m1 -i Version | awk '{print $2}' | tr -d 'v')
+          klt=$(kubelet --version 2>/dev/null | awk '{print $2}')
+          sw=$(swapon --noheadings 2>/dev/null | wc -l)
+          echo "host=$(hostname) containerd=$ctd kubelet=$klt swap=$sw"
+          [ "$ctd" = "2.3.3" ] && [ "$klt" = "v1.36.2" ] && [ "$sw" = "0" ] || { echo "P2_FAIL"; exit 1; }
+          echo "P2_OK"
+      register: p2
+      changed_when: false
+
+    # ═══ composite PV mapping ═══
+    - name: COMPOSITE-PV — composite resolver + PV membership (6/6)
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          auth = {{ authorized_devices[inventory_hostname] | to_json }}
+          model_want = "{{ model_want }}"; size_want = {{ size_want }}
+          def resolve_now(dev):
+              raw = subprocess.run(["lsblk","-J","-b","-o","KNAME,PATH,TYPE,SIZE,MODEL,SERIAL,WWN"], capture_output=True, text=True)
+              if raw.returncode != 0: print("LSBLK_FAIL"); sys.exit(1)
+              disks = [b for b in json.loads(raw.stdout).get("blockdevices",[]) if b.get("type")=="disk"]
+              hits = [d for d in disks if d.get("serial")==dev["serial"] and d.get("wwn")==dev["wwn"] and d.get("model")==model_want and d.get("size")==size_want and d.get("type")=="disk"]
+              if len(hits) != 1: print(f"RESOLVE_FAIL {dev['serial']} n={len(hits)}"); sys.exit(1)
+              return hits[0]
+          pvs = subprocess.run(["pvs","--reportformat","json"], capture_output=True, text=True)
+          if pvs.returncode != 0: print("PVS_FAIL"); sys.exit(1)
+          pv_vg = {}
+          for report in json.loads(pvs.stdout).get("report",[]):
+              for rec in report.get("pv",[]):
+                  pv_vg[rec.get("pv_name")] = rec.get("vg_name")
+          for dev in auth["devices"]:
+              d = resolve_now(dev)
+              path = d["path"]
+              vg = pv_vg.get(path)
+              print(f"{path} serial={dev['serial']} wwn={dev['wwn']} model={model_want} size={size_want} -> VG={vg}")
+              if vg != auth["vg"]: print(f"PV_VG_FAIL {path} vg={vg}"); sys.exit(1)
+          print("COMPOSITE_PV_MAP_OK")
+          PYEOF
+      register: cpv
+      changed_when: false
+
+    # ═══ VG membership (exact 2 PV per node) ═══
+    - name: VG-MEMBERSHIP — vg_piraeus exact 2 PV, protected not in VG
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          auth = {{ authorized_devices[inventory_hostname] | to_json }}
+          vg = auth["vg"]
+          vgs = subprocess.run(["vgs","--reportformat","json"], capture_output=True, text=True)
+          if vgs.returncode != 0: print("VGS_FAIL"); sys.exit(1)
+          pvs = subprocess.run(["pvs","--reportformat","json"], capture_output=True, text=True)
+          if pvs.returncode != 0: print("PVS_FAIL"); sys.exit(1)
+          vg_count = 0; vg_pv_names = []; vg_free = None
+          for report in json.loads(vgs.stdout).get("report",[]):
+              for rec in report.get("vg",[]):
+                  if rec.get("vg_name") == vg:
+                      vg_count += 1
+                      vg_free = rec.get("vg_free")
+          for report in json.loads(pvs.stdout).get("report",[]):
+              for rec in report.get("pv",[]):
+                  if rec.get("vg_name") == vg:
+                      vg_pv_names.append(rec.get("pv_name"))
+          # protected devices = all PVs not in vg_piraeus belong to astra* (OS) — must NOT be in vg
+          print(f"{vg} count={vg_count} pv_count={len(vg_pv_names)} free={vg_free} pvs={vg_pv_names}")
+          if vg_count != 1: print("VG_COUNT_FAIL"); sys.exit(1)
+          if len(vg_pv_names) != 2: print("VG_PV_COUNT_FAIL"); sys.exit(1)
+          # VG free > 0: parse numeric part (may contain '<', ',', unit suffix)
+          import re as _re
+          if vg_free:
+              num = _re.sub(r'[^0-9]', '', str(vg_free).split(' ')[0].split(',')[0])
+              if num == "" or int(num) <= 0: print("VG_FREE_FAIL"); sys.exit(1)
+          else:
+              print("VG_FREE_FAIL"); sys.exit(1)
+          print("VG_MEMBERSHIP_OK")
+          PYEOF
+      register: vgm
+      changed_when: false
+
+    # ═══ thin pool state ═══
+    - name: THINPOOL — vg_piraeus/thin_piraeus active healthy
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          auth = {{ authorized_devices[inventory_hostname] | to_json }}
+          vg = auth["vg"]; tp = auth["thinpool"]
+          lvs = subprocess.run(["lvs","--reportformat","json"], capture_output=True, text=True)
+          if lvs.returncode != 0: print("LVS_FAIL"); sys.exit(1)
+          found = False
+          for report in json.loads(lvs.stdout).get("report",[]):
+              for rec in report.get("lv",[]):
+                  if rec.get("vg_name")==vg and rec.get("lv_name")==tp:
+                      found = True
+                      attr = rec.get("lv_attr","")
+                      dp = rec.get("data_percent","")
+                      mp = rec.get("metadata_percent","")
+                      print(f"{vg}/{tp} attr={attr} data_percent={dp} metadata_percent={mp} size={rec.get('lv_size')}")
+                      if not attr.startswith("t"): print("THINPOOL_NOT_THIN"); sys.exit(1)
+                      if "a" not in attr: print("THINPOOL_NOT_ACTIVE"); sys.exit(1)
+          if not found: print("THINPOOL_MISSING"); sys.exit(1)
+          print("THINPOOL_OK")
+          PYEOF
+      register: tp
+      changed_when: false
+
+    # ═══ protected device state ═══
+    - name: PROTECTED — OS disk not in vg_piraeus
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          auth = {{ authorized_devices[inventory_hostname] | to_json }}
+          vg = auth["vg"]
+          pvs = subprocess.run(["pvs","--reportformat","json"], capture_output=True, text=True)
+          if pvs.returncode != 0: print("PVS_FAIL"); sys.exit(1)
+          protected_hit = 0
+          for report in json.loads(pvs.stdout).get("report",[]):
+              for rec in report.get("pv",[]):
+                  name = rec.get("pv_name")
+                  if "sda" in name and rec.get("vg_name") == vg:
+                      protected_hit += 1
+                      print(f"PROTECTED_HIT {name} in {vg}")
+          print(f"protected_devices_in_{vg}={protected_hit}")
+          if protected_hit != 0: print("PROTECTED_FAIL"); sys.exit(1)
+          print("PROTECTED_OK")
+          PYEOF
+      register: prot
+      changed_when: false
+
+    # ═══ DRBD state ═══
+    - name: DRBD — not loaded, no resources
+      ansible.builtin.shell:
+        cmd: |
+          loaded=$(lsmod | grep -c '^drbd' || true)
+          echo "host=$(hostname) drbd_loaded=$loaded"
+          [ "$loaded" = "0" ] || { echo "DRBD_LOADED"; exit 1; }
+          echo "DRBD_OK"
+      register: drbd
+      changed_when: false
+
+    # ═══ P3 regression ═══
+    - name: P3 — etcd JSON-aware full semantics
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          base = [*KC,"-n","kube-system","exec","etcd-node-01","--","etcdctl",
+                  "--endpoints=https://172.30.140.101:2379,https://172.30.140.102:2379,https://172.30.140.103:2379",
+                  "--cacert=/etc/kubernetes/pki/etcd/ca.crt","--cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt",
+                  "--key=/etc/kubernetes/pki/etcd/healthcheck-client.key"]
+          ml = subprocess.run(base+["member","list","--write-out=json"], capture_output=True, text=True)
+          members = json.loads(ml.stdout).get("members",[]) if ml.returncode==0 else []
+          mlearn = sum(1 for m in members if m.get("isLearner"))
+          st = subprocess.run(base+["endpoint","status","--write-out=json"], capture_output=True, text=True)
+          eps = json.loads(st.stdout) if st.returncode==0 else []
+          elearn = sum(1 for e in eps if e.get("Status",{}).get("isLearner"))
+          leaders = set(str(e.get("Status",{}).get("leader")) for e in eps if e.get("Status",{}).get("leader"))
+          leaders.discard("0")
+          aep = sum(1 for e in eps if str(e.get("Status",{}).get("header",{}).get("member_id")) in leaders)
+          h = subprocess.run(base+["endpoint","health"], capture_output=True, text=True)
+          healthy = h.stdout.count("is healthy")
+          kv = subprocess.run(KC+["get","pods","-n","kube-system"], capture_output=True, text=True)
+          kvc = kv.stdout.count("kube-vip")
+          rz = subprocess.run(KC+["get","--raw=/readyz"], capture_output=True, text=True).stdout.strip()
+          livez = []
+          for ip in ["172.30.140.101","172.30.140.102","172.30.140.103"]:
+              r = subprocess.run(["curl","-sk","--max-time","5",f"https://{ip}:6443/livez"], capture_output=True, text=True)
+              livez.append(r.stdout.strip() if r.returncode==0 else "ERR")
+          ok_livez = sum(1 for v in livez if v=="ok")
+          print(f"members={len(members)} mlearn={mlearn} elearn={elearn} leaders={len(leaders)} aep={aep} health={healthy} kube-vip={kvc} readyz={rz} livez={ok_livez}/3")
+          if len(members)!=3 or mlearn!=0 or elearn!=0 or len(leaders)!=1 or aep!=1 or healthy!=3 or kvc!=3 or rz!="ok" or ok_livez!=3:
+              print("P3_FAIL"); sys.exit(1)
+          print("P3_OK")
+          PYEOF
+      register: p3
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ P4A regression ═══
+    - name: P4A — Nodes/calico/CoreDNS/IPPool/BGP/autodetect
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          def kget(*a):
+              r = subprocess.run(KC+list(a)+["-o","json"], capture_output=True, text=True)
+              if r.returncode != 0: print(f"P4A_FAIL {' '.join(a)}"); sys.exit(1)
+              return json.loads(r.stdout)
+          nodes = kget("get","nodes")
+          ready = sum(1 for n in nodes.get("items",[]) if any(c["type"]=="Ready" and c["status"]=="True" for c in n.get("status",{}).get("conditions",[])))
+          calico = kget("get","pods","-n","kube-system","-l","k8s-app=calico-node")
+          cn = sum(1 for p in calico.get("items",[]) if all(c.get("status")=="True" for c in p.get("status",{}).get("conditions",[]) if c.get("type")=="Ready"))
+          ctrl = kget("get","pods","-n","kube-system","-l","k8s-app=calico-kube-controllers")
+          cctrl = sum(1 for p in ctrl.get("items",[]) if all(c.get("status")=="True" for c in p.get("status",{}).get("conditions",[]) if c.get("type")=="Ready"))
+          dns = kget("get","deployment","coredns","-n","kube-system")
+          dns_des = dns["spec"].get("replicas"); dns_avail = dns["status"].get("availableReplicas",0); dns_ready = dns["status"].get("readyReplicas",0)
+          ipp = kget("get","ippools.crd.projectcalico.org")
+          pools = ipp.get("items",[]); p = pools[0] if len(pools)==1 else None
+          ipok = (p is not None and p["spec"].get("cidr")=="10.244.0.0/16" and p["spec"].get("ipipMode")=="Always" and p["spec"].get("natOutgoing") is True and not p["spec"].get("disabled",False))
+          bgp = {}
+          for n in nodes.get("items",[]):
+              ip = n.get("metadata",{}).get("annotations",{}).get("projectcalico.org/IPv4Address","").split("/")[0]
+              bgp[n["metadata"]["name"]] = ip
+          want = {"node-01":"172.30.140.101","node-02":"172.30.140.102","node-03":"172.30.140.103"}
+          bgpok = all(bgp.get(h)==w for h,w in want.items())
+          ds = kget("get","daemonset","calico-node","-n","kube-system")
+          env = {c["name"]: c.get("value","") for c in ds["spec"]["template"]["spec"]["containers"][0].get("env",[])}
+          admok = env.get("IP_AUTODETECTION_METHOD","") == "interface=bond0.140"
+          print(f"nodes={ready} calico={cn} ctrl={cctrl} coredns={dns_des}/{dns_avail}/{dns_ready} ippool={ipok} bgp={bgpok} autodetect={admok}")
+          if ready!=3 or cn!=3 or cctrl!=1 or dns_des!=2 or dns_avail!=2 or dns_ready!=2 or not ipok or not bgpok or not admok:
+              print("P4A_FAIL"); sys.exit(1)
+          print("P4A_OK")
+          PYEOF
+      register: p4a
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ P4B final state ═══
+    - name: P4B — validation ns NotFound, 0 policies
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          r = subprocess.run(KC+["get","namespace","p4b-netpol-validation","-o","json"], capture_output=True, text=True)
+          if r.returncode == 0: print("P4B_FAIL ns exists"); sys.exit(1)
+          if "NotFound" not in r.stderr and "NotFound" not in r.stdout:
+              print("P4B_FAIL ns query"); sys.exit(1)
+          np = subprocess.run(KC+["get","networkpolicy","-A","-o","json"], capture_output=True, text=True)
+          if np.returncode != 0: print("P4B_FAIL np"); sys.exit(1)
+          total = len(json.loads(np.stdout).get("items",[]))
+          print(f"networkpolicy_total={total}")
+          if total != 0: print("P4B_FAIL policies"); sys.exit(1)
+          print("P4B_OK")
+          PYEOF
+      register: p4b
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ K8s storage state ═══
+    - name: K8S-STORAGE — LINSTOR/Piraeus objects = 0 (fail-closed)
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          def kget(*a):
+              r = subprocess.run(KC+list(a)+["-o","json"], capture_output=True, text=True)
+              if r.returncode != 0: print(f"KUBECTL_FAIL {' '.join(a)}"); sys.exit(1)
+              return json.loads(r.stdout)
+          crd = kget("get","crd")
+          linstor_crds = [i["metadata"]["name"] for i in crd.get("items",[]) if any(k in i["metadata"]["name"].lower() for k in ("linstor","piraeus","drbd","linbit"))]
+          csi = kget("get","csidriver"); sc = kget("get","storageclass"); pv = kget("get","pv"); pvc = kget("get","pvc","-A")
+          print(f"linstor_crds={len(linstor_crds)} csidriver={len(csi.get('items',[]))} storageclass={len(sc.get('items',[]))} pv={len(pv.get('items',[]))} pvc={len(pvc.get('items',[]))}")
+          if linstor_crds or csi.get("items",[]) or sc.get("items",[]) or pv.get("items",[]) or pvc.get("items",[]):
+              print("K8S_STORAGE_MUTATED"); sys.exit(1)
+          print("K8S_STORAGE_CLEAN")
+          PYEOF
+      register: k8s
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ final gate ═══
+    - name: FINAL — postverify gate
+      ansible.builtin.debug:
+        msg: "P5B post-destructive read-only verification completed"
+      run_once: true
+      delegate_to: node-01

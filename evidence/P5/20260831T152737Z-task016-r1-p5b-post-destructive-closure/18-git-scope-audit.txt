@@ -1,0 +1,5 @@
+=== GIT SCOPE ===
+ M ansible/playbooks/p5b-storage-preparation.yml
+ M inventory/storage-p5b-authorized-devices.yaml
+?? ansible/playbooks/p5b-postverify.yml
+?? evidence/P5/20260831T152737Z-task016-r1-p5b-post-destructive-closure/

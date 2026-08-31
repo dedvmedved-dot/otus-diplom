@@ -1,0 +1,75 @@
+
+PLAY [P5B post-destructive state verification (READ-ONLY)] *********************
+
+TASK [P1 — bond slaves + exact VLAN + default route] ***************************
+[WARNING]: Platform linux on host node-02 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-02]
+[WARNING]: Platform linux on host node-03 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-03]
+[WARNING]: Platform linux on host node-01 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-01]
+
+TASK [P2 — containerd + kubelet + swap] ****************************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [COMPOSITE-PV — composite resolver + PV membership (6/6)] *****************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [VG-MEMBERSHIP — vg_piraeus exact 2 PV, protected not in VG] **************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [THINPOOL — vg_piraeus/thin_piraeus active healthy] ***********************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [PROTECTED — OS disk not in vg_piraeus] ***********************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [DRBD — not loaded, no resources] *****************************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [P3 — etcd JSON-aware full semantics] *************************************
+ok: [node-01]
+
+TASK [P4A — Nodes/calico/CoreDNS/IPPool/BGP/autodetect] ************************
+ok: [node-01]
+
+TASK [P4B — validation ns NotFound, 0 policies] ********************************
+ok: [node-01]
+
+TASK [K8S-STORAGE — LINSTOR/Piraeus objects = 0 (fail-closed)] *****************
+ok: [node-01]
+
+TASK [FINAL — postverify gate] *************************************************
+ok: [node-01] => {
+    "msg": "P5B post-destructive read-only verification completed"
+}
+
+PLAY RECAP *********************************************************************
+node-01                    : ok=12   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-02                    : ok=7    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-03                    : ok=7    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+

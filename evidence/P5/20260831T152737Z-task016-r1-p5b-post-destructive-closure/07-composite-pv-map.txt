@@ -1,0 +1,14 @@
+# TASK-016-R1 — Composite PV Map (6/6)
+
+Composite identity → current resolved path → LVM VG membership.
+
+node-01: S5G0NC0T407845 (0x5002538b724752b0) /dev/sdb → vg_piraeus
+         S5G0NC0T407844 (0x5002538b724752a0) /dev/sdc → vg_piraeus
+node-02: S5G0NC0T407077 (0x5002538b724722b0) /dev/sdb → vg_piraeus
+         S5G0NC0T407075 (0x5002538b72472290) /dev/sdc → vg_piraeus
+node-03: S5G0NC0T403246 (0x5002538b72453970) /dev/sdb → vg_piraeus
+         S5G0NC0T403289 (0x5002538b72453c20) /dev/sdc → vg_piraeus
+
+All MZILT3T8HBLS/007, 3840755982336 bytes, type=disk.
+
+COMPOSITE PV MAPPING: 6/6 PASS (each resolved device is PV of exactly vg_piraeus).

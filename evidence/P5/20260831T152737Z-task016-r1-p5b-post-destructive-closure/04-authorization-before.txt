@@ -2,13 +2,9 @@
 # Full composite identity ONLY — never /dev/sdX as authorization key.
 authorization:
   task: TASK-016
-  architect_authorized: false
-  consumed: true
-  consumed_by_commit: efdd3b1831208ccee810d392bbb3ce690b2104b5
-  reusable: false
+  architect_authorized: true
   target_count: 6
   authorization_basis_sha: ea62e11baa4a5a8a5938a418dea755a3eb82aa1f
-  state: CONSUMED_CLOSED
   destructive_scope: pvcreate+vgcreate+lvcreate-thin-pool ONLY
   forbidden: [pvcreate-ff, wipefs-a, blkdiscard, dd-of, partition-write, mkfs, mkswap]
 

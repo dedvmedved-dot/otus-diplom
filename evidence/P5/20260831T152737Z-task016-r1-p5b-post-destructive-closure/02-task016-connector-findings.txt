@@ -1,0 +1,9 @@
+# TASK-016-R1 — Connector Findings
+
+D1 — no real all-six aggregate Gate before first write (serial:1 caused node-01
+     destructive before node-02/03 prevalidation; PHASE 6 echo text was not
+     computed cross-node aggregate).
+D2 — vgcreate did not re-resolve composite identity immediately before write
+     (read saved paths from /tmp JSON).
+D3 — destructive authorization remains open in SoT (architect_authorized: true).
+D4 — P1-P4 evidence was summary-level, not full accepted regression.

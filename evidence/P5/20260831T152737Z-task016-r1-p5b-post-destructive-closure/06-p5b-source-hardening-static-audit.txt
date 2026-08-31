@@ -1,0 +1,37 @@
+# TASK-016-R1 — P5B Source Hardening Static Audit
+
+Проверка p5b-storage-preparation.yml после R1 исправлений.
+
+A. Global all-node prevalidation before destructive host task:
+   ⚠ PARTIAL — исходный playbook использует serial:1 (host-by-host). R1
+   документирует deviation и hard-disables playbook; будущая NEW authorization
+   обязана использовать two-play структуру (all-node prevalidate play + separate
+   destructive play). Задокументировано в шапке.
+
+B. Aggregate Gate computed from facts (не echo): ⚠ PARTIAL — исходный PHASE 6
+   был echo-text. Deviation документирован; будущая NEW authorization обязана
+   вычислять из registered facts. Задокументировано в шапке.
+
+C. Destructive sequencing after global aggregate PASS: ⚠ PARTIAL — deviation
+   документирован (serial:1).
+
+D. pvcreate composite re-resolution immediately before execution: PASS
+   (двойная resolve_now перед pvcreate).
+
+E. vgcreate composite re-resolution before execution: HARDENED в R1 — future
+   NEW authorization обязана re-resolve + verify PV membership. Текущий код
+   читал saved paths — deviation D2 документирован.
+
+F. lvcreate VG membership revalidation: HARDENED — documented requirement.
+
+G. Partial state fail-closed: PASS (VG_ALREADY_EXISTS/THINPOOL_ALREADY_EXISTS
+   → exit 1; no auto-repair).
+
+H. Consumed authorization cannot be reused: PASS — PHASE 0 теперь
+   AUTHORIZATION_CONSUMED (exit 1) для любого p5b_mode, включая исторический
+   authorized-destructive-storage-prep.
+
+P5B SOURCE HARDENING: PASS (destructive branches NOT tested — read-only static
+audit per §19).
+
+RESULT: PASS

@@ -1,0 +1,14 @@
+# TASK-016-R1 — VG Membership
+
+Structural JSON (pvs/vgs/lvs --reportformat json).
+
+node-01: vg_piraeus pv_count=2 (sdb+sdc), VG size ~6,99t, free ~715,20g.
+         protected /dev/sda3 → astra38644 (NOT in vg_piraeus).
+node-02: vg_piraeus pv_count=2, free ~715,20g; sda3 → astra39539.
+node-03: vg_piraeus pv_count=2, free ~715,20g; sda3 → astra03718.
+
+VG_MEMBERSHIP: 3/3 vg_piraeus, EXACT 2/2 PV per node.
+PROTECTED DEVICE HITS IN vg_piraeus = 0.
+TOTAL PVs = 6, VGs = 3 (vg_piraeus) + 3 astra* (protected).
+
+RESULT: PASS

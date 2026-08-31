@@ -1,0 +1,23 @@
+# TASK-016-R1 — Scope
+
+MODE: READ-ONLY POST-DESTRUCTIVE CLOSURE.
+
+Allowed: lsblk, pvs/vgs/lvs read-only, findmnt, swapon, dmsetup read-only,
+kubectl read-only, etcd read-only, network/service checks, DRBD state read-only.
+
+Forbidden: pvcreate/vgcreate/lvcreate/pvremove/vgremove/lvremove/pvmove/
+vgreduce/vgextend/lvextend/lvreduce/lvconvert/wipefs write/blkdiscard/dd of=/
+mkfs/mkswap/partition writes/DRBD metadata/DRBD module load/Piraeus install/
+K8s storage mutation.
+
+ALLOWED:
+  ansible/playbooks/p5b-storage-preparation.yml
+  inventory/storage-p5b-authorized-devices.yaml
+  inventory/storage-p5-candidates.yaml
+  docs/storage/P5B-STORAGE-PREPARATION.md
+  docs/storage/P5B-IMPLEMENTATION-PREREQUISITES.md
+  ansible/playbooks/p5b-postverify.yml (new read-only)
+  evidence/P5/<RUN_ID>-task016-r1-p5b-post-destructive-closure/
+
+READ-ONLY: versions.lock, images.lock, ADR-003, inventory/hosts.yaml,
+historical evidence (TASK-016 immutable), P1-P4 playbooks/manifests.

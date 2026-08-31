@@ -1,0 +1,16 @@
+# TASK-016-R1 — Execution Deviation
+
+D1:
+serial:1 caused node-01 destructive work before node-02/node-03 prevalidation.
+
+D2:
+vgcreate used saved resolved paths instead of immediate composite re-resolution.
+
+D3:
+authorization file remained architect_authorized:true after claimed consumption.
+
+D4:
+TASK-016 P1-P4 evidence was summary-level, not full accepted regression.
+
+Historical TASK-016 evidence modified:
+NO

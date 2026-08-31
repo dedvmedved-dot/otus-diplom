@@ -1,15 +1,26 @@
 ---
 # p5b-storage-preparation.yml
-# TASK-016 / P5B: destructive LVM thin storage preparation (AUTHORIZED).
+# TASK-016 / P5B: destructive LVM thin storage preparation.
 #
-# p5b_mode: disabled (default) | authorized-destructive-storage-prep.
-# ONLY authorized-destructive-storage-prep permits writes. Unknown/other => fail
-# before any write.
+# STATUS: TASK-016 AUTHORIZATION CONSUMED (non-reusable). This playbook is
+# HARD-DISABLED: any p5b_mode value fails before device access, including the
+# historical "authorized-destructive-storage-prep". A NEW Architect task + NEW
+# authorization object are required for any future destructive storage action.
 #
-# Destructive scope: pvcreate + vgcreate + lvcreate thin-pool on EXACTLY six
-# authorized devices (full composite identity). Serial execution node-01→02→03.
-# Forbidden: pvcreate -ff, wipefs -a, blkdiscard, dd of=, partition write, mkfs,
-# mkswap. STOP on any unexpected state.
+# SOURCE HARDENING (TASK-016-R1 §19, for future reproducibility if a NEW
+# authorization is ever granted). Required properties:
+#   A. Global all-node prevalidation completes before any destructive host task.
+#   B. Aggregate Gate computed from registered facts/results for all six devices,
+#      not hard-coded echo text.
+#   C. Destructive node sequencing starts only after global aggregate PASS.
+#   D. pvcreate: composite re-resolution immediately before execution.
+#   E. vgcreate: composite re-resolution immediately before execution + exact PV
+#      membership verified.
+#   F. lvcreate: VG membership revalidated structurally against the two exact
+#      authorized PVs.
+#   G. Partial state is fail-closed.
+#   H. Consumed authorization cannot be reused.
+# NOTE: destructive branches are NOT tested in R1 (read-only). Static audit only.
 
 - name: "P5B storage preparation (DESTRUCTIVE — AUTHORIZED)"
   hosts: all
@@ -44,15 +55,17 @@
       node-02: { bond140: "172.30.140.102/24", bond141: "172.30.141.102/24", bond143: "172.30.143.102/24", bond700: "192.168.194.40/24" }
       node-03: { bond140: "172.30.140.103/24", bond141: "172.30.141.103/24", bond143: "172.30.143.103/24", bond700: "192.168.194.39/24" }
   tasks:
-    # ═══ PHASE 0 — mode gate ═══
-    - name: PHASE 0 — p5b_mode gate (destructive authorization)
+    # ═══ PHASE 0 — mode gate (TASK-016 authorization CONSUMED, non-reusable) ═══
+    - name: PHASE 0 — p5b_mode gate (destructive authorization consumed)
       ansible.builtin.shell:
         cmd: |
-          if [ "{{ p5b_mode }}" != "authorized-destructive-storage-prep" ]; then
-            echo "DESTRUCTIVE_MODE_DENIED p5b_mode={{ p5b_mode }}"
+          if [ "{{ p5b_mode }}" = "authorized-destructive-storage-prep" ]; then
+            echo "AUTHORIZATION_CONSUMED p5b_mode={{ p5b_mode }} (TASK-016 closed, non-reusable)"
+            echo "A NEW Architect task and NEW authorization object are required."
             exit 1
           fi
-          echo "p5b_mode={{ p5b_mode }} AUTHORIZED"
+          echo "DESTRUCTIVE_MODE_DENIED p5b_mode={{ p5b_mode }}"
+          exit 1
       register: ph0
       changed_when: false
       run_once: true

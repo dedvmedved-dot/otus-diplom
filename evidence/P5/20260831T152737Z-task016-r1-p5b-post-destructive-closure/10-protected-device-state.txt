@@ -1,0 +1,4 @@
+=== PROTECTED DEVICE STATE ===
+sda3_vg=astra38644
+sda3_vg=astra39539
+sda3_vg=astra03718

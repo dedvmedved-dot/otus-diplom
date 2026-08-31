@@ -1,0 +1,4 @@
+=== DRBD STATE ===
+drbd_loaded=0
+drbd_loaded=0
+drbd_loaded=0
