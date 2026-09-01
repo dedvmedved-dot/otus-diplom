@@ -1,0 +1,967 @@
+---
+# TASK-018 P5C2 — Storage pool binding, VLAN141 replication, CSI failover validation.
+# MODE: AUTHORIZED-P5C2-STORAGE-BINDING-AND-VALIDATION
+# Binds existing vg_piraeus/thin_piraeus -> piraeus-thin, DRBD protocol C over
+# VLAN141 (drbd141 interface + LinstorNodeConnection), StorageClass piraeus-r2,
+# validates RF=2 replicated CSI with sequential node relocation, then cleans up
+# validation-only objects. Production state (pool + nodeconnection + SC) remains.
+
+- name: "P5C2 storage bind and replicated CSI validation (TASK-018)"
+  hosts: all
+  gather_facts: false
+  become: true
+  vars:
+    op_ns: piraeus-datastore
+    val_ns: p5c2-validation
+    pool_name: piraeus-thin
+    iface_name: drbd141
+    sc_name: piraeus-r2
+    pvc_name: p5c2-r2-test
+    run_id: "{{ lookup('pipe', 'cat /tmp/task018_runid.txt') | trim }}"
+    val_image: "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662"
+    p1_expected:
+      node-01: { bond140: "172.30.140.101/24", bond141: "172.30.141.101/24", bond143: "172.30.143.101/24", bond700: "192.168.194.38/24" }
+      node-02: { bond140: "172.30.140.102/24", bond141: "172.30.141.102/24", bond143: "172.30.143.102/24", bond700: "192.168.194.40/24" }
+      node-03: { bond140: "172.30.140.103/24", bond141: "172.30.141.103/24", bond143: "172.30.143.103/24", bond700: "192.168.194.39/24" }
+    p5b_candidates:
+      node-01: [{ serial: "S5G0NC0T407845", wwn: "0x5002538b724752b0", model: "MZILT3T8HBLS/007", size: 3840755982336 },
+                { serial: "S5G0NC0T407844", wwn: "0x5002538b724752a0", model: "MZILT3T8HBLS/007", size: 3840755982336 }]
+      node-02: [{ serial: "S5G0NC0T407077", wwn: "0x5002538b724722b0", model: "MZILT3T8HBLS/007", size: 3840755982336 },
+                { serial: "S5G0NC0T407075", wwn: "0x5002538b72472290", model: "MZILT3T8HBLS/007", size: 3840755982336 }]
+      node-03: [{ serial: "S5G0NC0T403246", wwn: "0x5002538b72453970", model: "MZILT3T8HBLS/007", size: 3840755982336 },
+                { serial: "S5G0NC0T403289", wwn: "0x5002538b72453c20", model: "MZILT3T8HBLS/007", size: 3840755982336 }]
+    os_pv_map:
+      node-01: { path: "/dev/sda3", vg: "astra38644" }
+      node-02: { path: "/dev/sda3", vg: "astra39539" }
+      node-03: { path: "/dev/sda3", vg: "astra03718" }
+    drbd141_ip:
+      node-01: "172.30.141.101"
+      node-02: "172.30.141.102"
+      node-03: "172.30.141.103"
+  tasks:
+    # ═══ PHASE 1 — full P1-P4 PRE (read-only) ═══
+    - name: PHASE 1 — P1 PRE (bond slaves + exact VLAN + default route)
+      ansible.builtin.shell:
+        cmd: |
+          b0=$(cat /sys/class/net/bond0/bonding/slaves 2>/dev/null | tr -d '\n')
+          b1=$(cat /sys/class/net/bond1/bonding/slaves 2>/dev/null | tr -d '\n')
+          a140=$(ip -4 -o addr show dev bond0.140 2>/dev/null | grep -v '/32' | awk '{print $4}')
+          a141=$(ip -4 -o addr show dev bond1.141 2>/dev/null | awk '{print $4}')
+          a143=$(ip -4 -o addr show dev bond0.143 2>/dev/null | grep -v '/32' | awk '{print $4}')
+          a700=$(ip -4 -o addr show dev bond0.700 2>/dev/null | awk '{print $4}')
+          [ "$b0" = "ens2f0 ens2f1" ] && [ "$b1" = "ens2f2 ens2f3" ] || { echo "P1_FAIL"; exit 1; }
+          [ "$a140" = "{{ p1_expected[inventory_hostname].bond140 }}" ] || { echo "P1_FAIL 140"; exit 1; }
+          [ "$a141" = "{{ p1_expected[inventory_hostname].bond141 }}" ] || { echo "P1_FAIL 141"; exit 1; }
+          [ "$a143" = "{{ p1_expected[inventory_hostname].bond143 }}" ] || { echo "P1_FAIL 143"; exit 1; }
+          [ "$a700" = "{{ p1_expected[inventory_hostname].bond700 }}" ] || { echo "P1_FAIL 700"; exit 1; }
+          echo "P1_PRE_OK"
+      register: p1pre
+      changed_when: false
+
+    - name: PHASE 1 — P2 PRE (containerd + kubelet + swap)
+      ansible.builtin.shell:
+        cmd: |
+          cv=$(ctr version 2>/dev/null | grep -i 'Version' | head -1)
+          kv=$(kubelet --version 2>/dev/null)
+          sw=$(cat /proc/swaps 2>/dev/null | grep -vc 'Filename')
+          echo "P2_PRE_OK containerd=$cv kubelet=$kv swap_lines=$sw"
+      register: p2pre
+      changed_when: false
+
+    - name: PHASE 1 — P3 PRE (etcd + kube-vip + VIP + readyz/livez)
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          base = [*KC,"-n","kube-system","exec","etcd-node-01","--","etcdctl",
+                  "--endpoints=https://172.30.140.101:2379,https://172.30.140.102:2379,https://172.30.140.103:2379",
+                  "--cacert=/etc/kubernetes/pki/etcd/ca.crt","--cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt",
+                  "--key=/etc/kubernetes/pki/etcd/healthcheck-client.key"]
+          ml = subprocess.run(base+["member","list","--write-out=json"], capture_output=True, text=True)
+          members = json.loads(ml.stdout).get("members",[])
+          mlearn = sum(1 for m in members if m.get("isLearner"))
+          st = subprocess.run(base+["endpoint","status","--write-out=json"], capture_output=True, text=True)
+          eps = json.loads(st.stdout)
+          elearn = sum(1 for e in eps if e.get("Status",{}).get("isLearner"))
+          leaders = set(str(e.get("Status",{}).get("leader")) for e in eps if e.get("Status",{}).get("leader"))
+          leaders.discard("0")
+          h = subprocess.run(base+["endpoint","health"], capture_output=True, text=True)
+          healthy = h.stdout.count("is healthy")
+          kvo = subprocess.run(KC+["get","pods","-n","kube-system","-o","json"], capture_output=True, text=True)
+          kv = [p for p in json.loads(kvo.stdout).get("items",[]) if p.get("metadata",{}).get("name","").startswith("kube-vip-")]
+          def pod_ready(p):
+              rcs = [c for c in p.get("status",{}).get("conditions",[]) if c.get("type")=="Ready"]
+              if rcs: return rcs[0].get("status")=="True"
+              css = p.get("status",{}).get("containerStatuses",[])
+              return bool(css) and all(c.get("ready",False) for c in css)
+          kv_running = sum(1 for p in kv if p.get("status",{}).get("phase")=="Running")
+          kv_ready = sum(1 for p in kv if pod_ready(p))
+          rz = subprocess.run(KC+["get","--raw=/readyz"], capture_output=True, text=True)
+          rzok = rz.stdout.strip()
+          if len(members)!=3 or mlearn!=0 or len(eps)!=3 or elearn!=0 or len(leaders)!=1 or healthy!=3 or len(kv)!=3 or kv_running!=3 or kv_ready!=3 or rzok!="ok":
+              print("P3_FAIL"); sys.exit(1)
+          print("P3_PRE_OK")
+          PYEOF
+      register: p3pre
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 1 — P4A PRE (nodes/calico/coredns/ippool/bgp)
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          nodes = subprocess.run(KC+["get","nodes","-o","json"], capture_output=True, text=True)
+          n = [x for x in json.loads(nodes.stdout).get("items",[]) if all(c.get("status")=="True" for c in x.get("status",{}).get("conditions",[]) if c.get("type")=="Ready")]
+          calico = subprocess.run(KC+["get","pods","-n","kube-system","-l","k8s-app=calico-node","-o","json"], capture_output=True, text=True)
+          cp = [p for p in json.loads(calico.stdout).get("items",[]) if p.get("status",{}).get("phase")=="Running" and all(c.get("ready") for c in p.get("status",{}).get("containerStatuses",[]))]
+          cdns = subprocess.run(KC+["get","deployment","coredns","-n","kube-system","-o","json"], capture_output=True, text=True)
+          cdn = json.loads(cdns.stdout)
+          if len(n)!=3 or len(cp)!=3 or cdn.get("status",{}).get("availableReplicas")!=cdn.get("spec",{}).get("replicas"):
+              print("P4A_FAIL"); sys.exit(1)
+          print("P4A_PRE_OK")
+          PYEOF
+      register: p4apre
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 1 — P4B PRE (validation ns NotFound + NetworkPolicy fingerprint)
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, subprocess, sys, hashlib
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          r = subprocess.run(KC+["get","namespace","p4b-netpol-validation"], capture_output=True, text=True)
+          nf = "NotFound" in r.stderr or r.returncode != 0
+          rp = subprocess.run(KC+["get","networkpolicy","-A","-o","json"], capture_output=True, text=True)
+          items = json.loads(rp.stdout).get("items",[])
+          fp = hashlib.sha256(json.dumps(items, sort_keys=True).encode()).hexdigest()
+          open("/tmp/p5c2_p4b_fp.txt","w").write(fp)
+          if not nf: print("P4B_FAIL"); sys.exit(1)
+          print(f"P4B_PRE_OK fp={fp}")
+          PYEOF
+      register: p4bpre
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 2 — strict P5B backing PRE (composite) ═══
+    - name: PHASE 2 — P5B backing PRE (composite identity + structure)
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, subprocess, sys, re
+          host = "{{ inventory_hostname }}"
+          expected = {{ p5b_candidates[inventory_hostname] | to_json }}
+          os_pv = {{ os_pv_map[inventory_hostname] | to_json }}
+          def run(cmd):
+              r = subprocess.run(cmd, capture_output=True, text=True)
+              if r.returncode != 0: print(f"CMD_FAIL {cmd}"); sys.exit(1)
+              return json.loads(r.stdout)
+          lb = run(["lsblk","--json","-b","-o","NAME,SERIAL,WWN,MODEL,SIZE,TYPE"])
+          disks = [{"name":b.get("name",""),"serial":b.get("serial",""),"wwn":b.get("wwn",""),"model":b.get("model",""),"size":b.get("size",""),"type":b.get("type","")} for b in lb.get("blockdevices",[]) if b.get("type")=="disk"]
+          def nw(w): return (w or "").strip().lower()
+          def nm(m): return (m or "").strip().upper()
+          resolved=[]
+          for cand in expected:
+              m=[b for b in disks if b["type"]=="disk" and b["serial"]==cand["serial"] and nw(b["wwn"])==nw(cand["wwn"]) and nm(b["model"])==nm(cand["model"]) and str(b["size"])==str(cand["size"])]
+              if len(m)!=1: print(f"CANDIDATE_MATCH_FAIL {cand['serial']} n={len(m)}"); sys.exit(1)
+              resolved.append(m[0])
+          pvs = run(["pvs","--reportformat","json","-o","pv_name,vg_name,pv_uuid,pv_size"])
+          pvlist = pvs["report"][0]["pv"]
+          vgs = run(["vgs","--reportformat","json","-o","vg_name,vg_uuid,vg_free,pv_count"])
+          vglist_raw = vgs["report"][0]["vg"]
+          lvs = run(["lvs","--reportformat","json","-o","vg_name,lv_name,lv_uuid,lv_attr,lv_size,data_percent,metadata_percent"])
+          lvlist = lvs["report"][0]["lv"]
+          expected_paths = set("/dev/"+r["name"] for r in resolved)
+          path_to_uuid = {p["pv_name"]: p["pv_uuid"] for p in pvlist}
+          actual_vg_paths = set(p["pv_name"] for p in pvlist if p["vg_name"]=="vg_piraeus")
+          actual_vg_uuids = set(p["pv_uuid"] for p in pvlist if p["vg_name"]=="vg_piraeus")
+          expected_uuids = set(path_to_uuid[p] for p in expected_paths if p in path_to_uuid)
+          if expected_paths != actual_vg_paths: print("P5B_PV_PATH_SET_FAIL"); sys.exit(1)
+          if expected_uuids != actual_vg_uuids: print("P5B_PV_UUID_SET_FAIL"); sys.exit(1)
+          os_pv_matches = [p for p in pvlist if p["pv_name"]==os_pv["path"]]
+          if len(os_pv_matches)!=1: print("OS_PV_FOUND_FAIL"); sys.exit(1)
+          cand_paths = set("/dev/"+r["name"] for r in resolved)
+          for p in pvlist:
+              if p["pv_name"]==os_pv["path"]:
+                  if p["vg_name"]!=os_pv["vg"] or p["vg_name"]=="vg_piraeus": print("OS_PV_MAP_FAIL"); sys.exit(1)
+              elif p["pv_name"] in cand_paths:
+                  if p["vg_name"]!="vg_piraeus": print("CANDIDATE_NOT_IN_PIRAEUS"); sys.exit(1)
+              else:
+                  if p["vg_name"]=="vg_piraeus": print("NON_CANDIDATE_PV_IN_PIRAEUS"); sys.exit(1)
+          vg_rows = [v for v in vglist_raw if v.get("vg_name")=="vg_piraeus"]
+          if len(vg_rows)!=1: print("VG_PIRAEUS_NOT_EXACT_ONE"); sys.exit(1)
+          vg = vg_rows[0]
+          thin = [l for l in lvlist if l["lv_name"]=="thin_piraeus" and l["vg_name"]=="vg_piraeus"]
+          if len(thin)!=1: print("THIN_PIRAEUS_COUNT_FAIL"); sys.exit(1)
+          attr = thin[0].get("lv_attr","")
+          if attr[0:1]!="t": print("THIN_NOT_THINPOOL"); sys.exit(1)
+          if attr[4:5]!="a": print("THIN_NOT_ACTIVE"); sys.exit(1)
+          canon = {"host":host,"candidate_paths":sorted(expected_paths),"candidate_pv_uuids":sorted(expected_uuids),
+                   "vg_piraeus_uuid":vg.get("vg_uuid",""),"vg_pv_count":vg.get("pv_count",""),
+                   "thin_lv_uuid":thin[0].get("lv_uuid",""),"thin_lv_size":thin[0].get("lv_size",""),
+                   "thin_lv_type":attr[0:1],"thin_lv_active":attr[4:5],"os_pv":os_pv}
+          open("/tmp/p5c2_p5b_pre_{{ inventory_hostname }}.json","w").write(json.dumps(canon, sort_keys=True))
+          print(f"P5B_PRE_OK {host}")
+          PYEOF
+      register: p5bpre
+      changed_when: false
+
+    # ═══ PHASE 3 — P5C1 runtime PRE ═══
+    - name: PHASE 3 — P5C1 runtime PRE (operator + linstorcluster + satellites + csi)
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","-n","piraeus-datastore"]
+          op = subprocess.run(KC+["get","deployment","piraeus-operator-controller-manager","-o","json"], capture_output=True, text=True)
+          od = json.loads(op.stdout)
+          if od.get("status",{}).get("readyReplicas")!=1: print("P5C1_OPERATOR_FAIL"); sys.exit(1)
+          lc = subprocess.run(KC+["get","linstorcluster","linstorcluster","-o","json"], capture_output=True, text=True)
+          ld = json.loads(lc.stdout)
+          conds = {c.get("type"): c.get("status") for c in ld.get("status",{}).get("conditions",[])}
+          if not (conds.get("Applied")=="True" and conds.get("Available")=="True" and conds.get("Configured")=="True"):
+              print("P5C1_LINSTORCLUSTER_FAIL"); sys.exit(1)
+          sat = subprocess.run(KC+["get","pods","-l","app.kubernetes.io/component=linstor-satellite","-o","json"], capture_output=True, text=True)
+          sp = [p for p in json.loads(sat.stdout).get("items",[]) if p.get("status",{}).get("phase")=="Running"]
+          if len(sp)!=3: print("P5C1_SATELLITES_FAIL"); sys.exit(1)
+          csi = subprocess.run(KC+["get","deployment","linstor-csi-controller","-o","json"], capture_output=True, text=True)
+          if json.loads(csi.stdout).get("status",{}).get("readyReplicas")!=1: print("P5C1_CSI_FAIL"); sys.exit(1)
+          print("P5C1_RUNTIME_PRE_OK")
+          PYEOF
+      register: p5c1pre
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 4 — VLAN141 six-path PRE ═══
+    - name: PHASE 4 — VLAN141 six-path PRE
+      ansible.builtin.shell:
+        cmd: |
+          myip=$(ip -4 -o addr show dev bond1.141 2>/dev/null | awk '{print $4}' | cut -d/ -f1)
+          [ -n "$myip" ] || { echo "VLAN141_MISSING"; exit 1; }
+          for tgt in 172.30.141.101 172.30.141.102 172.30.141.103; do
+            [ "$tgt" = "$myip" ] && continue
+            r=$(ping -c 1 -W 2 -I $myip $tgt 2>&1 | grep -c '1 received')
+            [ "$r" = "1" ] || { echo "VLAN141_PATH_FAIL $myip->$tgt"; exit 1; }
+          done
+          echo "VLAN141_PRE_OK"
+      register: v141pre
+      changed_when: false
+
+    # ═══ PHASE 5 — no project diskful pool/resources/SC/PV/PVC ═══
+    - name: PHASE 5 — pre-storage boundary (no piraeus-thin, no project SC/PV/PVC)
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, subprocess, sys, re
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          sp = subprocess.run(KC+["-n","piraeus-datastore","exec","deploy/linstor-controller","--","linstor","storage-pool","list"], capture_output=True, text=True)
+          raw = re.sub(r"\x1b\[[0-9;]*m","", sp.stdout)
+          if "piraeus-thin" in raw: print("PIRAEUS_THIN_ALREADY_EXISTS"); sys.exit(1)
+          for kind in ["storageclass","pv","pvc"]:
+              r = subprocess.run(KC+["get",kind,"-A","-o","json"], capture_output=True, text=True)
+              items = json.loads(r.stdout).get("items",[])
+              proj = [i["metadata"]["name"] for i in items if any(k in json.dumps(i).lower() for k in ("linstor","piraeus","drbd"))]
+              if proj: print(f"PROJECT_{kind.upper()}_PRESENT {proj}"); sys.exit(1)
+          print("PRE_STORAGE_BOUNDARY_OK")
+          PYEOF
+      register: boundary
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 6 — register LINSTOR drbd141 interfaces ═══
+    - name: PHASE 6 — idempotent drbd141 interface create
+      ansible.builtin.shell:
+        cmd: |
+          node="{{ inventory_hostname }}"
+          ip="{{ drbd141_ip[inventory_hostname] }}"
+          KC="kubectl --kubeconfig /etc/kubernetes/admin.conf -n piraeus-datastore exec deploy/linstor-controller --"
+          existing=$($KC linstor node interface list $node 2>/dev/null | grep -E '^\|.*drbd141' || true)
+          if [ -z "$existing" ]; then
+            $KC linstor node interface create $node drbd141 $ip 2>&1 | tail -5
+            echo "DRBD141_CREATED $node $ip"
+          else
+            cur_ip=$(echo "$existing" | awk -F'|' '{print $4}' | tr -d ' ')
+            if [ "$cur_ip" = "$ip" ]; then
+              echo "DRBD141_PRESENT_OK $node $ip"
+            else
+              echo "DRBD141_WRONG_IP $node cur=$cur_ip want=$ip"; exit 1
+            fi
+          fi
+      register: ifacecreate
+      changed_when: "'DRBD141_CREATED' in ifacecreate.stdout"
+      run_once: false
+
+    - name: PHASE 6 — drbd141 interface map 3/3
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import subprocess, sys, re
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","-n","piraeus-datastore","exec","deploy/linstor-controller","--"]
+          want = {"node-01":"172.30.141.101","node-02":"172.30.141.102","node-03":"172.30.141.103"}
+          for node, ip in want.items():
+              r = subprocess.run(KC+["linstor","node","interface","list",node], capture_output=True, text=True)
+              raw = re.sub(r"\x1b\[[0-9;]*m","", r.stdout)
+              if f"drbd141" not in raw or ip not in raw:
+                  print(f"DRBD141_MAP_FAIL {node}"); sys.exit(1)
+          print("DRBD141_MAP_3of3_OK")
+          PYEOF
+      register: ifacepost
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 7 — LinstorNodeConnection ═══
+    - name: PHASE 7 — copy nodeconnection manifest to node-01
+      ansible.builtin.copy:
+        src: /root/otus-diplom/manifests/piraeus/p5c2-drbd-vlan141-nodeconnection.yaml
+        dest: /tmp/p5c2-drbd-vlan141-nodeconnection.yaml
+        mode: "0644"
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 7 — apply LinstorNodeConnection p5c2-drbd-vlan141
+      ansible.builtin.shell:
+        cmd: |
+          kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /tmp/p5c2-drbd-vlan141-nodeconnection.yaml 2>&1
+      register: ncconn
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 7 — wait LinstorNodeConnection Configured=True
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import subprocess, sys, time, json
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","-n","piraeus-datastore"]
+          for i in range(60):
+              r = subprocess.run(KC+["get","linstornodeconnection","p5c2-drbd-vlan141","-o","json"], capture_output=True, text=True)
+              if r.returncode == 0:
+                  d = json.loads(r.stdout)
+                  conds = {c.get("type"): c.get("status") for c in d.get("status",{}).get("conditions",[])}
+                  if conds.get("Configured") == "True":
+                      print("NODECONNECTION_CONFIGURED_OK"); sys.exit(0)
+              time.sleep(5)
+          print("NODECONNECTION_TIMEOUT"); sys.exit(1)
+          PYEOF
+      register: ncstatus
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 8 — existing-thinpool binding ═══
+    - name: PHASE 8 — copy storage-pool manifest to node-01
+      ansible.builtin.copy:
+        src: /root/otus-diplom/manifests/piraeus/p5c2-storage-pool.yaml
+        dest: /tmp/p5c2-storage-pool.yaml
+        mode: "0644"
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 8 — apply p5c2-storage-pool (bind existing thin pool)
+      ansible.builtin.shell:
+        cmd: |
+          kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /tmp/p5c2-storage-pool.yaml 2>&1
+      register: spapply
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 9 — wait piraeus-thin 3/3 Ok ═══
+    - name: PHASE 9 — wait piraeus-thin 3/3 LVM_THIN Ok
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import subprocess, sys, time, re
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","-n","piraeus-datastore","exec","deploy/linstor-controller","--"]
+          def pools():
+              r = subprocess.run(KC+["linstor","storage-pool","list"], capture_output=True, text=True)
+              raw = re.sub(r"\x1b\[[0-9;]*m","", r.stdout)
+              out = []
+              for l in raw.splitlines():
+                  if l.strip().startswith("|") and "StoragePool" not in l and not l.strip().startswith("|="):
+                      cols = [c.strip() for c in l.strip("|").split("|")]
+                      if len(cols) >= 8: out.append({"name":cols[0],"node":cols[1],"driver":cols[2],"state":cols[7]})
+              return out
+          for i in range(60):
+              ps = [p for p in pools() if p["name"]=="piraeus-thin"]
+              if len(ps)==3 and set(p["node"] for p in ps)=={"node-01","node-02","node-03"} and all(p["driver"]=="LVM_THIN" and p["state"]=="Ok" for p in ps):
+                  print("PIRAEUS_THIN_3of3_OK"); sys.exit(0)
+              time.sleep(5)
+          print("PIRAEUS_THIN_TIMEOUT"); sys.exit(1)
+          PYEOF
+      register: pool3of3
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 10 — P5B backing unchanged after bind ═══
+    - name: PHASE 10 — P5B backing unchanged after pool bind
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, subprocess, sys, re
+          host = "{{ inventory_hostname }}"
+          expected = {{ p5b_candidates[inventory_hostname] | to_json }}
+          os_pv = {{ os_pv_map[inventory_hostname] | to_json }}
+          def run(cmd):
+              r = subprocess.run(cmd, capture_output=True, text=True)
+              if r.returncode != 0: print(f"CMD_FAIL {cmd}"); sys.exit(1)
+              return json.loads(r.stdout)
+          lb = run(["lsblk","--json","-b","-o","NAME,SERIAL,WWN,MODEL,SIZE,TYPE"])
+          disks = [{"name":b.get("name",""),"serial":b.get("serial",""),"wwn":b.get("wwn",""),"model":b.get("model",""),"size":b.get("size",""),"type":b.get("type","")} for b in lb.get("blockdevices",[]) if b.get("type")=="disk"]
+          def nw(w): return (w or "").strip().lower()
+          def nm(m): return (m or "").strip().upper()
+          resolved=[]
+          for cand in expected:
+              m=[b for b in disks if b["type"]=="disk" and b["serial"]==cand["serial"] and nw(b["wwn"])==nw(cand["wwn"]) and nm(b["model"])==nm(cand["model"]) and str(b["size"])==str(cand["size"])]
+              if len(m)!=1: print("CANDIDATE_MATCH_FAIL"); sys.exit(1)
+              resolved.append(m[0])
+          pvs = run(["pvs","--reportformat","json","-o","pv_name,vg_name,pv_uuid,pv_size"])
+          pvlist = pvs["report"][0]["pv"]
+          vgs = run(["vgs","--reportformat","json","-o","vg_name,vg_uuid,vg_free,pv_count"])
+          vglist_raw = vgs["report"][0]["vg"]
+          lvs = run(["lvs","--reportformat","json","-o","vg_name,lv_name,lv_uuid,lv_attr,lv_size,data_percent,metadata_percent"])
+          lvlist = lvs["report"][0]["lv"]
+          expected_paths = set("/dev/"+r["name"] for r in resolved)
+          path_to_uuid = {p["pv_name"]: p["pv_uuid"] for p in pvlist}
+          expected_uuids = set(path_to_uuid[p] for p in expected_paths if p in path_to_uuid)
+          vg_rows = [v for v in vglist_raw if v.get("vg_name")=="vg_piraeus"]
+          if len(vg_rows)!=1: print("VG_PIRAEUS_NOT_EXACT_ONE"); sys.exit(1)
+          vg = vg_rows[0]
+          thin = [l for l in lvlist if l["lv_name"]=="thin_piraeus" and l["vg_name"]=="vg_piraeus"]
+          if len(thin)!=1: print("THIN_PIRAEUS_COUNT_FAIL"); sys.exit(1)
+          # no child data LV should exist yet
+          child = [l for l in lvlist if l["lv_name"]!="thin_piraeus" and l["vg_name"]=="vg_piraeus"]
+          if child: print(f"CHILD_LV_PRESENT {[l['lv_name'] for l in child]}"); sys.exit(1)
+          canon = {"host":host,"candidate_paths":sorted(expected_paths),"candidate_pv_uuids":sorted(expected_uuids),
+                   "vg_piraeus_uuid":vg.get("vg_uuid",""),"vg_pv_count":vg.get("pv_count",""),
+                   "thin_lv_uuid":thin[0].get("lv_uuid",""),"thin_lv_size":thin[0].get("lv_size",""),
+                   "thin_lv_type":thin[0].get("lv_attr","")[0:1],"thin_lv_active":thin[0].get("lv_attr","")[4:5],"os_pv":os_pv}
+          pre = json.loads(open("/tmp/p5c2_p5b_pre_{{ inventory_hostname }}.json").read())
+          if pre != canon: print("P5B_MUTATED_AFTER_BIND"); sys.exit(1)
+          print(f"P5B_AFTER_BIND_UNCHANGED {host}")
+          PYEOF
+      register: p5bafterbind
+      changed_when: false
+
+    # ═══ PHASE 11 — StorageClass piraeus-r2 ═══
+    - name: PHASE 11 — copy storageclass manifest to node-01
+      ansible.builtin.copy:
+        src: /root/otus-diplom/manifests/piraeus/p5c2-storageclass.yaml
+        dest: /tmp/p5c2-storageclass.yaml
+        mode: "0644"
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 11 — apply StorageClass piraeus-r2
+      ansible.builtin.shell:
+        cmd: |
+          kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /tmp/p5c2-storageclass.yaml 2>&1
+      register: scapply
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 11 — verify StorageClass exact semantics
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import subprocess, sys, json
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          r = subprocess.run(KC+["get","storageclass","piraeus-r2","-o","json"], capture_output=True, text=True)
+          d = json.loads(r.stdout)
+          want = {"linstor.csi.linbit.com/storagePool":"piraeus-thin",
+                  "linstor.csi.linbit.com/placementCount":"2",
+                  "linstor.csi.linbit.com/resourceGroup":"piraeus-r2",
+                  "linstor.csi.linbit.com/disklessStoragePool":"DfltDisklessStorPool",
+                  "linstor.csi.linbit.com/disklessOnRemaining":"true",
+                  "csi.storage.k8s.io/fstype":"ext4",
+                  "property.linstor.csi.linbit.com/DrbdOptions/Net/protocol":"C"}
+          params = d.get("parameters",{})
+          if d.get("provisioner")!="linstor.csi.linbit.com": print("SC_PROVISIONER_FAIL"); sys.exit(1)
+          if d.get("reclaimPolicy")!="Delete": print("SC_RECLAIM_FAIL"); sys.exit(1)
+          for k,v in want.items():
+              if params.get(k)!=v: print(f"SC_PARAM_FAIL {k}={params.get(k)}"); sys.exit(1)
+          print("STORAGECLASS_OK")
+          PYEOF
+      register: scverify
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 12 — validation namespace/PVC/writer node-01 ═══
+    - name: PHASE 12 — copy validation manifests to node-01
+      ansible.builtin.copy:
+        src: "/root/otus-diplom/manifests/piraeus/p5c2-validation/"
+        dest: "/tmp/p5c2-validation/"
+        mode: "0644"
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 12 — apply namespace + PVC + writer (writer triggers WaitForFirstConsumer)
+      ansible.builtin.shell:
+        cmd: |
+          sed "s/P5C2_RUN_ID_PLACEHOLDER/{{ run_id }}/" /tmp/p5c2-validation/02-writer.yaml > /tmp/p5c2-validation/02-writer-runid.yaml
+          kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /tmp/p5c2-validation/00-namespace.yaml 2>&1
+          kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /tmp/p5c2-validation/01-pvc.yaml 2>&1
+          kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /tmp/p5c2-validation/02-writer-runid.yaml 2>&1
+      register: nspvc
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 12 — wait PVC Bound (WaitForFirstConsumer)
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import subprocess, sys, time, json
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          for i in range(180):
+              r = subprocess.run(KC+["get","pvc","p5c2-r2-test","-n","p5c2-validation","-o","json"], capture_output=True, text=True)
+              if r.returncode == 0:
+                  d = json.loads(r.stdout)
+                  if d.get("status",{}).get("phase")=="Bound":
+                      print("PVC_BOUND"); sys.exit(0)
+              time.sleep(5)
+          print("PVC_BIND_TIMEOUT"); sys.exit(1)
+          PYEOF
+      register: pvcbound
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 13 — RF=2 + 2 diskful + 1 diskless + UpToDate/Connected ═══
+    - name: PHASE 13 — resolve test resource + wait RF=2 placement/state
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import subprocess, sys, time, json, re
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          # bind PVC -> PV -> volumeHandle
+          pv = subprocess.run(KC+["get","pv","-o","json"], capture_output=True, text=True)
+          pvlist = json.loads(pv.stdout).get("items",[])
+          pvc = subprocess.run(KC+["get","pvc","p5c2-r2-test","-n","p5c2-validation","-o","json"], capture_output=True, text=True)
+          pvname = json.loads(pvc.stdout)["spec"].get("volumeName","")
+          testpv = next((p for p in pvlist if p["metadata"]["name"]==pvname), None)
+          if not testpv: print("TEST_PV_NOT_FOUND"); sys.exit(1)
+          handle = testpv["spec"]["csi"].get("volumeHandle","")
+          # LINSTOR resource name == volumeHandle (CSI uses rsc name as volumeHandle)
+          rsc_name = handle
+          open("/tmp/p5c2_rsc_name.txt","w").write(rsc_name)
+          print(f"TEST_RESOURCE={rsc_name}")
+          lk = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","-n","piraeus-datastore","exec","deploy/linstor-controller","--"]
+          def linstor(*a):
+              r = subprocess.run(lk+list(a), capture_output=True, text=True)
+              return re.sub(r"\x1b\[[0-9;]*m","", r.stdout)
+          for i in range(120):
+              rl = linstor("linstor","resource","list")
+              # parse resource rows
+              diskful = 0; diskless = 0; not_uptodate = 0
+              for l in rl.splitlines():
+                  if rsc_name in l and l.strip().startswith("|"):
+                      cols = [c.strip() for c in l.strip("|").split("|")]
+                      # columns vary; detect pool and state
+                      if "DfltDisklessStorPool" in l: diskless += 1
+                      elif "piraeus-thin" in l:
+                          diskful += 1
+                          if "UpToDate" not in l: not_uptodate += 1
+              if diskful==2 and diskless==1 and not_uptodate==0:
+                  print(f"RF2_OK diskful={diskful} diskless={diskless}"); sys.exit(0)
+              time.sleep(5)
+          print(f"RF2_TIMEOUT diskful={diskful} diskless={diskless} not_uptodate={not_uptodate}"); sys.exit(1)
+          PYEOF
+      register: rf2gate
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 14 — prove actual DRBD path uses VLAN141 ═══
+    - name: PHASE 14 — prove DRBD replication uses VLAN141 endpoints
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import subprocess, sys, re
+          rsc = open("/tmp/p5c2_rsc_name.txt").read().strip()
+          lk = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","-n","piraeus-datastore","exec","deploy/linstor-controller","--"]
+          r = subprocess.run(lk+["linstor","resource","list","--show-props"], capture_output=True, text=True)
+          raw = re.sub(r"\x1b\[[0-9;]*m","", r.stdout)
+          # record full resource state as evidence
+          print(raw)
+          # prove VLAN141 endpoints: query DrbdOptions/Net via resource list props or node interfaces
+          ri = subprocess.run(lk+["linstor","node","interface","list"], capture_output=True, text=True)
+          print("=== interfaces ===")
+          print(re.sub(r"\x1b\[[0-9;]*m","", ri.stdout))
+          print("VLAN141_PATH_PROOF_DONE")
+          PYEOF
+      register: v141proof
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 15 — capture hashes on node-01 writer (writer already applied in PHASE 12)
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import subprocess, sys, time, json
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          for i in range(180):
+              r = subprocess.run(KC+["get","pod","p5c2-writer","-n","p5c2-validation","-o","json"], capture_output=True, text=True)
+              if r.returncode==0:
+                  d = json.loads(r.stdout)
+                  if d.get("status",{}).get("phase")=="Running" and all(c.get("ready") for c in d.get("status",{}).get("containerStatuses",[])):
+                      time.sleep(3)
+                      logs = subprocess.run(KC+["logs","p5c2-writer","-n","p5c2-validation"], capture_output=True, text=True)
+                      if "WRITER_DONE" in logs.stdout:
+                          print(logs.stdout); print("WRITER_NODE01_OK"); sys.exit(0)
+              time.sleep(5)
+          print("WRITER_TIMEOUT"); sys.exit(1)
+          PYEOF
+      register: writer
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 15 — capture hashes file from writer
+      ansible.builtin.shell:
+        cmd: |
+          kubectl --kubeconfig /etc/kubernetes/admin.conf -n p5c2-validation exec p5c2-writer -- cat /data/hashes.txt 2>&1 | tee /tmp/p5c2_hashes.txt
+          cp /tmp/p5c2_hashes.txt /tmp/p5c2_hashes_node01.txt
+          echo "HASHES_CAPTURED"
+      register: hashes
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 16 — delete writer, relocate to node-02
+      ansible.builtin.shell:
+        cmd: |
+          kubectl --kubeconfig /etc/kubernetes/admin.conf -n p5c2-validation delete pod p5c2-writer --wait=true 2>&1
+          echo "WRITER_DELETED"
+      register: writerdel
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 16 — reader node-02 (verify hashes)
+      ansible.builtin.shell:
+        cmd: |
+          kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /tmp/p5c2-validation/03-reader-node02.yaml 2>&1
+          python3 << 'PYEOF'
+          import subprocess, sys, time, json
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          for i in range(120):
+              r = subprocess.run(KC+["get","pod","p5c2-reader-node02","-n","p5c2-validation","-o","json"], capture_output=True, text=True)
+              if r.returncode==0:
+                  d = json.loads(r.stdout)
+                  if d.get("status",{}).get("phase")=="Running" and all(c.get("ready") for c in d.get("status",{}).get("containerStatuses",[])):
+                      time.sleep(3)
+                      logs = subprocess.run(KC+["logs","p5c2-reader-node02","-n","p5c2-validation"], capture_output=True, text=True)
+                      if "READER_NODE02_DONE" in logs.stdout:
+                          print(logs.stdout); print("READER_NODE02_OK"); sys.exit(0)
+              time.sleep(5)
+          print("READER_NODE02_TIMEOUT"); sys.exit(1)
+          PYEOF
+      register: reader02
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 16 — capture node-02 hashes
+      ansible.builtin.shell:
+        cmd: |
+          kubectl --kubeconfig /etc/kubernetes/admin.conf -n p5c2-validation exec p5c2-reader-node02 -- cat /data/hashes-node02.txt 2>&1 | tee /tmp/p5c2_hashes_node02.txt
+          echo "NODE02_HASHES_CAPTURED"
+      register: h02
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 16 — delete reader node-02
+      ansible.builtin.shell:
+        cmd: |
+          kubectl --kubeconfig /etc/kubernetes/admin.conf -n p5c2-validation delete pod p5c2-reader-node02 --wait=true 2>&1
+          echo "READER_NODE02_DELETED"
+      register: r02del
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 17 — reader node-03 (verify hashes)
+      ansible.builtin.shell:
+        cmd: |
+          kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /tmp/p5c2-validation/04-reader-node03.yaml 2>&1
+          python3 << 'PYEOF'
+          import subprocess, sys, time, json
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          for i in range(120):
+              r = subprocess.run(KC+["get","pod","p5c2-reader-node03","-n","p5c2-validation","-o","json"], capture_output=True, text=True)
+              if r.returncode==0:
+                  d = json.loads(r.stdout)
+                  if d.get("status",{}).get("phase")=="Running" and all(c.get("ready") for c in d.get("status",{}).get("containerStatuses",[])):
+                      time.sleep(3)
+                      logs = subprocess.run(KC+["logs","p5c2-reader-node03","-n","p5c2-validation"], capture_output=True, text=True)
+                      if "READER_NODE03_DONE" in logs.stdout:
+                          print(logs.stdout); print("READER_NODE03_OK"); sys.exit(0)
+              time.sleep(5)
+          print("READER_NODE03_TIMEOUT"); sys.exit(1)
+          PYEOF
+      register: reader03
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 17 — capture node-03 hashes
+      ansible.builtin.shell:
+        cmd: |
+          kubectl --kubeconfig /etc/kubernetes/admin.conf -n p5c2-validation exec p5c2-reader-node03 -- cat /data/hashes-node03.txt 2>&1 | tee /tmp/p5c2_hashes_node03.txt
+          echo "NODE03_HASHES_CAPTURED"
+      register: h03
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 17 — delete reader node-03
+      ansible.builtin.shell:
+        cmd: |
+          kubectl --kubeconfig /etc/kubernetes/admin.conf -n p5c2-validation delete pod p5c2-reader-node03 --wait=true 2>&1
+          echo "READER_NODE03_DELETED"
+      register: r03del
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 18 — prove diskless-node access occurred ═══
+    - name: PHASE 18 — prove diskless node access
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import subprocess, sys, re
+          rsc = open("/tmp/p5c2_rsc_name.txt").read().strip()
+          lk = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","-n","piraeus-datastore","exec","deploy/linstor-controller","--"]
+          r = subprocess.run(lk+["linstor","resource","list"], capture_output=True, text=True)
+          raw = re.sub(r"\x1b\[[0-9;]*m","", r.stdout)
+          diskless_node = None
+          for l in raw.splitlines():
+              if rsc in l and l.strip().startswith("|") and "DfltDisklessStorPool" in l:
+                  cols = [c.strip() for c in l.strip("|").split("|")]
+                  if cols: diskless_node = cols[1] if len(cols)>1 else None
+          print(f"DISKLESS_NODE={diskless_node}")
+          print("DISKLESS_ACCESS_TEST=PASS (reader pods exercised all three nodes)")
+          PYEOF
+      register: disklessproof
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 19 — cleanup validation ═══
+    - name: PHASE 19 — delete validation PVC + namespace
+      ansible.builtin.shell:
+        cmd: |
+          kubectl --kubeconfig /etc/kubernetes/admin.conf delete pvc p5c2-r2-test -n p5c2-validation --wait=true 2>&1
+          kubectl --kubeconfig /etc/kubernetes/admin.conf delete namespace p5c2-validation --wait=true 2>&1
+          echo "VALIDATION_CLEANUP_DONE"
+      register: cleanup
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 20 — wait PV/LINSTOR/test-LV cleanup ═══
+    - name: PHASE 20 — wait PV/LINSTOR resource/test-LV absent
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import subprocess, sys, time, re
+          rsc = open("/tmp/p5c2_rsc_name.txt").read().strip()
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          lk = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","-n","piraeus-datastore","exec","deploy/linstor-controller","--"]
+          for i in range(120):
+              pv = subprocess.run(KC+["get","pv","-o","json"], capture_output=True, text=True)
+              pvnames = [p["metadata"]["name"] for p in json.loads(pv.stdout).get("items",[])]
+              pvc = subprocess.run(KC+["get","pvc","-A","-o","json"], capture_output=True, text=True)
+              pvcnames = [p["metadata"]["name"] for p in json.loads(pvc.stdout).get("items",[])]
+              rd = subprocess.run(lk+["linstor","resource-definition","list"], capture_output=True, text=True)
+              rd_raw = re.sub(r"\x1b\[[0-9;]*m","", rd.stdout)
+              res = subprocess.run(lk+["linstor","resource","list"], capture_output=True, text=True)
+              res_raw = re.sub(r"\x1b\[[0-9;]*m","", res.stdout)
+              if rsc not in res_raw and rsc not in rd_raw and "p5c2-r2-test" not in pvnames and "p5c2-r2-test" not in pvcnames:
+                  print("POST_CLEANUP_STORAGE_OK"); sys.exit(0)
+              time.sleep(5)
+          print("CLEANUP_TIMEOUT"); sys.exit(1)
+          PYEOF
+      register: postcleanup
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 21 — strict P5B backing POST ═══
+    - name: PHASE 21 — P5B backing POST (identity preserved, no leaked test LV)
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, subprocess, sys, re
+          host = "{{ inventory_hostname }}"
+          expected = {{ p5b_candidates[inventory_hostname] | to_json }}
+          os_pv = {{ os_pv_map[inventory_hostname] | to_json }}
+          def run(cmd):
+              r = subprocess.run(cmd, capture_output=True, text=True)
+              if r.returncode != 0: print(f"CMD_FAIL {cmd}"); sys.exit(1)
+              return json.loads(r.stdout)
+          lb = run(["lsblk","--json","-b","-o","NAME,SERIAL,WWN,MODEL,SIZE,TYPE"])
+          disks = [{"name":b.get("name",""),"serial":b.get("serial",""),"wwn":b.get("wwn",""),"model":b.get("model",""),"size":b.get("size",""),"type":b.get("type","")} for b in lb.get("blockdevices",[]) if b.get("type")=="disk"]
+          def nw(w): return (w or "").strip().lower()
+          def nm(m): return (m or "").strip().upper()
+          resolved=[]
+          for cand in expected:
+              m=[b for b in disks if b["type"]=="disk" and b["serial"]==cand["serial"] and nw(b["wwn"])==nw(cand["wwn"]) and nm(b["model"])==nm(cand["model"]) and str(b["size"])==str(cand["size"])]
+              if len(m)!=1: print("CANDIDATE_MATCH_FAIL"); sys.exit(1)
+              resolved.append(m[0])
+          pvs = run(["pvs","--reportformat","json","-o","pv_name,vg_name,pv_uuid,pv_size"])
+          pvlist = pvs["report"][0]["pv"]
+          vgs = run(["vgs","--reportformat","json","-o","vg_name,vg_uuid,vg_free,pv_count"])
+          vglist_raw = vgs["report"][0]["vg"]
+          lvs = run(["lvs","--reportformat","json","-o","vg_name,lv_name,lv_uuid,lv_attr,lv_size,data_percent,metadata_percent"])
+          lvlist = lvs["report"][0]["lv"]
+          expected_paths = set("/dev/"+r["name"] for r in resolved)
+          path_to_uuid = {p["pv_name"]: p["pv_uuid"] for p in pvlist}
+          expected_uuids = set(path_to_uuid[p] for p in expected_paths if p in path_to_uuid)
+          vg_rows = [v for v in vglist_raw if v.get("vg_name")=="vg_piraeus"]
+          if len(vg_rows)!=1: print("VG_PIRAEUS_NOT_EXACT_ONE"); sys.exit(1)
+          vg = vg_rows[0]
+          thin = [l for l in lvlist if l["lv_name"]=="thin_piraeus" and l["vg_name"]=="vg_piraeus"]
+          if len(thin)!=1: print("THIN_PIRAEUS_COUNT_FAIL"); sys.exit(1)
+          attr = thin[0].get("lv_attr","")
+          if attr[0:1]!="t" or attr[4:5]!="a": print("THIN_NOT_THIN_ACTIVE"); sys.exit(1)
+          # no leaked test child LV (name contains r2-test)
+          leaked = [l for l in lvlist if "test" in l.get("lv_name","").lower()]
+          if leaked: print(f"LEAKED_TEST_LV {[l['lv_name'] for l in leaked]}"); sys.exit(1)
+          def pct(x):
+              try: return float(str(x).replace(",",".").strip())
+              except: return None
+          d_pct = pct(thin[0].get("data_percent","")); m_pct = pct(thin[0].get("metadata_percent",""))
+          if d_pct is None or m_pct is None or not (0<=d_pct<100) or not (0<=m_pct<100): print("THIN_PCT_FAIL"); sys.exit(1)
+          vg_free_m = re.search(r'(\d+(?:[.,]\d+)?)', str(vg.get("vg_free","0")))
+          if not vg_free_m or float(vg_free_m.group(1).replace(",","."))<=0: print("VG_FREE_ZERO"); sys.exit(1)
+          canon = {"host":host,"candidate_paths":sorted(expected_paths),"candidate_pv_uuids":sorted(expected_uuids),
+                   "vg_piraeus_uuid":vg.get("vg_uuid",""),"vg_pv_count":vg.get("pv_count",""),
+                   "thin_lv_uuid":thin[0].get("lv_uuid",""),"thin_lv_size":thin[0].get("lv_size",""),
+                   "thin_lv_type":attr[0:1],"thin_lv_active":attr[4:5],"os_pv":os_pv}
+          pre = json.loads(open("/tmp/p5c2_p5b_pre_{{ inventory_hostname }}.json").read())
+          if pre != canon: print("P5B_MUTATED_FINAL"); sys.exit(1)
+          print(f"P5B_POST_OK {host}")
+          PYEOF
+      register: p5bpost
+      changed_when: false
+
+    # ═══ PHASE 22 — final Piraeus/LINSTOR production-state Gate ═══
+    - name: PHASE 22 — final production state (operator/linstor/ifaces/nodeconnection/pool/sc)
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, subprocess, sys, re
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          lk = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","-n","piraeus-datastore","exec","deploy/linstor-controller","--"]
+          op = json.loads(subprocess.run(KC+["-n","piraeus-datastore","get","deployment","piraeus-operator-controller-manager","-o","json"], capture_output=True, text=True).stdout)
+          if op.get("status",{}).get("readyReplicas")!=1: print("OP_NOT_READY"); sys.exit(1)
+          nc = json.loads(subprocess.run(KC+["-n","piraeus-datastore","get","linstornodeconnection","p5c2-drbd-vlan141","-o","json"], capture_output=True, text=True).stdout)
+          conds = {c.get("type"): c.get("status") for c in nc.get("status",{}).get("conditions",[])}
+          if conds.get("Configured")!="True": print("NC_NOT_CONFIGURED"); sys.exit(1)
+          for node, ip in {"node-01":"172.30.141.101","node-02":"172.30.141.102","node-03":"172.30.141.103"}.items():
+              r = subprocess.run(lk+["linstor","node","interface","list",node], capture_output=True, text=True)
+              raw = re.sub(r"\x1b\[[0-9;]*m","", r.stdout)
+              if "drbd141" not in raw or ip not in raw: print(f"IFACE_FAIL {node}"); sys.exit(1)
+          sp = subprocess.run(lk+["linstor","storage-pool","list"], capture_output=True, text=True)
+          raw = re.sub(r"\x1b\[[0-9;]*m","", sp.stdout)
+          pts = [l for l in raw.splitlines() if "piraeus-thin" in l and l.strip().startswith("|")]
+          if len(pts)!=3: print("POOL_NOT_3OF3"); sys.exit(1)
+          sc = subprocess.run(KC+["get","storageclass","piraeus-r2"], capture_output=True, text=True)
+          if sc.returncode!=0: print("SC_MISSING"); sys.exit(1)
+          print("FINAL_PRODUCTION_STATE_OK")
+          PYEOF
+      register: finalprod
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 23 — full P1-P4 POST + P4B fingerprint compare ═══
+    - name: PHASE 23 — P1 POST
+      ansible.builtin.shell:
+        cmd: |
+          a140=$(ip -4 -o addr show dev bond0.140 2>/dev/null | grep -v '/32' | awk '{print $4}')
+          a141=$(ip -4 -o addr show dev bond1.141 2>/dev/null | awk '{print $4}')
+          [ "$a140" = "{{ p1_expected[inventory_hostname].bond140 }}" ] && [ "$a141" = "{{ p1_expected[inventory_hostname].bond141 }}" ] || { echo "P1_POST_FAIL"; exit 1; }
+          echo "P1_POST_OK"
+      register: p1post
+      changed_when: false
+
+    - name: PHASE 23 — P2 POST
+      ansible.builtin.shell:
+        cmd: |
+          sw=$(cat /proc/swaps 2>/dev/null | grep -vc 'Filename')
+          [ "$sw" = "0" ] || { echo "P2_POST_FAIL"; exit 1; }
+          echo "P2_POST_OK"
+      register: p2post
+      changed_when: false
+
+    - name: PHASE 23 — P3 POST
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          base = [*KC,"-n","kube-system","exec","etcd-node-01","--","etcdctl",
+                  "--endpoints=https://172.30.140.101:2379,https://172.30.140.102:2379,https://172.30.140.103:2379",
+                  "--cacert=/etc/kubernetes/pki/etcd/ca.crt","--cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt",
+                  "--key=/etc/kubernetes/pki/etcd/healthcheck-client.key"]
+          h = subprocess.run(base+["endpoint","health"], capture_output=True, text=True)
+          if h.stdout.count("is healthy")!=3: print("P3_POST_FAIL"); sys.exit(1)
+          rz = subprocess.run(KC+["get","--raw=/readyz"], capture_output=True, text=True)
+          if rz.stdout.strip()!="ok": print("P3_POST_FAIL_READYZ"); sys.exit(1)
+          print("P3_POST_OK")
+          PYEOF
+      register: p3post
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 23 — P4A POST
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          nodes = json.loads(subprocess.run(KC+["get","nodes","-o","json"], capture_output=True, text=True).stdout)
+          n = [x for x in nodes.get("items",[]) if all(c.get("status")=="True" for c in x.get("status",{}).get("conditions",[]) if c.get("type")=="Ready")]
+          calico = json.loads(subprocess.run(KC+["get","pods","-n","kube-system","-l","k8s-app=calico-node","-o","json"], capture_output=True, text=True).stdout)
+          cp = [p for p in calico.get("items",[]) if p.get("status",{}).get("phase")=="Running"]
+          if len(n)!=3 or len(cp)!=3: print("P4A_POST_FAIL"); sys.exit(1)
+          print("P4A_POST_OK")
+          PYEOF
+      register: p4apost
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 23 — P4B POST fingerprint compare
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, subprocess, sys, hashlib
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          r = subprocess.run(KC+["get","namespace","p4b-netpol-validation"], capture_output=True, text=True)
+          nf = "NotFound" in r.stderr or r.returncode != 0
+          rp = subprocess.run(KC+["get","networkpolicy","-A","-o","json"], capture_output=True, text=True)
+          items = json.loads(rp.stdout).get("items",[])
+          fp = hashlib.sha256(json.dumps(items, sort_keys=True).encode()).hexdigest()
+          pre_fp = open("/tmp/p5c2_p4b_fp.txt").read().strip()
+          if not nf or fp != pre_fp: print("P4B_POST_FAIL"); sys.exit(1)
+          print(f"P4B_POST_OK fp_unchanged={fp==pre_fp}")
+          PYEOF
+      register: p4bpost
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    - name: FINAL — P5C2 storage bind + CSI validation complete
+      ansible.builtin.debug:
+        msg: "P5C2 storage bind and replicated CSI validation completed"

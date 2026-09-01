@@ -1,0 +1,62 @@
+# TASK-018 — BLOCKER: DRBD replication over VLAN141 requires satellite hostNetwork
+
+## Статус выполнения до блокера
+
+PHASE 6-11 выполнены успешно (авторизованная мутация):
+  - LINSTOR node interfaces drbd141: 3/3 (172.30.141.101/102/103)
+  - LinstorNodeConnection p5c2-drbd-vlan141: Configured=True, protocol C
+  - LinstorSatelliteConfiguration p5c2-storage-pool: applied
+  - piraeus-thin: 3/3 LVM_THIN Ok (backing vg_piraeus/thin_piraeus)
+  - StorageClass piraeus-r2: applied, exact semantics verified
+
+PHASE 12: validation namespace/PVC/writer созданы, PVC Bound,
+  writer pod Running/Ready, EXT4 смонтирован на node-01, данные записаны,
+  hashes захвачены (writer WRITER_DONE).
+
+## Блокер (PHASE 13/14/16)
+
+DRBD peer connection НЕ устанавливается. Точное доказательство из dmesg (node-01):
+
+  drbd pvc-... node-02: Configured local address not found, retrying every 10 sec, err=-99
+  drbd pvc-... node-03: Configured local address not found, retrying every 10 sec, err=-99
+
+err=-99 == EADDRNOTAVAIL: DRBD kernel transport не может bind локальный адрес
+172.30.141.101:7000 (VLAN141).
+
+drbdsetup show подтверждает: _this_host ipv4 172.30.141.101:7000, _cstate Connecting.
+
+## Корневая причина
+
+Satellite pods работают в pod network namespace, НЕ hostNetwork:
+  - daemonset linstor-satellite.node-XX: hostNetwork = (empty/false)
+  - внутри pod: только inet 10.244.190.9/32 (pod CIDR), lo
+  - VLAN141 (172.30.141.101/24 на bond1.141) НЕ виден внутри pod
+
+DRBD device доступен (pod privileged + hostPath /dev), но DRBD NETWORK transport
+(порт 7000) требует, чтобы pod видел адрес 172.30.141.x — что возможно только
+при hostNetwork: true (или hostPort/multus, которых нет).
+
+## Требуемое решение (вне рамок TASK-018 §26)
+
+Включить hostNetwork: true для satellite pods через штатный механизм оператора:
+  LinstorSatelliteConfiguration podTemplate.spec.hostNetwork = true
+
+Это:
+  - НЕ reinstall/upgrade Piraeus
+  - НЕ version/image change
+  - НЕ "network configuration changes on Linux hosts" (host-конфиг VLAN141 не меняется)
+  - штатная Piraeus конфигурация для DRBD на выделенной сети
+
+Но это мутация pod networking, которая НЕ перечислена в явно авторизованных
+изменениях TASK-018 (§26 allowed files). Требуется явное решение Архитектора.
+
+## Текущее кластерное состояние (НЕ откатывалось)
+
+Производственные объекты P5C2 (оставлены на месте, это разрешённое итоговое состояние):
+  - piraeus-thin 3/3 Ok
+  - drbd141 interfaces 3/3
+  - LinstorNodeConnection p5c2-drbd-vlan141 Configured=True
+  - StorageClass piraeus-r2
+
+Валидационные объекты (PVC Bound + writer Running + test DRBD resource в
+quorum:no/Connecting) — НЕ завершены, ждут решения по hostNetwork.

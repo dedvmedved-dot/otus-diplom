@@ -1,0 +1,26 @@
+apiVersion: piraeus.io/v1
+kind: LinstorNodeConnection
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"piraeus.io/v1","kind":"LinstorNodeConnection","metadata":{"annotations":{},"name":"p5c2-drbd-vlan141"},"spec":{"paths":[{"interface":"drbd141","name":"drbd141"}],"properties":[{"name":"DrbdOptions/Net/protocol","value":"C"}]}}
+  creationTimestamp: "2026-09-01T21:36:00Z"
+  generation: 1
+  name: p5c2-drbd-vlan141
+  resourceVersion: "2480757"
+  uid: a1df0c1a-a33a-4b86-a3ef-3399c1dabd1e
+spec:
+  paths:
+  - interface: drbd141
+    name: drbd141
+  properties:
+  - name: DrbdOptions/Net/protocol
+    value: C
+status:
+  conditions:
+  - lastTransitionTime: "2026-09-01T21:36:00Z"
+    message: Configured
+    observedGeneration: 1
+    reason: AsExpected
+    status: "True"
+    type: Configured

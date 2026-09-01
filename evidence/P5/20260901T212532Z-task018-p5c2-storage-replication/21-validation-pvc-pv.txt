@@ -1,0 +1,3 @@
+NAME           STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE   VOLUMEMODE
+p5c2-r2-test   Bound    pvc-bb885e2c-71fa-4ed9-b1cf-fc1351945556   1Gi        RWO            piraeus-r2     <unset>                 87m   Filesystem
+pvc-bb885e2c-71fa-4ed9-b1cf-fc1351945556   1Gi        RWO            Delete           Bound    p5c2-validation/p5c2-r2-test   piraeus-r2     <unset>                          86m

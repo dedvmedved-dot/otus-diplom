@@ -1,0 +1,10 @@
+    _this_host {
+            _this_host ipv4 172.30.141.101:7000;
+            _remote_host ipv4 172.30.141.102:7000;
+        _cstate Connecting;
+            _this_host ipv4 172.30.141.101:7000;
+            _remote_host ipv4 172.30.141.103:7000;
+        _cstate Connecting;
+=== dmesg root cause ===
+[736524.254849] drbd pvc-bb885e2c-71fa-4ed9-b1cf-fc1351945556 node-02: Configured local address not found, retrying every 10 sec, err=-99
+[736524.257237] drbd pvc-bb885e2c-71fa-4ed9-b1cf-fc1351945556 node-03: Configured local address not found, retrying every 10 sec, err=-99

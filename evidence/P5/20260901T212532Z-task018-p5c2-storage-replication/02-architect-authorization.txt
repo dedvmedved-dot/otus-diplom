@@ -1,0 +1,18 @@
+# TASK-018 — Architect Authorization
+
+MODE: AUTHORIZED-P5C2-STORAGE-BINDING-AND-VALIDATION
+
+This authorization permits ONLY the mutations explicitly described in TASK-018.
+
+P5C2 binds the existing host thin pool vg_piraeus/thin_piraeus into LINSTOR,
+configures DRBD replication over VLAN141, creates StorageClass piraeus-r2,
+validates RF=2 replicated CSI with sequential node relocation, and cleans up
+validation-only objects.
+
+Backing-object identities (PV UUIDs, vg_piraeus VG UUID, thin_piraeus LV UUID,
+OS PV map) are protected and MUST NOT be replaced/recreated.
+
+Raw /dev/sdX is NOT authorization. Candidate device authorization is
+consumed/closed.
+
+No host-failure test in P5C2 (§20). Actual node/network failure testing → P9.

@@ -1,0 +1,5 @@
+# P5C2 — Validation namespace (temporary)
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: p5c2-validation

@@ -1,0 +1,6 @@
+sc=0
+pv=0
+pvc=0
+0
+piraeus-thin=0
+PRE_STORAGE_BOUNDARY_OK (no piraeus-thin, no project SC/PV/PVC)

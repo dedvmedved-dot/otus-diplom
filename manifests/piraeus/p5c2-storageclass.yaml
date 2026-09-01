@@ -1,0 +1,19 @@
+# P5C2 — Production StorageClass (LINSTOR CSI, RF=2, DRBD protocol C, VLAN141)
+# provisioner: linstor.csi.linbit.com
+# Not set as cluster default in TASK-018.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: piraeus-r2
+provisioner: linstor.csi.linbit.com
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  linstor.csi.linbit.com/storagePool: piraeus-thin
+  linstor.csi.linbit.com/placementCount: "2"
+  linstor.csi.linbit.com/resourceGroup: piraeus-r2
+  linstor.csi.linbit.com/disklessStoragePool: DfltDisklessStorPool
+  linstor.csi.linbit.com/disklessOnRemaining: "true"
+  csi.storage.k8s.io/fstype: ext4
+  property.linstor.csi.linbit.com/DrbdOptions/Net/protocol: C

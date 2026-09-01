@@ -1,0 +1,25 @@
+
+PLAY [P5C2 storage bind and replicated CSI validation (TASK-018)] **************
+
+TASK [PHASE 12 — copy validation manifests to node-01] *************************
+changed: [node-01]
+
+TASK [PHASE 12 — apply namespace + PVC + writer (writer triggers WaitForFirstConsumer)] ***
+[WARNING]: Platform linux on host node-01 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+changed: [node-01]
+
+TASK [PHASE 12 — wait PVC Bound (WaitForFirstConsumer)] ************************
+ok: [node-01]
+
+TASK [PHASE 13 — resolve test resource + wait RF=2 placement/state] ************
+fatal: [node-01]: UNREACHABLE! => {"changed": false, "msg": "Failed to connect to the host via ssh: Timeout, server 192.168.194.38 not responding.", "unreachable": true}
+
+NO MORE HOSTS LEFT *************************************************************
+
+PLAY RECAP *********************************************************************
+node-01                    : ok=3    changed=2    unreachable=1    failed=0    skipped=0    rescued=0    ignored=0   
+

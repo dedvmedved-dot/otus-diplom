@@ -1,0 +1,20 @@
+# TASK-018 — Scope
+
+MODE: AUTHORIZED-P5C2-STORAGE-BINDING-AND-VALIDATION
+P5C2 — final P5C stage.
+
+AUTHORIZED:
+  LINSTOR node interface drbd141 (VLAN141)
+  LinstorNodeConnection p5c2-drbd-vlan141 (DRBD protocol C)
+  LinstorSatelliteConfiguration p5c2-storage-pool (bind existing vg_piraeus/thin_piraeus)
+  StorageClass piraeus-r2
+  temporary validation Namespace/PVC/Pods
+  normal LINSTOR/CSI test DRBD resources/LVs
+  normal cleanup of validation PVC/resources
+
+NOT AUTHORIZED:
+  pvcreate/vgcreate/lvcreate of backing thin pool; lvremove/vgremove/pvremove on P5B
+  source.hostDevices; raw-disk init; partitioning; direct fs on /dev/sdX
+  multipath/RAID/LUKS; host network config; reboot; DRBD module reload
+  Piraeus reinstall/upgrade; version/image changes; manual DRBD metadata ops
+  force/discard-my-data/invalidate; split-brain recovery; node power-off

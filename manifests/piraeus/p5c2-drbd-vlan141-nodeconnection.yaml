@@ -1,0 +1,14 @@
+# P5C2 — DRBD VLAN141 NodeConnection (declarative replication path)
+# Binds LINSTOR node interface `drbd141` as the DRBD replication path.
+# DRBD protocol C (synchronous). Targets all three LINSTOR nodes (no selector).
+apiVersion: piraeus.io/v1
+kind: LinstorNodeConnection
+metadata:
+  name: p5c2-drbd-vlan141
+spec:
+  paths:
+    - name: drbd141
+      interface: drbd141
+  properties:
+    - name: DrbdOptions/Net/protocol
+      value: C
