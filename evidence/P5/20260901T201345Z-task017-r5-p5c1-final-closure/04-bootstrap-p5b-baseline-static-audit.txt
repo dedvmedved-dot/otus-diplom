@@ -1,0 +1,21 @@
+# TASK-017-R5 — Bootstrap P5B Baseline Static Audit (D2/D3)
+
+D2: OS PV existence required (не implicit-only):
+  node-01 /dev/sda3 -> astra38644 (OS_PV_FOUND=1)
+  node-02 /dev/sda3 -> astra39539
+  node-03 /dev/sda3 -> astra03718
+  OS_PV_EXACT_MAP=3/3; OS PV not in vg_piraeus; all non-candidate PVs excluded.
+
+D3: strict baseline assertion (не capture/compare-only) в PRE и POST:
+  2/2 candidates resolve by TYPE=disk + SERIAL + WWN + MODEL + EXACT SIZE BYTES
+  vg_piraeus PV path set == resolved candidate path set
+  vg_piraeus PV UUID set == resolved candidate PV UUID set; count=2
+  vg_piraeus exactly once; thin_piraeus exactly once (lv_attr[0]=='t', active=='a',
+  Data%/Meta% parseable 0<=x<100); VG free parseable >0.
+
+REQUIRED ZERO:
+  OS PV existence implicit-only = 0
+  runtime P5B baseline capture-only = 0
+  wrong-baseline==wrong-baseline can PASS = 0
+
+RESULT: PASS

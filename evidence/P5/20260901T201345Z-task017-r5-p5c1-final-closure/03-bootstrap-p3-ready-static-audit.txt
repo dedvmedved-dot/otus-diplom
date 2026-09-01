@@ -1,0 +1,12 @@
+# TASK-017-R5 — Bootstrap P3 kube-vip Ready Static Audit (D1)
+
+PHASE 1 (P3 PRE) и PHASE 16 (P3 POST) теперь требуют:
+  exact kube-vip pod count = 3
+  Running = 3
+  Ready = 3  (pod_ready: Ready condition status=True, либо deterministic fallback —
+              непустые containerStatuses со всеми ready=true для static pods)
+  VIP owner aggregate = 1
+
+REQUIRED ZERO: bootstrap kube-vip Ready missing = 0
+
+RESULT: PASS

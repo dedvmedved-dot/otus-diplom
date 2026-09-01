@@ -1,0 +1,3 @@
+=== required image set equality ===
+vendored=17 images.lock_P5C1=17
+EQUAL: True

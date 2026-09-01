@@ -1,0 +1,23 @@
+host=node-01
+loaded_version=9.3.2
+loaded_srcversion=5FD9FC5E60D0C7BA7242AA9
+drbd_transport_tcp=1
+in_tree_version=8.4.11
+in_tree_srcversion=C718D2C2BEE45E82AD21432
+DRBD_GATE_OK
+host=node-02
+loaded_version=9.3.2
+loaded_srcversion=7FDF8C8380112FC51A414E7
+drbd_transport_tcp=1
+in_tree_version=8.4.11
+in_tree_srcversion=C718D2C2BEE45E82AD21432
+DRBD_GATE_OK
+host=node-03
+loaded_version=9.3.2
+loaded_srcversion=C9052FC5DEE4F01207335F8
+drbd_transport_tcp=1
+in_tree_version=8.4.11
+in_tree_srcversion=C718D2C2BEE45E82AD21432
+DRBD_GATE_OK
+IN-TREE DRBD: 8.4.11 PRESENT / NOT LOADED
+DRBD LOADED: 9.3.2 PASS 3/3

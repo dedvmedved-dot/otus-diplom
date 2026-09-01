@@ -121,7 +121,13 @@
           kvo = subprocess.run(KC+["get","pods","-n","kube-system","-o","json"], capture_output=True, text=True)
           if kvo.returncode != 0: print("P3_FAIL"); sys.exit(1)
           kv = [p for p in json.loads(kvo.stdout).get("items",[]) if p.get("metadata",{}).get("name","").startswith("kube-vip-")]
+          def pod_ready(p):
+              rcs = [c for c in p.get("status",{}).get("conditions",[]) if c.get("type")=="Ready"]
+              if rcs: return rcs[0].get("status")=="True"
+              css = p.get("status",{}).get("containerStatuses",[])
+              return bool(css) and all(c.get("ready",False) for c in css)
           kv_running = sum(1 for p in kv if p.get("status",{}).get("phase")=="Running")
+          kv_ready = sum(1 for p in kv if pod_ready(p))
           rz = subprocess.run(KC+["get","--raw=/readyz"], capture_output=True, text=True)
           if rz.returncode != 0: print("P3_FAIL"); sys.exit(1)
           rzok = rz.stdout.strip()
@@ -130,7 +136,7 @@
               r = subprocess.run(["curl","-sk","--max-time","5",f"https://{ip}:6443/livez"], capture_output=True, text=True)
               livez.append((r.returncode, r.stdout.strip()))
           ok_livez = sum(1 for rc,v in livez if rc==0 and v=="ok")
-          if len(members)!=3 or mlearn!=0 or len(eps)!=3 or elearn!=0 or len(leaders)!=1 or aep!=1 or healthy!=3 or len(kv)!=3 or kv_running!=3 or rzok!="ok" or ok_livez!=3:
+          if len(members)!=3 or mlearn!=0 or len(eps)!=3 or elearn!=0 or len(leaders)!=1 or aep!=1 or healthy!=3 or len(kv)!=3 or kv_running!=3 or kv_ready!=3 or rzok!="ok" or ok_livez!=3:
               print("P3_FAIL"); sys.exit(1)
           print("P3_PRE_OK")
           PYEOF
@@ -305,6 +311,9 @@
           print(f"P5B_EXACT_PV_SET_OK {host} 2/2")
           # D3: protected OS PV exact map + no protected PV in vg_piraeus + all non-candidate excluded
           cand_paths = set("/dev/" + r["name"] for r in resolved)
+          os_pv_matches = [p for p in pvlist if p["pv_name"] == os_pv["path"]]
+          if len(os_pv_matches) != 1:
+              print(f"OS_PV_FOUND_FAIL {host} {os_pv['path']} matches={len(os_pv_matches)}"); sys.exit(1)
           for p in pvlist:
               if p["pv_name"] == os_pv["path"]:
                   if p["vg_name"] != os_pv["vg"] or p["vg_name"] == "vg_piraeus":
@@ -316,11 +325,13 @@
                   # non-candidate, non-OS PV must NOT be in vg_piraeus
                   if p["vg_name"] == "vg_piraeus":
                       print(f"NON_CANDIDATE_PV_IN_PIRAEUS {p['pv_name']}"); sys.exit(1)
-          print(f"P5B_PROTECTED_PV_OK {host} os_pv={os_pv['path']}->{os_pv['vg']}")
+          print(f"P5B_PROTECTED_PV_OK {host} os_pv={os_pv['path']}->{os_pv['vg']} found=1")
           # vg_piraeus VG free > 0
           vg = vglist.get("vg_piraeus")
           if vg is None: print("VG_PIRAEUS_MISSING"); sys.exit(1)
-          vg_free = float(str(vg.get("vg_free","0")).replace(",",".").replace(" ",""))
+          vg_free_s = str(vg.get("vg_free","0"))
+          vg_free_m = re.search(r'(\d+(?:[.,]\d+)?)', vg_free_s)
+          vg_free = float(vg_free_m.group(1).replace(",", ".")) if vg_free_m else -1.0
           if vg_free <= 0:
               print(f"VG_FREE_ZERO vg_free={vg_free}"); sys.exit(1)
           # D4: exactly one thin_piraeus, assert thin-pool type + active + data%/meta% parseable
@@ -392,8 +403,8 @@
       run_once: true
       delegate_to: node-01
 
-    # ═══ PHASE 4 — pinned source/version gate (parse versions.lock + vendored manifest) ═══
-    - name: PHASE 4 — pinned source gate (parse versions.lock + vendored manifest.yaml)
+    # ═══ PHASE 4 — pinned source/version gate (versions.lock + vendored full image-config) ═══
+    - name: PHASE 4 — pinned source gate (versions.lock + vendored image-config set equality)
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
@@ -415,36 +426,40 @@
               if got[k] != v:
                   print(f"VERSION_LOCK_FAIL {k}={got[k]} want={v}"); sys.exit(1)
           print("versions.lock:", got)
-          # 2) vendored manifest.yaml — parse image-config component tags
+          # 2) vendored manifest.yaml — enumerate EVERY image-config component (tag -> image)
           manifest = open("/root/otus-diplom/manifests/piraeus/v2.10.6/manifest.yaml").read()
-          # image config block: components with `tag:` and `image:`
-          def get_mf_tag(comp):
-              # find "  <comp>:" then tag within following lines
-              m = re.search(r'^\s*'+re.escape(comp)+r':\s*$.*?^\s*tag:\s*"?([^"\s]+)"?', manifest, re.M | re.S)
-              if not m:
-                  # alternative: tag on same indentation as component
-                  m = re.search(re.escape(comp)+r':\s*\n\s*tag:\s*"?([^"\s]+)"?', manifest)
-              return m.group(1) if m else None
-          vendored = {
-            "piraeus-operator": get_mf_tag("piraeus-operator"),
-            "linstor-server": get_mf_tag("piraeus-server"),
-            "linstor-csi": get_mf_tag("piraeus-csi"),
-            "drbd9-resolute": get_mf_tag("drbd9-resolute"),
-            "drbd-utils": get_mf_tag("drbd-utils") or "9.34.3",
-          }
-          print("vendored manifest tags:", vendored)
-          # exact mapping assert
-          mf_map = {
-            "piraeus-operator": "2.10.6",
-            "linstor-server": "1.33.2",
-            "linstor-csi": "1.11.0",
-            "drbd9-resolute": "9.3.2",
-          }
-          for comp, wantv in mf_map.items():
-              v = vendored.get(comp)
-              if v != wantv:
-                  print(f"VENDORED_TAG_FAIL {comp}={v} want={wantv}"); sys.exit(1)
-          print("PINNED_SOURCE_GATE_OK (versions.lock + vendored manifest)")
+          # every component has "tag:" immediately followed by "image:"; match sub-entries
+          # (e.g. drbd9-almalinux8) have no tag, so they are correctly excluded.
+          pairs = re.findall(r'tag:\s*"?(\S+)"?\s*\n(?:\s*#.*\n)*\s*image:\s*(\S+)', manifest)
+          vendored_short = set((img.strip(), tag.strip()) for tag, img in pairs)
+          # piraeus-operator image is hard-coded in the operator Deployment (not in image-config)
+          op_img = re.search(r'image:\s*quay\.io/piraeusdatastore/piraeus-operator:(\S+)', manifest)
+          if not op_img: print("VENDORED_OPERATOR_IMAGE_FAIL"); sys.exit(1)
+          vendored_short.add(("piraeus-operator", op_img.group(1).strip()))
+          # drbd-utils is NOT an image (utility inside piraeus-server): proof chain =
+          #   versions.lock drbd_utils=9.34.3 + piraeus-server:v1.33.2 pinned/verified + runtime drbdadm=9.34.3
+          print("vendored manifest images (short,tag):", sorted(vendored_short))
+          # 3) images.lock P5C1 section — derive (short_image_name, tag) set.
+          # P5C1 images live under quay.io/piraeusdatastore/ or registry.k8s.io/sig-storage/.
+          # calico (quay.io/tigera, quay.io/calico) and kube-vip (ghcr.io) are excluded.
+          ilock = open("/root/otus-diplom/images.lock").read()
+          blocks = re.split(r'\n  - component:', ilock)
+          lock_short = set()
+          for b in blocks[1:]:
+              nm = b.strip().split('\n')[0].strip()
+              img = re.search(r'image:\s*"?([^"\s]+)"?', b)
+              tag = re.search(r'tag:\s*"?([^"\s]+)"?', b)
+              if img and tag:
+                  full = img.group(1).strip()
+                  if full.startswith("quay.io/piraeusdatastore/") or full.startswith("registry.k8s.io/sig-storage/"):
+                      short = full.split('/')[-1]
+                      lock_short.add((short, tag.group(1).strip()))
+          print("images.lock P5C1 images (short,tag):", sorted(lock_short))
+          if vendored_short != lock_short:
+              only_mf = sorted(vendored_short - lock_short)
+              only_lk = sorted(lock_short - vendored_short)
+              print(f"IMAGE_SET_MISMATCH manifest_only={only_mf} lock_only={only_lk}"); sys.exit(1)
+          print("PINNED_SOURCE_GATE_OK (versions.lock + vendored image-config == images.lock)")
           PYEOF
       register: ph4
       changed_when: false
@@ -457,17 +472,8 @@
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
-          import re, sys, json, subprocess, urllib.request
+          import re, sys, json, urllib.request, urllib.error
           lock = open("/root/otus-diplom/images.lock").read()
-          # mandatory set derived from images.lock P5C1 entries (17 components)
-          mandatory = [
-            "piraeus-operator","linstor-server","linstor-csi","drbd9-loader",
-            "drbd-reactor","piraeus-ha-controller","drbd-shutdown-guard",
-            "linstor-affinity-controller","csi-attacher","csi-provisioner",
-            "csi-snapshotter","csi-resizer","csi-node-driver-registrar",
-            "csi-livenessprobe","csi-external-health-monitor-controller",
-            "piraeus-csi-nfs-server","ktls-utils",
-          ]
           blocks = re.split(r'\n  - component:', lock)
           comps = {}
           for b in blocks[1:]:
@@ -476,61 +482,65 @@
               ver = re.search(r'verified:\s*(true|false)', b)
               img = re.search(r'image:\s*"?([^"\s]+)"?', b)
               tag = re.search(r'tag:\s*"?([^"\s]+)"?', b)
-              comps[nm] = {"digest": dig.group(1) if dig else None,
-                           "verified": ver.group(1) if ver else None,
-                           "image": img.group(1) if img else None,
-                           "tag": tag.group(1) if tag else None}
-          # 1) each mandatory entry verified:true + sha256
-          for c in mandatory:
-              e = comps.get(c)
-              ok = e and e["verified"] == "true" and e["digest"] and e["digest"].startswith("sha256:")
-              if not ok:
-                  print(f"IMAGE_SUPPLY_FAIL {c}"); sys.exit(1)
-          # 2) deterministic registry manifest amd64 pullability proof (all commands rc checked)
-          def registry_token(repo):
-              url = f"https://quay.io/v2/auth?service=quay.io&scope=repository:{repo}:pull"
-              req = urllib.request.Request(url)
-              with urllib.request.urlopen(req, timeout=30) as r:
-                  return json.loads(r.read()).get("token","")
-          def amd64_digest(repo, tag):
-              tok = registry_token(repo)
-              req = urllib.request.Request(
-                  f"https://quay.io/v2/{repo}/manifests/{tag}",
-                  headers={"Authorization": f"Bearer {tok}",
-                           "Accept": "application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.oci.image.manifest.v1+json"})
+              full = img.group(1).strip() if img else ""
+              if full.startswith("quay.io/piraeusdatastore/") or full.startswith("registry.k8s.io/sig-storage/"):
+                  comps[nm] = {"digest": dig.group(1) if dig else None,
+                               "verified": ver.group(1) if ver else None,
+                               "image": full,
+                               "tag": tag.group(1).strip() if tag else None}
+          # derived mandatory set == images.lock P5C1 entries. every entry must be verified:true + exact sha256.
+          for nm, e in comps.items():
+              if e["verified"] != "true" or not (e["digest"] and re.fullmatch(r"sha256:[0-9a-f]{64}", e["digest"])):
+                  print(f"IMAGE_SUPPLY_FAIL {nm}"); sys.exit(1)
+          def get_token(reg, repo):
+              try:
+                  urllib.request.urlopen(f"https://{reg}/v2/", timeout=20)
+                  return None
+              except urllib.error.HTTPError as ex:
+                  if ex.code != 401: raise
+                  hdr = ex.headers.get("WWW-Authenticate","")
+                  rm = re.search(r'realm="([^"]+)"', hdr)
+                  if not rm: print(f"NO_REALM {reg}"); sys.exit(1)
+                  realm = rm.group(1)
+                  sv = re.search(r'service="([^"]+)"', hdr)
+                  service = sv.group(1) if sv else reg
+                  url = f"{realm}?service={service}&scope=repository:{repo}:pull"
+                  with urllib.request.urlopen(url, timeout=20) as r:
+                      tok = json.loads(r.read())
+                  return tok.get("token") or tok.get("access_token")
+          def amd64_manifest_digest(image_full, tag):
+              reg, repo = image_full.split("/", 1)
+              tok = get_token(reg, repo)
+              hdrs = {"Accept": "application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.v2+json"}
+              if tok: hdrs["Authorization"] = f"Bearer {tok}"
+              req = urllib.request.Request(f"https://{reg}/v2/{repo}/manifests/{tag}", headers=hdrs)
               with urllib.request.urlopen(req, timeout=30) as r:
                   data = json.loads(r.read())
+                  content_digest = r.headers.get("Docker-Content-Digest")
               mt = data.get("mediaType","")
               if "index" in mt or "manifest.list" in mt:
                   for m in data.get("manifests",[]):
                       p = m.get("platform",{})
                       if p.get("os")=="linux" and p.get("architecture")=="amd64":
-                          return m.get("digest")
-                  return None
+                          d = m.get("digest")
+                          if not d: print(f"NO_AMD64_DIGEST {image_full}:{tag}"); sys.exit(1)
+                          return d
+                  print(f"NO_AMD64_PLATFORM {image_full}:{tag}"); sys.exit(1)
               else:
-                  # single manifest
-                  return None  # digest is of the manifest itself; rely on images.lock digest
-          quay_images = {
-            "piraeus-operator": ("piraeusdatastore/piraeus-operator", "v2.10.6"),
-            "linstor-server": ("piraeusdatastore/piraeus-server", "v1.33.2"),
-            "linstor-csi": ("piraeusdatastore/piraeus-csi", "v1.11.0"),
-            "drbd9-loader": ("piraeusdatastore/drbd9-resolute", "v9.3.2"),
-            "drbd-reactor": ("piraeusdatastore/drbd-reactor", "v1.11.0"),
-            "piraeus-ha-controller": ("piraeusdatastore/piraeus-ha-controller", "v1.3.2"),
-            "drbd-shutdown-guard": ("piraeusdatastore/drbd-shutdown-guard", "v1.1.2"),
-            "linstor-affinity-controller": ("piraeusdatastore/linstor-affinity-controller", "v1.4.0"),
-            "piraeus-csi-nfs-server": ("piraeusdatastore/piraeus-csi-nfs-server", "v1.11.0"),
-            "ktls-utils": ("piraeusdatastore/ktls-utils", "v1.2.1"),
-          }
-          print("image supply gate (registry amd64 pullability):")
-          for comp, (repo, tag) in quay_images.items():
+                  # single manifest: registry content digest MUST resolve (D7)
+                  if not content_digest:
+                      print(f"SINGLE_MANIFEST_NO_DIGEST {image_full}:{tag}"); sys.exit(1)
+                  return content_digest
+          print("image supply gate (all registries, linux/amd64, exact digest):")
+          for nm, e in sorted(comps.items()):
               try:
-                  dg = amd64_digest(repo, tag)
-                  print(f"  {comp} {repo}:{tag} amd64_manifest={dg or 'single-manifest'}")
+                  dg = amd64_manifest_digest(e["image"], e["tag"])
               except Exception as ex:
-                  print(f"  {comp} {repo}:{tag} REGISTRY_QUERY_FAIL {ex}"); sys.exit(1)
-          # k8s.io sig-storage images (registry.k8s.io) — pullability assumed via runtime; assert digest present in lock
-          print("IMAGE_SUPPLY_GATE_OK (verified:true + sha256 + amd64 registry manifest)")
+                  print(f"  {nm} {e['image']}:{e['tag']} REGISTRY_QUERY_FAIL {ex}"); sys.exit(1)
+              if dg != e["digest"]:
+                  print(f"  {nm} DIGEST_MISMATCH registry={dg} lock={e['digest']}"); sys.exit(1)
+              print(f"  {nm} {e['image']}:{e['tag']} amd64={dg} MATCH")
+          print("IMAGE_SUPPLY_GATE_OK (all registries + all required + linux/amd64 + exact digest)")
           PYEOF
       register: ph5
       changed_when: false
@@ -929,7 +939,13 @@
           kvo = subprocess.run(KC+["get","pods","-n","kube-system","-o","json"], capture_output=True, text=True)
           if kvo.returncode != 0: print("P3_FAIL"); sys.exit(1)
           kv = [p for p in json.loads(kvo.stdout).get("items",[]) if p.get("metadata",{}).get("name","").startswith("kube-vip-")]
+          def pod_ready(p):
+              rcs = [c for c in p.get("status",{}).get("conditions",[]) if c.get("type")=="Ready"]
+              if rcs: return rcs[0].get("status")=="True"
+              css = p.get("status",{}).get("containerStatuses",[])
+              return bool(css) and all(c.get("ready",False) for c in css)
           kv_running = sum(1 for p in kv if p.get("status",{}).get("phase")=="Running")
+          kv_ready = sum(1 for p in kv if pod_ready(p))
           rz = subprocess.run(KC+["get","--raw=/readyz"], capture_output=True, text=True)
           if rz.returncode != 0: print("P3_FAIL"); sys.exit(1)
           rzok = rz.stdout.strip()
@@ -938,7 +954,7 @@
               r = subprocess.run(["curl","-sk","--max-time","5",f"https://{ip}:6443/livez"], capture_output=True, text=True)
               livez.append((r.returncode, r.stdout.strip()))
           ok_livez = sum(1 for rc,v in livez if rc==0 and v=="ok")
-          if len(members)!=3 or mlearn!=0 or len(eps)!=3 or elearn!=0 or len(leaders)!=1 or aep!=1 or healthy!=3 or len(kv)!=3 or kv_running!=3 or rzok!="ok" or ok_livez!=3:
+          if len(members)!=3 or mlearn!=0 or len(eps)!=3 or elearn!=0 or len(leaders)!=1 or aep!=1 or healthy!=3 or len(kv)!=3 or kv_running!=3 or kv_ready!=3 or rzok!="ok" or ok_livez!=3:
               print("P3_FAIL"); sys.exit(1)
           print("P3_POST_OK")
           PYEOF

@@ -1,0 +1,21 @@
+# TASK-017-R5 — Bootstrap Pinned/Vendored Source Audit (D4/D5)
+
+D4: versions.lock assert:
+  linstor_operator=2.10.6, linstor=1.33.2, linstor_csi=1.11.0, drbd=9.3.2, drbd_utils=9.34.3.
+  Vendored manifest.yaml image-config enumerated COMPLETELY (все 17 image/tag).
+  drbd-utils hard-coded fallback: УДАЛЁН (proof chain = versions.lock + piraeus-server
+  pinned/verified + runtime drbdadm --version=9.34.3).
+
+D5: mandatory image set DERIVED (не hard-coded):
+  A. vendored piraeus-operator v2.10.6 image-config
+  B. expected P5C1 workload image references
+  C. images.lock P5C1 section
+  Set equality: vendored (short,tag) == images.lock P5C1 (short,tag). Cardinality 17
+  is an expected RESULT, not SoT. Unclassified/missing => FAIL.
+
+REQUIRED ZERO:
+  hard-coded drbd-utils vendored fallback = 0
+  partial vendored image-tag comparison = 0
+  manual mandatory image set as sole SoT = 0
+
+RESULT: PASS (verified: vendored 17 == images.lock 17)

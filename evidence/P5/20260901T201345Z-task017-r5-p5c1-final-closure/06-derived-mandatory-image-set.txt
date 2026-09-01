@@ -1,0 +1,25 @@
+# TASK-017-R5 — Derived Mandatory Image Set (D5)
+
+17 components derived from vendored manifest v2.10.6 image-config + piraeus-operator Deployment:
+
+quay.io/piraeusdatastore/piraeus-operator:v2.10.6          (Deployment)
+quay.io/piraeusdatastore/piraeus-server:v1.33.2            (linstor-controller + linstor-satellite)
+quay.io/piraeusdatastore/piraeus-csi:v1.11.0
+quay.io/piraeusdatastore/piraeus-csi-nfs-server:v1.11.0
+quay.io/piraeusdatastore/drbd-reactor:v1.11.0
+quay.io/piraeusdatastore/piraeus-ha-controller:v1.3.2
+quay.io/piraeusdatastore/drbd-shutdown-guard:v1.1.2
+quay.io/piraeusdatastore/ktls-utils:v1.2.1
+quay.io/piraeusdatastore/linstor-affinity-controller:v1.4.0
+quay.io/piraeusdatastore/drbd9-resolute:v9.3.2             (drbd-module-loader)
+registry.k8s.io/sig-storage/csi-attacher:v4.11.0
+registry.k8s.io/sig-storage/livenessprobe:v2.18.0
+registry.k8s.io/sig-storage/csi-provisioner:v6.2.0
+registry.k8s.io/sig-storage/csi-snapshotter:v8.5.0
+registry.k8s.io/sig-storage/csi-resizer:v2.1.0
+registry.k8s.io/sig-storage/csi-external-health-monitor-controller:v0.17.0
+registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.16.0
+
+drbd-utils (9.34.3) НЕ образ — утилита внутри piraeus-server.
+
+RESULT: DERIVED / COMPLETE (17 == images.lock P5C1 entries)

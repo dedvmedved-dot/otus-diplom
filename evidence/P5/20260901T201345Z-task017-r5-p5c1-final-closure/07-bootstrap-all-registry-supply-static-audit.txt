@@ -1,0 +1,21 @@
+# TASK-017-R5 — Bootstrap All-Registry Supply Static Audit (D6/D7)
+
+D6: PHASE 5 checks ALL registries (не assumed-via-runtime):
+  для каждого derived required image — deterministic registry manifest query,
+  resolve linux/amd64, verify exact locked digest, rc-checked.
+  Поддержка BOTH quay.io AND registry.k8s.io (generic WWW-Authenticate token flow).
+  No fallback tag/version/digest.
+
+D7: single-manifest digest verified:
+  если manifest не index/list — требуем Docker-Content-Digest header; unknown media
+  type / unresolved digest / missing platform / digest mismatch => FAIL.
+
+REQUIRED ZERO:
+  registry family assumed-via-runtime = 0
+  registry family skipped = 0
+  fallback tag/version/digest = 0
+  single-manifest unresolved digest PASS = 0
+
+R5 НЕ выполняет bootstrap image pulls (static audit only).
+
+RESULT: PASS

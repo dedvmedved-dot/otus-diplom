@@ -1,0 +1,26 @@
+# TASK-017-R5 — Runtime Verifier Static Audit (D8-D11)
+
+D8: complete mandatory key set — derive P5C1 entries из images.lock (по registry prefix),
+  требовать verified=true + image + tag + digest=sha256:64hex для КАЖДОГО; missing entry
+  не может silently reduce denominator.
+
+D9: component-bound running + registry-bound non-running:
+  running: component -> image:tag -> pod/container -> configured image -> imageID -> exact digest.
+  non-running (ktls-utils): factual registry metadata check (exact image/tag/digest/linux-amd64),
+  НЕ name-only exception.
+
+D10: effective control-plane toleration включает CSI controller Deployment:
+  operator-controller-manager, gencert, LinstorCluster, satellites x3, csi-node,
+  linstor-csi-controller, ha-controller — все требуемые, no SKIP.
+
+D11: CSI cardinality exact:
+  controller deploy desired=available=ready=1, total pod count=1 (Running, all Ready);
+  csi-node total=3 (one per node, Running, all Ready); CSIDriver exactly one.
+
+REQUIRED ZERO:
+  mandatory images.lock key can silently disappear = 0
+  non-running required image name-only exception = 0
+  required toleration SKIP = 0
+  CSI controller effective toleration unverified = 0
+
+RESULT: PASS

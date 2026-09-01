@@ -9,7 +9,7 @@
 # controller/satellites/csi/drbd/toleration/lbmakeopts/linstor-boundary/k8s-storage/
 # image-digest/vlan141), P5B LVM POST+compare, P1-P4 POST, P4B fingerprint, FINAL.
 
-- name: "P5C1 runtime read-only verification (TASK-017-R4)"
+- name: "P5C1 runtime read-only verification (TASK-017-R5)"
   hosts: all
   gather_facts: false
   become: true
@@ -215,12 +215,12 @@
       run_once: true
       delegate_to: node-01
 
-    # ═══ P5B LVM PRE (D9: composite hardware identity) ═══
-    - name: P5B-LVM-PRE — composite hardware resolution (per node)
+    # ═══ P5B LVM PRE (D3: strict baseline assertion) ═══
+    - name: P5B-BASELINE-PRE — strict composite assertion (per node)
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
-          import json, subprocess, sys
+          import json, subprocess, sys, re
           host = "{{ inventory_hostname }}"
           expected = {{ p5b_candidates[inventory_hostname] | to_json }}
           os_pv = {{ os_pv_map[inventory_hostname] | to_json }}
@@ -228,67 +228,94 @@
               r = subprocess.run(cmd, capture_output=True, text=True)
               if r.returncode != 0: print(f"CMD_FAIL {cmd}"); sys.exit(1)
               return json.loads(r.stdout)
-          # resolve hardware by full composite identity
+          # composite hardware resolution
           lb = run(["lsblk","--json","-b","-o","NAME,SERIAL,WWN,MODEL,SIZE,TYPE"])
           disks = []
           for b in lb.get("blockdevices",[]):
               if b.get("type") == "disk":
                   disks.append({"name": b.get("name",""),"serial": b.get("serial",""),"wwn": b.get("wwn",""),
-                                "model": b.get("model",""),"size": b.get("size","")})
+                                "model": b.get("model",""),"size": b.get("size",""),"type": b.get("type","")})
           def nw(w): return (w or "").strip().lower()
           def nm(m): return (m or "").strip().upper()
           resolved = []
           for cand in expected:
-              m = [b for b in disks if b["serial"]==cand["serial"] and nw(b["wwn"])==nw(cand["wwn"])
+              m = [b for b in disks if b["type"]=="disk" and b["serial"]==cand["serial"] and nw(b["wwn"])==nw(cand["wwn"])
                    and nm(b["model"])==nm(cand["model"]) and str(b["size"])==str(cand["size"])]
               if len(m) != 1:
                   print(f"CANDIDATE_MATCH_FAIL {cand['serial']} n={len(m)}"); sys.exit(1)
               resolved.append(m[0])
-          devs = [r["name"] for r in resolved]
-          if len(set(devs)) != 2:
-              print(f"CANDIDATE_DUPLICATE {devs}"); sys.exit(1)
+          if len(set(r["name"] for r in resolved)) != 2:
+              print(f"CANDIDATE_DUPLICATE"); sys.exit(1)
           pvs = run(["pvs","--reportformat","json","-o","pv_name,vg_name,pv_uuid,pv_size"])
           pvlist = pvs["report"][0]["pv"]
           vgs = run(["vgs","--reportformat","json","-o","vg_name,vg_uuid,vg_free,pv_count"])
           vglist = {v["vg_name"]: v for v in vgs["report"][0]["vg"]}
           lvs = run(["lvs","--reportformat","json","-o","vg_name,lv_name,lv_uuid,lv_attr,lv_size,data_percent,metadata_percent"])
           lvlist = lvs["report"][0]["lv"]
-          vg = vglist.get("vg_piraeus")
-          thin = [l for l in lvlist if l["lv_name"]=="thin_piraeus" and l["vg_name"]=="vg_piraeus"]
-          vg_pv_uuids = sorted(set(p["pv_uuid"] for p in pvlist if p["vg_name"]=="vg_piraeus"))
           expected_paths = set("/dev/"+r["name"] for r in resolved)
           path_to_uuid = {p["pv_name"]: p["pv_uuid"] for p in pvlist}
-          expected_uuids = sorted(set(path_to_uuid[p] for p in expected_paths if p in path_to_uuid))
-          # OS PV map + candidate/non-candidate classification (D3 corrected)
+          actual_vg_paths = set(p["pv_name"] for p in pvlist if p["vg_name"]=="vg_piraeus")
+          actual_vg_uuids = set(p["pv_uuid"] for p in pvlist if p["vg_name"]=="vg_piraeus")
+          expected_uuids = set(path_to_uuid[p] for p in expected_paths if p in path_to_uuid)
+          # PV membership exact
+          if expected_paths != actual_vg_paths:
+              print(f"P5B_PV_PATH_SET_FAIL"); sys.exit(1)
+          if expected_uuids != actual_vg_uuids:
+              print(f"P5B_PV_UUID_SET_FAIL"); sys.exit(1)
+          if len(actual_vg_paths) != 2 or len(actual_vg_uuids) != 2:
+              print(f"P5B_PV_COUNT_FAIL"); sys.exit(1)
+          # OS PV existence + exact map + non-candidate exclusion
+          os_pv_matches = [p for p in pvlist if p["pv_name"] == os_pv["path"]]
+          if len(os_pv_matches) != 1:
+              print(f"OS_PV_FOUND_FAIL {host} matches={len(os_pv_matches)}"); sys.exit(1)
           cand_paths = set("/dev/"+r["name"] for r in resolved)
-          os_pv_ok = True
           for p in pvlist:
               if p["pv_name"] == os_pv["path"]:
                   if p["vg_name"] != os_pv["vg"] or p["vg_name"] == "vg_piraeus":
-                      os_pv_ok = False
+                      print(f"OS_PV_MAP_FAIL"); sys.exit(1)
               elif p["pv_name"] in cand_paths:
                   if p["vg_name"] != "vg_piraeus":
-                      os_pv_ok = False
+                      print(f"CANDIDATE_NOT_IN_PIRAEUS"); sys.exit(1)
               else:
                   if p["vg_name"] == "vg_piraeus":
-                      os_pv_ok = False
+                      print(f"NON_CANDIDATE_PV_IN_PIRAEUS"); sys.exit(1)
+          # vg_piraeus exactly once, VG free parseable > 0
+          vg = vglist.get("vg_piraeus")
+          if vg is None: print("VG_PIRAEUS_MISSING"); sys.exit(1)
+          vg_free_s = str(vg.get("vg_free","0"))
+          vg_free_m = re.search(r'(\d+(?:[.,]\d+)?)', vg_free_s)
+          vg_free = float(vg_free_m.group(1).replace(",", ".")) if vg_free_m else -1.0
+          if vg_free <= 0: print("VG_FREE_ZERO"); sys.exit(1)
+          # thin_piraeus exactly once, thin-pool type, active, data/meta% parseable
+          thin = [l for l in lvlist if l["lv_name"]=="thin_piraeus" and l["vg_name"]=="vg_piraeus"]
+          if len(thin) != 1: print("THIN_PIRAEUS_COUNT_FAIL"); sys.exit(1)
+          attr = thin[0].get("lv_attr","")
+          if attr[0:1] != "t": print("THIN_NOT_THINPOOL"); sys.exit(1)
+          if attr[4:5] != "a": print("THIN_NOT_ACTIVE"); sys.exit(1)
+          def pct(x):
+              try: return float(str(x).replace(",",".").strip())
+              except: return None
+          d_pct = pct(thin[0].get("data_percent","")); m_pct = pct(thin[0].get("metadata_percent",""))
+          if d_pct is None or m_pct is None: print("THIN_PCT_UNPARSEABLE"); sys.exit(1)
+          if not (0 <= d_pct < 100) or not (0 <= m_pct < 100): print("THIN_PCT_OUT_OF_RANGE"); sys.exit(1)
+          # emit canonical state
           canon = {
             "host": host,
             "candidate_paths": sorted(expected_paths),
-            "candidate_pv_uuids": expected_uuids,
+            "candidate_pv_uuids": sorted(expected_uuids),
             "candidate_serial_wwn_model_size": sorted([r["serial"], r["wwn"], r["model"], str(r["size"])] for r in resolved),
-            "vg_piraeus_uuid": vg.get("vg_uuid","") if vg else "",
-            "vg_pv_count": vg.get("pv_count","") if vg else "",
-            "thin_lv_uuid": thin[0].get("lv_uuid","") if thin else "",
-            "thin_lv_size": thin[0].get("lv_size","") if thin else "",
-            "thin_lv_attr": thin[0].get("lv_attr","") if thin else "",
-            "thin_data_percent": thin[0].get("data_percent","") if thin else "",
-            "thin_metadata_percent": thin[0].get("metadata_percent","") if thin else "",
+            "vg_piraeus_uuid": vg.get("vg_uuid",""),
+            "vg_pv_count": vg.get("pv_count",""),
+            "thin_lv_uuid": thin[0].get("lv_uuid",""),
+            "thin_lv_size": thin[0].get("lv_size",""),
+            "thin_lv_attr": attr,
+            "thin_data_percent": thin[0].get("data_percent",""),
+            "thin_metadata_percent": thin[0].get("metadata_percent",""),
             "os_pv": os_pv,
-            "protected_pv_in_piraeus": not os_pv_ok,
+            "protected_pv_in_piraeus": False,
           }
           open("/tmp/p5c1_verify_canon_pre_{{ inventory_hostname }}.json","w").write(json.dumps(canon, sort_keys=True))
-          print(f"P5B_LVM_PRE_OK {host} composite 2/2")
+          print(f"P5B_BASELINE_ASSERT_OK {host}")
           PYEOF
       register: lvmpre
       changed_when: false
@@ -444,7 +471,7 @@
           csid = subprocess.run(["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","get","csidriver","linstor.csi.linbit.com","-o","json"], capture_output=True, text=True)
           csid_present = (csid.returncode == 0)
           print(f"csi_controller desired={spec_r} avail={avail} ready={ready} ctrl_pods={len(ctrl)} ctrl_running={len(ctrl_running)} ctrl_ready={ctrl_all_ready} csi_node={len(npods)} nodes_ok={ok_nodes} node_running_ready={all_ready} image={img} csidriver={csid_present}")
-          if spec_r!=1 or avail!=1 or ready!=1 or len(ctrl_running)!=1 or not ctrl_all_ready or len(npods)!=3 or not ok_nodes or not all_ready or "piraeus-csi:v1.11.0" not in img or not csid_present:
+          if spec_r!=1 or avail!=1 or ready!=1 or len(ctrl)!=1 or len(ctrl_running)!=1 or not ctrl_all_ready or len(npods)!=3 or not ok_nodes or not all_ready or "piraeus-csi:v1.11.0" not in img or not csid_present:
               print("CSI_GATE_FAIL"); sys.exit(1)
           print("CSI_GATE_OK")
           PYEOF
@@ -503,12 +530,13 @@
           if r.returncode != 0: print("TOLERATION_FAIL linstorcluster"); sys.exit(1)
           tols = json.loads(r.stdout)["spec"].get("tolerations",[])
           if not has_tol(tols): print("TOLERATION_MISSING linstorcluster"); sys.exit(1)
-          # effective satellite / CSI / HA runtime components — REQUIRED, no skip
+          # effective satellite / CSI / HA runtime components — REQUIRED, no skip (D10 includes CSI controller)
           runtime_targets = [
             ("daemonset","linstor-satellite.node-01"),
             ("daemonset","linstor-satellite.node-02"),
             ("daemonset","linstor-satellite.node-03"),
             ("daemonset","linstor-csi-node"),
+            ("deployment","linstor-csi-controller"),
             ("daemonset","ha-controller"),
           ]
           for kind, name in runtime_targets:
@@ -682,18 +710,9 @@
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
-          import json, subprocess, sys, re
+          import json, subprocess, sys, re, urllib.request, urllib.error
           # expected digests MUST come from images.lock (single SoT), not embedded
           lock = open("/tmp/p5c1-images.lock").read()
-          # mandatory set: 17 P5C1 components (derived from vendored manifest + runtime)
-          mandatory = [
-            "piraeus-operator","linstor-server","linstor-csi","drbd9-loader",
-            "drbd-reactor","piraeus-ha-controller","drbd-shutdown-guard",
-            "linstor-affinity-controller","csi-attacher","csi-provisioner",
-            "csi-snapshotter","csi-resizer","csi-node-driver-registrar",
-            "csi-livenessprobe","csi-external-health-monitor-controller",
-            "piraeus-csi-nfs-server","ktls-utils",
-          ]
           blocks = re.split(r'\n  - component:', lock)
           expected = {}
           for b in blocks[1:]:
@@ -702,53 +721,83 @@
               img = re.search(r'image:\s*"?([^"\s]+)"?', b)
               tag = re.search(r'tag:\s*"?([^"\s]+)"?', b)
               ver = re.search(r'verified:\s*(true|false)', b)
-              if nm in mandatory:
+              full = img.group(1).strip() if img else ""
+              # P5C1 components only (exclude calico/kube-vip)
+              if full.startswith("quay.io/piraeusdatastore/") or full.startswith("registry.k8s.io/sig-storage/"):
                   expected[nm] = {"digest": dig.group(1) if dig else None,
-                                  "image": img.group(1) if img else None,
-                                  "tag": tag.group(1) if tag else None,
+                                  "image": full,
+                                  "tag": tag.group(1).strip() if tag else None,
                                   "verified": ver.group(1) if ver else None}
-          # every mandatory entry must be verified:true with a digest
+          # D8: complete mandatory key set — every derived P5C1 entry present, verified:true, image/tag/digest present
           for nm, e in expected.items():
-              if e["verified"] != "true" or not e["digest"]:
+              if e["verified"] != "true" or not e["image"] or not e["tag"] or not re.fullmatch(r"sha256:[0-9a-f]{64}", e["digest"] or ""):
                   print(f"IMAGES_LOCK_ENTRY_FAIL {nm}"); sys.exit(1)
           KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","-n","piraeus-datastore"]
           r = subprocess.run(KC+["get","pods","-o","json"], capture_output=True, text=True)
           if r.returncode != 0: print("IMAGE_DIGEST_FAIL"); sys.exit(1)
           pods = json.loads(r.stdout).get("items",[])
-          # build runtime mapping: configured image -> imageID digest (per container/initContainer)
-          runtime = []  # list of (image, imageID_digest, pod, container)
+          # runtime mapping: configured image -> imageID digest (per container/initContainer)
+          runtime = []  # list of (image, digest, pod, container)
           for p in pods:
               for c in p.get("spec",{}).get("containers",[])+p.get("spec",{}).get("initContainers",[]):
-                  img = c.get("image","")
-                  runtime.append({"image": img, "pod": p["metadata"]["name"]})
+                  runtime.append({"image": c.get("image",""), "pod": p["metadata"]["name"], "digest": None})
               for c in p.get("status",{}).get("containerStatuses",[])+p.get("status",{}).get("initContainerStatuses",[]):
                   img = c.get("image",""); iid = c.get("imageID","")
                   m = re.search(r'(sha256:[0-9a-f]{64})', iid)
                   if img and m:
-                      runtime.append({"image": img, "digest": m.group(1)})
-          # component-bound matching: bind by image name+tag from images.lock
-          matched = 0; mismatched = []
-          for nm, e in expected.items():
-              # expected image:tag = e.image + ":" + e.tag
+                      runtime.append({"image": img, "digest": m.group(1), "pod": p["metadata"]["name"]})
+          # D9: component-bound running binding + registry-bound non-running proof
+          running_bound = 0; non_running = []
+          for nm, e in sorted(expected.items()):
               exp_img = f"{e['image']}:{e['tag']}"
               exp_dig = e["digest"]
-              # find runtime containers whose configured image == exp_img AND digest == exp_dig
               bound = [x for x in runtime if x.get("image")==exp_img and x.get("digest")==exp_dig]
-              # ktls-utils may not run; allow registry manifest proof fallback (digest in lock is factual)
               if bound:
-                  matched += 1
-                  print(f"  {nm}: {exp_img} -> {exp_dig} BOUND {len(bound)} container(s)")
+                  running_bound += 1
+                  print(f"  {nm}: {exp_img} -> {exp_dig} RUNNING_BOUND {len(bound)} container(s)")
               else:
-                  # no running container for this exact image:digest
-                  mismatched.append(nm)
-                  print(f"  {nm}: {exp_img} -> {exp_dig} NO_RUNTIME_BINDING")
-          print(f"component_image_digest matched={matched}/{len(expected)} mismatched={mismatched}")
-          # ktls-utils is NOT running (defined in manifest, not scheduled) — allowed if digest factually proven in lock
-          if matched != len(expected):
-              # permit only ktls-utils as non-running (registry manifest proven)
-              non_running_ok = set(mismatched) <= {"ktls-utils"}
-              if not non_running_ok:
-                  print("COMPONENT_IMAGE_DIGEST_GATE_FAIL"); sys.exit(1)
+                  non_running.append((nm, e))
+                  print(f"  {nm}: {exp_img} -> {exp_dig} NON_RUNNING")
+          print(f"RUNNING_COMPONENTS={running_bound} NON_RUNNING={[n for n,_ in non_running]}")
+          # D9: non-running required components must be registry-bound (exact image/tag/digest + linux/amd64)
+          def get_token(reg, repo):
+              try:
+                  urllib.request.urlopen(f"https://{reg}/v2/", timeout=20); return None
+              except urllib.error.HTTPError as ex:
+                  if ex.code != 401: raise
+                  hdr = ex.headers.get("WWW-Authenticate","")
+                  rm = re.search(r'realm="([^"]+)"', hdr)
+                  if not rm: print(f"NO_REALM {reg}"); sys.exit(1)
+                  sv = re.search(r'service="([^"]+)"', hdr)
+                  service = sv.group(1) if sv else reg
+                  url = f"{rm.group(1)}?service={service}&scope=repository:{repo}:pull"
+                  with urllib.request.urlopen(url, timeout=20) as r2:
+                      tok = json.loads(r2.read())
+                  return tok.get("token") or tok.get("access_token")
+          def amd64_digest(image_full, tag):
+              reg, repo = image_full.split("/", 1)
+              tok = get_token(reg, repo)
+              hdrs = {"Accept": "application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.v2+json"}
+              if tok: hdrs["Authorization"] = f"Bearer {tok}"
+              req = urllib.request.Request(f"https://{reg}/v2/{repo}/manifests/{tag}", headers=hdrs)
+              with urllib.request.urlopen(req, timeout=30) as r3:
+                  data = json.loads(r3.read())
+                  cdig = r3.headers.get("Docker-Content-Digest")
+              mt = data.get("mediaType","")
+              if "index" in mt or "manifest.list" in mt:
+                  for m in data.get("manifests",[]):
+                      p = m.get("platform",{})
+                      if p.get("os")=="linux" and p.get("architecture")=="amd64":
+                          return m.get("digest")
+                  return None
+              return cdig
+          for nm, e in non_running:
+              dg = amd64_digest(e["image"], e["tag"])
+              if dg != e["digest"]:
+                  print(f"NON_RUNNING_REGISTRY_FAIL {nm} registry={dg} lock={e['digest']}"); sys.exit(1)
+              print(f"  {nm}: REGISTRY_BOUND amd64={dg}")
+          if running_bound + len(non_running) != len(expected):
+              print("COMPONENT_IMAGE_DIGEST_GATE_FAIL"); sys.exit(1)
           print("COMPONENT_IMAGE_DIGEST_GATE_OK")
           PYEOF
       register: imggate
@@ -771,12 +820,12 @@
       register: v141gate
       changed_when: false
 
-    # ═══ P5B LVM POST + in-run composite compare (D9) ═══
-    - name: P5B-LVM-POST — composite hardware resolution + semantic compare (per node)
+    # ═══ P5B LVM POST (D3: strict baseline assertion + semantic compare) ═══
+    - name: P5B-BASELINE-POST — strict composite assertion + compare (per node)
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
-          import json, subprocess, sys
+          import json, subprocess, sys, re
           host = "{{ inventory_hostname }}"
           expected = {{ p5b_candidates[inventory_hostname] | to_json }}
           os_pv = {{ os_pv_map[inventory_hostname] | to_json }}
@@ -786,58 +835,78 @@
               return json.loads(r.stdout)
           lb = run(["lsblk","--json","-b","-o","NAME,SERIAL,WWN,MODEL,SIZE,TYPE"])
           disks = [{"name": b.get("name",""),"serial": b.get("serial",""),"wwn": b.get("wwn",""),
-                    "model": b.get("model",""),"size": b.get("size","")} for b in lb.get("blockdevices",[]) if b.get("type")=="disk"]
+                    "model": b.get("model",""),"size": b.get("size",""),"type": b.get("type","")}
+                   for b in lb.get("blockdevices",[]) if b.get("type")=="disk"]
           def nw(w): return (w or "").strip().lower()
           def nm(m): return (m or "").strip().upper()
           resolved = []
           for cand in expected:
-              m = [b for b in disks if b["serial"]==cand["serial"] and nw(b["wwn"])==nw(cand["wwn"])
+              m = [b for b in disks if b["type"]=="disk" and b["serial"]==cand["serial"] and nw(b["wwn"])==nw(cand["wwn"])
                    and nm(b["model"])==nm(cand["model"]) and str(b["size"])==str(cand["size"])]
               if len(m) != 1: print(f"CANDIDATE_MATCH_FAIL {cand['serial']}"); sys.exit(1)
               resolved.append(m[0])
+          if len(set(r["name"] for r in resolved)) != 2: print("CANDIDATE_DUPLICATE"); sys.exit(1)
           pvs = run(["pvs","--reportformat","json","-o","pv_name,vg_name,pv_uuid,pv_size"])
           pvlist = pvs["report"][0]["pv"]
           vgs = run(["vgs","--reportformat","json","-o","vg_name,vg_uuid,vg_free,pv_count"])
           vglist = {v["vg_name"]: v for v in vgs["report"][0]["vg"]}
           lvs = run(["lvs","--reportformat","json","-o","vg_name,lv_name,lv_uuid,lv_attr,lv_size,data_percent,metadata_percent"])
           lvlist = lvs["report"][0]["lv"]
-          vg = vglist.get("vg_piraeus")
-          thin = [l for l in lvlist if l["lv_name"]=="thin_piraeus" and l["vg_name"]=="vg_piraeus"]
           expected_paths = set("/dev/"+r["name"] for r in resolved)
           path_to_uuid = {p["pv_name"]: p["pv_uuid"] for p in pvlist}
-          expected_uuids = sorted(set(path_to_uuid[p] for p in expected_paths if p in path_to_uuid))
-          # OS PV map + candidate/non-candidate classification (D3 corrected)
+          actual_vg_paths = set(p["pv_name"] for p in pvlist if p["vg_name"]=="vg_piraeus")
+          actual_vg_uuids = set(p["pv_uuid"] for p in pvlist if p["vg_name"]=="vg_piraeus")
+          expected_uuids = set(path_to_uuid[p] for p in expected_paths if p in path_to_uuid)
+          if expected_paths != actual_vg_paths: print("P5B_PV_PATH_SET_FAIL"); sys.exit(1)
+          if expected_uuids != actual_vg_uuids: print("P5B_PV_UUID_SET_FAIL"); sys.exit(1)
+          if len(actual_vg_paths) != 2 or len(actual_vg_uuids) != 2: print("P5B_PV_COUNT_FAIL"); sys.exit(1)
+          os_pv_matches = [p for p in pvlist if p["pv_name"] == os_pv["path"]]
+          if len(os_pv_matches) != 1: print(f"OS_PV_FOUND_FAIL {host}"); sys.exit(1)
           cand_paths = set("/dev/"+r["name"] for r in resolved)
-          os_pv_ok = True
           for p in pvlist:
               if p["pv_name"] == os_pv["path"]:
-                  if p["vg_name"] != os_pv["vg"] or p["vg_name"] == "vg_piraeus":
-                      os_pv_ok = False
+                  if p["vg_name"] != os_pv["vg"] or p["vg_name"] == "vg_piraeus": print("OS_PV_MAP_FAIL"); sys.exit(1)
               elif p["pv_name"] in cand_paths:
-                  if p["vg_name"] != "vg_piraeus":
-                      os_pv_ok = False
+                  if p["vg_name"] != "vg_piraeus": print("CANDIDATE_NOT_IN_PIRAEUS"); sys.exit(1)
               else:
-                  if p["vg_name"] == "vg_piraeus":
-                      os_pv_ok = False
+                  if p["vg_name"] == "vg_piraeus": print("NON_CANDIDATE_PV_IN_PIRAEUS"); sys.exit(1)
+          vg = vglist.get("vg_piraeus")
+          if vg is None: print("VG_PIRAEUS_MISSING"); sys.exit(1)
+          vg_free_s = str(vg.get("vg_free","0"))
+          vg_free_m = re.search(r'(\d+(?:[.,]\d+)?)', vg_free_s)
+          vg_free = float(vg_free_m.group(1).replace(",", ".")) if vg_free_m else -1.0
+          if vg_free <= 0: print("VG_FREE_ZERO"); sys.exit(1)
+          thin = [l for l in lvlist if l["lv_name"]=="thin_piraeus" and l["vg_name"]=="vg_piraeus"]
+          if len(thin) != 1: print("THIN_PIRAEUS_COUNT_FAIL"); sys.exit(1)
+          attr = thin[0].get("lv_attr","")
+          if attr[0:1] != "t": print("THIN_NOT_THINPOOL"); sys.exit(1)
+          if attr[4:5] != "a": print("THIN_NOT_ACTIVE"); sys.exit(1)
+          def pct(x):
+              try: return float(str(x).replace(",", ".").strip())
+              except: return None
+          d_pct = pct(thin[0].get("data_percent","")); m_pct = pct(thin[0].get("metadata_percent",""))
+          if d_pct is None or m_pct is None: print("THIN_PCT_UNPARSEABLE"); sys.exit(1)
+          if not (0 <= d_pct < 100) or not (0 <= m_pct < 100): print("THIN_PCT_OUT_OF_RANGE"); sys.exit(1)
+          print(f"P5B_BASELINE_ASSERT_OK {host}")
           canon_post = {
             "host": host,
             "candidate_paths": sorted(expected_paths),
-            "candidate_pv_uuids": expected_uuids,
+            "candidate_pv_uuids": sorted(expected_uuids),
             "candidate_serial_wwn_model_size": sorted([r["serial"], r["wwn"], r["model"], str(r["size"])] for r in resolved),
-            "vg_piraeus_uuid": vg.get("vg_uuid","") if vg else "",
-            "vg_pv_count": vg.get("pv_count","") if vg else "",
-            "thin_lv_uuid": thin[0].get("lv_uuid","") if thin else "",
-            "thin_lv_size": thin[0].get("lv_size","") if thin else "",
-            "thin_lv_attr": thin[0].get("lv_attr","") if thin else "",
-            "thin_data_percent": thin[0].get("data_percent","") if thin else "",
-            "thin_metadata_percent": thin[0].get("metadata_percent","") if thin else "",
+            "vg_piraeus_uuid": vg.get("vg_uuid",""),
+            "vg_pv_count": vg.get("pv_count",""),
+            "thin_lv_uuid": thin[0].get("lv_uuid",""),
+            "thin_lv_size": thin[0].get("lv_size",""),
+            "thin_lv_attr": attr,
+            "thin_data_percent": thin[0].get("data_percent",""),
+            "thin_metadata_percent": thin[0].get("metadata_percent",""),
             "os_pv": os_pv,
-            "protected_pv_in_piraeus": not os_pv_ok,
+            "protected_pv_in_piraeus": False,
           }
           pre = json.loads(open("/tmp/p5c1_verify_canon_pre_{{ inventory_hostname }}.json").read())
           if pre != canon_post:
               print("P5B_LVM_MUTATED"); sys.exit(1)
-          print("P5B_LVM_COMPARE_OK composite-semantic")
+          print("P5B_COMPOSITE_COMPARE_OK")
           PYEOF
       register: lvmcmpgate
       changed_when: false

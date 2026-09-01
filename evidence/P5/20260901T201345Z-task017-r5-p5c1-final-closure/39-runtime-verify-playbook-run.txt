@@ -1,0 +1,144 @@
+
+PLAY [P5C1 runtime read-only verification (TASK-017-R4)] ***********************
+
+TASK [P1 PRE — bond slaves + exact VLAN + default route] ***********************
+[WARNING]: Platform linux on host node-02 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-02]
+[WARNING]: Platform linux on host node-03 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-03]
+[WARNING]: Platform linux on host node-01 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-01]
+
+TASK [P2 PRE — containerd + kubelet + swap] ************************************
+ok: [node-03]
+ok: [node-02]
+ok: [node-01]
+
+TASK [P3 PRE — etcd JSON + kube-vip Running+Ready + VIP + readyz/livez] ********
+ok: [node-01]
+
+TASK [VIP-PRE — local VIP count + aggregate owner ==1] *************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [VIP-AGG-PRE — aggregate owner count == 1] ********************************
+ok: [node-01]
+
+TASK [P4A PRE — Nodes/calico/CoreDNS/IPPool/BGP/autodetect (exact Ready)] ******
+ok: [node-01]
+
+TASK [P4B PRE — validation ns NotFound + fingerprint] **************************
+ok: [node-01]
+
+TASK [P5B-BASELINE-PRE — strict composite assertion (per node)] ****************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [OPERATOR-GATE — desired=1 available=1 ready=1 + pods Running/Ready] ******
+ok: [node-01]
+
+TASK [GENCERT-GATE — pod exactly 1 Running all Ready] **************************
+ok: [node-01]
+
+TASK [LINSTORCLUSTER-GATE — conditions + version + satellites + volumes + capacity] ***
+ok: [node-01]
+
+TASK [CONTROLLER-GATE — rc=0 + server version exactly 1.33.2] ******************
+ok: [node-01]
+
+TASK [SATELLITES-GATE — exactly one per node, all Running/Ready] ***************
+ok: [node-01]
+
+TASK [CSI-GATE — controller deploy+pod + csi-node 3 per node + CSIDriver + 1.11.0] ***
+ok: [node-01]
+
+TASK [DRBD-GATE — loaded 9.3.2 vs in-tree 8.4.11 (per node)] *******************
+ok: [node-01]
+ok: [node-03]
+ok: [node-02]
+
+TASK [TOLERATION-GATE — exact tuple for operator/controller/gencert/linstorcluster] ***
+ok: [node-01]
+
+TASK [LB-MAKEOPTS-GATE — both flags + storagePools/hostDevices empty] **********
+ok: [node-01]
+
+TASK [LINSTOR-NODE-GATE — exact node set Online (deterministic)] ***************
+ok: [node-01]
+
+TASK [LINSTOR-POOL-GATE — deterministic 3 DfltDisklessStorPool, no diskful] ****
+ok: [node-01]
+
+TASK [LINSTOR-RD-RES-GATE — resource-definition + resource deterministic (both 0)] ***
+ok: [node-01]
+
+TASK [K8S-STORAGE-GATE — SC/PV/PVC structural semantic filter] *****************
+ok: [node-01]
+
+TASK [IMAGE-DIGEST-GATE — copy images.lock to node-01 (read-only)] *************
+ok: [node-01]
+
+TASK [IMAGE-DIGEST-GATE — runtime imageID matches images.lock (parse lock)] ****
+ok: [node-01]
+
+TASK [VLAN141-GATE — six directed paths (per node)] ****************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [P5B-BASELINE-POST — strict composite assertion + compare (per node)] *****
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [P1 POST — bond slaves + exact VLAN + default route] **********************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [P2 POST — containerd + kubelet + swap] ***********************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [VIP-POST — local count + aggregate ==1] **********************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [VIP-AGG-POST — aggregate owner count == 1] *******************************
+ok: [node-01]
+
+TASK [P3 POST — etcd JSON + kube-vip Running+Ready + readyz/livez] *************
+ok: [node-01]
+
+TASK [P4A POST — Nodes/calico/CoreDNS/IPPool/BGP/autodetect] *******************
+ok: [node-01]
+
+TASK [P4B POST — validation ns NotFound + fingerprint compare] *****************
+ok: [node-01]
+
+TASK [FINAL — P5C1 runtime verification complete] ******************************
+ok: [node-01] => {
+    "msg": "P5C1 runtime read-only verification completed (all gates PASS)"
+}
+
+PLAY RECAP *********************************************************************
+node-01                    : ok=33   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-02                    : ok=10   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-03                    : ok=10   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+

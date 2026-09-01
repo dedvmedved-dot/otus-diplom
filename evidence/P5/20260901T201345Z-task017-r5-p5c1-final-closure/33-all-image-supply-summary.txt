@@ -1,0 +1,2 @@
+running=16 (imageID bound) + non-running ktls-utils (registry amd64 bound) = 17 mandatory
+IMAGE_SUPPLY_OK: all 17 required linux/amd64 proven

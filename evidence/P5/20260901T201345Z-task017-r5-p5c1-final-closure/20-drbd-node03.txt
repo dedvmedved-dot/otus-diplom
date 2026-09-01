@@ -1,0 +1,7 @@
+host=node-03
+loaded_version=9.3.2
+loaded_srcversion=C9052FC5DEE4F01207335F8
+drbd_transport_tcp=1
+in_tree_version=8.4.11
+in_tree_srcversion=C718D2C2BEE45E82AD21432
+DRBD_GATE_OK

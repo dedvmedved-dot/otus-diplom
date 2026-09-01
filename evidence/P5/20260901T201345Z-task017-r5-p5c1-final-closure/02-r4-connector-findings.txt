@@ -1,0 +1,20 @@
+# TASK-017-R5 — R4 Connector Findings
+
+R4 factual runtime: ACCEPTED
+R4 clean read-only run: ACCEPTED
+R4 composite runtime facts: FACTUALLY HEALTHY
+R4 source: HOLD
+
+Residual defects:
+- bootstrap kube-vip Ready missing
+- OS PV existence not required
+- runtime P5B baseline is capture/compare instead of strict baseline assertion
+- vendored source check partial + drbd-utils hard-coded fallback
+- mandatory image list manually hard-coded
+- registry.k8s.io supply not verified in future bootstrap gate
+- single-manifest unresolved digest can pass
+- runtime image gate does not require complete mandatory key set
+- ktls non-running exception lacks executable registry proof
+- CSI controller absent from effective toleration target set
+
+Historical evidence modified: NO

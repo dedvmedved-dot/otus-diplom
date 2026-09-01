@@ -1,0 +1,19 @@
+# TASK-017-R5 — Forbidden Command Audit
+
+R5 READ-ONLY. Executed infrastructure mutation = 0.
+
+Required zero executed:
+  kubectl apply/patch/create/delete/edit: 0
+  kubectl rollout restart: 0
+  helm install/upgrade/uninstall: 0
+  modprobe/insmod/rmmod: 0
+  DRBD mutation: 0
+  LINSTOR mutation: 0
+  LVM mutation: 0
+  StorageClass/PV/PVC mutation: 0
+  network mutation: 0
+  reboot: 0
+
+Read-only registry metadata queries: allowed (§15).
+
+RESULT: PASS
