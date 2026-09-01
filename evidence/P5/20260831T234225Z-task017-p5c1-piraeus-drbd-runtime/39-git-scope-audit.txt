@@ -1,0 +1,6 @@
+=== GIT SCOPE ===
+ M images.lock
+?? ansible/playbooks/p5c1-piraeus-runtime-bootstrap.yml
+?? docs/storage/P5C1-PIRAEUS-DRBD-RUNTIME.md
+?? evidence/P5/20260831T234225Z-task017-p5c1-piraeus-drbd-runtime/
+?? manifests/

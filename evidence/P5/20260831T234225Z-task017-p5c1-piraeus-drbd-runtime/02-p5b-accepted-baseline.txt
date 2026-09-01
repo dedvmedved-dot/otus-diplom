@@ -1,0 +1,14 @@
+# TASK-017 — P5B Accepted Baseline
+
+Accepted prior stage (Connector VERIFIED):
+  TASK-016-R4: PASSED (DRBD fail-closed + chronology)
+  P5B FINAL STORAGE STATE: ACCEPTED
+  P5B AUTHORIZATION: CONSUMED / CLOSED
+  P5B HISTORICAL PLAYBOOK: TOMBSTONED / NON-REUSABLE
+
+Baseline HEAD: 95e78da9136ce4dce834279f610772cb08935492
+
+Storage state (P5B accepted):
+  6 candidate PVs -> vg_piraeus (2 per node)
+  3x vg_piraeus, 3x thin_piraeus (twi-a-tz--, Data 0.00%, Meta 10.41%)
+  OS PV /dev/sda3 -> astra* (protected)

@@ -1,0 +1,21 @@
+# TASK-017 — Forbidden Command Audit
+
+Executed infrastructure mutation = ONLY authorized Piraeus runtime objects
+(operator CRDs/Deployment, LinstorCluster, LinstorSatelliteConfiguration podTemplate,
+operator-managed controller/satellites/CSI/DRBD loader).
+
+Required zero executed:
+  pvcreate/vgcreate/lvcreate/LVM resize/remove/move: 0
+  wipefs write / blkdiscard / dd of= / partition writes / mkfs/mkswap: 0
+  source.hostDevices / LinstorSatelliteConfiguration storagePools: 0
+  diskful project LINSTOR storage pool: 0 (only DfltDisklessStorPool)
+  DRBD data resource: 0 (linstor resource list пусто)
+  StorageClass / PV / PVC: 0
+  manual modprobe/insmod/rmmod: 0 (DRBD loaded оператор-managed loader)
+  host DRBD package install: 0
+  LinstorNodeConnection / VLAN141 LINSTOR interface config: 0
+  P5C2: 0 (NOT STARTED)
+
+Operator-managed runtime DRBD module loading (требуемое P5C1) — allowed.
+
+RESULT: PASS

@@ -50,3 +50,124 @@ images:
     source_registry: quay.io
     internal_registry: NOT_VERIFIED
     verified: true
+
+  # ═══ P5C1 Piraeus/LINSTOR/DRBD (TASK-017, runtime-verified) ═══
+  - component: piraeus-operator
+    image: quay.io/piraeusdatastore/piraeus-operator
+    tag: "v2.10.6"
+    digest: "sha256:25f9218209eadce0e4fff8ab13ca64b1f0fae3cab9ac5f44026eaaa5c929d438"
+    source_registry: quay.io
+    internal_registry: NOT_VERIFIED
+    verified: true
+
+  - component: linstor-server
+    image: quay.io/piraeusdatastore/piraeus-server
+    tag: "v1.33.2"
+    digest: "sha256:c7da2b35b5ce08dff31480d6951597fd479798831da318976f5bfbec6a47cd04"
+    source_registry: quay.io
+    internal_registry: NOT_VERIFIED
+    verified: true
+
+  - component: linstor-csi
+    image: quay.io/piraeusdatastore/piraeus-csi
+    tag: "v1.11.0"
+    digest: "sha256:d79ebfa7e9ade09b49cbb60bce32c726b025033e786c9e3d8b99feb9191f3a4e"
+    source_registry: quay.io
+    internal_registry: NOT_VERIFIED
+    verified: true
+
+  - component: drbd9-loader
+    image: quay.io/piraeusdatastore/drbd9-resolute
+    tag: "v9.3.2"
+    digest: "sha256:9a7941e4e6e8fe750cc732753fdc4eb61a526506244bd4ac3d03d79ea272627c"
+    source_registry: quay.io
+    internal_registry: NOT_VERIFIED
+    verified: true
+
+  - component: drbd-reactor
+    image: quay.io/piraeusdatastore/drbd-reactor
+    tag: "v1.11.0"
+    digest: "sha256:0f22aa4c277231b4cb800b0f292da68c77913f6d03c7f1029312f8a00251aa93"
+    source_registry: quay.io
+    internal_registry: NOT_VERIFIED
+    verified: true
+
+  - component: piraeus-ha-controller
+    image: quay.io/piraeusdatastore/piraeus-ha-controller
+    tag: "v1.3.2"
+    digest: "sha256:5faa4a59f990293a398c3cdee069ae7c03ecfd8c026f5a12c8eb72c0e3e1d06b"
+    source_registry: quay.io
+    internal_registry: NOT_VERIFIED
+    verified: true
+
+  - component: drbd-shutdown-guard
+    image: quay.io/piraeusdatastore/drbd-shutdown-guard
+    tag: "v1.1.2"
+    digest: "sha256:a4adba73d07f6ba2605d0594676df47ab143e004991caadea3b7b556ead2db6e"
+    source_registry: quay.io
+    internal_registry: NOT_VERIFIED
+    verified: true
+
+  - component: linstor-affinity-controller
+    image: quay.io/piraeusdatastore/linstor-affinity-controller
+    tag: "v1.4.0"
+    digest: "sha256:9d9873a94c21aa7dba402d3ff745b45241f5b5d9a8123872f50648e007034f4c"
+    source_registry: quay.io
+    internal_registry: NOT_VERIFIED
+    verified: true
+
+  - component: csi-attacher
+    image: registry.k8s.io/sig-storage/csi-attacher
+    tag: "v4.11.0"
+    digest: "sha256:b74b05b39501565022883fc128002b4cb857a7bb6c858606bcb3fdedba0b0b80"
+    source_registry: registry.k8s.io
+    internal_registry: NOT_VERIFIED
+    verified: true
+
+  - component: csi-provisioner
+    image: registry.k8s.io/sig-storage/csi-provisioner
+    tag: "v6.2.0"
+    digest: "sha256:6be9f63ca4caa6c46aae55aa372500949d8a21473d72f819da1f746076b32d4e"
+    source_registry: registry.k8s.io
+    internal_registry: NOT_VERIFIED
+    verified: true
+
+  - component: csi-snapshotter
+    image: registry.k8s.io/sig-storage/csi-snapshotter
+    tag: "v8.5.0"
+    digest: "sha256:da081c27e8a6d91f36042c1942362d0515ced8d06e18c11b8f893e58c4d6d797"
+    source_registry: registry.k8s.io
+    internal_registry: NOT_VERIFIED
+    verified: true
+
+  - component: csi-resizer
+    image: registry.k8s.io/sig-storage/csi-resizer
+    tag: "v2.1.0"
+    digest: "sha256:589e525cddef6d768e68da1f0bc9ffd0a24bf3add3dd010648eb7189976fde79"
+    source_registry: registry.k8s.io
+    internal_registry: NOT_VERIFIED
+    verified: true
+
+  - component: csi-node-driver-registrar
+    image: registry.k8s.io/sig-storage/csi-node-driver-registrar
+    tag: "v2.16.0"
+    digest: "sha256:ab482308a4921e28a6df09a16ab99a457e9af9641ff44fb1be1a690d07ce8b70"
+    source_registry: registry.k8s.io
+    internal_registry: NOT_VERIFIED
+    verified: true
+
+  - component: csi-livenessprobe
+    image: registry.k8s.io/sig-storage/livenessprobe
+    tag: "v2.18.0"
+    digest: "sha256:c4cc074199c045dd73ab85f28897e2a32f4d6f38ffdba4f3b13b8007ccbd3570"
+    source_registry: registry.k8s.io
+    internal_registry: NOT_VERIFIED
+    verified: true
+
+  - component: csi-external-health-monitor-controller
+    image: registry.k8s.io/sig-storage/csi-external-health-monitor-controller
+    tag: "v0.17.0"
+    digest: "sha256:25925b16d02f21949a5ac55f8c120e81acdf204fe3d1a1ae1ae3653392bd56ba"
+    source_registry: registry.k8s.io
+    internal_registry: NOT_VERIFIED
+    verified: true

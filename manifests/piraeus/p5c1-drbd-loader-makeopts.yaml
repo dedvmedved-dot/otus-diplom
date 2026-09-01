@@ -1,0 +1,19 @@
+apiVersion: piraeus.io/v1
+kind: LinstorSatelliteConfiguration
+metadata:
+  name: astra-drbd-loader
+  namespace: piraeus-datastore
+spec:
+  # No storagePools, no hostDevices (P5C1: no diskful project pool).
+  # PodTemplate: pass make flags to the drbd-module-loader init container.
+  # Astra kernel 6.1.158-1-generic is built with gcc 12.2.0 + stackleak gcc
+  # plugin; the drbd9-resolute:v9.3.2 loader image uses gcc 15, which cannot
+  # initialize the old stackleak plugin. Disable gcc plugins at DRBD compile
+  # time (exactly as proven by TASK-015-R1 / ADR-003 compile-only test).
+  podTemplate:
+    spec:
+      initContainers:
+        - name: drbd-module-loader
+          env:
+            - name: LB_MAKEOPTS
+              value: "CONFIG_GCC_PLUGINS=n CONFIG_GCC_PLUGIN_STACKLEAK=n"

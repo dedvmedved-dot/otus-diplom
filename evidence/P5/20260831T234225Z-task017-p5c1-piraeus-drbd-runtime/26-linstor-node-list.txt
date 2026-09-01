@@ -1,0 +1,10 @@
+# TASK-017 — LINSTOR Node List
+
+linstor node list (controller):
+  node-01 SATELLITE 10.244.190.9:3366 (PLAIN)  Online
+  node-02 SATELLITE 10.244.184.12:3366 (PLAIN) Online
+  node-03 SATELLITE 10.244.254.75:3366 (PLAIN) Online
+
+LINSTOR nodes/satellites = 3/3 Online.
+
+RESULT: PASS

@@ -1,0 +1,8 @@
+=== csi runtime ===
+linstor-csi-controller-5bb65bbbb5-4xd2z                7/7     Running   0          25m
+linstor-csi-nfs-server-bfkzx                           1/1     Running   0          25m
+linstor-csi-nfs-server-kbdtv                           1/1     Running   0          25m
+linstor-csi-nfs-server-kzz5f                           1/1     Running   0          25m
+linstor-csi-node-g76ss                                 3/3     Running   0          25m
+linstor-csi-node-qsqg8                                 3/3     Running   0          25m
+linstor-csi-node-rgsft                                 3/3     Running   0          25m

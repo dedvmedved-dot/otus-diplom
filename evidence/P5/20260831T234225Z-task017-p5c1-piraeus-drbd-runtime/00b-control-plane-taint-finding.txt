@@ -1,0 +1,19 @@
+# TASK-017 — Control-Plane Taint Finding (runtime adjustment)
+
+FINDING: все 3 узла имеют taint node-role.kubernetes.io/control-plane:NoSchedule
+(control-plane-only кластер, HA 3×control-plane). Piraeus operator/satellites/CSI
+манифест v2.10.6 не содержит toleration к этому taint → pods Pending.
+
+Это НЕ DRBD/ядро runtime incompatibility, а scheduling-ограничение control-plane-only
+кластера. Calico/kube-vip/CoreDNS уже развёрнуты с toleration к control-plane taint.
+
+RESOLUTION (в рамках P5C1, не storage mutation):
+  - kubectl patch operator deployment + gencert: добавить toleration
+    node-role.kubernetes.io/control-plane (operator=Exists, effect=NoSchedule)
+  - LinstorCluster.spec.tolerations для satellites
+  - podTemplate tolerations для csi-node/csi-controller/ha-controller
+
+Это необходимая конфигурация для выполнения прямого требования TASK-017
+("operator Ready", "satellites 3/3", "CSI Ready"). Не мутирует storage/DRBD resources.
+
+Vendored manifest.yaml SHA256 НЕ изменяется (patch применяется отдельно).

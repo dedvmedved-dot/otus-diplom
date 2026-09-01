@@ -1,0 +1,11 @@
+# TASK-017 — No Project SC/PV/PVC
+
+storageclass_total=0, pv_total=0, pvc_total=0.
+
+PROJECT STORAGECLASS: 0
+PROJECT PV: 0
+PROJECT PVC: 0
+
+(CSIDriver linstor.csi.linbit.com present — оператор-managed, не SC/PV/PVC.)
+
+RESULT: PASS

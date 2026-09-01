@@ -1,0 +1,10 @@
+# TASK-017 — No Project Diskful Pool
+
+linstor storage-pool list → только DfltDisklessStorPool (3×, operator-internal).
+
+LinstorSatelliteConfiguration with project storagePools: 0
+  (единственная — astra-drbd-loader, только podTemplate с LB_MAKEOPTS, без storagePools)
+
+vg_piraeus / thin_piraeus / source.hostDevices: НЕ referenced в любом applied CR.
+
+RESULT: PASS

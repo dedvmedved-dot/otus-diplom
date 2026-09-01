@@ -1,0 +1,11 @@
+# TASK-017 — Vendored Manifest SHA256
+
+manifests/piraeus/v2.10.6/manifest.yaml
+  SHA256 bffdd616054cb7c02ea9baaed5d6394b53ab9a93b58b8665cfa0d55452c55f13
+  size 126073 bytes
+
+manifests/piraeus/v2.10.6/piraeus-2.10.6.tgz
+  SHA256 f8150f7ad8085131d555ab28f280ed76b754f7693b5f601d0bfb8f15b1ac49b5
+  size 19898 bytes
+
+Computed at download time from GitHub release v2.10.6.

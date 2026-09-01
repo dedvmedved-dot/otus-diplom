@@ -1,0 +1,11 @@
+# TASK-017 — LINSTOR Storage Pool List
+
+linstor storage-pool list:
+  DfltDisklessStorPool node-01 DISKLESS Ok
+  DfltDisklessStorPool node-02 DISKLESS Ok
+  DfltDisklessStorPool node-03 DISKLESS Ok
+
+Только operator-internal diskless pools (DfltDisklessStorPool).
+PROJECT DISKFUL STORAGE POOL: 0 (нет vg_piraeus/thin_piraeus в LINSTOR).
+
+RESULT: PASS

@@ -1,0 +1,10 @@
+# TASK-017 — LinstorCluster Apply
+
+kubectl apply -f manifests/piraeus/p5c1-linstorcluster.yaml
+→ linstorcluster.piraeus.io/linstorcluster created
+
+status: Applied=True, Available=True (controller 1.33.2 reachable),
+        Configured=True, satellites 3/3, runningSatellites 3,
+        version 1.33.2, volumes 0, capacity 0/0GiB.
+
+RESULT: PASS

@@ -1,0 +1,10 @@
+=== P1-P4 POST FULL ===
+nodes: 3
+calico: 3
+coredns: 2/2/2
+readyz: ok
+etcd: 3
+kube-vip: 3
+node .38 vip=0
+node .40 vip=1
+node .39 vip=0

@@ -1,0 +1,8 @@
+host=node-01
+sys_module=present
+version=9.3.2
+vermagic=6.1.158-1-generic SMP preempt mod_unload modversions 
+filename=/lib/modules/6.1.158-1-generic/kernel/drivers/block/drbd/drbd.ko
+lsmod_drbd=4
+drbd_transport_tcp=1
+uname=6.1.158-1-generic

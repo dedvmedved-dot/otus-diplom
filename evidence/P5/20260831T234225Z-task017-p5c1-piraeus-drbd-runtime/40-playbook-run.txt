@@ -1,0 +1,28 @@
+
+PLAY [P5C1 Piraeus/DRBD runtime bootstrap (AUTHORIZED)] ************************
+
+TASK [PHASE 0 — p5c1_mode gate] ************************************************
+[WARNING]: Platform linux on host node-01 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-01]
+
+TASK [PHASE 6 — copy vendored manifest.yaml to node-01] ************************
+changed: [node-01]
+
+TASK [PHASE 6 — apply Operator v2.10.6 manifest] *******************************
+changed: [node-01]
+
+TASK [PHASE 7 — verify CRDs established] ***************************************
+changed: [node-01]
+
+TASK [PHASE 7 — wait operator deployment available] ****************************
+fatal: [node-01]: UNREACHABLE! => {"changed": false, "msg": "Failed to connect to the host via ssh: Timeout, server 192.168.194.38 not responding.", "unreachable": true}
+
+NO MORE HOSTS LEFT *************************************************************
+
+PLAY RECAP *********************************************************************
+node-01                    : ok=4    changed=3    unreachable=1    failed=0    skipped=0    rescued=0    ignored=0   
+

@@ -1,0 +1,18 @@
+# TASK-017 — P5C1 Scope
+
+MODE: AUTHORIZED-RUNTIME-BOOTSTRAP (p5c1_mode=authorized-runtime-bootstrap).
+
+PURPOSE: Piraeus Operator v2.10.6 + LINSTOR 1.33.2 + CSI 1.11.0 + DRBD 9.3.2 runtime.
+
+ALLOWED: Operator CRDs/operator, LinstorCluster, controller/satellites/CSI, DRBD loader.
+
+FORBIDDEN: storagePools, source.hostDevices, raw-device init, vg_piraeus binding,
+diskful pool, DRBD data resource, StorageClass/PV/PVC, LinstorNodeConnection, P5C2.
+
+P5B vg_piraeus/thin_piraeus strictly READ-ONLY.
+
+ALLOWED REPO CHANGES: manifests/piraeus/v2.10.6/, manifests/piraeus/p5c1-linstorcluster.yaml,
+ansible/playbooks/p5c1-piraeus-runtime-bootstrap.yml, docs/storage/P5C1-*.md,
+images.lock (только factual P5C1 digests), evidence.
+
+READ-ONLY: versions.lock, ADR-003, inventory/*, p5b playbooks, historical evidence, P1-P4 artifacts.

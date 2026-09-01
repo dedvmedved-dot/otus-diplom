@@ -1,0 +1,21 @@
+apiVersion: piraeus.io/v1
+kind: LinstorCluster
+metadata:
+  name: linstorcluster
+  namespace: piraeus-datastore
+spec:
+  # Minimal runtime cluster: controller + satellites + CSI + DRBD module loader.
+  # NO storagePools, NO source.hostDevices, NO diskful project pool.
+  # P5B vg_piraeus/thin_piraeus is NOT referenced (read-only in P5C1).
+  #
+  # Control-plane-only cluster: all 3 nodes tainted
+  # node-role.kubernetes.io/control-plane:NoSchedule. Add toleration so
+  # satellites/CSI/ha-controller can schedule (operator/gengert patched separately).
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+  controller: {}
+  csiController: {}
+  csiNode: {}
+  highAvailabilityController: {}

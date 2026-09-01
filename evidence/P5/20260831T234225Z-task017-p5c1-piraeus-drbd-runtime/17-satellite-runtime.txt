@@ -1,0 +1,4 @@
+=== satellite runtime ===
+linstor-satellite.node-01-w9zbx                        2/2     Running   0          9m11s   10.244.190.9     node-01   <none>           <none>
+linstor-satellite.node-02-pk7gv                        2/2     Running   0          9m13s   10.244.184.12    node-02   <none>           <none>
+linstor-satellite.node-03-bbzts                        2/2     Running   0          9m12s   10.244.254.75    node-03   <none>           <none>

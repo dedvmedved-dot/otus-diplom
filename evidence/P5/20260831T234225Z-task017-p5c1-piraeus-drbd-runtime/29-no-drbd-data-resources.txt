@@ -1,0 +1,11 @@
+# TASK-017 — No DRBD Data Resources
+
+linstor resource list → пусто (0 ресурсов).
+
+DRBD data resource count = 0.
+LINSTOR resource definitions for project data = 0.
+LINSTOR resources for project data = 0.
+
+Только operator/system internals (controller/satellites/CSI pods), не data resources.
+
+RESULT: PASS

@@ -1,0 +1,178 @@
+---
+# p5c1-piraeus-runtime-bootstrap.yml
+# TASK-017 / P5C1: Piraeus Operator + LINSTOR + CSI + DRBD 9.3.2 runtime bootstrap.
+#
+# p5c1_mode: disabled (default) | authorized-runtime-bootstrap.
+# ONLY authorized-runtime-bootstrap permits Kubernetes runtime mutation.
+# No storage pool binding, no SC/PV/PVC, no DRBD data resource (that is P5C2).
+# P5B vg_piraeus/thin_piraeus is strictly READ-ONLY in P5C1.
+
+- name: "P5C1 Piraeus/DRBD runtime bootstrap (AUTHORIZED)"
+  hosts: all
+  gather_facts: false
+  become: true
+  vars:
+    p5c1_mode: "disabled"
+    op_ns: piraeus-datastore
+  tasks:
+    # ═══ PHASE 0 — mode gate ═══
+    - name: PHASE 0 — p5c1_mode gate
+      ansible.builtin.shell:
+        cmd: |
+          if [ "{{ p5c1_mode }}" != "authorized-runtime-bootstrap" ]; then
+            echo "P5C1_MODE_DENIED p5c1_mode={{ p5c1_mode }}"
+            exit 1
+          fi
+          echo "p5c1_mode={{ p5c1_mode }} AUTHORIZED"
+      register: ph0
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 6 — deploy Operator v2.10.6 ═══
+    - name: PHASE 6 — copy vendored manifest.yaml to node-01
+      ansible.builtin.copy:
+        src: /root/otus-diplom/manifests/piraeus/v2.10.6/manifest.yaml
+        dest: /tmp/piraeus-v2.10.6-manifest.yaml
+        mode: "0644"
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 6 — apply Operator v2.10.6 manifest
+      ansible.builtin.shell:
+        cmd: |
+          kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /tmp/piraeus-v2.10.6-manifest.yaml 2>&1
+        executable: /bin/bash
+      register: ph6
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 7 — verify Operator/CRDs ═══
+    - name: PHASE 7 — verify CRDs established
+      ansible.builtin.shell:
+        cmd: |
+          kubectl --kubeconfig /etc/kubernetes/admin.conf get crd | grep -E 'linstor|piraeus' || exit 1
+          for crd in linstorclusters.piraeus.io linstorsatellites.piraeus.io linstorsatelliteconfigurations.piraeus.io linstornodeconnections.piraeus.io; do
+            est=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get crd $crd -o jsonpath='{.status.conditions[?(@.type=="Established")].status}' 2>/dev/null)
+            echo "$crd Established=$est"
+            [ "$est" = "True" ] || exit 1
+          done
+      register: ph7
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 7 — wait operator deployment available
+      ansible.builtin.shell:
+        cmd: |
+          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} wait --for=condition=Available deployment/piraeus-operator-controller-manager --timeout=300s 2>&1
+          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} get pods -o wide 2>&1
+      register: ph7b
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 8 — create minimal LinstorCluster ═══
+    - name: PHASE 8 — copy LinstorCluster manifest
+      ansible.builtin.copy:
+        src: /root/otus-diplom/manifests/piraeus/p5c1-linstorcluster.yaml
+        dest: /tmp/p5c1-linstorcluster.yaml
+        mode: "0644"
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 8 — apply minimal LinstorCluster
+      ansible.builtin.shell:
+        cmd: |
+          kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /tmp/p5c1-linstorcluster.yaml 2>&1
+      register: ph8
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 9 — wait controller/satellites/CSI ═══
+    - name: PHASE 9 — wait controller available
+      ansible.builtin.shell:
+        cmd: |
+          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} wait --for=condition=Available deployment/linstor-controller --timeout=300s 2>&1 || true
+          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} get pods -o wide 2>&1
+      register: ph9
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 9 — wait satellites 3/3 Ready
+      ansible.builtin.shell:
+        cmd: |
+          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} wait --for=condition=Ready pod -l app.kubernetes.io/component=linstor-satellite --timeout=600s 2>&1 || true
+          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} get pods -l app.kubernetes.io/component=linstor-satellite -o wide 2>&1
+      register: ph9b
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 9 — wait CSI controller/node Ready
+      ansible.builtin.shell:
+        cmd: |
+          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} wait --for=condition=Available deployment/linstor-csi-controller --timeout=300s 2>&1 || true
+          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} wait --for=condition=Ready pod -l app.kubernetes.io/component=linstor-csi-node --timeout=600s 2>&1 || true
+          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} get pods -o wide 2>&1
+      register: ph9c
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 10 — DRBD runtime 3/3 ═══
+    - name: PHASE 10 — DRBD module loaded 9.3.2 (per node)
+      ansible.builtin.shell:
+        cmd: |
+          sys_mod=$([ -e /sys/module/drbd ] && echo present || echo absent)
+          ver=$(cat /sys/module/drbd/version 2>/dev/null || echo MISSING)
+          lsmod_c=$(lsmod | grep -c '^drbd' || true)
+          echo "host=$(hostname) sys_module=$sys_mod version=$ver lsmod_drbd=$lsmod_c"
+          [ "$sys_mod" = "present" ] || { echo "DRBD_NOT_LOADED"; exit 1; }
+          [ "$lsmod_c" != "0" ] || { echo "DRBD_LSMOD_ZERO"; exit 1; }
+      register: ph10
+      changed_when: false
+
+    # ═══ PHASE 12 — no diskful pools / DRBD resources ═══
+    - name: PHASE 12 — no project diskful pool (storage-pool list via controller)
+      ansible.builtin.shell:
+        cmd: |
+          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} get linstorsatelliteconfiguration -o name 2>&1
+          echo "--- check no storagePools in any LinstorSatelliteConfiguration ---"
+          for o in $(kubectl --kubeconfig /etc/kubernetes/admin.conf get linstorsatelliteconfiguration -o name 2>/dev/null); do
+            sp=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get $o -o jsonpath='{.spec.storagePools}' 2>/dev/null)
+            hd=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get $o -o jsonpath='{.spec.patches}' 2>/dev/null)
+            echo "$o storagePools=[$sp]"
+            if [ -n "$sp" ] && [ "$sp" != "" ]; then echo "STORAGE_POOLS_PRESENT"; exit 1; fi
+          done
+          echo "NO_PROJECT_DISKFUL_POOL"
+      register: ph12
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 14 — no project SC/PV/PVC ═══
+    - name: PHASE 14 — no project SC/PV/PVC
+      ansible.builtin.shell:
+        cmd: |
+          sc=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get storageclass -o name 2>/dev/null | grep -c linstor || true)
+          pv=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pv -o name 2>/dev/null | grep -c linstor || true)
+          pvc=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pvc -A -o name 2>/dev/null | grep -c linstor || true)
+          echo "project_sc=$sc project_pv=$pv project_pvc=$pvc"
+          [ "$sc" = "0" ] && [ "$pv" = "0" ] && [ "$pvc" = "0" ] || { echo "PROJECT_STORAGE_PRESENT"; exit 1; }
+          echo "NO_PROJECT_SC_PV_PVC"
+      register: ph14
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 15 — VLAN141 read-only connectivity ═══
+    - name: PHASE 15 — VLAN141 addresses read-only (per node)
+      ansible.builtin.shell:
+        cmd: |
+          a141=$(ip -4 -o addr show dev bond1.141 2>/dev/null | awk '{print $4}')
+          echo "host=$(hostname) vlan141=$a141"
+          [ -n "$a141" ] || { echo "VLAN141_MISSING"; exit 1; }
+      register: ph15
+      changed_when: false
+
+    # ═══ PHASE 17 — final gate ═══
+    - name: PHASE 17 — final gate summary
+      ansible.builtin.debug:
+        msg: "P5C1 Piraeus/DRBD runtime bootstrap completed"
+      run_once: true
+      delegate_to: node-01

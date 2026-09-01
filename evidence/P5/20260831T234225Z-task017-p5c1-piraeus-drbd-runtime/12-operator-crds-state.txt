@@ -1,0 +1,12 @@
+# TASK-017 — Operator CRDs State
+
+4 × piraeus.io CRDs Established=True:
+  linstorclusters.piraeus.io
+  linstornodeconnections.piraeus.io
+  linstorsatelliteconfigurations.piraeus.io
+  linstorsatellites.piraeus.io
+
+(дополнительно 49 × internal.linstor.linbit.com CRDs — LINSTOR controller datastore,
+создаются контроллером при старте — штатный runtime state.)
+
+RESULT: PASS

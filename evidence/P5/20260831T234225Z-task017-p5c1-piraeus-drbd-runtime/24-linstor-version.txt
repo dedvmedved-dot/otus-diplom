@@ -1,0 +1,10 @@
+# TASK-017 — LINSTOR Version
+
+linstor controller 1.33.2; GIT-hash: 9a96be5dec9160d835d2f317003ce75d2d3c618a
+(через kubectl exec deploy/linstor-controller -- linstor controller version)
+
+linstor-client 1.27.1 (CLI client — отдельный компонент, не server version)
+
+LINSTOR server/runtime = 1.33.2 (matches versions.lock).
+
+RESULT: PASS

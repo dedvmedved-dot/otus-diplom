@@ -1,0 +1,11 @@
+# TASK-017 — CSI Version
+
+LINSTOR CSI runtime present:
+  CSIDriver: linstor.csi.linbit.com (attachRequired=true, fsGroupPolicy=RWOnceWithFSType)
+  csi-node pod: quay.io/piraeusdatastore/piraeus-csi:v1.11.0
+  csi-controller 7/7 Running, csi-node 3/3 Running
+
+Component mapping = 1.11.0 (matches versions.lock).
+CSI health proven without provisioning volume (no SC/PV/PVC created).
+
+RESULT: PASS

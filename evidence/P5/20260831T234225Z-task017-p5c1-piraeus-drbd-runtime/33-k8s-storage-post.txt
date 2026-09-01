@@ -1,0 +1,21 @@
+# TASK-017 — K8s Storage Post (semantic classification)
+
+После P5C1 runtime bootstrap:
+
+Project-related storage objects (linstor/piraeus SC/PV/PVC):
+  project StorageClass = 0
+  project PV = 0
+  project PVC = 0
+
+CSIDriver = 1 (linstor.csi.linbit.com — оператор-managed, ожидаемо)
+
+CRDs:
+  4 × piraeus.io (linstorclusters/linstorsatellites/linstorsatelliteconfigurations/
+    linstornodeconnections) — оператор
+  49 × internal.linstor.linbit.com (nodes/resources/volumes/storpool/...) — LINSTOR
+    controller's OWN Kubernetes-backed datastore, создаваемые контроллером при старте.
+    Это штатный runtime state, НЕ project storage objects.
+
+PIRAEUS/LINSTOR CRDs present (operator + controller datastore) = EXPECTED/OK.
+
+RESULT: PASS (no project SC/PV/PVC, no diskful pool, no DRBD data resource)

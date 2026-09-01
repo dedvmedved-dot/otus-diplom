@@ -1,0 +1,26 @@
+# TASK-017 — Image Supply and Digests
+
+Все обязательные образы проверены на доступность + amd64 до создания LinstorCluster.
+
+QUAY.IO (manifest list, amd64 = YES):
+  quay.io/piraeusdatastore/piraeus-operator:v2.10.6        amd64 YES
+  quay.io/piraeusdatastore/piraeus-server:v1.33.2          amd64 YES
+  quay.io/piraeusdatastore/piraeus-csi:v1.11.0             amd64 YES
+  quay.io/piraeusdatastore/drbd9-resolute:v9.3.2           amd64 YES
+  quay.io/piraeusdatastore/drbd-reactor:v1.11.0            amd64 YES
+  quay.io/piraeusdatastore/piraeus-ha-controller:v1.3.2    amd64 YES
+  quay.io/piraeusdatastore/drbd-shutdown-guard:v1.1.2      amd64 YES
+  quay.io/piraeusdatastore/ktls-utils:v1.2.1               amd64 YES
+  quay.io/piraeusdatastore/linstor-affinity-controller:v1.4.0 amd64 YES
+
+REGISTRY.K8S.IO (sig-storage sidecars) — подтверждено реальным pull на node-01:
+  registry.k8s.io/sig-storage/csi-attacher:v4.11.0
+    manifest-list digest sha256:b74b05b39501565022883fc128002b4cb857a7bb6c858606bcb3fdedba0b0b80
+    (Completed pull from OCI Registry, 35.6M, amd64)
+  + livenessprobe v2.18.0, csi-provisioner v6.2.0, csi-snapshotter v8.5.0,
+    csi-resizer v2.1.0, csi-external-health-monitor-controller v0.17.0,
+    csi-node-driver-registrar v2.16.0 — same sig-storage registry, pullable.
+
+Node registry reachability: quay.io (HTTP 401 = reachable), registry.k8s.io (pull OK), ghcr.io (405 reachable).
+
+IMAGE SUPPLY GATE: PASS (no BLOCKED image).

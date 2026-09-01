@@ -1,0 +1,7 @@
+=== K8S STORAGE BASELINE (pre) ===
+related_crds: 0
+csidriver_total: 0
+storageclass_total: 0
+pv_total: 0
+pvc_total: 0
+crd_total: 23

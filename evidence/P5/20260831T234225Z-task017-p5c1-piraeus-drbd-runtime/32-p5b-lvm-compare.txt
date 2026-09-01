@@ -1,0 +1,26 @@
+# TASK-017 — P5B LVM Compare (PRE vs POST)
+
+Сравнение канонических идентификаторов LVM (pv_uuid, vg_uuid, lv_uuid,
+lv_attr, data_percent, metadata_percent, vg_free):
+
+PRE (04-p5b-lvm-pre.json) vs POST (30-p5b-lvm-post.json):
+
+node-01:
+  PV: sda3→astra38644(2igKvi...), sdb→vg_piraeus(nUrTJz...), sdc→vg_piraeus(0tWplA...) = IDENTICAL
+  VG: astra38644(kW9ySM...), vg_piraeus(RKYkLM...) = IDENTICAL
+  LV: thin_piraeus(OwNckB...) twi-a-tz-- 0.00%/10.41% = IDENTICAL
+node-02:
+  PV: sda3→astra39539(sWdp30...), sdb(tpC31z...), sdc(9e3AK8...) = IDENTICAL
+  VG: vg_piraeus(cpE1z8...) = IDENTICAL
+  LV: thin_piraeus(yHYsAk...) twi-a-tz-- 0.00%/10.41% = IDENTICAL
+node-03:
+  PV: sda3→astra03718(gWHmTP...), sdb(CWcQkH...), sdc(6XJ0bc...) = IDENTICAL
+  VG: vg_piraeus(lwcOOJ...) = IDENTICAL
+  LV: thin_piraeus(XFi7l0...) twi-a-tz-- 0.00%/10.41% = IDENTICAL
+
+Все 6 PV UUID, 3 vg_piraeus VG UUID, 3 thin_piraeus LV UUID — БЕЗ ИЗМЕНЕНИЙ.
+Нет новых/удалённых LV, нет переименований, thin Data% не изменился.
+
+P5B LVM STRUCTURE: UNCHANGED
+
+RESULT: PASS

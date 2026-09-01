@@ -1,0 +1,12 @@
+# TASK-017 — Operator Apply
+
+kubectl apply -f manifests/piraeus/v2.10.6/manifest.yaml
+→ namespace/piraeus-datastore, CRDs (4× piraeus.io), RBAC, webhook, operator Deployment.
+
+Follow-up (control-plane taint resolution, documented in 00b):
+  kubectl patch deployment piraeus-operator-controller-manager (tolerations)
+  kubectl patch deployment piraeus-operator-gencert (tolerations)
+
+Operator Ready: piraeus-operator-controller-manager 1/1 Running, gencert 1/1 Running.
+
+RESULT: PASS

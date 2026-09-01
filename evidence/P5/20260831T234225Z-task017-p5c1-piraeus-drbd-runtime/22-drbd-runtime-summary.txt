@@ -1,0 +1,17 @@
+# TASK-017 — DRBD Runtime Summary
+
+DRBD 9.3.2 runtime loaded на 3/3 узлах (loader drbd9-resolute:v9.3.2 + LB_MAKEOPTS).
+
+node-01:
+  /sys/module/drbd present, version=9.3.2
+  vermagic=6.1.158-1-generic SMP preempt mod_unload modversions
+  filename=/lib/modules/6.1.158-1-generic/kernel/drivers/block/drbd/drbd.ko
+  drbd_transport_tcp loaded
+node-02: (идентично) version=9.3.2, vermagic=6.1.158-1-generic
+node-03: (идентично) version=9.3.2, vermagic=6.1.158-1-generic
+
+DRBD VERMAGIC: 6.1.158-1-generic PASS 3/3
+OLD DRBD 8.4.11 LOADED: NO (version=9.3.2)
+drbd_transport_tcp: loaded 3/3
+
+RESULT: PASS 3/3

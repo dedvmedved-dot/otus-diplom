@@ -1,0 +1,30 @@
+# TASK-017 — Piraeus Static Version Audit
+
+Источник: manifests/piraeus/v2.10.6/manifest.yaml (vendored v2.10.6).
+
+piraeus-operator-controller-manager:
+  image: quay.io/piraeusdatastore/piraeus-operator:v2.10.6  ✓ (operator 2.10.6)
+
+piraeus-operator-image-config ConfigMap (default components):
+  linstor-controller: piraeus-server:v1.33.2        ✓ (LINSTOR 1.33.2)
+  linstor-satellite:  piraeus-server:v1.33.2        ✓ (LINSTOR 1.33.2)
+  linstor-csi:        piraeus-csi:v1.11.0           ✓ (CSI 1.11.0)
+  drbd-module-loader: drbd9-resolute:v9.3.2         ✓ (DRBD 9.3.2)
+  drbd-reactor:      drbd-reactor:v1.11.0
+  ha-controller:     piraeus-ha-controller:v1.3.2
+  drbd-shutdown-guard: drbd-shutdown-guard:v1.1.2
+  ktls-utils:        ktls-utils:v1.2.1
+  linstor-affinity-controller: linstor-affinity-controller:v1.4.0
+
+osImage узлов = "Astra Linux" → не совпадает ни с одним match → fallback
+drbd9-resolute:v9.3.2 (тот же образ, что P5A compile-only test использовал).
+
+CSI sidecars (0_sig_storage_images):
+  csi-attacher v4.11.0, livenessprobe v2.18.0, csi-provisioner v6.2.0,
+  csi-snapshotter v8.5.0, csi-resizer v2.1.0,
+  csi-external-health-monitor-controller v0.17.0,
+  csi-node-driver-registrar v2.16.0
+
+VERSION MAPPING: operator 2.10.6, LINSTOR 1.33.2, CSI 1.11.0, DRBD 9.3.2 — MATCH versions.lock.
+
+RESULT: PASS

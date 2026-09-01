@@ -1,0 +1,11 @@
+# TASK-017 — DRBD-Utils Version
+
+DRBDADM_VERSION=9.34.3 (from satellite + controller pods)
+DRBDADM_VERSION_CODE=0x092203
+DRBD_KERNEL_VERSION=9.3.2
+DRBD_KERNEL_VERSION_CODE=0x090302
+DRBDADM_API_VERSION=2
+
+Mapping: drbd-utils 9.34.3 ↔ DRBD 9.3.2 (matches versions.lock / ADR-003).
+
+RESULT: PASS
