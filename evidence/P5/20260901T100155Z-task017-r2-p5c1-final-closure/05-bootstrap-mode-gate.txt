@@ -1,0 +1,10 @@
+# TASK-017-R2 — Bootstrap Mode Gate
+
+PHASE 0: p5c1_mode gate.
+Default p5c1_mode=disabled. Only authorized-runtime-bootstrap permits mutation.
+Missing/unknown mode => FAIL (exit 1) BEFORE kubectl apply (phase 6).
+
+Source (PHASE 0):
+  if [ "{{ p5c1_mode }}" != "authorized-runtime-bootstrap" ]; then exit 1; fi
+
+RESULT: PASS

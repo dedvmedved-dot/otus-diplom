@@ -1,0 +1,19 @@
+# TASK-017-R2 — Runtime Verifier Static Audit
+
+Verifier (p5c1-runtime-verify.yml) — все gates ASSERT точное состояние (не observation-only):
+
+Operator observation-only gate: 0 (assert desired=1 available=1 ready=1 + pods)
+LinstorCluster observation-only gate: 0 (assert Applied/Available/Configured/version/satellites/volumes/capacity)
+controller version observation-only gate: 0 (assert rc=0 + 1.33.2)
+satellite count-only gate: 0 (assert exactly one per node, all Running/Ready)
+CSI CSIDriver-only gate: 0 (assert controller 1/1 + csi-node 3 + CSIDriver + 1.11.0)
+LINSTOR list print-only gate: 0 (каждый cmd rc + semantic assert)
+LVM compare outside verifier: 0 (in-run P5B LVM COMPARE gate)
+image digest compare outside verifier only: 0 (executable IMAGE-DIGEST-GATE)
+
+DRBD gate: loaded 9.3.2 vs in-tree 8.4.11 (srcversion comparison)
+Toleration gate: exact tuple key/operator/effect
+LB_MAKEOPTS gate: both flags + storagePools/hostDevices empty
+kube-vip: Running AND Ready (не только phase)
+
+RESULT: PASS

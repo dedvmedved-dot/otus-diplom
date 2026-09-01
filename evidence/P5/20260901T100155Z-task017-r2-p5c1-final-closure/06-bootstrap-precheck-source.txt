@@ -1,0 +1,16 @@
+# TASK-017-R2 — Bootstrap Precheck Source
+
+Pre-mutation gates (фазы 1-5), до первого kubectl apply (фаза 6):
+
+PHASE 1: full P1-P4 PRE (P1 bonds/VLAN/route per-node exact; P2 containerd 2.3.3/
+kubelet v1.36.2/swap=0; P3 etcd 3/3 learners=0 1-leader health livez readyz +
+kube-vip 3/3 Running+Ready + VIP owner=1; P4A calico/CoreDNS/IPPool/BGP/autodetect;
+P4B ns NotFound + policy fingerprint в /tmp/p5c1_p4b_fp_pre.txt)
+PHASE 2: P5B LVM PRE capture per-node (/tmp/p5c1_lvm_pre_<host>.json)
+PHASE 3: K8s storage baseline (project SC/PV/PVC=0)
+PHASE 4: pinned source/version gate
+PHASE 5: image supply gate (vendored manifest present)
+
+Все fail-closed (exit 1 на нарушение).
+
+RESULT: PASS

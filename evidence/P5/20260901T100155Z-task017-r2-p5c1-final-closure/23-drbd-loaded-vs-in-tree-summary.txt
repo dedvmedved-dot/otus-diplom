@@ -1,0 +1,17 @@
+# TASK-017-R2 — DRBD Loaded vs In-Tree Summary
+
+Model accepted: loaded runtime DRBD = 9.3.2 (Piraeus runtime build/insmod);
+on-disk Astra in-tree DRBD = 8.4.11 present but NOT loaded.
+
+node-01: loaded=9.3.2 srcversion=5FD9FC5E60D0C7BA7242AA9 | in-tree=8.4.11 C718D2C2BEE45E82AD21432
+node-02: loaded=9.3.2 srcversion=7FDF8C8380112FC51A414E7 | in-tree=8.4.11 C718D2C2BEE45E82AD21432
+node-03: loaded=9.3.2 srcversion=C9052FC5DEE4F01207335F8 | in-tree=8.4.11 C718D2C2BEE45E82AD21432
+
+lsmod drbd + drbd_transport_tcp: 1/1 на всех 3 узлах.
+uname -r: 6.1.158-1-generic на всех 3.
+loaded srcversion (per-node уникален) != on-disk in-tree srcversion (одинаков C718D2C2) на 3/3.
+
+ON-DISK IN-TREE 8.4.11: PRESENT / NOT LOADED
+LOADED DRBD: 9.3.2
+
+RESULT: PASS 3/3

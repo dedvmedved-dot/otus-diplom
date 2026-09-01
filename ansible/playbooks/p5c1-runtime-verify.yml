@@ -1,12 +1,15 @@
 ---
 # p5c1-runtime-verify.yml
-# TASK-017-R1: READ-ONLY runtime verification + full P1-P4 regression.
-# THE ONLY playbook executed in R1. changed=0 failed=0 unreachable=0 required.
+# TASK-017-R2: READ-ONLY runtime verification with FAIL-CLOSED ASSERTION gates.
+# THE ONLY playbook executed in R2. changed=0 failed=0 unreachable=0 required.
 #
-# Order: FULL P1-P4 PRE, P5B LVM PRE, Piraeus runtime verification, imageID/digest,
-# storage-boundary, VLAN141 six-path, P5B LVM POST, FULL P1-P4 POST, P4B fingerprint, FINAL.
+# Every gate ASSERTS exact state (not observation-only). API/parse error => FAIL.
+#
+# Order: P1-P4 PRE, P5B LVM PRE, runtime assertion gates (operator/linstorcluster/
+# controller/satellites/csi/drbd/toleration/lbmakeopts/linstor-boundary/k8s-storage/
+# image-digest/vlan141), P5B LVM POST+compare, P1-P4 POST, P4B fingerprint, FINAL.
 
-- name: "P5C1 runtime read-only verification (TASK-017-R1)"
+- name: "P5C1 runtime read-only verification (TASK-017-R2)"
   hosts: all
   gather_facts: false
   become: true
@@ -28,7 +31,6 @@
           a143=$(ip -4 -o addr show dev bond0.143 2>/dev/null | grep -v '/32' | awk '{print $4}')
           a700=$(ip -4 -o addr show dev bond0.700 2>/dev/null | awk '{print $4}')
           drc=$(ip -4 route show default 2>/dev/null | wc -l)
-          echo "host=$(hostname) bond0=$b0 bond1=$b1 default_count=$drc"
           [ "$b0" = "ens2f0 ens2f1" ] && [ "$b1" = "ens2f2 ens2f3" ] || { echo "P1_FAIL"; exit 1; }
           [ "$a140" = "{{ p1_expected[inventory_hostname].bond140 }}" ] || { echo "P1_FAIL 140"; exit 1; }
           [ "$a141" = "{{ p1_expected[inventory_hostname].bond141 }}" ] || { echo "P1_FAIL 141"; exit 1; }
@@ -46,14 +48,13 @@
           ctd=$(ctr version 2>/dev/null | grep -m1 -i Version | awk '{print $2}' | tr -d 'v')
           klt=$(kubelet --version 2>/dev/null | awk '{print $2}')
           sw=$(swapon --noheadings 2>/dev/null | wc -l)
-          echo "host=$(hostname) containerd=$ctd kubelet=$klt swap=$sw"
           [ "$ctd" = "2.3.3" ] && [ "$klt" = "v1.36.2" ] && [ "$sw" = "0" ] || { echo "P2_FAIL"; exit 1; }
           echo "P2_PRE_OK"
       register: p2pre
       changed_when: false
 
     # ═══ P3 PRE ═══
-    - name: P3 PRE — etcd JSON + kube-vip JSON + VIP + readyz/livez
+    - name: P3 PRE — etcd JSON + kube-vip Running+Ready + VIP + readyz/livez
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
@@ -80,7 +81,14 @@
           kvo = subprocess.run(KC+["get","pods","-n","kube-system","-o","json"], capture_output=True, text=True)
           if kvo.returncode != 0: print("P3_FAIL kv"); sys.exit(1)
           kv = [p for p in json.loads(kvo.stdout).get("items",[]) if p.get("metadata",{}).get("name","").startswith("kube-vip-")]
+          def pod_ready(p):
+              # Ready condition (static pod may or may not have it); fallback containerStatuses all ready
+              rcs = [c for c in p.get("status",{}).get("conditions",[]) if c.get("type")=="Ready"]
+              if rcs: return rcs[0].get("status")=="True"
+              css = p.get("status",{}).get("containerStatuses",[])
+              return bool(css) and all(c.get("ready",False) for c in css)
           kv_running = sum(1 for p in kv if p.get("status",{}).get("phase")=="Running")
+          kv_ready = sum(1 for p in kv if pod_ready(p))
           rz = subprocess.run(KC+["get","--raw=/readyz"], capture_output=True, text=True)
           if rz.returncode != 0: print("P3_FAIL readyz"); sys.exit(1)
           rzok = rz.stdout.strip()
@@ -89,8 +97,8 @@
               r = subprocess.run(["curl","-sk","--max-time","5",f"https://{ip}:6443/livez"], capture_output=True, text=True)
               livez.append((r.returncode, r.stdout.strip()))
           ok_livez = sum(1 for rc,v in livez if rc==0 and v=="ok")
-          print(f"members={len(members)} mlearn={mlearn} endpoints={len(eps)} elearn={elearn} leaders={len(leaders)} aep={aep} health={healthy} kube-vip={len(kv)} running={kv_running} readyz={rzok} livez={ok_livez}/3")
-          if len(members)!=3 or mlearn!=0 or len(eps)!=3 or elearn!=0 or len(leaders)!=1 or aep!=1 or healthy!=3 or len(kv)!=3 or kv_running!=3 or rzok!="ok" or ok_livez!=3:
+          print(f"members={len(members)} mlearn={mlearn} endpoints={len(eps)} elearn={elearn} leaders={len(leaders)} aep={aep} health={healthy} kube-vip={len(kv)} running={kv_running} ready={kv_ready} readyz={rzok} livez={ok_livez}/3")
+          if len(members)!=3 or mlearn!=0 or len(eps)!=3 or elearn!=0 or len(leaders)!=1 or aep!=1 or healthy!=3 or len(kv)!=3 or kv_running!=3 or kv_ready!=3 or rzok!="ok" or ok_livez!=3:
               print("P3_FAIL"); sys.exit(1)
           print("P3_PRE_OK")
           PYEOF
@@ -100,7 +108,7 @@
       delegate_to: node-01
 
     # ═══ VIP owner PRE ═══
-    - name: VIP-PRE — local bond0.140 172.30.140.100/32 count (0 or 1)
+    - name: VIP-PRE — local VIP count + aggregate owner ==1
       ansible.builtin.shell:
         cmd: |
           c=$(ip -4 -o addr show dev bond0.140 2>/dev/null | awk '/172.30.140.100\/32/{c++} END{print c+0}')
@@ -113,8 +121,8 @@
       ansible.builtin.shell:
         cmd: |
           total={{ groups['all'] | map('extract', hostvars, 'vippre') | select('defined') | map(attribute='stdout') | regex_replace('vip_owner_local=','') | map('int') | sum }}
-          echo "vip_owner_aggregate=$total"
           [ "$total" = "1" ] || { echo "VIP_AGG_FAIL"; exit 1; }
+          echo "VIP_AGG_PRE_OK"
       register: vipaggpre
       changed_when: false
       run_once: true
@@ -167,7 +175,7 @@
       delegate_to: node-01
 
     # ═══ P4B PRE ═══
-    - name: P4B PRE — validation ns NotFound + NetworkPolicy fingerprint
+    - name: P4B PRE — validation ns NotFound + fingerprint
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
@@ -175,8 +183,7 @@
           KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
           r = subprocess.run(KC+["get","namespace","p4b-netpol-validation","-o","json"], capture_output=True, text=True)
           if r.returncode == 0: print("P4B_FAIL ns exists"); sys.exit(1)
-          if "NotFound" not in r.stderr and "NotFound" not in r.stdout:
-              print("P4B_FAIL ns query"); sys.exit(1)
+          if "NotFound" not in r.stderr and "NotFound" not in r.stdout: print("P4B_FAIL ns query"); sys.exit(1)
           np = subprocess.run(KC+["get","networkpolicy","-A","-o","json"], capture_output=True, text=True)
           if np.returncode != 0: print("P4B_FAIL np"); sys.exit(1)
           items = json.loads(np.stdout).get("items",[])
@@ -190,8 +197,7 @@
           canon.sort(key=lambda x: (x["ns"], x["name"]))
           fp = hashlib.sha256(json.dumps(canon, sort_keys=True).encode()).hexdigest()
           open("/tmp/p4b_np_fp_pre.txt","w").write(fp)
-          print(f"p4b_np_pre_total={len(items)} fingerprint={fp}")
-          print("P4B_PRE_OK")
+          print(f"P4B_PRE_OK total={len(items)} fp={fp}")
           PYEOF
       register: p4bpre
       changed_when: false
@@ -199,75 +205,168 @@
       delegate_to: node-01
 
     # ═══ P5B LVM PRE ═══
-    - name: P5B-LVM-PRE — structural JSON capture (per node)
+    - name: P5B-LVM-PRE — structural capture to /tmp (per node)
       ansible.builtin.shell:
         cmd: |
-          echo "HOST=$(hostname)"
-          pvs --reportformat json -o pv_name,vg_name,pv_size,pv_uuid
-          vgs --reportformat json -o vg_name,vg_uuid,vg_size,vg_free,pv_count
-          lvs --reportformat json -o vg_name,lv_name,lv_uuid,lv_attr,lv_size,data_percent,metadata_percent
+          pvs --reportformat json -o pv_name,vg_name,pv_size,pv_uuid > /tmp/p5c1_verify_lvm_pre_{{ inventory_hostname }}.json 2>&1
+          vgs --reportformat json -o vg_name,vg_uuid,vg_size,vg_free,pv_count >> /tmp/p5c1_verify_lvm_pre_{{ inventory_hostname }}.json 2>&1
+          lvs --reportformat json -o vg_name,lv_name,lv_uuid,lv_attr,lv_size,data_percent,metadata_percent >> /tmp/p5c1_verify_lvm_pre_{{ inventory_hostname }}.json 2>&1
+          echo "P5B_LVM_PRE_OK"
       register: lvmpre
       changed_when: false
 
-    # ═══ Piraeus runtime verification ═══
-    - name: OPERATOR-RUNTIME — deployment Available + pods Ready
+    # ═══ D7 — OPERATOR assertion gate ═══
+    - name: OPERATOR-GATE — desired=1 available=1 ready=1 + pods Running/Ready
       ansible.builtin.shell:
         cmd: |
-          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} get deployment piraeus-operator-controller-manager -o jsonpath='{.status.availableReplicas}/{.spec.replicas}' 2>/dev/null
-          echo
-          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} get pods -o wide 2>&1 | grep -E 'operator'
-      register: oprt
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","-n","piraeus-datastore"]
+          r = subprocess.run(KC+["get","deployment","piraeus-operator-controller-manager","-o","json"], capture_output=True, text=True)
+          if r.returncode != 0: print("OPERATOR_API_FAIL"); sys.exit(1)
+          d = json.loads(r.stdout)
+          spec_r = d["spec"].get("replicas",0)
+          avail = d.get("status",{}).get("availableReplicas",0)
+          ready = d.get("status",{}).get("readyReplicas",0)
+          img = d["spec"]["template"]["spec"]["containers"][0]["image"]
+          pr = subprocess.run(KC+["get","pods","-l","app.kubernetes.io/component=piraeus-operator","-o","json"], capture_output=True, text=True)
+          if pr.returncode != 0: print("OPERATOR_POD_FAIL"); sys.exit(1)
+          pods = json.loads(pr.stdout).get("items",[])
+          running = [p for p in pods if p.get("status",{}).get("phase")=="Running"]
+          allready = all(all(c.get("ready",False) for c in p.get("status",{}).get("containerStatuses",[])) for p in running)
+          print(f"operator desired={spec_r} available={avail} ready={ready} pods={len(pods)} running={len(running)} allready={allready} image={img}")
+          if spec_r!=1 or avail!=1 or ready!=1 or len(running)!=1 or not allready or "v2.10.6" not in img:
+              print("OPERATOR_GATE_FAIL"); sys.exit(1)
+          print("OPERATOR_GATE_OK")
+          PYEOF
+      register: opgate
       changed_when: false
       run_once: true
       delegate_to: node-01
 
-    - name: LINSTORCLUSTER-RUNTIME — status conditions
+    - name: GENCERT-GATE — pod exactly 1 Running all Ready
       ansible.builtin.shell:
         cmd: |
-          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} get linstorcluster linstorcluster -o jsonpath='{.status.conditions}' 2>/dev/null
-          echo
-          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} get linstorcluster linstorcluster -o jsonpath='version={.status.version} satellites={.status.satellites} running={.status.runningSatellites} volumes={.status.numberOfVolumes} capacity={.status.capacity}' 2>/dev/null
-          echo
-      register: lcrt
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","-n","piraeus-datastore"]
+          r = subprocess.run(KC+["get","pods","-l","app.kubernetes.io/component=piraeus-operator-gencert","-o","json"], capture_output=True, text=True)
+          if r.returncode != 0: print("GENCERT_FAIL"); sys.exit(1)
+          pods = json.loads(r.stdout).get("items",[])
+          running = [p for p in pods if p.get("status",{}).get("phase")=="Running"]
+          allready = all(all(c.get("ready",False) for c in p.get("status",{}).get("containerStatuses",[])) for p in running)
+          print(f"gencert pods={len(pods)} running={len(running)} allready={allready}")
+          if len(running)!=1 or not allready: print("GENCERT_GATE_FAIL"); sys.exit(1)
+          print("GENCERT_GATE_OK")
+          PYEOF
+      register: gencertgate
       changed_when: false
       run_once: true
       delegate_to: node-01
 
-    - name: CONTROLLER-VERSION — linstor controller version
+    # ═══ D8 — LinstorCluster assertion gate ═══
+    - name: LINSTORCLUSTER-GATE — conditions + version + satellites + volumes + capacity
       ansible.builtin.shell:
         cmd: |
-          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} exec deploy/linstor-controller -- linstor controller version 2>&1
-      register: ctrv
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","-n","piraeus-datastore"]
+          r = subprocess.run(KC+["get","linstorcluster","linstorcluster","-o","json"], capture_output=True, text=True)
+          if r.returncode != 0: print("LINSTORCLUSTER_API_FAIL"); sys.exit(1)
+          o = json.loads(r.stdout)
+          st = o.get("status",{})
+          cond = {c.get("type"): c.get("status") for c in st.get("conditions",[])}
+          applied = cond.get("Applied"); avail = cond.get("Available"); conf = cond.get("Configured")
+          ver = st.get("version"); sat = st.get("satellites"); run = st.get("runningSatellites")
+          sch = st.get("scheduledSatellites"); vols = st.get("numberOfVolumes"); cap = st.get("capacity")
+          print(f"Applied={applied} Available={avail} Configured={conf} version={ver} satellites={sat} running={run} scheduled={sch} volumes={vols} capacity={cap}")
+          if applied!="True" or avail!="True" or conf!="True" or ver!="1.33.2" or sat!="3/3" or run!=3 or sch!=3 or vols!=0 or cap!="0/0GiB":
+              print("LINSTORCLUSTER_GATE_FAIL"); sys.exit(1)
+          print("LINSTORCLUSTER_GATE_OK")
+          PYEOF
+      register: lcgate
       changed_when: false
       run_once: true
       delegate_to: node-01
 
-    - name: SATELLITES-RUNTIME — exactly 3 Ready
+    # ═══ D9 — controller version assertion gate ═══
+    - name: CONTROLLER-GATE — rc=0 + server version exactly 1.33.2
       ansible.builtin.shell:
         cmd: |
-          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} get pods -l app.kubernetes.io/component=linstor-satellite -o wide 2>&1
-          n=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} get pods -l app.kubernetes.io/component=linstor-satellite --no-headers 2>/dev/null | wc -l)
-          echo "satellite_count=$n"
-          [ "$n" = "3" ] || { echo "SATELLITE_COUNT_FAIL"; exit 1; }
-      register: satrt
+          out=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} exec deploy/linstor-controller -- linstor controller version 2>&1)
+          rc=$?
+          ver=$(echo "$out" | grep -o 'linstor controller [0-9.]*' | awk '{print $3}')
+          echo "rc=$rc server_version=$ver"
+          [ "$rc" = "0" ] || { echo "CONTROLLER_CMD_FAIL"; exit 1; }
+          [ "$ver" = "1.33.2" ] || { echo "CONTROLLER_VERSION_FAIL"; exit 1; }
+          echo "CONTROLLER_GATE_OK"
+      register: ctrgate
       changed_when: false
       run_once: true
       delegate_to: node-01
 
-    - name: CSI-RUNTIME — controller Available + node 3 Ready + CSIDriver
+    # ═══ D10 — satellites assertion gate ═══
+    - name: SATELLITES-GATE — exactly one per node, all Running/Ready
       ansible.builtin.shell:
         cmd: |
-          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} get pods 2>&1 | grep -E 'csi'
-          csid=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get csidriver 2>/dev/null | grep -c 'linstor.csi.linbit.com')
-          echo "csidriver_linstor=$csid"
-          [ "$csid" = "1" ] || { echo "CSIDRIVER_FAIL"; exit 1; }
-      register: csirt
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","-n","piraeus-datastore"]
+          r = subprocess.run(KC+["get","pods","-l","app.kubernetes.io/component=linstor-satellite","-o","json"], capture_output=True, text=True)
+          if r.returncode != 0: print("SATELLITE_FAIL"); sys.exit(1)
+          pods = json.loads(r.stdout).get("items",[])
+          nodes = {}
+          for p in pods:
+              n = p.get("spec",{}).get("nodeName","")
+              nodes.setdefault(n, []).append(p)
+          expected = {"node-01","node-02","node-03"}
+          if set(nodes.keys()) != expected: print(f"SATELLITE_NODES_FAIL {sorted(nodes.keys())}"); sys.exit(1)
+          for n, ps in nodes.items():
+              if len(ps) != 1: print(f"SATELLITE_COUNT_FAIL {n}={len(ps)}"); sys.exit(1)
+              p = ps[0]
+              if p.get("status",{}).get("phase") != "Running": print(f"SATELLITE_NOT_RUNNING {n}"); sys.exit(1)
+              if not all(c.get("ready",False) for c in p.get("status",{}).get("containerStatuses",[])): print(f"SATELLITE_NOT_READY {n}"); sys.exit(1)
+          print(f"SATELLITE_GATE_OK nodes={sorted(nodes.keys())}")
+          PYEOF
+      register: satgate
       changed_when: false
       run_once: true
       delegate_to: node-01
 
-    # ═══ DRBD runtime (per node) ═══
-    - name: DRBD-RUNTIME — 9.3.2 exact gate (per node)
+    # ═══ D11 — CSI assertion gate ═══
+    - name: CSI-GATE — controller 1/1 + csi-node 3 per node + CSIDriver + 1.11.0
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","-n","piraeus-datastore"]
+          r = subprocess.run(KC+["get","deployment","linstor-csi-controller","-o","json"], capture_output=True, text=True)
+          if r.returncode != 0: print("CSI_DEPLOY_FAIL"); sys.exit(1)
+          d = json.loads(r.stdout)
+          spec_r = d["spec"].get("replicas",0); avail = d.get("status",{}).get("availableReplicas",0); ready = d.get("status",{}).get("readyReplicas",0)
+          cn = subprocess.run(KC+["get","pods","-l","app.kubernetes.io/component=linstor-csi-node","-o","json"], capture_output=True, text=True)
+          if cn.returncode != 0: print("CSI_NODE_FAIL"); sys.exit(1)
+          npods = json.loads(cn.stdout).get("items",[])
+          nnodes = {}
+          for p in npods:
+              n = p.get("spec",{}).get("nodeName",""); nnodes.setdefault(n, []).append(p)
+          ok_nodes = set(nnodes.keys()) == {"node-01","node-02","node-03"} and all(len(v)==1 for v in nnodes.values())
+          all_ready = all(all(c.get("ready",False) for c in p.get("status",{}).get("containerStatuses",[])) for ps in nnodes.values() for p in ps if p.get("status",{}).get("phase")=="Running")
+          img = npods[0]["spec"]["containers"][0]["image"] if npods else ""
+          csid = subprocess.run(["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","get","csidriver","linstor.csi.linbit.com","-o","json"], capture_output=True, text=True)
+          csid_present = (csid.returncode == 0)
+          print(f"csi_controller desired={spec_r} avail={avail} ready={ready} csi_node={len(npods)} nodes_ok={ok_nodes} all_ready={all_ready} image={img} csidriver={csid_present}")
+          if spec_r!=1 or avail!=1 or ready!=1 or len(npods)!=3 or not ok_nodes or not all_ready or "piraeus-csi:v1.11.0" not in img or not csid_present:
+              print("CSI_GATE_FAIL"); sys.exit(1)
+          print("CSI_GATE_OK")
+          PYEOF
+      register: csigate
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ D16 — DRBD loaded vs in-tree gate (per node) ═══
+    - name: DRBD-GATE — loaded 9.3.2 vs in-tree 8.4.11 (per node)
       ansible.builtin.shell:
         cmd: |
           sys_mod=$([ -e /sys/module/drbd ] && echo present || echo absent)
@@ -278,75 +377,145 @@
           uname_r=$(uname -r)
           mi_rc=0; mi_out=$(modinfo drbd 2>/dev/null) || mi_rc=$?
           mi_ver=$(echo "$mi_out" | grep '^version:' | awk '{print $2}')
-          mi_vm=$(echo "$mi_out" | grep '^vermagic:' | awk '{$1=""; print substr($0,2)}')
           mi_src=$(echo "$mi_out" | grep '^srcversion:' | awk '{print $2}')
-          echo "host=$(hostname) sys_module=$sys_mod version=$ver srcversion=$src lsmod=$lsmod_c tcp=$tcp_c uname=$uname_r"
-          echo "modinfo_rc=$mi_rc modinfo_version=$mi_ver vermagic=$mi_vm modinfo_srcversion=$mi_src"
-          # загруженный runtime = 9.3.2 (источник /sys/module/drbd)
+          mi_vm=$(echo "$mi_out" | grep '^vermagic:' | awk '{$1=""; print substr($0,2)}')
+          echo "loaded_version=$ver loaded_src=$src lsmod=$lsmod_c tcp=$tcp_c uname=$uname_r in_tree_version=$mi_ver in_tree_src=$mi_src"
           [ "$sys_mod" = "present" ] || { echo "DRBD_NOT_LOADED"; exit 1; }
           [ "$ver" = "9.3.2" ] || { echo "DRBD_VERSION_FAIL"; exit 1; }
           [ "$lsmod_c" != "0" ] || { echo "DRBD_LSMOD_ZERO"; exit 1; }
           [ "$tcp_c" != "0" ] || { echo "DRBD_TCP_MISSING"; exit 1; }
           [ "$uname_r" = "6.1.158-1-generic" ] || { echo "UNAME_FAIL"; exit 1; }
           [ "$mi_rc" = "0" ] || { echo "MODINFO_FAIL"; exit 1; }
-          # old in-tree 8.4.11 NOT loaded: загруженный srcversion отличается от in-tree
+          [ "$mi_ver" = "8.4.11" ] || { echo "IN_TREE_NOT_8.4.11"; exit 1; }
           if [ -n "$mi_src" ] && [ "$src" = "$mi_src" ]; then echo "DRBD_OLD_8.4.11_LOADED"; exit 1; fi
           case "$mi_vm" in 6.1.158-1-generic*) ;; *) echo "VERMAGIC_FAIL"; exit 1;; esac
-          echo "DRBD_RUNTIME_OK"
-      register: drbdrt
+          echo "DRBD_GATE_OK loaded=9.3.2 in-tree=8.4.11 NOT_LOADED"
+      register: drbdgate
       changed_when: false
 
-    # ═══ toleration + LB_MAKEOPTS live ═══
-    - name: TOLERATION-LIVE — control-plane toleration effective
+    # ═══ D12 — toleration assertion gate ═══
+    - name: TOLERATION-GATE — exact tuple for operator/controller/gencert/linstorcluster
       ansible.builtin.shell:
         cmd: |
-          for d in piraeus-operator-controller-manager piraeus-operator-gencert; do
-            tol=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} get deployment $d -o jsonpath='{.spec.template.spec.tolerations}' 2>/dev/null)
-            echo "$d tolerations=$tol"
-            echo "$tol" | grep -q 'node-role.kubernetes.io/control-plane' || { echo "TOLERATION_MISSING $d"; exit 1; }
-          done
-          lc=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} get linstorcluster linstorcluster -o jsonpath='{.spec.tolerations}' 2>/dev/null)
-          echo "linstorcluster tolerations=$lc"
-          echo "$lc" | grep -q 'node-role.kubernetes.io/control-plane' || { echo "TOLERATION_MISSING linstorcluster"; exit 1; }
-      register: tolrt
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","-n","piraeus-datastore"]
+          WANT = {"key":"node-role.kubernetes.io/control-plane","operator":"Exists","effect":"NoSchedule"}
+          def has_tol(tols):
+              for t in tols:
+                  if (t.get("key")==WANT["key"] and t.get("operator")==WANT["operator"] and t.get("effect")==WANT["effect"]):
+                      return True
+              return False
+          for dep in ["piraeus-operator-controller-manager","piraeus-operator-gencert"]:
+              r = subprocess.run(KC+["get","deployment",dep,"-o","json"], capture_output=True, text=True)
+              if r.returncode != 0: print(f"TOLERATION_FAIL {dep}"); sys.exit(1)
+              tols = json.loads(r.stdout)["spec"]["template"]["spec"].get("tolerations",[])
+              if not has_tol(tols): print(f"TOLERATION_MISSING {dep}"); sys.exit(1)
+          r = subprocess.run(KC+["get","linstorcluster","linstorcluster","-o","json"], capture_output=True, text=True)
+          if r.returncode != 0: print("TOLERATION_FAIL linstorcluster"); sys.exit(1)
+          tols = json.loads(r.stdout)["spec"].get("tolerations",[])
+          if not has_tol(tols): print("TOLERATION_MISSING linstorcluster"); sys.exit(1)
+          print("TOLERATION_GATE_OK")
+          PYEOF
+      register: tolgate
       changed_when: false
       run_once: true
       delegate_to: node-01
 
-    - name: LB-MAKEOPTS-LIVE — LinstorSatelliteConfiguration effective
+    # ═══ D13 — LB_MAKEOPTS assertion gate ═══
+    - name: LB-MAKEOPTS-GATE — both flags + storagePools/hostDevices empty
       ansible.builtin.shell:
         cmd: |
-          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} get linstorsatelliteconfiguration astra-drbd-loader -o yaml 2>&1 | grep -A3 'LB_MAKEOPTS'
-          val=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} get linstorsatelliteconfiguration astra-drbd-loader -o jsonpath='{.spec.podTemplate.spec.initContainers[0].env[0].value}' 2>/dev/null)
-          echo "LB_MAKEOPTS=$val"
-          echo "$val" | grep -q 'CONFIG_GCC_PLUGINS=n' || { echo "LB_MAKEOPTS_FAIL"; exit 1; }
-          sp=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} get linstorsatelliteconfiguration astra-drbd-loader -o jsonpath='{.spec.storagePools}' 2>/dev/null)
-          echo "storagePools=[$sp]"
-          [ -z "$sp" ] || { echo "STORAGE_POOLS_PRESENT"; exit 1; }
-      register: lbmrt
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","-n","piraeus-datastore"]
+          r = subprocess.run(KC+["get","linstorsatelliteconfiguration","astra-drbd-loader","-o","json"], capture_output=True, text=True)
+          if r.returncode != 0: print("LBMAKEOPTS_FAIL"); sys.exit(1)
+          o = json.loads(r.stdout)
+          spec = o.get("spec",{})
+          val = ""
+          for ic in spec.get("podTemplate",{}).get("spec",{}).get("initContainers",[]):
+              if ic.get("name") == "drbd-module-loader":
+                  for e in ic.get("env",[]):
+                      if e.get("name") == "LB_MAKEOPTS": val = e.get("value","")
+          sp = spec.get("storagePools"); hd = spec.get("source",{}).get("hostDevices",[]) if spec.get("source") else []
+          print(f"LB_MAKEOPTS={val} storagePools={sp} hostDevices={hd}")
+          ok_flags = ("CONFIG_GCC_PLUGINS=n" in val and "CONFIG_GCC_PLUGIN_STACKLEAK=n" in val)
+          ok_sp = (sp is None or sp == "" or sp == [])
+          ok_hd = (hd is None or hd == [] or hd == "")
+          if not ok_flags or not ok_sp or not ok_hd:
+              print("LBMAKEOPTS_GATE_FAIL"); sys.exit(1)
+          print("LBMAKEOPTS_GATE_OK")
+          PYEOF
+      register: lbmgate
       changed_when: false
       run_once: true
       delegate_to: node-01
 
-    # ═══ LINSTOR boundary ═══
-    - name: LINSTOR-BOUNDARY — node list + storage-pool + resource list
+    # ═══ D14 — LINSTOR boundary assertion gates ═══
+    - name: LINSTOR-NODE-GATE — 3 exact nodes Online
       ansible.builtin.shell:
         cmd: |
-          echo "=== node list ==="
-          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} exec deploy/linstor-controller -- linstor node list 2>&1
-          echo "=== storage-pool list ==="
-          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} exec deploy/linstor-controller -- linstor storage-pool list 2>&1
-          echo "=== resource-definition list ==="
-          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} exec deploy/linstor-controller -- linstor resource-definition list 2>&1
-          echo "=== resource list ==="
-          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} exec deploy/linstor-controller -- linstor resource list 2>&1
-      register: linbound
+          out=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} exec deploy/linstor-controller -- linstor node list 2>&1)
+          rc=$?
+          [ "$rc" = "0" ] || { echo "LINSTOR_NODE_CMD_FAIL"; exit 1; }
+          online=$(echo "$out" | grep -cE 'SATELLITE.*Online')
+          nodes=$(echo "$out" | grep -c 'SATELLITE')
+          echo "linstor_nodes=$nodes online=$online"
+          [ "$nodes" = "3" ] && [ "$online" = "3" ] || { echo "LINSTOR_NODE_GATE_FAIL"; exit 1; }
+          echo "LINSTOR_NODE_GATE_OK"
+      register: lnogate
       changed_when: false
       run_once: true
       delegate_to: node-01
 
-    # ═══ K8s storage boundary ═══
-    - name: K8S-STORAGE-BOUNDARY — SC/PV/PVC structural (semantic filter)
+    - name: LINSTOR-POOL-GATE — only internal diskless pools
+      ansible.builtin.shell:
+        cmd: |
+          out=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} exec deploy/linstor-controller -- linstor storage-pool list 2>&1)
+          rc=$?
+          [ "$rc" = "0" ] || { echo "LINSTOR_POOL_CMD_FAIL"; exit 1; }
+          non=$(echo "$out" | grep -vE 'DfltDisklessStorPool|StoragePool|^\+|^\||^$' | tr -d '[:space:]')
+          echo "non_diskless=[$non]"
+          if [ -n "$non" ]; then echo "DISKFUL_POOL_PRESENT"; exit 1; fi
+          echo "LINSTOR_POOL_GATE_OK"
+      register: lpoolgate
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    - name: LINSTOR-RD-GATE — resource definitions = 0
+      ansible.builtin.shell:
+        cmd: |
+          out=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} exec deploy/linstor-controller -- linstor resource-definition list 2>&1)
+          rc=$?
+          [ "$rc" = "0" ] || { echo "LINSTOR_RD_CMD_FAIL"; exit 1; }
+          rd=$(echo "$out" | grep -cE '^\| [^R]')
+          echo "resource_definitions=$rd"
+          [ "$rd" = "0" ] || { echo "LINSTOR_RD_GATE_FAIL"; exit 1; }
+          echo "LINSTOR_RD_GATE_OK"
+      register: lrdgate
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    - name: LINSTOR-RES-GATE — resources = 0
+      ansible.builtin.shell:
+        cmd: |
+          out=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} exec deploy/linstor-controller -- linstor resource list 2>&1)
+          rc=$?
+          [ "$rc" = "0" ] || { echo "LINSTOR_RES_CMD_FAIL"; exit 1; }
+          r=$(echo "$out" | grep -cE '^\| [^R]')
+          echo "resources=$r"
+          [ "$r" = "0" ] || { echo "LINSTOR_RES_GATE_FAIL"; exit 1; }
+          echo "LINSTOR_RES_GATE_OK"
+      register: lresgate
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ K8s storage boundary (structural) ═══
+    - name: K8S-STORAGE-GATE — SC/PV/PVC structural semantic filter
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
@@ -360,44 +529,141 @@
           def rel(s): return any(k in str(s).lower() for k in KW)
           sc = kget("get","storageclass"); pv = kget("get","pv"); pvc = kget("get","pvc","-A")
           sc_rel = [i["metadata"]["name"] for i in sc.get("items",[]) if rel(i["metadata"]["name"]) or rel(i.get("provisioner",""))]
-          pv_rel = [i["metadata"]["name"] for i in pv.get("items",[]) if rel(i["metadata"]["name"]) or rel(i.get("spec",{}).get("storageClassName","")) or rel(json.dumps(i.get("spec",{}).get("csi",{})))]
+          pv_rel = [i["metadata"]["name"] for i in pv.get("items",[]) if rel(i["metadata"]["name"]) or rel(i.get("spec",{}).get("storageClassName","")) or rel(i.get("spec",{}).get("csi",{}).get("driver","")) or rel(json.dumps(i.get("spec",{}).get("csi",{})))]
           pvc_rel = [i["metadata"]["name"] for i in pvc.get("items",[]) if rel(i["metadata"]["name"]) or rel(i.get("spec",{}).get("storageClassName",""))]
           print(f"project_sc={len(sc_rel)} project_pv={len(pv_rel)} project_pvc={len(pvc_rel)}")
-          print(f"unrelated_totals sc={len(sc.get('items',[]))} pv={len(pv.get('items',[]))} pvc={len(pvc.get('items',[]))}")
           if sc_rel or pv_rel or pvc_rel: print("PROJECT_STORAGE_PRESENT"); sys.exit(1)
-          print("K8S_STORAGE_BOUNDARY_CLEAN")
+          print("K8S_STORAGE_GATE_OK")
           PYEOF
-      register: k8sb
+      register: k8sgate
       changed_when: false
       run_once: true
       delegate_to: node-01
 
-    # ═══ VLAN141 six-path ═══
-    - name: VLAN141-SIX-PATH — read-only connectivity
+    # ═══ D19 — image digest executable gate ═══
+    - name: IMAGE-DIGEST-GATE — runtime imageID matches images.lock (15 entries)
       ansible.builtin.shell:
         cmd: |
-          ipmap='{"node-01":"172.30.141.101","node-02":"172.30.141.102","node-03":"172.30.141.103"}'
+          python3 << 'PYEOF'
+          import json, subprocess, sys, re
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","-n","piraeus-datastore"]
+          # images.lock expected digests (P5C1 verified:true entries)
+          EXPECT = {
+            "piraeus-operator": "sha256:25f9218209eadce0e4fff8ab13ca64b1f0fae3cab9ac5f44026eaaa5c929d438",
+            "piraeus-server": "sha256:c7da2b35b5ce08dff31480d6951597fd479798831da318976f5bfbec6a47cd04",
+            "piraeus-csi": "sha256:d79ebfa7e9ade09b49cbb60bce32c726b025033e786c9e3d8b99feb9191f3a4e",
+            "drbd9-resolute": "sha256:9a7941e4e6e8fe750cc732753fdc4eb61a526506244bd4ac3d03d79ea272627c",
+            "drbd-reactor": "sha256:0f22aa4c277231b4cb800b0f292da68c77913f6d03c7f1029312f8a00251aa93",
+            "piraeus-ha-controller": "sha256:5faa4a59f990293a398c3cdee069ae7c03ecfd8c026f5a12c8eb72c0e3e1d06b",
+            "drbd-shutdown-guard": "sha256:a4adba73d07f6ba2605d0594676df47ab143e004991caadea3b7b556ead2db6e",
+            "linstor-affinity-controller": "sha256:9d9873a94c21aa7dba402d3ff745b45241f5b5d9a8123872f50648e007034f4c",
+            "csi-attacher": "sha256:b74b05b39501565022883fc128002b4cb857a7bb6c858606bcb3fdedba0b0b80",
+            "csi-provisioner": "sha256:6be9f63ca4caa6c46aae55aa372500949d8a21473d72f819da1f746076b32d4e",
+            "csi-snapshotter": "sha256:da081c27e8a6d91f36042c1942362d0515ced8d06e18c11b8f893e58c4d6d797",
+            "csi-resizer": "sha256:589e525cddef6d768e68da1f0bc9ffd0a24bf3add3dd010648eb7189976fde79",
+            "csi-node-driver-registrar": "sha256:ab482308a4921e28a6df09a16ab99a457e9af9641ff44fb1be1a690d07ce8b70",
+            "livenessprobe": "sha256:c4cc074199c045dd73ab85f28897e2a32f4d6f38ffdba4f3b13b8007ccbd3570",
+            "csi-external-health-monitor-controller": "sha256:25925b16d02f21949a5ac55f8c120e81acdf204fe3d1a1ae1ae3653392bd56ba",
+          }
+          r = subprocess.run(KC+["get","pods","-o","json"], capture_output=True, text=True)
+          if r.returncode != 0: print("IMAGE_DIGEST_FAIL"); sys.exit(1)
+          pods = json.loads(r.stdout).get("items",[])
+          runtime = set()
+          for p in pods:
+              for c in p.get("status",{}).get("containerStatuses",[])+p.get("status",{}).get("initContainerStatuses",[]):
+                  iid = c.get("imageID","")
+                  m = re.search(r'(sha256:[0-9a-f]{64})', iid)
+                  if m: runtime.add(m.group(1))
+          matched = 0; mismatched = []
+          for comp, dgst in EXPECT.items():
+              if dgst in runtime:
+                  matched += 1
+              else:
+                  mismatched.append(comp)
+          print(f"image_digest matched={matched}/15 mismatched={mismatched}")
+          if matched != 15: print("IMAGE_DIGEST_GATE_FAIL"); sys.exit(1)
+          print("IMAGE_DIGEST_GATE_OK")
+          PYEOF
+      register: imggate
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ VLAN141 six-path gate ═══
+    - name: VLAN141-GATE — six directed paths (per node)
+      ansible.builtin.shell:
+        cmd: |
           myip=$(ip -4 -o addr show dev bond1.141 2>/dev/null | awk '{print $4}' | cut -d/ -f1)
-          echo "self=$myip"
+          [ -n "$myip" ] || { echo "VLAN141_MISSING"; exit 1; }
           for tgt in 172.30.141.101 172.30.141.102 172.30.141.103; do
             [ "$tgt" = "$myip" ] && continue
             r=$(ping -c 1 -W 2 -I $myip $tgt 2>&1 | grep -c '1 received')
-            echo "path $myip -> $tgt received=$r"
-            [ "$r" = "1" ] || { echo "VLAN141_PATH_FAIL"; exit 1; }
+            [ "$r" = "1" ] || { echo "VLAN141_PATH_FAIL $myip->$tgt"; exit 1; }
           done
           echo "VLAN141_SIX_PATH_OK"
-      register: v141
+      register: v141gate
       changed_when: false
 
-    # ═══ P5B LVM POST ═══
-    - name: P5B-LVM-POST — structural JSON capture (per node)
+    # ═══ P5B LVM POST + in-run compare ═══
+    - name: P5B-LVM-POST — structural capture (per node)
       ansible.builtin.shell:
         cmd: |
-          echo "HOST=$(hostname)"
-          pvs --reportformat json -o pv_name,vg_name,pv_size,pv_uuid
-          vgs --reportformat json -o vg_name,vg_uuid,vg_size,vg_free,pv_count
-          lvs --reportformat json -o vg_name,lv_name,lv_uuid,lv_attr,lv_size,data_percent,metadata_percent
+          pvs --reportformat json -o pv_name,vg_name,pv_size,pv_uuid > /tmp/p5c1_verify_lvm_post_{{ inventory_hostname }}.json 2>&1
+          vgs --reportformat json -o vg_name,vg_uuid,vg_size,vg_free,pv_count >> /tmp/p5c1_verify_lvm_post_{{ inventory_hostname }}.json 2>&1
+          lvs --reportformat json -o vg_name,lv_name,lv_uuid,lv_attr,lv_size,data_percent,metadata_percent >> /tmp/p5c1_verify_lvm_post_{{ inventory_hostname }}.json 2>&1
+          echo "P5B_LVM_POST_OK"
       register: lvmpost
+      changed_when: false
+
+    - name: P5B-LVM-COMPARE-GATE — in-run structural compare (per node)
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import json, sys
+          def load(path):
+              try:
+                  with open(path) as f:
+                      # files contain 3 concatenated JSON objects; extract pv/vg/lv by markers
+                      txt = f.read()
+              except: print("LVM_READ_FAIL"); sys.exit(1)
+              # parse each json object via json.JSONDecoder raw scan
+              objs = []
+              dec = json.JSONDecoder()
+              i = 0
+              while i < len(txt):
+                  while i < len(txt) and txt[i] not in '[{': i += 1
+                  if i >= len(txt): break
+                  try:
+                      obj, j = dec.raw_decode(txt, i)
+                      objs.append(obj); i = j
+                  except: i += 1
+              # find pvs/vgs/lvs by shape
+              pv = vg = lv = None
+              for o in objs:
+                  for rep in o.get("report",[]):
+                      for rec in rep.get("pv",[]):
+                          if pv is None: pv = rec
+                      for rec in rep.get("vg",[]):
+                          if vg is None: vg = rec
+                      for rec in rep.get("lv",[]):
+                          if lv is None: lv = rec
+              return pv, vg, lv
+          def canon(pv, vg, lv):
+              return (
+                tuple(sorted(str(x.get("pv_uuid","")) for x in pv)) if isinstance(pv, list) else (str(pv.get("pv_uuid","")),),
+                str(vg.get("vg_uuid","")) if vg else "",
+                str(vg.get("pv_count","")) if vg else "",
+                tuple(sorted(str(x.get("lv_uuid","")) for x in lv)) if isinstance(lv, list) else (str(lv.get("lv_uuid","")),),
+                tuple(sorted(str(x.get("lv_size","")) for x in lv)) if isinstance(lv, list) else (str(lv.get("lv_size","")),),
+              )
+          pv1,vg1,lv1 = load("/tmp/p5c1_verify_lvm_pre_{{ inventory_hostname }}.json")
+          pv2,vg2,lv2 = load("/tmp/p5c1_verify_lvm_post_{{ inventory_hostname }}.json")
+          c1 = canon(pv1,vg1,lv1); c2 = canon(pv2,vg2,lv2)
+          if c1 != c2:
+              print("P5B_LVM_MUTATED"); sys.exit(1)
+          print("P5B_LVM_COMPARE_OK")
+          PYEOF
+      register: lvmcmpgate
       changed_when: false
 
     # ═══ P1 POST ═══
@@ -434,7 +700,7 @@
       changed_when: false
 
     # ═══ VIP POST ═══
-    - name: VIP-POST — local bond0.140 count (0 or 1)
+    - name: VIP-POST — local count + aggregate ==1
       ansible.builtin.shell:
         cmd: |
           c=$(ip -4 -o addr show dev bond0.140 2>/dev/null | awk '/172.30.140.100\/32/{c++} END{print c+0}')
@@ -447,15 +713,15 @@
       ansible.builtin.shell:
         cmd: |
           total={{ groups['all'] | map('extract', hostvars, 'vippost') | select('defined') | map(attribute='stdout') | regex_replace('vip_owner_local=','') | map('int') | sum }}
-          echo "vip_owner_aggregate=$total"
           [ "$total" = "1" ] || { echo "VIP_AGG_FAIL"; exit 1; }
+          echo "VIP_AGG_POST_OK"
       register: vipaggpost
       changed_when: false
       run_once: true
       delegate_to: node-01
 
     # ═══ P3 POST ═══
-    - name: P3 POST — etcd JSON + kube-vip JSON + VIP + readyz/livez
+    - name: P3 POST — etcd JSON + kube-vip Running+Ready + readyz/livez
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
@@ -482,7 +748,13 @@
           kvo = subprocess.run(KC+["get","pods","-n","kube-system","-o","json"], capture_output=True, text=True)
           if kvo.returncode != 0: print("P3_FAIL"); sys.exit(1)
           kv = [p for p in json.loads(kvo.stdout).get("items",[]) if p.get("metadata",{}).get("name","").startswith("kube-vip-")]
+          def pod_ready(p):
+              rcs = [c for c in p.get("status",{}).get("conditions",[]) if c.get("type")=="Ready"]
+              if rcs: return rcs[0].get("status")=="True"
+              css = p.get("status",{}).get("containerStatuses",[])
+              return bool(css) and all(c.get("ready",False) for c in css)
           kv_running = sum(1 for p in kv if p.get("status",{}).get("phase")=="Running")
+          kv_ready = sum(1 for p in kv if pod_ready(p))
           rz = subprocess.run(KC+["get","--raw=/readyz"], capture_output=True, text=True)
           if rz.returncode != 0: print("P3_FAIL"); sys.exit(1)
           rzok = rz.stdout.strip()
@@ -491,8 +763,7 @@
               r = subprocess.run(["curl","-sk","--max-time","5",f"https://{ip}:6443/livez"], capture_output=True, text=True)
               livez.append((r.returncode, r.stdout.strip()))
           ok_livez = sum(1 for rc,v in livez if rc==0 and v=="ok")
-          print(f"members={len(members)} mlearn={mlearn} endpoints={len(eps)} elearn={elearn} leaders={len(leaders)} aep={aep} health={healthy} kube-vip={len(kv)} running={kv_running} readyz={rzok} livez={ok_livez}/3")
-          if len(members)!=3 or mlearn!=0 or len(eps)!=3 or elearn!=0 or len(leaders)!=1 or aep!=1 or healthy!=3 or len(kv)!=3 or kv_running!=3 or rzok!="ok" or ok_livez!=3:
+          if len(members)!=3 or mlearn!=0 or len(eps)!=3 or elearn!=0 or len(leaders)!=1 or aep!=1 or healthy!=3 or len(kv)!=3 or kv_running!=3 or kv_ready!=3 or rzok!="ok" or ok_livez!=3:
               print("P3_FAIL"); sys.exit(1)
           print("P3_POST_OK")
           PYEOF
@@ -537,7 +808,6 @@
           ds = kget("get","daemonset","calico-node","-n","kube-system")
           env = {c["name"]: c.get("value","") for c in ds["spec"]["template"]["spec"]["containers"][0].get("env",[])}
           admok = env.get("IP_AUTODETECTION_METHOD","") == "interface=bond0.140"
-          print(f"nodes={ready} calico={cn} ctrl={cctrl} coredns={dns_des}/{dns_avail}/{dns_ready} ippool={ipok} bgp={bgpok} autodetect={admok}")
           if ready!=3 or cn!=3 or cctrl!=1 or dns_des!=2 or dns_avail!=2 or dns_ready!=2 or not ipok or not bgpok or not admok:
               print("P4A_FAIL"); sys.exit(1)
           print("P4A_POST_OK")
@@ -547,8 +817,8 @@
       run_once: true
       delegate_to: node-01
 
-    # ═══ P4B POST ═══
-    - name: P4B POST — validation ns NotFound + NetworkPolicy fingerprint
+    # ═══ P4B POST + fingerprint compare ═══
+    - name: P4B POST — validation ns NotFound + fingerprint compare
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
@@ -556,8 +826,7 @@
           KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
           r = subprocess.run(KC+["get","namespace","p4b-netpol-validation","-o","json"], capture_output=True, text=True)
           if r.returncode == 0: print("P4B_FAIL ns exists"); sys.exit(1)
-          if "NotFound" not in r.stderr and "NotFound" not in r.stdout:
-              print("P4B_FAIL ns query"); sys.exit(1)
+          if "NotFound" not in r.stderr and "NotFound" not in r.stdout: print("P4B_FAIL ns query"); sys.exit(1)
           np = subprocess.run(KC+["get","networkpolicy","-A","-o","json"], capture_output=True, text=True)
           if np.returncode != 0: print("P4B_FAIL np"); sys.exit(1)
           items = json.loads(np.stdout).get("items",[])
@@ -570,25 +839,11 @@
                             "sha": hashlib.sha256(spec_norm.encode()).hexdigest()})
           canon.sort(key=lambda x: (x["ns"], x["name"]))
           fp = hashlib.sha256(json.dumps(canon, sort_keys=True).encode()).hexdigest()
-          open("/tmp/p4b_np_fp_post.txt","w").write(fp)
-          print(f"p4b_np_post_total={len(items)} fingerprint={fp}")
-          print("P4B_POST_OK")
+          pre = open("/tmp/p4b_np_fp_pre.txt").read().strip()
+          if fp != pre: print("P4B_FP_MISMATCH"); sys.exit(1)
+          print(f"P4B_POST_OK fp_unchanged total={len(items)}")
           PYEOF
       register: p4bpost
-      changed_when: false
-      run_once: true
-      delegate_to: node-01
-
-    - name: P4B-FP-COMPARE — PRE fingerprint == POST fingerprint
-      ansible.builtin.shell:
-        cmd: |
-          a=$(cat /tmp/p4b_np_fp_pre.txt 2>/dev/null)
-          b=$(cat /tmp/p4b_np_fp_post.txt 2>/dev/null)
-          echo "fp_pre=$a"
-          echo "fp_post=$b"
-          [ -n "$a" ] && [ -n "$b" ] && [ "$a" = "$b" ] || { echo "P4B_FP_MISMATCH"; exit 1; }
-          echo "P4B_FP_UNCHANGED"
-      register: p4bfp
       changed_when: false
       run_once: true
       delegate_to: node-01
@@ -596,6 +851,6 @@
     # ═══ FINAL ═══
     - name: FINAL — P5C1 runtime verification complete
       ansible.builtin.debug:
-        msg: "P5C1 runtime read-only verification completed"
+        msg: "P5C1 runtime read-only verification completed (all gates PASS)"
       run_once: true
       delegate_to: node-01

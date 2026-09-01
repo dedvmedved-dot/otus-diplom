@@ -1,0 +1,11 @@
+# TASK-017-R2 — Bootstrap Postcheck Source
+
+PHASE 13: P5B LVM POST capture + in-run compare (per node, fail-closed)
+PHASE 14: no project SC/PV/PVC (structural JSON, fail-closed)
+PHASE 15: VLAN141 six-path read-only (per node, fail-closed)
+PHASE 16: full P1-P4 POST (P1/P2/P3/P4A + P4B fingerprint compare)
+PHASE 17: final gate
+
+Все fail-closed (exit 1 на нарушение).
+
+RESULT: PASS

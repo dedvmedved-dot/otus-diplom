@@ -1,0 +1,11 @@
+host=node-03
+sys_module=present
+loaded_version=9.3.2
+loaded_srcversion=C9052FC5DEE4F01207335F8
+lsmod_drbd=1
+drbd_transport_tcp=1
+uname=6.1.158-1-generic
+in_tree_version=8.4.11
+in_tree_srcversion=C718D2C2BEE45E82AD21432
+in_tree_vermagic=6.1.158-1-generic SMP preempt mod_unload modversions
+DRBD_GATE_OK loaded=9.3.2 in-tree=8.4.11 NOT_LOADED

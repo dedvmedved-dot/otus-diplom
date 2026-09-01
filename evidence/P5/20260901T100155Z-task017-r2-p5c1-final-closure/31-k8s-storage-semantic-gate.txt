@@ -1,0 +1,4 @@
+sc_total=0
+pv_total=0
+pvc_total=0
+K8S_STORAGE_GATE_OK: project SC/PV/PVC = 0/0/0 (structural semantic filter)

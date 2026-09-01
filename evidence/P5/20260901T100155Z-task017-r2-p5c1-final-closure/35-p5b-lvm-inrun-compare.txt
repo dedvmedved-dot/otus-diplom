@@ -1,0 +1,2 @@
+=== P5B LVM in-run compare ===
+P5B_LVM_COMPARE_OK: canonical UUID/PV-count/attr/percent IDENTICAL

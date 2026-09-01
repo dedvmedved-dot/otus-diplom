@@ -1,0 +1,20 @@
+# TASK-017-R2 — Scope
+
+MODE: READ-ONLY RUNTIME VERIFICATION + REPOSITORY SOURCE HARDENING.
+INFRASTRUCTURE MUTATION: 0. P5C2 NOT AUTHORIZED.
+
+ALLOWED:
+  ansible/playbooks/p5c1-piraeus-runtime-bootstrap.yml (source hardening)
+  ansible/playbooks/p5c1-runtime-verify.yml (assertion gates)
+  ansible/playbooks/tasks/p5c1-*.yml (shared read-only include, if used)
+  manifests/piraeus/p5c1-operator-control-plane-patches/
+  manifests/piraeus/p5c1-drbd-loader-makeopts.yaml
+  manifests/piraeus/p5c1-linstorcluster.yaml
+  docs/storage/P5C1-PIRAEUS-DRBD-RUNTIME.md
+  images.lock (only factual digest correction)
+  evidence/P5/<RUN_ID>-task017-r2-p5c1-final-closure/
+
+READ-ONLY: versions.lock, ADR-003, inventory/*, p5b playbooks,
+manifests/piraeus/v2.10.6/*, historical evidence, P1-P4 artifacts.
+
+R2 execution: ONLY p5c1-runtime-verify.yml (bootstrap НЕ выполняется).

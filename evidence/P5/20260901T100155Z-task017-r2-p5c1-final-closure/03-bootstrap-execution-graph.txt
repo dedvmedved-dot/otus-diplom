@@ -1,0 +1,28 @@
+# TASK-017-R2 — Bootstrap Execution Graph
+
+Полная последовательность фаз bootstrap (p5c1-piraeus-runtime-bootstrap.yml):
+
+0  mode gate (p5c1_mode=authorized-runtime-bootstrap, иначе FAIL)
+1  full P1-P4 PRE (P1 bonds/VLAN/route, P2 containerd/kubelet/swap, P3 etcd/kube-vip/VIP/readyz/livez, P4A calico/CoreDNS/IPPool/BGP/autodetect, P4B ns NotFound+fingerprint)
+2  P5B LVM PRE capture (per node, /tmp/p5c1_lvm_pre_<host>.json)
+3  K8s storage baseline (project SC/PV/PVC=0)
+4  pinned source/version gate (2.10.6/1.33.2/1.11.0/9.3.2/9.34.3/6.1.158-1-generic)
+5  image supply gate (vendored manifest present)
+6  copy+apply exact v2.10.6 operator manifest
+6A committed toleration patches (split: 6A-1 operator, 6A-2 gencert)
+7  fail-closed CRD established + operator Available
+8A DRBD loader LB_MAKEOPTS apply
+8B minimal LinstorCluster apply
+9  fail-closed controller Available + satellites 3 Ready + CSI 3 Ready
+10 exact DRBD runtime gate (loaded 9.3.2 vs in-tree 8.4.11, per node)
+11 runtime version gates (operator/linstor/csi/drbd-utils)
+12 no project pools/resources (LINSTOR node list + storage-pool + rd + res)
+13 P5B LVM POST capture + compare (per node)
+14 no project SC/PV/PVC (structural)
+15 VLAN141 six-path read-only
+16 full P1-P4 POST (P1/P2/P3/P4A/P4B fingerprint compare)
+17 final gate
+
+GUARANTEE: PRE gates (1-5) complete before first kubectl apply (phase 6).
+Mutation only after PRE PASS. Runtime gates (7-12) after mutation.
+POST/LVM regression (13-16) before final PASS (17).

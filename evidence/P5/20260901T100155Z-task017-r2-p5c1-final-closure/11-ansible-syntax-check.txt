@@ -1,0 +1,5 @@
+=== ANSIBLE SYNTAX CHECK ===
+
+playbook: ansible/playbooks/p5c1-piraeus-runtime-bootstrap.yml
+
+playbook: ansible/playbooks/p5c1-runtime-verify.yml

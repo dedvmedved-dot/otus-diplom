@@ -1,0 +1,13 @@
+# TASK-017-R2 — Bootstrap Runtime Gates Source
+
+PHASE 7: CRD established (4× piraeus.io) + operator Available (fail-closed)
+PHASE 8A: LB_MAKEOPTS LinstorSatelliteConfiguration apply
+PHASE 8B: minimal LinstorCluster apply
+PHASE 9: controller Available + satellites 3 Ready + CSI controller Available +
+        csi-node 3 Ready (all fail-closed waits)
+PHASE 10: exact DRBD gate (loaded 9.3.2 vs in-tree 8.4.11, per node)
+PHASE 11: version gates — operator:v2.10.6 + linstor 1.33.2 + csi:v1.11.0 +
+         drbd-utils 9.34.3 (each exact string match, fail-closed)
+PHASE 12: LINSTOR node list 3 Online + no diskful pool + rd=0 + res=0
+
+RESULT: PASS

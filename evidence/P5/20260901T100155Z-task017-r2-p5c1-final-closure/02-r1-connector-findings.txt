@@ -1,0 +1,9 @@
+# TASK-017-R2 — R1 Connector Findings
+
+R1 factual runtime state: accepted.
+R1 execution chronology: accepted.
+R1 image digest factual evidence: accepted provisionally.
+R1 bootstrap source: HOLD — phases 1-5, 13, 16 absent.
+R1 bootstrap static audit: FALSE-POSITIVE PASS.
+R1 runtime verifier: HOLD — key runtime checks observed but did not assert.
+Historical evidence modified: NO.

@@ -1,0 +1,10 @@
+# TASK-017-R2 — Bootstrap Patch Fail-Closed Audit
+
+PHASE 6A split into independent Ansible tasks:
+  6A-1: apply operator-controller-manager-toleration.yaml (свой rc assert)
+  6A-2: apply operator-gencert-toleration.yaml (свой rc assert)
+
+Каждый patch имеет собственный `kubectl apply ... || exit 1`.
+multi-command patch rc masking: 0 (D3 устранён).
+
+RESULT: PASS
