@@ -1,0 +1,12 @@
+# TASK-017-R6 — Bootstrap VG Cardinality Static Audit (D2)
+
+Bootstrap Phase 2 и Phase 13 (POST) сохраняют raw vgs list (не dict keyed by vg_name,
+который silently collapses duplicate rows). Требуется:
+  len([v for v in vgs if v.vg_name == "vg_piraeus"]) == 1   (VG_PIRAEUS_EXACT_ONE_OK)
+  pv_count == 2                                              (VG_PIRAEUS_PV_COUNT_2_OK)
+  VG UUID non-empty
+  VG free parseable > 0
+
+REQUIRED ZERO: vg_piraeus "exactly once" commented-but-not-asserted = 0
+
+RESULT: PASS

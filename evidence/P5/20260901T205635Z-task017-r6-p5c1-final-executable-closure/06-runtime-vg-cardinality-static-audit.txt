@@ -1,0 +1,11 @@
+# TASK-017-R6 — Runtime VG Cardinality Static Audit (D2)
+
+Verifier PRE и POST сохраняют raw vgs list (не dict collapse), требуют:
+  len([v for v in vgs if v.vg_name == "vg_piraeus"]) == 1
+  pv_count == 2, VG UUID non-empty, VG free parseable > 0
+
+Outputs: VG_PIRAEUS_EXACT_ONE_OK, VG_PIRAEUS_PV_COUNT_2_OK.
+
+REQUIRED ZERO: runtime vg_piraeus dict-collapse false-pass = 0
+
+RESULT: PASS

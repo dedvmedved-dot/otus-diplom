@@ -293,7 +293,7 @@
           pvs = run(["pvs","--reportformat","json","-o","pv_name,vg_name,pv_uuid,pv_size"])
           pvlist = pvs["report"][0]["pv"]
           vgs = run(["vgs","--reportformat","json","-o","vg_name,vg_uuid,vg_free,pv_count"])
-          vglist = {v["vg_name"]: v for v in vgs["report"][0]["vg"]}
+          vglist_raw = vgs["report"][0]["vg"]
           lvs = run(["lvs","--reportformat","json","-o","vg_name,lv_name,lv_uuid,lv_attr,lv_size,data_percent,metadata_percent"])
           lvlist = lvs["report"][0]["lv"]
           expected_paths = set("/dev/" + r["name"] for r in resolved)
@@ -326,9 +326,17 @@
                   if p["vg_name"] == "vg_piraeus":
                       print(f"NON_CANDIDATE_PV_IN_PIRAEUS {p['pv_name']}"); sys.exit(1)
           print(f"P5B_PROTECTED_PV_OK {host} os_pv={os_pv['path']}->{os_pv['vg']} found=1")
-          # vg_piraeus VG free > 0
-          vg = vglist.get("vg_piraeus")
-          if vg is None: print("VG_PIRAEUS_MISSING"); sys.exit(1)
+          # D2: vg_piraeus exactly once (raw list, no dict collapse) + pv_count==2 + UUID + VG free>0
+          vg_rows = [v for v in vglist_raw if v.get("vg_name") == "vg_piraeus"]
+          if len(vg_rows) != 1:
+              print(f"VG_PIRAEUS_NOT_EXACT_ONE n={len(vg_rows)}"); sys.exit(1)
+          vg = vg_rows[0]
+          print("VG_PIRAEUS_EXACT_ONE_OK")
+          if str(vg.get("pv_count","")) != "2":
+              print(f"VG_PIRAEUS_PV_COUNT_NOT_2 pv_count={vg.get('pv_count','')}"); sys.exit(1)
+          print("VG_PIRAEUS_PV_COUNT_2_OK")
+          if not vg.get("vg_uuid"):
+              print("VG_PIRAEUS_UUID_EMPTY"); sys.exit(1)
           vg_free_s = str(vg.get("vg_free","0"))
           vg_free_m = re.search(r'(\d+(?:[.,]\d+)?)', vg_free_s)
           vg_free = float(vg_free_m.group(1).replace(",", ".")) if vg_free_m else -1.0
@@ -527,9 +535,19 @@
                           return d
                   print(f"NO_AMD64_PLATFORM {image_full}:{tag}"); sys.exit(1)
               else:
-                  # single manifest: registry content digest MUST resolve (D7)
+                  # single manifest: prove linux/amd64 via config blob (D4)
                   if not content_digest:
                       print(f"SINGLE_MANIFEST_NO_DIGEST {image_full}:{tag}"); sys.exit(1)
+                  cfg_digest = data.get("config",{}).get("digest")
+                  if not cfg_digest:
+                      print(f"SINGLE_MANIFEST_NO_CONFIG_DIGEST {image_full}:{tag}"); sys.exit(1)
+                  bhdr = {"Accept": "application/vnd.oci.image.config.v1+json, application/vnd.docker.container.image.v1+json"}
+                  if tok: bhdr["Authorization"] = f"Bearer {tok}"
+                  breq = urllib.request.Request(f"https://{reg}/v2/{repo}/blobs/{cfg_digest}", headers=bhdr)
+                  with urllib.request.urlopen(breq, timeout=30) as br:
+                      cfg = json.loads(br.read())
+                  if cfg.get("os") != "linux" or cfg.get("architecture") != "amd64":
+                      print(f"SINGLE_MANIFEST_NOT_LINUX_AMD64 {image_full}:{tag} os={cfg.get('os')} arch={cfg.get('architecture')}"); sys.exit(1)
                   return content_digest
           print("image supply gate (all registries, linux/amd64, exact digest):")
           for nm, e in sorted(comps.items()):
@@ -814,11 +832,14 @@
           pvs = run(["pvs","--reportformat","json","-o","pv_name,vg_name,pv_uuid,pv_size"])
           pvlist = pvs["report"][0]["pv"]
           vgs = run(["vgs","--reportformat","json","-o","vg_name,vg_uuid,vg_free,pv_count"])
-          vglist = {v["vg_name"]: v for v in vgs["report"][0]["vg"]}
+          vglist_raw = vgs["report"][0]["vg"]
           lvs = run(["lvs","--reportformat","json","-o","vg_name,lv_name,lv_uuid,lv_attr,lv_size,data_percent,metadata_percent"])
           lvlist = lvs["report"][0]["lv"]
-          vg = vglist.get("vg_piraeus")
-          if vg is None: print("VG_PIRAEUS_MISSING_POST"); sys.exit(1)
+          # D2: vg_piraeus exactly once (raw list)
+          vg_rows = [v for v in vglist_raw if v.get("vg_name") == "vg_piraeus"]
+          if len(vg_rows) != 1: print("VG_PIRAEUS_NOT_EXACT_ONE_POST"); sys.exit(1)
+          vg = vg_rows[0]
+          if str(vg.get("pv_count","")) != "2": print("VG_PIRAEUS_PV_COUNT_NOT_2_POST"); sys.exit(1)
           thin = [l for l in lvlist if l["lv_name"]=="thin_piraeus" and l["vg_name"]=="vg_piraeus"]
           if len(thin)!=1: print("THIN_PIRAEUS_COUNT_FAIL_POST"); sys.exit(1)
           vg_pv_uuids = set(p["pv_uuid"] for p in pvlist if p["vg_name"]=="vg_piraeus")

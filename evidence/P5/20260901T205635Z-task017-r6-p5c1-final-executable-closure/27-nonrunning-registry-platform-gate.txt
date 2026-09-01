@@ -1,0 +1,2 @@
+ktls-utils:v1.2.1 linux/amd64 manifest digest = sha256:59f0adb583e24bdb51a49cf5ee3a5e912a3635623aad849c9721337b89cc15ea
+NON_RUNNING_REGISTRY_PLATFORM_OK

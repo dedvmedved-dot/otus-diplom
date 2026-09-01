@@ -1,0 +1,15 @@
+# TASK-017-R6 — Bootstrap Single-Manifest Platform Static Audit (D4)
+
+PHASE 5 (и verifier non-running registry proof) для single manifest (не index/list):
+  1. require config.digest;
+  2. fetch /v2/<repo>/blobs/<config.digest>;
+  3. parse config JSON;
+  4. require os == linux AND architecture == amd64;
+  5. require manifest Docker-Content-Digest == locked digest.
+
+Unknown media type / missing config digest / blob query failure / non-linux /
+non-amd64 / digest mismatch => FAIL.
+
+REQUIRED ZERO: single-manifest supply path without linux/amd64 proof = 0
+
+RESULT: PASS

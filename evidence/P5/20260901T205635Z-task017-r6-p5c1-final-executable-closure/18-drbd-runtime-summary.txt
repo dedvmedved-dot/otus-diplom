@@ -1,0 +1,5 @@
+=== DRBD summary ===
+node-01 loaded=9.3.2 in-tree=8.4.11 tcp=1
+node-02 loaded=9.3.2 in-tree=8.4.11 tcp=1
+node-03 loaded=9.3.2 in-tree=8.4.11 tcp=1
+DRBD 9.3.2 loaded 3/3; in-tree 8.4.11 NOT loaded; drbd_transport_tcp 3/3

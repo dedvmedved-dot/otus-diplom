@@ -1,0 +1,4 @@
+=== GIT SCOPE ===
+ M ansible/playbooks/p5c1-piraeus-runtime-bootstrap.yml
+ M ansible/playbooks/p5c1-runtime-verify.yml
+?? evidence/P5/20260901T205635Z-task017-r6-p5c1-final-executable-closure/

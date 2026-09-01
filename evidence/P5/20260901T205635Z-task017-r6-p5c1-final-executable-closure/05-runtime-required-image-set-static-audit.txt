@@ -1,0 +1,15 @@
+# TASK-017-R6 — Runtime Required Image Set Static Audit (D1)
+
+Новый executable read-only Gate REQUIRED-IMAGE-SET-GATE в p5c1-runtime-verify.yml:
+  1. read manifests/piraeus/v2.10.6/manifest.yaml;
+  2. derive required P5C1 image/tag set из vendored image-config + operator Deployment image;
+  3. read images.lock;
+  4. derive P5C1 image/tag set из images.lock;
+  5. require exact set equality;
+  6. require каждый lock entry verified=true + image + tag + digest=sha256:64hex.
+
+Output: REQUIRED_IMAGE_SET_EQUALITY_OK (до runtime imageID matching).
+
+REQUIRED ZERO: mandatory-set equality proven only by evidence file = 0
+
+RESULT: PASS

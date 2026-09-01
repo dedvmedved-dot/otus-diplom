@@ -1,0 +1,13 @@
+# TASK-017-R6 — R5 Connector Findings
+
+R5 factual runtime: ACCEPTED
+R5 clean read-only run (changed=0 failed=0 unreachable=0): ACCEPTED
+R5 source: HOLD — executable assertion defects only.
+
+Residual defects:
+- runtime image Gate does not independently prove mandatory-set equality (evidence file only)
+- vg_piraeus "exactly once" commented but not asserted (dict collapse)
+- operator/gencert pod cardinality can false-pass (vacuous all / no total-count check)
+- single-manifest supply path does not prove linux/amd64
+
+Historical evidence modified: NO

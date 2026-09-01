@@ -1,0 +1,12 @@
+# TASK-017-R6 — Runtime Pod Cardinality Static Audit (D3)
+
+OPERATOR-GATE: Deployment desired=1 available=1 ready=1 + matching pod total=1
++ Running=1 + all containers Ready. No vacuous all() over empty list
+(pod_ready требует len(containerStatuses)>0).
+
+GENCERT-GATE: matching pod total=1 + Running=1 + all containers Ready.
+No vacuous all().
+
+REQUIRED ZERO: operator/gencert cardinality false-pass = 0
+
+RESULT: PASS

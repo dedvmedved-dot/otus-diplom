@@ -1,0 +1,13 @@
+DRBD_KERNEL_VERSION_CODE=0x090302
+DRBD_KERNEL_VERSION=9.3.2
+DRBDADM_VERSION_CODE=0x092203
+DRBDADM_VERSION=9.34.3
+deploy piraeus-operator-controller-manager:
+[{"effect":"NoSchedule","key":"drbd.linbit.com/lost-quorum"},{"effect":"NoSchedule","key":"drbd.linbit.com/force-io-error"},{"effect":"NoSchedule","key":"node-role.kubernetes.io/control-plane","operator":"Exists"}]
+deploy piraeus-operator-gencert:
+[{"effect":"NoSchedule","key":"drbd.linbit.com/lost-quorum"},{"effect":"NoSchedule","key":"drbd.linbit.com/force-io-error"},{"effect":"NoSchedule","key":"node-role.kubernetes.io/control-plane","operator":"Exists"}]
+deploy linstor-csi-controller:
+[{"effect":"NoSchedule","key":"drbd.linbit.com/force-io-error","operator":"Exists"},{"effect":"NoSchedule","key":"drbd.linbit.com/lost-quorum","operator":"Exists"},{"effect":"NoSchedule","key":"node-role.kubernetes.io/control-plane","operator":"Exists"}]
+linstorcluster:
+[{"effect":"NoSchedule","key":"node-role.kubernetes.io/control-plane","operator":"Exists"}]
+TOLERATION_GATE_OK incl CSI controller; drbd-utils 9.34.3

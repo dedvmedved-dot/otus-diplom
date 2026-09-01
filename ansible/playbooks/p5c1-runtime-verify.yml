@@ -9,7 +9,7 @@
 # controller/satellites/csi/drbd/toleration/lbmakeopts/linstor-boundary/k8s-storage/
 # image-digest/vlan141), P5B LVM POST+compare, P1-P4 POST, P4B fingerprint, FINAL.
 
-- name: "P5C1 runtime read-only verification (TASK-017-R5)"
+- name: "P5C1 runtime read-only verification (TASK-017-R6)"
   hosts: all
   gather_facts: false
   become: true
@@ -249,7 +249,7 @@
           pvs = run(["pvs","--reportformat","json","-o","pv_name,vg_name,pv_uuid,pv_size"])
           pvlist = pvs["report"][0]["pv"]
           vgs = run(["vgs","--reportformat","json","-o","vg_name,vg_uuid,vg_free,pv_count"])
-          vglist = {v["vg_name"]: v for v in vgs["report"][0]["vg"]}
+          vglist_raw = vgs["report"][0]["vg"]
           lvs = run(["lvs","--reportformat","json","-o","vg_name,lv_name,lv_uuid,lv_attr,lv_size,data_percent,metadata_percent"])
           lvlist = lvs["report"][0]["lv"]
           expected_paths = set("/dev/"+r["name"] for r in resolved)
@@ -279,9 +279,17 @@
               else:
                   if p["vg_name"] == "vg_piraeus":
                       print(f"NON_CANDIDATE_PV_IN_PIRAEUS"); sys.exit(1)
-          # vg_piraeus exactly once, VG free parseable > 0
-          vg = vglist.get("vg_piraeus")
-          if vg is None: print("VG_PIRAEUS_MISSING"); sys.exit(1)
+          # D2: vg_piraeus exactly once (raw list, no dict collapse) + pv_count==2 + UUID non-empty + VG free>0
+          vg_rows = [v for v in vglist_raw if v.get("vg_name")=="vg_piraeus"]
+          if len(vg_rows) != 1:
+              print(f"VG_PIRAEUS_NOT_EXACT_ONE n={len(vg_rows)}"); sys.exit(1)
+          vg = vg_rows[0]
+          print("VG_PIRAEUS_EXACT_ONE_OK")
+          if str(vg.get("pv_count","")) != "2":
+              print(f"VG_PIRAEUS_PV_COUNT_NOT_2 pv_count={vg.get('pv_count','')}"); sys.exit(1)
+          print("VG_PIRAEUS_PV_COUNT_2_OK")
+          if not vg.get("vg_uuid"):
+              print("VG_PIRAEUS_UUID_EMPTY"); sys.exit(1)
           vg_free_s = str(vg.get("vg_free","0"))
           vg_free_m = re.search(r'(\d+(?:[.,]\d+)?)', vg_free_s)
           vg_free = float(vg_free_m.group(1).replace(",", ".")) if vg_free_m else -1.0
@@ -338,9 +346,13 @@
           if pr.returncode != 0: print("OPERATOR_POD_FAIL"); sys.exit(1)
           pods = json.loads(pr.stdout).get("items",[])
           running = [p for p in pods if p.get("status",{}).get("phase")=="Running"]
-          allready = all(all(c.get("ready",False) for c in p.get("status",{}).get("containerStatuses",[])) for p in running)
+          # no vacuous all(): require exactly 1 matching pod, 1 running, non-empty containerStatuses
+          def pod_ready(p):
+              css = p.get("status",{}).get("containerStatuses",[])
+              return len(css) > 0 and all(c.get("ready",False) for c in css)
+          allready = all(pod_ready(p) for p in running) if len(running)==1 else False
           print(f"operator desired={spec_r} available={avail} ready={ready} pods={len(pods)} running={len(running)} allready={allready} image={img}")
-          if spec_r!=1 or avail!=1 or ready!=1 or len(running)!=1 or not allready or "v2.10.6" not in img:
+          if spec_r!=1 or avail!=1 or ready!=1 or len(pods)!=1 or len(running)!=1 or not allready or "v2.10.6" not in img:
               print("OPERATOR_GATE_FAIL"); sys.exit(1)
           print("OPERATOR_GATE_OK")
           PYEOF
@@ -359,9 +371,13 @@
           if r.returncode != 0: print("GENCERT_FAIL"); sys.exit(1)
           pods = json.loads(r.stdout).get("items",[])
           running = [p for p in pods if p.get("status",{}).get("phase")=="Running"]
-          allready = all(all(c.get("ready",False) for c in p.get("status",{}).get("containerStatuses",[])) for p in running)
+          # no vacuous all(): exactly 1 matching pod, 1 running, non-empty containerStatuses
+          def pod_ready(p):
+              css = p.get("status",{}).get("containerStatuses",[])
+              return len(css) > 0 and all(c.get("ready",False) for c in css)
+          allready = all(pod_ready(p) for p in running) if len(running)==1 else False
           print(f"gencert pods={len(pods)} running={len(running)} allready={allready}")
-          if len(running)!=1 or not allready: print("GENCERT_GATE_FAIL"); sys.exit(1)
+          if len(pods)!=1 or len(running)!=1 or not allready: print("GENCERT_GATE_FAIL"); sys.exit(1)
           print("GENCERT_GATE_OK")
           PYEOF
       register: gencertgate
@@ -696,6 +712,54 @@
       run_once: true
       delegate_to: node-01
 
+    # ═══ D1 — executable required image set equality gate (vendored == images.lock) ═══
+    - name: REQUIRED-IMAGE-SET-GATE — copy vendored manifest + images.lock to node-01 (read-only)
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "/tmp/{{ item | basename }}"
+        mode: "0644"
+      loop:
+        - /root/otus-diplom/manifests/piraeus/v2.10.6/manifest.yaml
+        - /root/otus-diplom/images.lock
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    - name: REQUIRED-IMAGE-SET-GATE — executable set equality + verified/digest assert
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          import re, sys
+          # derive required P5C1 image/tag set from vendored image-config + operator Deployment image
+          manifest = open("/tmp/manifest.yaml").read()
+          pairs = re.findall(r'tag:\s*"?(\S+)"?\s*\n(?:\s*#.*\n)*\s*image:\s*(\S+)', manifest)
+          vendored = set((img.strip(), tag.strip()) for tag, img in pairs)
+          op_img = re.search(r'image:\s*quay\.io/piraeusdatastore/piraeus-operator:(\S+)', manifest)
+          if not op_img: print("VENDORED_OPERATOR_IMAGE_FAIL"); sys.exit(1)
+          vendored.add(("piraeus-operator", op_img.group(1).strip()))
+          # derive P5C1 image/tag set from images.lock + verified/digest requirements
+          lock = open("/tmp/images.lock").read()
+          lock_set = set()
+          for b in re.split(r'\n  - component:', lock)[1:]:
+              img = re.search(r'image:\s*"?([^"\s]+)"?', b)
+              tag = re.search(r'tag:\s*"?([^"\s]+)"?', b)
+              dig = re.search(r'digest:\s*"?(sha256:[0-9a-f]{64})"?', b)
+              ver = re.search(r'verified:\s*(true|false)', b)
+              full = img.group(1).strip() if img else ""
+              if full.startswith("quay.io/piraeusdatastore/") or full.startswith("registry.k8s.io/sig-storage/"):
+                  lock_set.add((full.split("/")[-1], tag.group(1).strip() if tag else None))
+                  if ver.group(1) != "true" or not img or not tag or not dig:
+                      print(f"REQUIRED_IMAGE_LOCK_ENTRY_FAIL {full}"); sys.exit(1)
+          print(f"vendored={len(vendored)} images.lock_P5C1={len(lock_set)}")
+          if vendored != lock_set:
+              print(f"REQUIRED_IMAGE_SET_EQUALITY_FAIL manifest_only={sorted(vendored-lock_set)} lock_only={sorted(lock_set-vendored)}"); sys.exit(1)
+          print("REQUIRED_IMAGE_SET_EQUALITY_OK")
+          PYEOF
+      register: reqimgsetgate
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
     # ═══ D19 — image digest executable gate (parse images.lock) ═══
     - name: IMAGE-DIGEST-GATE — copy images.lock to node-01 (read-only)
       ansible.builtin.copy:
@@ -788,8 +852,23 @@
                   for m in data.get("manifests",[]):
                       p = m.get("platform",{})
                       if p.get("os")=="linux" and p.get("architecture")=="amd64":
-                          return m.get("digest")
-                  return None
+                          d = m.get("digest")
+                          if not d: print(f"NO_AMD64_DIGEST {image_full}:{tag}"); sys.exit(1)
+                          return d
+                  print(f"NO_AMD64_PLATFORM {image_full}:{tag}"); sys.exit(1)
+              # single manifest: prove linux/amd64 via config blob (D4)
+              if not cdig:
+                  print(f"SINGLE_MANIFEST_NO_DIGEST {image_full}:{tag}"); sys.exit(1)
+              cfg_digest = data.get("config",{}).get("digest")
+              if not cfg_digest:
+                  print(f"SINGLE_MANIFEST_NO_CONFIG_DIGEST {image_full}:{tag}"); sys.exit(1)
+              bhdr = {"Accept": "application/vnd.oci.image.config.v1+json, application/vnd.docker.container.image.v1+json"}
+              if tok: bhdr["Authorization"] = f"Bearer {tok}"
+              breq = urllib.request.Request(f"https://{reg}/v2/{repo}/blobs/{cfg_digest}", headers=bhdr)
+              with urllib.request.urlopen(breq, timeout=30) as br:
+                  cfg = json.loads(br.read())
+              if cfg.get("os") != "linux" or cfg.get("architecture") != "amd64":
+                  print(f"SINGLE_MANIFEST_NOT_LINUX_AMD64 {image_full}:{tag} os={cfg.get('os')} arch={cfg.get('architecture')}"); sys.exit(1)
               return cdig
           for nm, e in non_running:
               dg = amd64_digest(e["image"], e["tag"])
@@ -849,7 +928,7 @@
           pvs = run(["pvs","--reportformat","json","-o","pv_name,vg_name,pv_uuid,pv_size"])
           pvlist = pvs["report"][0]["pv"]
           vgs = run(["vgs","--reportformat","json","-o","vg_name,vg_uuid,vg_free,pv_count"])
-          vglist = {v["vg_name"]: v for v in vgs["report"][0]["vg"]}
+          vglist_raw = vgs["report"][0]["vg"]
           lvs = run(["lvs","--reportformat","json","-o","vg_name,lv_name,lv_uuid,lv_attr,lv_size,data_percent,metadata_percent"])
           lvlist = lvs["report"][0]["lv"]
           expected_paths = set("/dev/"+r["name"] for r in resolved)
@@ -870,8 +949,14 @@
                   if p["vg_name"] != "vg_piraeus": print("CANDIDATE_NOT_IN_PIRAEUS"); sys.exit(1)
               else:
                   if p["vg_name"] == "vg_piraeus": print("NON_CANDIDATE_PV_IN_PIRAEUS"); sys.exit(1)
-          vg = vglist.get("vg_piraeus")
-          if vg is None: print("VG_PIRAEUS_MISSING"); sys.exit(1)
+          # D2: vg_piraeus exactly once (raw list, no dict collapse) + pv_count==2 + UUID non-empty + VG free>0
+          vg_rows = [v for v in vglist_raw if v.get("vg_name")=="vg_piraeus"]
+          if len(vg_rows) != 1: print(f"VG_PIRAEUS_NOT_EXACT_ONE n={len(vg_rows)}"); sys.exit(1)
+          vg = vg_rows[0]
+          print("VG_PIRAEUS_EXACT_ONE_OK")
+          if str(vg.get("pv_count","")) != "2": print(f"VG_PIRAEUS_PV_COUNT_NOT_2"); sys.exit(1)
+          print("VG_PIRAEUS_PV_COUNT_2_OK")
+          if not vg.get("vg_uuid"): print("VG_PIRAEUS_UUID_EMPTY"); sys.exit(1)
           vg_free_s = str(vg.get("vg_free","0"))
           vg_free_m = re.search(r'(\d+(?:[.,]\d+)?)', vg_free_s)
           vg_free = float(vg_free_m.group(1).replace(",", ".")) if vg_free_m else -1.0

@@ -1,0 +1,2 @@
+vendored=17 images.lock_P5C1=17 EQUAL=True
+REQUIRED_IMAGE_SET_EQUALITY_OK

@@ -1,0 +1,2 @@
+piraeus-operator-gencert-556cf9cf5f-kwgt8 Running ready=true
+GENCERT_GATE_OK: total_pod=1 running=1 all_ready
