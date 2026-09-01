@@ -1,0 +1,29 @@
+# TASK-017-R4 — Bootstrap Composite Precondition Static Audit (D1-D4)
+
+D1 field-by-field composite resolution:
+  actual type == disk
+  actual serial == expected serial
+  actual WWN == expected WWN (normalized)
+  actual model == expected model (normalized)
+  actual exact size bytes == expected size bytes (lsblk -b)
+  match count == 1 per candidate, 2/2 unique per node
+  No /dev/sdX authorization (paths derived from composite match only).
+
+D2 exact PV membership:
+  expected_candidate_paths == actual_vg_piraeus_PV_paths (set equality)
+  expected_candidate_PV_UUIDs == actual_vg_piraeus_PV_UUIDs (set equality)
+  count=2, no extra, no missing.
+
+D3 protected PV:
+  explicit OS PV map: node-01 /dev/sda3->astra38644, node-02 ->astra39539, node-03 ->astra03718
+  OS PV not in vg_piraeus; candidates must be in vg_piraeus; non-candidate non-OS PV excluded.
+  protected PV hits = 0.
+
+D4 thin pool:
+  exactly one vg_piraeus/thin_piraeus
+  LV is thin-pool (lv_attr[0]=='t')
+  LV active (lv_attr[4]=='a')
+  Data% and Meta% parseable, 0<=x<100
+  VG free > 0
+
+RESULT: PASS (serial-only/composite-count-only/impossible-protected/active-only = 0)

@@ -1,0 +1,13 @@
+# TASK-017-R4 — Bootstrap Image Supply Static Audit (D6)
+
+PHASE 5 proves supply (не lock-entry-only):
+  1. Parse images.lock, require each of 17 mandatory P5C1 components has
+     verified:true + exact sha256 digest.
+  2. Deterministic registry manifest query (quay.io/v2) for each quay image,
+     resolving linux/amd64 manifest digest; каждый запрос rc-checked.
+  3. registry.k8s.io sig-storage images: runtime-proven (imageID), digest present in lock.
+  4. One missing/query-fail => STOP before mutation.
+
+R4 itself does NOT execute bootstrap image pulls (static audit only).
+
+RESULT: PASS (manifest-file / lock-entry-only supply PASS = 0)

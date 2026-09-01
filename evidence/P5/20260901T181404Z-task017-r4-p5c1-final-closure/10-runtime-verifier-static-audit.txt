@@ -1,0 +1,16 @@
+# TASK-017-R4 — Runtime Verifier Static Audit (D8-D13)
+
+D8 component-bound digest gate: component -> image:tag -> digest bound semantically;
+  a digest in unrelated container cannot satisfy another component. Parse images.lock.
+D9 runtime P5B composite: SERIAL+WWN+MODEL+EXACT_SIZE+TYPE resolution, PRE/POST
+  canonical compare includes hardware composite identity.
+D10 toleration no-skip: required objects (operator, gencert, satellites x3, csi-node,
+  ha-controller, linstorcluster) must exist + exact tuple; missing => FAIL.
+D11 CSI controller pod direct assert: deploy desired/available/ready=1 + exactly one
+  controller pod Running + all containers Ready; csi-node 3 (one per node) Running+Ready;
+  CSIDriver exactly one.
+D12 pool node-set: exactly node-01/node-02/node-03, one DfltDisklessStorPool each,
+  no duplicate, Driver=DISKLESS, State=Ok.
+D13 P1-P4 fail-closed: kube-vip 3 Running+Ready, VIP owner aggregate=1 (PRE+POST).
+
+RESULT: PASS

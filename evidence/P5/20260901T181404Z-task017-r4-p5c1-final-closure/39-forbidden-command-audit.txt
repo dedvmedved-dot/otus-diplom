@@ -1,0 +1,23 @@
+# TASK-017-R4 — Forbidden Command Audit
+
+R4 READ-ONLY. Executed infrastructure mutation = 0.
+
+Required zero executed:
+  kubectl apply/patch/create/delete/edit: 0
+  kubectl rollout restart: 0
+  helm install/upgrade/uninstall: 0
+  modprobe/insmod/rmmod: 0
+  drbdadm create-md: 0
+  drbdsetup mutation: 0
+  LINSTOR create/delete/modify: 0
+  LINSTOR storage-pool mutation: 0
+  LVM mutation: 0
+  StorageClass/PV/PVC mutation: 0
+  network mutation: 0
+  reboot: 0
+
+(Единственный выполненный playbook — p5c1-runtime-verify.yml, read-only.
+Registry manifest query — read-only metadata, разрешён §16.
+images.lock update — repository-only, авторизован §8 для factually verified missing entries.)
+
+RESULT: PASS

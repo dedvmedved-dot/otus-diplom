@@ -171,19 +171,3 @@ images:
     source_registry: registry.k8s.io
     internal_registry: NOT_VERIFIED
     verified: true
-
-  - component: piraeus-csi-nfs-server
-    image: quay.io/piraeusdatastore/piraeus-csi-nfs-server
-    tag: "v1.11.0"
-    digest: "sha256:a49a0648aebc990c1009cf1b93f17ca4de8c843245c71589d862b37520871288"
-    source_registry: quay.io
-    internal_registry: NOT_VERIFIED
-    verified: true
-
-  - component: ktls-utils
-    image: quay.io/piraeusdatastore/ktls-utils
-    tag: "v1.2.1"
-    digest: "sha256:59f0adb583e24bdb51a49cf5ee3a5e912a3635623aad849c9721337b89cc15ea"
-    source_registry: quay.io
-    internal_registry: NOT_VERIFIED
-    verified: true

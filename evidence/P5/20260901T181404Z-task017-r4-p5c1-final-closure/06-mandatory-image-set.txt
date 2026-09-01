@@ -1,0 +1,26 @@
+# TASK-017-R4 — Mandatory Image Set (17 P5C1 components)
+
+Derived from vendored manifest v2.10.6 + actual P5C1 runtime image references.
+
+1.  piraeus-operator                   quay.io/piraeusdatastore/piraeus-operator:v2.10.6
+2.  linstor-server                     quay.io/piraeusdatastore/piraeus-server:v1.33.2
+3.  linstor-csi                        quay.io/piraeusdatastore/piraeus-csi:v1.11.0
+4.  drbd9-loader                       quay.io/piraeusdatastore/drbd9-resolute:v9.3.2
+5.  drbd-reactor                       quay.io/piraeusdatastore/drbd-reactor:v1.11.0
+6.  piraeus-ha-controller              quay.io/piraeusdatastore/piraeus-ha-controller:v1.3.2
+7.  drbd-shutdown-guard                quay.io/piraeusdatastore/drbd-shutdown-guard:v1.1.2
+8.  linstor-affinity-controller        quay.io/piraeusdatastore/linstor-affinity-controller:v1.4.0
+9.  csi-attacher                       registry.k8s.io/sig-storage/csi-attacher:v4.11.0
+10. csi-provisioner                    registry.k8s.io/sig-storage/csi-provisioner:v6.2.0
+11. csi-snapshotter                    registry.k8s.io/sig-storage/csi-snapshotter:v8.5.0
+12. csi-resizer                        registry.k8s.io/sig-storage/csi-resizer:v2.1.0
+13. csi-node-driver-registrar          registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.16.0
+14. csi-livenessprobe                  registry.k8s.io/sig-storage/livenessprobe:v2.18.0
+15. csi-external-health-monitor-controller  registry.k8s.io/sig-storage/csi-external-health-monitor-controller:v0.17.0
+16. piraeus-csi-nfs-server             quay.io/piraeusdatastore/piraeus-csi-nfs-server:v1.11.0
+17. ktls-utils                         quay.io/piraeusdatastore/ktls-utils:v1.2.1
+
+Все 17 имеют images.lock entry verified:true + sha256 digest.
+16/17 running (imageID runtime match); ktls-utils не запущен (registry amd64 manifest proven).
+
+RESULT: COMPLETE

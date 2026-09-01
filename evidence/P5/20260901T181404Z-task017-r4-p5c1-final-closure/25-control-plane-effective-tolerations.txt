@@ -1,0 +1,17 @@
+piraeus-operator-controller-manager:
+[{"effect":"NoSchedule","key":"drbd.linbit.com/lost-quorum"},{"effect":"NoSchedule","key":"drbd.linbit.com/force-io-error"},{"effect":"NoSchedule","key":"node-role.kubernetes.io/control-plane","operator":"Exists"}]
+piraeus-operator-gencert:
+[{"effect":"NoSchedule","key":"drbd.linbit.com/lost-quorum"},{"effect":"NoSchedule","key":"drbd.linbit.com/force-io-error"},{"effect":"NoSchedule","key":"node-role.kubernetes.io/control-plane","operator":"Exists"}]
+linstorcluster:
+[{"effect":"NoSchedule","key":"node-role.kubernetes.io/control-plane","operator":"Exists"}]
+linstor-satellite.node-01:
+[{"effect":"NoSchedule","key":"drbd.linbit.com/force-io-error","operator":"Exists"},{"effect":"NoSchedule","key":"drbd.linbit.com/lost-quorum","operator":"Exists"},{"effect":"NoSchedule","operator":"Exists"},{"effect":"NoSchedule","key":"node-role.kubernetes.io/control-plane","operator":"Exists"}]
+linstor-satellite.node-02:
+[{"effect":"NoSchedule","key":"drbd.linbit.com/force-io-error","operator":"Exists"},{"effect":"NoSchedule","key":"drbd.linbit.com/lost-quorum","operator":"Exists"},{"effect":"NoSchedule","operator":"Exists"},{"effect":"NoSchedule","key":"node-role.kubernetes.io/control-plane","operator":"Exists"}]
+linstor-satellite.node-03:
+[{"effect":"NoSchedule","key":"drbd.linbit.com/force-io-error","operator":"Exists"},{"effect":"NoSchedule","key":"drbd.linbit.com/lost-quorum","operator":"Exists"},{"effect":"NoSchedule","operator":"Exists"},{"effect":"NoSchedule","key":"node-role.kubernetes.io/control-plane","operator":"Exists"}]
+linstor-csi-node:
+[{"effect":"NoSchedule","key":"drbd.linbit.com/force-io-error","operator":"Exists"},{"effect":"NoSchedule","key":"drbd.linbit.com/lost-quorum","operator":"Exists"},{"effect":"NoSchedule","key":"node-role.kubernetes.io/control-plane","operator":"Exists"}]
+ha-controller:
+[{"effect":"NoSchedule","key":"drbd.linbit.com/force-io-error","operator":"Exists"},{"effect":"NoSchedule","key":"drbd.linbit.com/lost-quorum","operator":"Exists"},{"effect":"NoSchedule","key":"node-role.kubernetes.io/control-plane","operator":"Exists"}]
+TOLERATION_GATE_OK: all required runtime objects control-plane Exists/NoSchedule

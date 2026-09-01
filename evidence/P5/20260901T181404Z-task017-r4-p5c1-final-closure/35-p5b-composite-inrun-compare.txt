@@ -1,0 +1,2 @@
+=== P5B composite in-run compare ===
+P5B_COMPOSITE_INRUN_COMPARE_OK: IDENTICAL (composite semantic)

@@ -1,0 +1,12 @@
+# TASK-017-R4 — Bootstrap Pinned Source Static Audit (D5)
+
+PHASE 4 parse both:
+  1. versions.lock: linstor_operator=2.10.6, linstor=1.33.2, linstor_csi=1.11.0,
+     drbd=9.3.2, drbd_utils=9.34.3.
+  2. manifests/piraeus/v2.10.6/manifest.yaml: parse image-config component tags,
+     assert piraeus-operator=2.10.6, piraeus-server=1.33.2, piraeus-csi=1.11.0,
+     drbd9-resolute=9.3.2.
+
+Parser/format mismatch => FAIL (sys.exit 1).
+
+RESULT: PASS (versions.lock + vendored source exact mapping)

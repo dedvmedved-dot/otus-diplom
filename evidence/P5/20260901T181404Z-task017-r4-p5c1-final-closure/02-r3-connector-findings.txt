@@ -1,0 +1,19 @@
+# TASK-017-R4 — R3 Connector Findings
+
+R3 factual runtime: ACCEPTED.
+R3 clean read-only run: ACCEPTED.
+R3 source: HOLD.
+
+Residual source defects:
+- composite resolver uses serial only
+- WWN/model/size are not compared
+- exact candidate PV set not proven
+- protected-PV check logically impossible
+- Phase 5 does not prove image pullability
+- mandatory image set incomplete
+- runtime image digest mapping is set-based, not component-bound
+- runtime P5B compare is not hardware-composite
+- required toleration objects may be skipped
+- pool node set not asserted
+
+Historical evidence modified: NO.
