@@ -1,0 +1,12 @@
+# TASK-017-R1 — Registry Digest Evidence (non-running images)
+
+Все 15 P5C1 images фактически running в кластере (см. 09-runtime-imageids.txt),
+поэтому runtime imageID использован как verification basis для каждого.
+
+Не-running P5C1 images: НЕТ (все 15 в running pods).
+
+Отдельно: piraeus-csi-nfs-server:v1.11.0 и ktls-utils:v1.2.1 присутствуют в runtime
+(см. 09-runtime-imageids.txt), но НЕ имеют отдельных entries в images.lock (не были
+внесены) — не нарушение D6, т.к. D6 касается только существующих verified:true entries.
+
+РЕЗУЛЬТАТ: PASS

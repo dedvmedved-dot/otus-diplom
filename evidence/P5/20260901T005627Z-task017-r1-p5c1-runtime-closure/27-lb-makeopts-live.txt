@@ -1,0 +1,15 @@
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"piraeus.io/v1","kind":"LinstorSatelliteConfiguration","metadata":{"annotations":{},"name":"astra-drbd-loader"},"spec":{"podTemplate":{"spec":{"initContainers":[{"env":[{"name":"LB_MAKEOPTS","value":"CONFIG_GCC_PLUGINS=n CONFIG_GCC_PLUGIN_STACKLEAK=n"}],"name":"drbd-module-loader"}]}}}}
+  creationTimestamp: "2026-09-01T00:21:49Z"
+  generation: 1
+  name: astra-drbd-loader
+--
+      initContainers:
+      - env:
+        - name: LB_MAKEOPTS
+          value: CONFIG_GCC_PLUGINS=n CONFIG_GCC_PLUGIN_STACKLEAK=n
+        name: drbd-module-loader
+status:
+storagePools:
+

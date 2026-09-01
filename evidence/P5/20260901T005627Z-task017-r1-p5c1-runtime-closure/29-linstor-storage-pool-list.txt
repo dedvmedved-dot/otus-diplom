@@ -1,0 +1,7 @@
++-------------------------------------------------------------------------------------------------------------------------------------------+
+| StoragePool          | Node    | Driver   | PoolName | FreeCapacity | TotalCapacity | CanSnapshots | State | SharedName                   |
+|===========================================================================================================================================|
+| DfltDisklessStorPool | node-01 | DISKLESS |          |              |               | False        | [1;32mOk   [0m | node-01;DfltDisklessStorPool |
+| DfltDisklessStorPool | node-02 | DISKLESS |          |              |               | False        | [1;32mOk   [0m | node-02;DfltDisklessStorPool |
+| DfltDisklessStorPool | node-03 | DISKLESS |          |              |               | False        | [1;32mOk   [0m | node-03;DfltDisklessStorPool |
++-------------------------------------------------------------------------------------------------------------------------------------------+

@@ -1,0 +1,10 @@
+# TASK-017-R1 — Connector Findings (D1-D6)
+
+D1 — mutation run failed (unreachable after Operator apply), работа продолжилась
+     отдельно; TASK-017 требовал STOP. Deviation задокументировать, evidence НЕ менять.
+D2 — bootstrap source не воспроизводит успешный путь (нет control-plane toleration
+     patch + LB_MAKEOPTS apply).
+D3 — fail-open waits (`|| true`) — убрать.
+D4 — DRBD runtime gate неполный (нет exact version/vermagic/modinfo assertions).
+D5 — P1-P4 PRE/POST evidence не полная (short counts) — нужен verify playbook.
+D6 — images.lock verified:true без factual digest доказательства — доказать или downgrade.

@@ -1,0 +1,4 @@
+NAME                                  READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS   IMAGES                                              SELECTOR
+piraeus-operator-controller-manager   1/1     1            1           82m   manager      quay.io/piraeusdatastore/piraeus-operator:v2.10.6   app.kubernetes.io/component=piraeus-operator,app.kubernetes.io/name=piraeus-datastore
+piraeus-operator-controller-manager-64fdf69b7c-bwkw8   1/1     Running   0          69m
+piraeus-operator-gencert-556cf9cf5f-kwgt8              1/1     Running   0          69m

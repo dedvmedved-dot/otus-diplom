@@ -1,0 +1,132 @@
+
+PLAY [P5C1 runtime read-only verification (TASK-017-R1)] ***********************
+
+TASK [P1 PRE — bond slaves + exact VLAN + default route] ***********************
+[WARNING]: Platform linux on host node-01 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-01]
+[WARNING]: Platform linux on host node-02 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-02]
+[WARNING]: Platform linux on host node-03 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-03]
+
+TASK [P2 PRE — containerd + kubelet + swap] ************************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [P3 PRE — etcd JSON + kube-vip JSON + VIP + readyz/livez] *****************
+ok: [node-01]
+
+TASK [VIP-PRE — local bond0.140 172.30.140.100/32 count (0 or 1)] **************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [VIP-AGG-PRE — aggregate owner count == 1] ********************************
+ok: [node-01]
+
+TASK [P4A PRE — Nodes/calico/CoreDNS/IPPool/BGP/autodetect (exact Ready)] ******
+ok: [node-01]
+
+TASK [P4B PRE — validation ns NotFound + NetworkPolicy fingerprint] ************
+ok: [node-01]
+
+TASK [P5B-LVM-PRE — structural JSON capture (per node)] ************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [OPERATOR-RUNTIME — deployment Available + pods Ready] ********************
+ok: [node-01]
+
+TASK [LINSTORCLUSTER-RUNTIME — status conditions] ******************************
+ok: [node-01]
+
+TASK [CONTROLLER-VERSION — linstor controller version] *************************
+ok: [node-01]
+
+TASK [SATELLITES-RUNTIME — exactly 3 Ready] ************************************
+ok: [node-01]
+
+TASK [CSI-RUNTIME — controller Available + node 3 Ready + CSIDriver] ***********
+ok: [node-01]
+
+TASK [DRBD-RUNTIME — 9.3.2 exact gate (per node)] ******************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [TOLERATION-LIVE — control-plane toleration effective] ********************
+ok: [node-01]
+
+TASK [LB-MAKEOPTS-LIVE — LinstorSatelliteConfiguration effective] **************
+ok: [node-01]
+
+TASK [LINSTOR-BOUNDARY — node list + storage-pool + resource list] *************
+ok: [node-01]
+
+TASK [K8S-STORAGE-BOUNDARY — SC/PV/PVC structural (semantic filter)] ***********
+ok: [node-01]
+
+TASK [VLAN141-SIX-PATH — read-only connectivity] *******************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [P5B-LVM-POST — structural JSON capture (per node)] ***********************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [P1 POST — bond slaves + exact VLAN + default route] **********************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [P2 POST — containerd + kubelet + swap] ***********************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [VIP-POST — local bond0.140 count (0 or 1)] *******************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [VIP-AGG-POST — aggregate owner count == 1] *******************************
+ok: [node-01]
+
+TASK [P3 POST — etcd JSON + kube-vip JSON + VIP + readyz/livez] ****************
+ok: [node-01]
+
+TASK [P4A POST — Nodes/calico/CoreDNS/IPPool/BGP/autodetect] *******************
+ok: [node-01]
+
+TASK [P4B POST — validation ns NotFound + NetworkPolicy fingerprint] ***********
+ok: [node-01]
+
+TASK [P4B-FP-COMPARE — PRE fingerprint == POST fingerprint] ********************
+ok: [node-01]
+
+TASK [FINAL — P5C1 runtime verification complete] ******************************
+ok: [node-01] => {
+    "msg": "P5C1 runtime read-only verification completed"
+}
+
+PLAY RECAP *********************************************************************
+node-01                    : ok=29   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-02                    : ok=10   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-03                    : ok=10   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+

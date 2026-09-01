@@ -1,0 +1,24 @@
+# TASK-017-R1 — DRBD Loader RAM-load vs disk in-tree finding
+
+FACT: drbd9-resolute loader v2.10.6 загружает скомпилированный DRBD 9.3.2 модуль
+из RAM (insmod), НЕ делает `make install` (по умолчанию LB_INSTALL не установлен).
+
+Поэтому на диске остаётся ОРИГИНАЛЬНЫЙ in-tree модуль Astra 8.4.11:
+  /lib/modules/6.1.158-1-generic/kernel/drivers/block/drbd/drbd.ko
+    version=8.4.11, srcversion=C718D2C2BEE45E82AD21432, vermagic=6.1.158-1-generic
+
+А ЗАГРУЖЕННЫЙ модуль = 9.3.2 (из RAM):
+  /sys/module/drbd/version = 9.3.2
+  /sys/module/drbd/srcversion = 5FD9FC5E60D0C7BA7242AA9
+
+Вывод: `modinfo drbd` (читает ДИСК) возвращает 8.4.11, но это НЕ загруженный модуль.
+Загруженный (runtime) модуль — 9.3.2, что доказывается /sys/module/drbd/version + srcversion.
+
+Правильная проверка D4 "old DRBD 8.4.11 is not loaded":
+  - /sys/module/drbd/version == 9.3.2 (не 8.4.11)
+  - загруженный srcversion (5FD9FC5E...) != in-tree srcversion (C718D2C2...)
+  - modinfo rc=0 (команда работает), но его version=8.4.11 относится к дисковому
+    in-tree, НЕ к загруженному runtime
+
+DRBD gate в verify+bootstrap playbook скорректирован: asserts по /sys/module/drbd
+(загруженный), записывает modinfo version/vermagic как дисковый факт.

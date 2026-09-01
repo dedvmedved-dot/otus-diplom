@@ -1,0 +1,20 @@
+# TASK-017-R1 — Bootstrap Source Static Audit
+
+p5c1-piraeus-runtime-bootstrap.yml (после R1 hardening):
+
+PHASE ORDER (§19): 0 mode gate → 6 exact v2.10.6 apply → 6A committed toleration
+patches → 7 fail-closed CRD/operator Ready → 8A LB_MAKEOPTS → 8B LinstorCluster →
+9 fail-closed controller/satellite/CSI → 10 exact DRBD gate → 11 version gate →
+12 no pools → 14 no SC/PV/PVC → 15 VLAN141 → 17 final. ✓
+
+fail-open waits (|| true): 0 ✓
+kubectl wait ... || true: 0 ✓
+
+DRBD gate (per node): /sys/module/drbd exists + version=9.3.2 + lsmod + tcp +
+uname=6.1.158-1-generic + modinfo rc=0 + old 8.4.11 not loaded (srcversion check)
++ vermagic. ✓
+
+committed patches: manifests/piraeus/p5c1-operator-control-plane-patches/ (operator
++ gencert toleration), p5c1-drbd-loader-makeopts.yaml. ✓
+
+RESULT: PASS

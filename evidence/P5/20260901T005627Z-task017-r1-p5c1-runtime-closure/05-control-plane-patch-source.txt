@@ -1,0 +1,16 @@
+# TASK-017-R1 — Control-Plane Patch Source
+
+manifests/piraeus/p5c1-operator-control-plane-patches/operator-controller-manager-toleration.yaml
+manifests/piraeus/p5c1-operator-control-plane-patches/operator-gencert-toleration.yaml
+
+Оба содержат единственное scheduling-изменение:
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+
+Live effective (26-control-plane-toleration-live.txt) — совпадает с source.
+
+SOURCE == LIVE: YES
+
+RESULT: PASS

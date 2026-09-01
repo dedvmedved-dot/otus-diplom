@@ -1,0 +1,12 @@
+# TASK-017-R1 — Execution Chronology
+
+TASK-017 RUN_ID: 20260831T234225Z
+automation run failed/unreachable after Operator apply
+failed host: node-01 / 192.168.194.38
+automation did not reach LinstorCluster/DRBD/CSI phases
+subsequent runtime work continued through separate actions
+control-plane toleration adjustment used
+LB_MAKEOPTS adjustment used
+historical evidence modified: NO
+storage/LVM mutation after P5B: NO
+P5C2: NOT STARTED

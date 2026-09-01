@@ -1,0 +1,17 @@
+# TASK-017-R1 — P5B LVM Compare (PRE vs POST)
+
+Канонические идентификаторы (pv_uuid, vg_uuid, lv_uuid, lv_attr, data_percent,
+metadata_percent) сравнены PRE vs POST:
+
+diff (sorted canonical UUID) = EMPTY → IDENTICAL.
+
+Все 6 PV UUID, 3 vg_piraeus VG UUID, 3 thin_piraeus LV UUID, атрибуты и проценты —
+БЕЗ ИЗМЕНЕНИЙ между PRE и POST.
+
+(Примечание: сырой fingerprint включал заголовок "PRE"/"POST" — это артефакт
+моей ручной разметки файлов, НЕ изменение LVM-состояния. Канонические UUID
+доказывают неизменность.)
+
+P5B LVM STRUCTURE: UNCHANGED
+
+RESULT: PASS

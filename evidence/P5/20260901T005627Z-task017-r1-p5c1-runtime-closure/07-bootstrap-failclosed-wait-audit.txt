@@ -1,0 +1,18 @@
+# TASK-017-R1 — Bootstrap Fail-Closed Wait Audit
+
+Source search:
+
+kubectl wait ... || true: 0
+любой `|| true` в bootstrap playbook: 0
+
+Каждый wait/query проверяет собственный rc и финальное состояние объекта:
+- operator Available (wait без || true)
+- controller Available (wait без || true)
+- satellites exactly 3 Ready (wait + count assert)
+- CSI controller Available + csi-node 3 Ready (wait + count assert)
+- DRBD gate (exact assertions)
+- version gate (exact string match)
+
+Timeout/query failure => FAIL (exit 1, ansible fails).
+
+RESULT: PASS

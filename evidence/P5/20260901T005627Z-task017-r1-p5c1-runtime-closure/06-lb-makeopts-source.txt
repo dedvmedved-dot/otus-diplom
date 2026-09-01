@@ -1,0 +1,14 @@
+# TASK-017-R1 — LB_MAKEOPTS Source
+
+manifests/piraeus/p5c1-drbd-loader-makeopts.yaml:
+  kind: LinstorSatelliteConfiguration (name astra-drbd-loader)
+  podTemplate.spec.initContainers[drbd-module-loader].env:
+    LB_MAKEOPTS = "CONFIG_GCC_PLUGINS=n CONFIG_GCC_PLUGIN_STACKLEAK=n"
+  storagePools: отсутствует (0)
+  source.hostDevices: отсутствует (0)
+
+Live effective (27-lb-makeopts-live.txt): LB_MAKEOPTS value совпадает, storagePools пусто.
+
+SOURCE == LIVE: YES
+
+RESULT: PASS

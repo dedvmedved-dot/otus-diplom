@@ -1,11 +1,14 @@
 ---
 # p5c1-piraeus-runtime-bootstrap.yml
 # TASK-017 / P5C1: Piraeus Operator + LINSTOR + CSI + DRBD 9.3.2 runtime bootstrap.
+# TASK-017-R1: source hardened for reproducibility (fail-closed, committed patches).
 #
 # p5c1_mode: disabled (default) | authorized-runtime-bootstrap.
 # ONLY authorized-runtime-bootstrap permits Kubernetes runtime mutation.
 # No storage pool binding, no SC/PV/PVC, no DRBD data resource (that is P5C2).
 # P5B vg_piraeus/thin_piraeus is strictly READ-ONLY in P5C1.
+#
+# NOTE: R1 MUST NOT execute this bootstrap playbook (static audit only).
 
 - name: "P5C1 Piraeus/DRBD runtime bootstrap (AUTHORIZED)"
   hosts: all
@@ -29,7 +32,7 @@
       run_once: true
       delegate_to: node-01
 
-    # ═══ PHASE 6 — deploy Operator v2.10.6 ═══
+    # ═══ PHASE 6 — copy + apply exact v2.10.6 operator manifest ═══
     - name: PHASE 6 — copy vendored manifest.yaml to node-01
       ansible.builtin.copy:
         src: /root/otus-diplom/manifests/piraeus/v2.10.6/manifest.yaml
@@ -42,13 +45,30 @@
       ansible.builtin.shell:
         cmd: |
           kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /tmp/piraeus-v2.10.6-manifest.yaml 2>&1
-        executable: /bin/bash
       register: ph6
       run_once: true
       delegate_to: node-01
 
-    # ═══ PHASE 7 — verify Operator/CRDs ═══
-    - name: PHASE 7 — verify CRDs established
+    # ═══ PHASE 6A — committed control-plane toleration patches ═══
+    - name: PHASE 6A — copy control-plane toleration patches
+      ansible.builtin.copy:
+        src: "/root/otus-diplom/manifests/piraeus/p5c1-operator-control-plane-patches/"
+        dest: "/tmp/p5c1-operator-control-plane-patches/"
+        mode: "0644"
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 6A — apply operator + gencert toleration patches
+      ansible.builtin.shell:
+        cmd: |
+          kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /tmp/p5c1-operator-control-plane-patches/operator-controller-manager-toleration.yaml 2>&1
+          kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /tmp/p5c1-operator-control-plane-patches/operator-gencert-toleration.yaml 2>&1
+      register: ph6a
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 7 — fail-closed Operator/CRD Ready ═══
+    - name: PHASE 7 — verify CRDs established (fail-closed)
       ansible.builtin.shell:
         cmd: |
           kubectl --kubeconfig /etc/kubernetes/admin.conf get crd | grep -E 'linstor|piraeus' || exit 1
@@ -61,17 +81,34 @@
       run_once: true
       delegate_to: node-01
 
-    - name: PHASE 7 — wait operator deployment available
+    - name: PHASE 7 — wait operator deployment available (fail-closed)
       ansible.builtin.shell:
         cmd: |
-          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} wait --for=condition=Available deployment/piraeus-operator-controller-manager --timeout=300s 2>&1
+          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} wait --for=condition=Available deployment/piraeus-operator-controller-manager --timeout=300s 2>&1 || exit 1
           kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} get pods -o wide 2>&1
       register: ph7b
       run_once: true
       delegate_to: node-01
 
-    # ═══ PHASE 8 — create minimal LinstorCluster ═══
-    - name: PHASE 8 — copy LinstorCluster manifest
+    # ═══ PHASE 8A — apply DRBD loader LB_MAKEOPTS configuration ═══
+    - name: PHASE 8A — copy DRBD loader LB_MAKEOPTS manifest
+      ansible.builtin.copy:
+        src: /root/otus-diplom/manifests/piraeus/p5c1-drbd-loader-makeopts.yaml
+        dest: /tmp/p5c1-drbd-loader-makeopts.yaml
+        mode: "0644"
+      run_once: true
+      delegate_to: node-01
+
+    - name: PHASE 8A — apply LinstorSatelliteConfiguration (LB_MAKEOPTS)
+      ansible.builtin.shell:
+        cmd: |
+          kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /tmp/p5c1-drbd-loader-makeopts.yaml 2>&1 || exit 1
+      register: ph8a
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 8B — apply minimal LinstorCluster ═══
+    - name: PHASE 8B — copy LinstorCluster manifest
       ansible.builtin.copy:
         src: /root/otus-diplom/manifests/piraeus/p5c1-linstorcluster.yaml
         dest: /tmp/p5c1-linstorcluster.yaml
@@ -79,62 +116,89 @@
       run_once: true
       delegate_to: node-01
 
-    - name: PHASE 8 — apply minimal LinstorCluster
+    - name: PHASE 8B — apply minimal LinstorCluster
       ansible.builtin.shell:
         cmd: |
-          kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /tmp/p5c1-linstorcluster.yaml 2>&1
-      register: ph8
+          kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /tmp/p5c1-linstorcluster.yaml 2>&1 || exit 1
+      register: ph8b
       run_once: true
       delegate_to: node-01
 
-    # ═══ PHASE 9 — wait controller/satellites/CSI ═══
-    - name: PHASE 9 — wait controller available
+    # ═══ PHASE 9 — fail-closed controller/satellite/CSI Ready ═══
+    - name: PHASE 9 — wait controller available (fail-closed)
       ansible.builtin.shell:
         cmd: |
-          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} wait --for=condition=Available deployment/linstor-controller --timeout=300s 2>&1 || true
-          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} get pods -o wide 2>&1
+          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} wait --for=condition=Available deployment/linstor-controller --timeout=300s 2>&1 || exit 1
       register: ph9
       run_once: true
       delegate_to: node-01
 
-    - name: PHASE 9 — wait satellites 3/3 Ready
+    - name: PHASE 9 — wait satellites exactly 3 Ready (fail-closed)
       ansible.builtin.shell:
         cmd: |
-          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} wait --for=condition=Ready pod -l app.kubernetes.io/component=linstor-satellite --timeout=600s 2>&1 || true
-          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} get pods -l app.kubernetes.io/component=linstor-satellite -o wide 2>&1
+          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} wait --for=condition=Ready pod -l app.kubernetes.io/component=linstor-satellite --timeout=900s 2>&1 || exit 1
+          n=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} get pods -l app.kubernetes.io/component=linstor-satellite --no-headers 2>/dev/null | grep -c '1/1\|2/2\|3/3\|4/4')
+          echo "satellite_ready=$n"
+          [ "$n" = "3" ] || { echo "SATELLITE_COUNT_FAIL"; exit 1; }
       register: ph9b
       run_once: true
       delegate_to: node-01
 
-    - name: PHASE 9 — wait CSI controller/node Ready
+    - name: PHASE 9 — wait CSI controller Available + csi-node 3 Ready (fail-closed)
       ansible.builtin.shell:
         cmd: |
-          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} wait --for=condition=Available deployment/linstor-csi-controller --timeout=300s 2>&1 || true
-          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} wait --for=condition=Ready pod -l app.kubernetes.io/component=linstor-csi-node --timeout=600s 2>&1 || true
-          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} get pods -o wide 2>&1
+          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} wait --for=condition=Available deployment/linstor-csi-controller --timeout=300s 2>&1 || exit 1
+          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} wait --for=condition=Ready pod -l app.kubernetes.io/component=linstor-csi-node --timeout=900s 2>&1 || exit 1
+          n=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} get pods -l app.kubernetes.io/component=linstor-csi-node --no-headers 2>/dev/null | grep -c 'Running')
+          echo "csi_node_ready=$n"
+          [ "$n" = "3" ] || { echo "CSI_NODE_COUNT_FAIL"; exit 1; }
       register: ph9c
       run_once: true
       delegate_to: node-01
 
-    # ═══ PHASE 10 — DRBD runtime 3/3 ═══
-    - name: PHASE 10 — DRBD module loaded 9.3.2 (per node)
+    # ═══ PHASE 10 — exact DRBD runtime gate (per node) ═══
+    - name: PHASE 10 — DRBD 9.3.2 runtime exact gate (per node)
       ansible.builtin.shell:
         cmd: |
           sys_mod=$([ -e /sys/module/drbd ] && echo present || echo absent)
           ver=$(cat /sys/module/drbd/version 2>/dev/null || echo MISSING)
-          lsmod_c=$(lsmod | grep -c '^drbd' || true)
-          echo "host=$(hostname) sys_module=$sys_mod version=$ver lsmod_drbd=$lsmod_c"
+          src=$(cat /sys/module/drbd/srcversion 2>/dev/null || echo MISSING)
+          lsmod_c=$(lsmod | awk '/^drbd /{c++} END{print c+0}')
+          tcp_c=$(lsmod | awk '/^drbd_transport_tcp /{c++} END{print c+0}')
+          uname_r=$(uname -r)
+          mi_rc=0; mi_out=$(modinfo drbd 2>/dev/null) || mi_rc=$?
+          mi_ver=$(echo "$mi_out" | grep '^version:' | awk '{print $2}')
+          mi_vm=$(echo "$mi_out" | grep '^vermagic:' | awk '{$1=""; print substr($0,2)}')
+          mi_src=$(echo "$mi_out" | grep '^srcversion:' | awk '{print $2}')
+          echo "host=$(hostname) sys_module=$sys_mod version=$ver srcversion=$src lsmod_drbd=$lsmod_c tcp=$tcp_c uname=$uname_r"
+          echo "modinfo_rc=$mi_rc modinfo_version=$mi_ver vermagic=$mi_vm modinfo_srcversion=$mi_src"
           [ "$sys_mod" = "present" ] || { echo "DRBD_NOT_LOADED"; exit 1; }
+          [ "$ver" = "9.3.2" ] || { echo "DRBD_VERSION_FAIL"; exit 1; }
           [ "$lsmod_c" != "0" ] || { echo "DRBD_LSMOD_ZERO"; exit 1; }
+          [ "$tcp_c" != "0" ] || { echo "DRBD_TCP_MISSING"; exit 1; }
+          [ "$uname_r" = "6.1.158-1-generic" ] || { echo "UNAME_FAIL"; exit 1; }
+          [ "$mi_rc" = "0" ] || { echo "MODINFO_FAIL"; exit 1; }
+          if [ -n "$mi_src" ] && [ "$src" = "$mi_src" ]; then echo "DRBD_OLD_8.4.11_LOADED"; exit 1; fi
+          case "$mi_vm" in 6.1.158-1-generic*) ;; *) echo "VERMAGIC_FAIL"; exit 1;; esac
+          echo "DRBD_RUNTIME_OK"
       register: ph10
       changed_when: false
 
-    # ═══ PHASE 12 — no diskful pools / DRBD resources ═══
-    - name: PHASE 12 — no project diskful pool (storage-pool list via controller)
+    # ═══ PHASE 11 — LINSTOR/drbd-utils/CSI version gate ═══
+    - name: PHASE 11 — version mapping gate (fail-closed)
       ansible.builtin.shell:
         cmd: |
-          kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} get linstorsatelliteconfiguration -o name 2>&1
-          echo "--- check no storagePools in any LinstorSatelliteConfiguration ---"
+          lv=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} exec deploy/linstor-controller -- linstor controller version 2>&1 | grep -o 'linstor controller [0-9.]*' | awk '{print $3}')
+          echo "linstor_controller_version=$lv"
+          [ "$lv" = "1.33.2" ] || { echo "LINSTOR_VERSION_FAIL"; exit 1; }
+      register: ph11
+      run_once: true
+      delegate_to: node-01
+
+    # ═══ PHASE 12 — no project pools/resources ═══
+    - name: PHASE 12 — no project diskful pool / DRBD resources (fail-closed)
+      ansible.builtin.shell:
+        cmd: |
           for o in $(kubectl --kubeconfig /etc/kubernetes/admin.conf get linstorsatelliteconfiguration -o name 2>/dev/null); do
             sp=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get $o -o jsonpath='{.spec.storagePools}' 2>/dev/null)
             hd=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get $o -o jsonpath='{.spec.patches}' 2>/dev/null)
@@ -147,12 +211,12 @@
       delegate_to: node-01
 
     # ═══ PHASE 14 — no project SC/PV/PVC ═══
-    - name: PHASE 14 — no project SC/PV/PVC
+    - name: PHASE 14 — no project SC/PV/PVC (fail-closed)
       ansible.builtin.shell:
         cmd: |
-          sc=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get storageclass -o name 2>/dev/null | grep -c linstor || true)
-          pv=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pv -o name 2>/dev/null | grep -c linstor || true)
-          pvc=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pvc -A -o name 2>/dev/null | grep -c linstor || true)
+          sc=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get storageclass -o name 2>/dev/null | awk '/linstor/{c++} END{print c+0}')
+          pv=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pv -o name 2>/dev/null | awk '/linstor/{c++} END{print c+0}')
+          pvc=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get pvc -A -o name 2>/dev/null | awk '/linstor/{c++} END{print c+0}')
           echo "project_sc=$sc project_pv=$pv project_pvc=$pvc"
           [ "$sc" = "0" ] && [ "$pv" = "0" ] && [ "$pvc" = "0" ] || { echo "PROJECT_STORAGE_PRESENT"; exit 1; }
           echo "NO_PROJECT_SC_PV_PVC"

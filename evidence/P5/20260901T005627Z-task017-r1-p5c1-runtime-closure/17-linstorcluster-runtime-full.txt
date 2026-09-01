@@ -1,0 +1,30 @@
+status:
+  availableCapacityBytes: 0
+  capacity: 0/0GiB
+  conditions:
+  - lastTransitionTime: "2026-09-01T00:05:33Z"
+    message: Resources applied
+    observedGeneration: 1
+    reason: AsExpected
+    status: "True"
+    type: Applied
+  - lastTransitionTime: "2026-09-01T00:07:54Z"
+    message: 'Controller 1.33.2 (API: 1.27.0, Git: 9a96be5dec9160d835d2f317003ce75d2d3c618a)
+      reachable at ''http://linstor-controller.piraeus-datastore.svc:3370'''
+    observedGeneration: 1
+    reason: AsExpected
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2026-09-01T00:25:29Z"
+    message: Properties applied
+    observedGeneration: 1
+    reason: AsExpected
+    status: "True"
+    type: Configured
+  freeCapacityBytes: 0
+  numberOfSnapshots: 0
+  numberOfVolumes: 0
+  runningSatellites: 3
+  satellites: 3/3
+  scheduledSatellites: 3
+  version: 1.33.2

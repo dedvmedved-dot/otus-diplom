@@ -1,0 +1,4 @@
+storageclass_total=0
+pv_total=0
+pvc_total=0
+sc_linstor=0

@@ -1,0 +1,10 @@
+host=node-01
+sys_module=present
+version=9.3.2
+srcversion=5FD9FC5E60D0C7BA7242AA9
+lsmod_drbd=1
+drbd_transport_tcp=1
+uname=6.1.158-1-generic
+modinfo_version=8.4.11
+modinfo_vermagic=6.1.158-1-generic SMP preempt mod_unload modversions
+modinfo_srcversion=C718D2C2BEE45E82AD21432

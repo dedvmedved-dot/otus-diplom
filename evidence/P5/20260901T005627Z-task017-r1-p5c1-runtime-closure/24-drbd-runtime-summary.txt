@@ -1,0 +1,18 @@
+# TASK-017-R1 — DRBD Runtime Summary
+
+DRBD 9.3.2 runtime loaded 3/3. Key facts:
+
+node-01: /sys/module/drbd present, version=9.3.2, srcversion=5FD9FC5E60D0C7BA7242AA9
+node-02: /sys/module/drbd present, version=9.3.2, srcversion=7FDF8C8380112FC51A414E7
+node-03: /sys/module/drbd present, version=9.3.2, srcversion=C9052FC5DEE4F01207335F8
+
+lsmod drbd + drbd_transport_tcp: loaded 3/3
+uname -r: 6.1.158-1-generic 3/3
+modinfo (disk in-tree): version=8.4.11, srcversion=C718D2C2BEE45E82AD21432 (одинаков на 3 узлах)
+
+OLD DRBD 8.4.11 LOADED: NO — загруженный srcversion (per-node, уникален) != in-tree
+8.4.11 srcversion (C718D2C2...) на всех 3 узлах. Загружен именно 9.3.2 (RAM-load).
+
+DRBD VERMAGIC (загруженный, по uname + modinfo disk): 6.1.158-1-generic PASS 3/3.
+
+RESULT: PASS 3/3

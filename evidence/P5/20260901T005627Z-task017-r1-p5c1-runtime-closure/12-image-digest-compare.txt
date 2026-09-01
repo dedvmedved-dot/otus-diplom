@@ -1,0 +1,32 @@
+# TASK-017-R1 — Image Digest Compare (images.lock vs runtime imageID)
+
+Каждая P5C1 запись images.lock (verified:true) сопоставлена с runtime imageID
+из живых pods (namespace piraeus-datastore).
+
+component                       image:tag                                          images.lock digest                runtime imageID digest             MATCH
+------------------------------- -------------------------------------------------- --------------------------------- -------------------------------- -----
+piraeus-operator                piraeus-operator:v2.10.6                          25f9218209eadce0e4fff8ab13ca64... 25f9218209eadce0e4fff8ab13ca64...  YES
+linstor-server                  piraeus-server:v1.33.2                            c7da2b35b5ce08dff31480d6951...    c7da2b35b5ce08dff31480d6951...    YES
+linstor-csi                     piraeus-csi:v1.11.0                              d79ebfa7e9ade09b49cbb60bce3...    d79ebfa7e9ade09b49cbb60bce3...    YES
+drbd9-loader                    drbd9-resolute:v9.3.2                             9a7941e4e6e8fe750cc732753fd...    9a7941e4e6e8fe750cc732753fd...    YES
+drbd-reactor                    drbd-reactor:v1.11.0                              0f22aa4c277231b4cb800b0f292...    0f22aa4c277231b4cb800b0f292...    YES
+piraeus-ha-controller           piraeus-ha-controller:v1.3.2                      5faa4a59f990293a398c3cdee06...    5faa4a59f990293a398c3cdee06...    YES
+drbd-shutdown-guard             drbd-shutdown-guard:v1.1.2                        a4adba73d07f6ba2605d059467...    a4adba73d07f6ba2605d059467...    YES
+linstor-affinity-controller     linstor-affinity-controller:v1.4.0                9d9873a94c21aa7dba402d3ff74...    9d9873a94c21aa7dba402d3ff74...    YES
+csi-attacher                    csi-attacher:v4.11.0                              b74b05b39501565022883fc128...    b74b05b39501565022883fc128...    YES
+csi-provisioner                 csi-provisioner:v6.2.0                            6be9f63ca4caa6c46aae55aa37...    6be9f63ca4caa6c46aae55aa37...    YES
+csi-snapshotter                 csi-snapshotter:v8.5.0                            da081c27e8a6d91f36042c194...     da081c27e8a6d91f36042c194...    YES
+csi-resizer                     csi-resizer:v2.1.0                                589e525cddef6d768e68da1f0b...    589e525cddef6d768e68da1f0b...    YES
+csi-node-driver-registrar       csi-node-driver-registrar:v2.16.0                 ab482308a4921e28a6df09a16a...    ab482308a4921e28a6df09a16a...    YES
+csi-livenessprobe               livenessprobe:v2.18.0                             c4cc074199c045dd73ab85f288...    c4cc074199c045dd73ab85f288...    YES
+csi-external-health-monitor     csi-external-health-monitor-controller:v0.17.0   25925b16d02f21949a5ac55f8c...    25925b16d02f21949a5ac55f8c...    YES
+
+Verification basis: runtime containerStatuses[].imageID / initContainerStatuses[].imageID
+из живых pods (см. 09-runtime-imageids.txt).
+
+Замечание: drbd9-resolute и piraeus-server имеют imageID без registry-префикса
+("sha256:..."), что является platform-specific digest (linux/amd64) manifest —
+digest совпадает с images.lock (не invented, фактически подтверждён runtime).
+
+РЕЗУЛЬТАТ: все 15 P5C1 verified:true entries ФАКТИЧЕСКИ ДОКАЗАНЫ runtime imageID.
+Ни одна запись не downgrade'нута (все подтверждены).
