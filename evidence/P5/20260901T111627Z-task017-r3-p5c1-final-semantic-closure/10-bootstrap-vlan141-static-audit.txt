@@ -1,0 +1,10 @@
+# TASK-017-R3 — Bootstrap VLAN141 Static Audit
+
+PHASE 15: exact local addresses (node-01 172.30.141.101/24, node-02 .102/24,
+node-03 .103/24) + six directed paths (01→02 01→03 02→01 02→03 03→01 03→02).
+
+Fail-closed: address mismatch => VLAN141_ADDR_FAIL; path failure => VLAN141_PATH_FAIL.
+
+No LINSTOR network configuration in bootstrap.
+
+RESULT: PASS

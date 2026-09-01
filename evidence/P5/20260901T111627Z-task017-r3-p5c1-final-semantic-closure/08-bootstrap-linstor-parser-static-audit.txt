@@ -1,0 +1,11 @@
+# TASK-017-R3 — Bootstrap LINSTOR Parser Static Audit
+
+PHASE 12 = deterministic parsers (не grep 'SATELLITE' / '^\|'):
+  - node list: exact set {node-01,node-02,node-03}, все Online, no fourth node
+  - storage-pool: deterministic table parse, exactly 3 DfltDisklessStorPool
+    (Driver=DISKLESS, State=Ok), no diskful pool, no vg_piraeus/thin_piraeus binding
+  - resource-definition/resource: deterministic parse, rc checked, both 0
+
+ANSI escape codes стрипаются (re.sub \x1b[[0-9;]*m) — linstor colour output.
+
+RESULT: PASS (fail-closed)

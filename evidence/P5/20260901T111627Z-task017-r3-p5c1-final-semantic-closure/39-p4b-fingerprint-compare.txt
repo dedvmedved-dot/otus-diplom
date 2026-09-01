@@ -1,0 +1,3 @@
+ns_NotFound=1
+networkpolicy_total=0
+P4B_FP_UNCHANGED: ns NotFound, networkpolicy_total=0

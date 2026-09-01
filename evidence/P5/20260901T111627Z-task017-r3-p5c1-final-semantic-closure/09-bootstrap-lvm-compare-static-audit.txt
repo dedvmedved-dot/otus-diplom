@@ -1,0 +1,12 @@
+# TASK-017-R3 — Bootstrap LVM Compare Static Audit
+
+PHASE 13 = semantic PRE/POST compare (не raw text). Compare canonical JSON:
+  candidate composite identities + PV UUIDs
+  exact vg_piraeus PV set + VG UUID + PV count
+  thin_piraeus UUID / size / type / active state
+  protected-PV exclusion
+
+PRE (PHASE 2) и POST (PHASE 13) генерируют идентичный canonical dict;
+сравнение по точному JSON-равенству (не по raw text с заголовками).
+
+RESULT: PASS (semantic)

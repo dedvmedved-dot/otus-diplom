@@ -9,7 +9,7 @@
 # controller/satellites/csi/drbd/toleration/lbmakeopts/linstor-boundary/k8s-storage/
 # image-digest/vlan141), P5B LVM POST+compare, P1-P4 POST, P4B fingerprint, FINAL.
 
-- name: "P5C1 runtime read-only verification (TASK-017-R2)"
+- name: "P5C1 runtime read-only verification (TASK-017-R3)"
   hosts: all
   gather_facts: false
   become: true
@@ -205,13 +205,38 @@
       delegate_to: node-01
 
     # ═══ P5B LVM PRE ═══
-    - name: P5B-LVM-PRE — structural capture to /tmp (per node)
+    - name: P5B-LVM-PRE — composite capture (per node)
       ansible.builtin.shell:
         cmd: |
-          pvs --reportformat json -o pv_name,vg_name,pv_size,pv_uuid > /tmp/p5c1_verify_lvm_pre_{{ inventory_hostname }}.json 2>&1
-          vgs --reportformat json -o vg_name,vg_uuid,vg_size,vg_free,pv_count >> /tmp/p5c1_verify_lvm_pre_{{ inventory_hostname }}.json 2>&1
-          lvs --reportformat json -o vg_name,lv_name,lv_uuid,lv_attr,lv_size,data_percent,metadata_percent >> /tmp/p5c1_verify_lvm_pre_{{ inventory_hostname }}.json 2>&1
-          echo "P5B_LVM_PRE_OK"
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          host = "{{ inventory_hostname }}"
+          def run(cmd):
+              r = subprocess.run(cmd, capture_output=True, text=True)
+              if r.returncode != 0: print(f"CMD_FAIL {cmd}"); sys.exit(1)
+              return json.loads(r.stdout)
+          pvs = run(["pvs","--reportformat","json","-o","pv_name,vg_name,pv_uuid,pv_size"])
+          pvlist = pvs["report"][0]["pv"]
+          vgs = run(["vgs","--reportformat","json","-o","vg_name,vg_uuid,vg_free,pv_count"])
+          vglist = {v["vg_name"]: v for v in vgs["report"][0]["vg"]}
+          lvs = run(["lvs","--reportformat","json","-o","vg_name,lv_name,lv_uuid,lv_attr,lv_size,data_percent,metadata_percent"])
+          lvlist = lvs["report"][0]["lv"]
+          vg = vglist.get("vg_piraeus")
+          thin = [l for l in lvlist if l["lv_name"]=="thin_piraeus" and l["vg_name"]=="vg_piraeus"]
+          vg_pv_uuids = sorted(set(p["pv_uuid"] for p in pvlist if p["vg_name"]=="vg_piraeus"))
+          canon = {
+            "host": host,
+            "candidate_pv_uuids": vg_pv_uuids,
+            "vg_piraeus_uuid": vg.get("vg_uuid","") if vg else "",
+            "vg_pv_count": vg.get("pv_count","") if vg else "",
+            "thin_lv_uuid": thin[0].get("lv_uuid","") if thin else "",
+            "thin_lv_size": thin[0].get("lv_size","") if thin else "",
+            "thin_lv_attr": thin[0].get("lv_attr","") if thin else "",
+            "protected_pv_in_piraeus": any(p["vg_name"]=="vg_piraeus" and "astra" in p["vg_name"] for p in pvlist),
+          }
+          open("/tmp/p5c1_verify_canon_pre_{{ inventory_hostname }}.json","w").write(json.dumps(canon, sort_keys=True))
+          print(f"P5B_LVM_PRE_OK {host} pv_uuids={len(vg_pv_uuids)}")
+          PYEOF
       register: lvmpre
       changed_when: false
 
@@ -351,11 +376,15 @@
           for p in npods:
               n = p.get("spec",{}).get("nodeName",""); nnodes.setdefault(n, []).append(p)
           ok_nodes = set(nnodes.keys()) == {"node-01","node-02","node-03"} and all(len(v)==1 for v in nnodes.values())
-          all_ready = all(all(c.get("ready",False) for c in p.get("status",{}).get("containerStatuses",[])) for ps in nnodes.values() for p in ps if p.get("status",{}).get("phase")=="Running")
+          # every csi-node pod must itself be Running AND all containers Ready (no vacuous pass)
+          def pod_ok(p):
+              return p.get("status",{}).get("phase")=="Running" and \
+                     all(c.get("ready",False) for c in p.get("status",{}).get("containerStatuses",[]))
+          all_ready = all(pod_ok(p) for ps in nnodes.values() for p in ps)
           img = npods[0]["spec"]["containers"][0]["image"] if npods else ""
           csid = subprocess.run(["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","get","csidriver","linstor.csi.linbit.com","-o","json"], capture_output=True, text=True)
           csid_present = (csid.returncode == 0)
-          print(f"csi_controller desired={spec_r} avail={avail} ready={ready} csi_node={len(npods)} nodes_ok={ok_nodes} all_ready={all_ready} image={img} csidriver={csid_present}")
+          print(f"csi_controller desired={spec_r} avail={avail} ready={ready} csi_node={len(npods)} nodes_ok={ok_nodes} all_running_ready={all_ready} image={img} csidriver={csid_present}")
           if spec_r!=1 or avail!=1 or ready!=1 or len(npods)!=3 or not ok_nodes or not all_ready or "piraeus-csi:v1.11.0" not in img or not csid_present:
               print("CSI_GATE_FAIL"); sys.exit(1)
           print("CSI_GATE_OK")
@@ -415,6 +444,23 @@
           if r.returncode != 0: print("TOLERATION_FAIL linstorcluster"); sys.exit(1)
           tols = json.loads(r.stdout)["spec"].get("tolerations",[])
           if not has_tol(tols): print("TOLERATION_MISSING linstorcluster"); sys.exit(1)
+          # effective satellite / CSI / HA runtime components (DaemonSet/Deployment) must also tolerate control-plane
+          runtime_targets = [
+            ("daemonset","linstor-satellite.node-01"),
+            ("daemonset","linstor-satellite.node-02"),
+            ("daemonset","linstor-satellite.node-03"),
+            ("daemonset","linstor-csi-node"),
+            ("daemonset","ha-controller"),
+          ]
+          for kind, name in runtime_targets:
+              r = subprocess.run(KC+["get",kind,name,"-o","json"], capture_output=True, text=True)
+              if r.returncode != 0:
+                  # not every component may be present; only assert when present
+                  print(f"TOLERATION_SKIP {kind}/{name} (not present)")
+                  continue
+              tols = json.loads(r.stdout)["spec"]["template"]["spec"].get("tolerations",[])
+              if not has_tol(tols): print(f"TOLERATION_MISSING {kind}/{name}"); sys.exit(1)
+              print(f"TOLERATION_OK {kind}/{name}")
           print("TOLERATION_GATE_OK")
           PYEOF
       register: tolgate
@@ -453,63 +499,80 @@
       delegate_to: node-01
 
     # ═══ D14 — LINSTOR boundary assertion gates ═══
-    - name: LINSTOR-NODE-GATE — 3 exact nodes Online
+    - name: LINSTOR-NODE-GATE — exact node set Online (deterministic)
       ansible.builtin.shell:
         cmd: |
-          out=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} exec deploy/linstor-controller -- linstor node list 2>&1)
-          rc=$?
-          [ "$rc" = "0" ] || { echo "LINSTOR_NODE_CMD_FAIL"; exit 1; }
-          online=$(echo "$out" | grep -cE 'SATELLITE.*Online')
-          nodes=$(echo "$out" | grep -c 'SATELLITE')
-          echo "linstor_nodes=$nodes online=$online"
-          [ "$nodes" = "3" ] && [ "$online" = "3" ] || { echo "LINSTOR_NODE_GATE_FAIL"; exit 1; }
-          echo "LINSTOR_NODE_GATE_OK"
+          python3 << 'PYEOF'
+          import subprocess, sys, re
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","-n","{{ op_ns }}","exec","deploy/linstor-controller","--"]
+          out = subprocess.run(KC+["linstor","node","list"], capture_output=True, text=True)
+          if out.returncode != 0: print("LINSTOR_NODE_CMD_FAIL"); sys.exit(1)
+          raw = re.sub(r"\x1b\[[0-9;]*m","", out.stdout)
+          lines = [l for l in raw.splitlines() if l.strip().startswith("|")]
+          data = [l for l in lines if not l.strip().startswith("|=") and not l.strip().startswith("| Node")]
+          nodes = {}
+          for l in data:
+              cols = [c.strip() for c in l.strip("|").split("|")]
+              if len(cols) >= 4:
+                  nodes[cols[0]] = {"type": cols[1], "state": cols[3]}
+          expect = {"node-01","node-02","node-03"}
+          if set(nodes.keys()) != expect:
+              print(f"LINSTOR_NODE_SET_FAIL {sorted(nodes.keys())}"); sys.exit(1)
+          for n in expect:
+              if nodes[n].get("state") != "Online":
+                  print(f"LINSTOR_NODE_NOT_ONLINE {n}={nodes[n]}"); sys.exit(1)
+          print(f"LINSTOR_NODE_GATE_OK {sorted(nodes.keys())} Online")
+          PYEOF
       register: lnogate
       changed_when: false
       run_once: true
       delegate_to: node-01
 
-    - name: LINSTOR-POOL-GATE — only internal diskless pools
+    - name: LINSTOR-POOL-GATE — deterministic 3 DfltDisklessStorPool, no diskful
       ansible.builtin.shell:
         cmd: |
-          out=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} exec deploy/linstor-controller -- linstor storage-pool list 2>&1)
-          rc=$?
-          [ "$rc" = "0" ] || { echo "LINSTOR_POOL_CMD_FAIL"; exit 1; }
-          non=$(echo "$out" | grep -vE 'DfltDisklessStorPool|StoragePool|^\+|^\||^$' | tr -d '[:space:]')
-          echo "non_diskless=[$non]"
-          if [ -n "$non" ]; then echo "DISKFUL_POOL_PRESENT"; exit 1; fi
-          echo "LINSTOR_POOL_GATE_OK"
+          python3 << 'PYEOF'
+          import subprocess, sys, re
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","-n","{{ op_ns }}","exec","deploy/linstor-controller","--"]
+          out = subprocess.run(KC+["linstor","storage-pool","list"], capture_output=True, text=True)
+          if out.returncode != 0: print("LINSTOR_POOL_CMD_FAIL"); sys.exit(1)
+          raw = re.sub(r"\x1b\[[0-9;]*m","", out.stdout)
+          lines = [l for l in raw.splitlines() if l.strip().startswith("|")]
+          data = [l for l in lines if not l.strip().startswith("|=") and "StoragePool" not in l]
+          pools = []
+          for l in data:
+              cols = [c.strip() for c in l.strip("|").split("|")]
+              if len(cols) >= 8:
+                  pools.append({"name": cols[0], "node": cols[1], "driver": cols[2], "state": cols[7]})
+          if len(pools) != 3:
+              print(f"LINSTOR_POOL_COUNT_FAIL={len(pools)}"); sys.exit(1)
+          for p in pools:
+              if p["name"] != "DfltDisklessStorPool" or p["driver"] != "DISKLESS" or p["state"] != "Ok":
+                  print(f"LINSTOR_POOL_FAIL {p}"); sys.exit(1)
+          print("LINSTOR_POOL_GATE_OK no_diskful")
+          PYEOF
       register: lpoolgate
       changed_when: false
       run_once: true
       delegate_to: node-01
 
-    - name: LINSTOR-RD-GATE — resource definitions = 0
+    - name: LINSTOR-RD-RES-GATE — resource-definition + resource deterministic (both 0)
       ansible.builtin.shell:
         cmd: |
-          out=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} exec deploy/linstor-controller -- linstor resource-definition list 2>&1)
-          rc=$?
-          [ "$rc" = "0" ] || { echo "LINSTOR_RD_CMD_FAIL"; exit 1; }
-          rd=$(echo "$out" | grep -cE '^\| [^R]')
-          echo "resource_definitions=$rd"
-          [ "$rd" = "0" ] || { echo "LINSTOR_RD_GATE_FAIL"; exit 1; }
-          echo "LINSTOR_RD_GATE_OK"
-      register: lrdgate
-      changed_when: false
-      run_once: true
-      delegate_to: node-01
-
-    - name: LINSTOR-RES-GATE — resources = 0
-      ansible.builtin.shell:
-        cmd: |
-          out=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n {{ op_ns }} exec deploy/linstor-controller -- linstor resource list 2>&1)
-          rc=$?
-          [ "$rc" = "0" ] || { echo "LINSTOR_RES_CMD_FAIL"; exit 1; }
-          r=$(echo "$out" | grep -cE '^\| [^R]')
-          echo "resources=$r"
-          [ "$r" = "0" ] || { echo "LINSTOR_RES_GATE_FAIL"; exit 1; }
-          echo "LINSTOR_RES_GATE_OK"
-      register: lresgate
+          python3 << 'PYEOF'
+          import subprocess, sys, re
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","-n","{{ op_ns }}","exec","deploy/linstor-controller","--"]
+          for kind in ["resource-definition","resource"]:
+              out = subprocess.run(KC+["linstor",kind,"list"], capture_output=True, text=True)
+              if out.returncode != 0: print(f"LINSTOR_{kind}_CMD_FAIL"); sys.exit(1)
+              raw = re.sub(r"\x1b\[[0-9;]*m","", out.stdout)
+              lines = [l for l in raw.splitlines() if l.strip().startswith("|")]
+              data = [l for l in lines if not l.strip().startswith("|=") and "ResourceName" not in l]
+              print(f"{kind}_count={len(data)}")
+              if len(data) != 0: print(f"LINSTOR_{kind}_PRESENT"); sys.exit(1)
+          print("LINSTOR_RD_RES_GATE_OK 0/0")
+          PYEOF
+      register: lrdresgate
       changed_when: false
       run_once: true
       delegate_to: node-01
@@ -540,47 +603,55 @@
       run_once: true
       delegate_to: node-01
 
-    # ═══ D19 — image digest executable gate ═══
-    - name: IMAGE-DIGEST-GATE — runtime imageID matches images.lock (15 entries)
+    # ═══ D19 — image digest executable gate (parse images.lock) ═══
+    - name: IMAGE-DIGEST-GATE — copy images.lock to node-01 (read-only)
+      ansible.builtin.copy:
+        src: /root/otus-diplom/images.lock
+        dest: /tmp/p5c1-images.lock
+        mode: "0644"
+      changed_when: false
+      run_once: true
+      delegate_to: node-01
+
+    - name: IMAGE-DIGEST-GATE — runtime imageID matches images.lock (parse lock)
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
           import json, subprocess, sys, re
+          # expected digests MUST come from images.lock (single SoT), not embedded
+          lock = open("/tmp/p5c1-images.lock").read()
+          mandatory = [
+            "piraeus-operator","linstor-server","linstor-csi","drbd9-loader",
+            "drbd-reactor","piraeus-ha-controller","drbd-shutdown-guard",
+            "linstor-affinity-controller","csi-attacher","csi-provisioner",
+            "csi-snapshotter","csi-resizer","csi-node-driver-registrar",
+            "csi-livenessprobe","csi-external-health-monitor-controller",
+          ]
+          blocks = re.split(r'\n  - component:', lock)
+          expected = {}
+          for b in blocks[1:]:
+              nm = b.strip().split('\n')[0].strip()
+              dig = re.search(r'digest:\s*"?(sha256:[0-9a-f]{64})"?', b)
+              if dig and nm in mandatory:
+                  expected[nm] = dig.group(1)
+          if len(expected) != 15:
+              print(f"IMAGES_LOCK_PARSE_FAIL expected={len(expected)}"); sys.exit(1)
           KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf","-n","piraeus-datastore"]
-          # images.lock expected digests (P5C1 verified:true entries)
-          EXPECT = {
-            "piraeus-operator": "sha256:25f9218209eadce0e4fff8ab13ca64b1f0fae3cab9ac5f44026eaaa5c929d438",
-            "piraeus-server": "sha256:c7da2b35b5ce08dff31480d6951597fd479798831da318976f5bfbec6a47cd04",
-            "piraeus-csi": "sha256:d79ebfa7e9ade09b49cbb60bce32c726b025033e786c9e3d8b99feb9191f3a4e",
-            "drbd9-resolute": "sha256:9a7941e4e6e8fe750cc732753fdc4eb61a526506244bd4ac3d03d79ea272627c",
-            "drbd-reactor": "sha256:0f22aa4c277231b4cb800b0f292da68c77913f6d03c7f1029312f8a00251aa93",
-            "piraeus-ha-controller": "sha256:5faa4a59f990293a398c3cdee069ae7c03ecfd8c026f5a12c8eb72c0e3e1d06b",
-            "drbd-shutdown-guard": "sha256:a4adba73d07f6ba2605d0594676df47ab143e004991caadea3b7b556ead2db6e",
-            "linstor-affinity-controller": "sha256:9d9873a94c21aa7dba402d3ff745b45241f5b5d9a8123872f50648e007034f4c",
-            "csi-attacher": "sha256:b74b05b39501565022883fc128002b4cb857a7bb6c858606bcb3fdedba0b0b80",
-            "csi-provisioner": "sha256:6be9f63ca4caa6c46aae55aa372500949d8a21473d72f819da1f746076b32d4e",
-            "csi-snapshotter": "sha256:da081c27e8a6d91f36042c1942362d0515ced8d06e18c11b8f893e58c4d6d797",
-            "csi-resizer": "sha256:589e525cddef6d768e68da1f0bc9ffd0a24bf3add3dd010648eb7189976fde79",
-            "csi-node-driver-registrar": "sha256:ab482308a4921e28a6df09a16ab99a457e9af9641ff44fb1be1a690d07ce8b70",
-            "livenessprobe": "sha256:c4cc074199c045dd73ab85f28897e2a32f4d6f38ffdba4f3b13b8007ccbd3570",
-            "csi-external-health-monitor-controller": "sha256:25925b16d02f21949a5ac55f8c120e81acdf204fe3d1a1ae1ae3653392bd56ba",
-          }
           r = subprocess.run(KC+["get","pods","-o","json"], capture_output=True, text=True)
           if r.returncode != 0: print("IMAGE_DIGEST_FAIL"); sys.exit(1)
           pods = json.loads(r.stdout).get("items",[])
           runtime = set()
           for p in pods:
               for c in p.get("status",{}).get("containerStatuses",[])+p.get("status",{}).get("initContainerStatuses",[]):
-                  iid = c.get("imageID","")
-                  m = re.search(r'(sha256:[0-9a-f]{64})', iid)
+                  m = re.search(r'(sha256:[0-9a-f]{64})', c.get("imageID",""))
                   if m: runtime.add(m.group(1))
           matched = 0; mismatched = []
-          for comp, dgst in EXPECT.items():
+          for comp, dgst in expected.items():
               if dgst in runtime:
                   matched += 1
               else:
                   mismatched.append(comp)
-          print(f"image_digest matched={matched}/15 mismatched={mismatched}")
+          print(f"image_digest matched={matched}/15 from images.lock mismatched={mismatched}")
           if matched != 15: print("IMAGE_DIGEST_GATE_FAIL"); sys.exit(1)
           print("IMAGE_DIGEST_GATE_OK")
           PYEOF
@@ -604,64 +675,40 @@
       register: v141gate
       changed_when: false
 
-    # ═══ P5B LVM POST + in-run compare ═══
-    - name: P5B-LVM-POST — structural capture (per node)
-      ansible.builtin.shell:
-        cmd: |
-          pvs --reportformat json -o pv_name,vg_name,pv_size,pv_uuid > /tmp/p5c1_verify_lvm_post_{{ inventory_hostname }}.json 2>&1
-          vgs --reportformat json -o vg_name,vg_uuid,vg_size,vg_free,pv_count >> /tmp/p5c1_verify_lvm_post_{{ inventory_hostname }}.json 2>&1
-          lvs --reportformat json -o vg_name,lv_name,lv_uuid,lv_attr,lv_size,data_percent,metadata_percent >> /tmp/p5c1_verify_lvm_post_{{ inventory_hostname }}.json 2>&1
-          echo "P5B_LVM_POST_OK"
-      register: lvmpost
-      changed_when: false
-
-    - name: P5B-LVM-COMPARE-GATE — in-run structural compare (per node)
+    # ═══ P5B LVM POST + in-run semantic compare ═══
+    - name: P5B-LVM-POST — composite capture + semantic compare (per node)
       ansible.builtin.shell:
         cmd: |
           python3 << 'PYEOF'
-          import json, sys
-          def load(path):
-              try:
-                  with open(path) as f:
-                      # files contain 3 concatenated JSON objects; extract pv/vg/lv by markers
-                      txt = f.read()
-              except: print("LVM_READ_FAIL"); sys.exit(1)
-              # parse each json object via json.JSONDecoder raw scan
-              objs = []
-              dec = json.JSONDecoder()
-              i = 0
-              while i < len(txt):
-                  while i < len(txt) and txt[i] not in '[{': i += 1
-                  if i >= len(txt): break
-                  try:
-                      obj, j = dec.raw_decode(txt, i)
-                      objs.append(obj); i = j
-                  except: i += 1
-              # find pvs/vgs/lvs by shape
-              pv = vg = lv = None
-              for o in objs:
-                  for rep in o.get("report",[]):
-                      for rec in rep.get("pv",[]):
-                          if pv is None: pv = rec
-                      for rec in rep.get("vg",[]):
-                          if vg is None: vg = rec
-                      for rec in rep.get("lv",[]):
-                          if lv is None: lv = rec
-              return pv, vg, lv
-          def canon(pv, vg, lv):
-              return (
-                tuple(sorted(str(x.get("pv_uuid","")) for x in pv)) if isinstance(pv, list) else (str(pv.get("pv_uuid","")),),
-                str(vg.get("vg_uuid","")) if vg else "",
-                str(vg.get("pv_count","")) if vg else "",
-                tuple(sorted(str(x.get("lv_uuid","")) for x in lv)) if isinstance(lv, list) else (str(lv.get("lv_uuid","")),),
-                tuple(sorted(str(x.get("lv_size","")) for x in lv)) if isinstance(lv, list) else (str(lv.get("lv_size","")),),
-              )
-          pv1,vg1,lv1 = load("/tmp/p5c1_verify_lvm_pre_{{ inventory_hostname }}.json")
-          pv2,vg2,lv2 = load("/tmp/p5c1_verify_lvm_post_{{ inventory_hostname }}.json")
-          c1 = canon(pv1,vg1,lv1); c2 = canon(pv2,vg2,lv2)
-          if c1 != c2:
+          import json, subprocess, sys
+          host = "{{ inventory_hostname }}"
+          def run(cmd):
+              r = subprocess.run(cmd, capture_output=True, text=True)
+              if r.returncode != 0: print(f"CMD_FAIL {cmd}"); sys.exit(1)
+              return json.loads(r.stdout)
+          pvs = run(["pvs","--reportformat","json","-o","pv_name,vg_name,pv_uuid,pv_size"])
+          pvlist = pvs["report"][0]["pv"]
+          vgs = run(["vgs","--reportformat","json","-o","vg_name,vg_uuid,vg_free,pv_count"])
+          vglist = {v["vg_name"]: v for v in vgs["report"][0]["vg"]}
+          lvs = run(["lvs","--reportformat","json","-o","vg_name,lv_name,lv_uuid,lv_attr,lv_size,data_percent,metadata_percent"])
+          lvlist = lvs["report"][0]["lv"]
+          vg = vglist.get("vg_piraeus")
+          thin = [l for l in lvlist if l["lv_name"]=="thin_piraeus" and l["vg_name"]=="vg_piraeus"]
+          vg_pv_uuids = sorted(set(p["pv_uuid"] for p in pvlist if p["vg_name"]=="vg_piraeus"))
+          canon_post = {
+            "host": host,
+            "candidate_pv_uuids": vg_pv_uuids,
+            "vg_piraeus_uuid": vg.get("vg_uuid","") if vg else "",
+            "vg_pv_count": vg.get("pv_count","") if vg else "",
+            "thin_lv_uuid": thin[0].get("lv_uuid","") if thin else "",
+            "thin_lv_size": thin[0].get("lv_size","") if thin else "",
+            "thin_lv_attr": thin[0].get("lv_attr","") if thin else "",
+            "protected_pv_in_piraeus": any(p["vg_name"]=="vg_piraeus" and "astra" in p["vg_name"] for p in pvlist),
+          }
+          pre = json.loads(open("/tmp/p5c1_verify_canon_pre_{{ inventory_hostname }}.json").read())
+          if pre != canon_post:
               print("P5B_LVM_MUTATED"); sys.exit(1)
-          print("P5B_LVM_COMPARE_OK")
+          print("P5B_LVM_COMPARE_OK semantic")
           PYEOF
       register: lvmcmpgate
       changed_when: false

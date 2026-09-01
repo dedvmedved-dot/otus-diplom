@@ -1,0 +1,10 @@
+# TASK-017-R3 — Bootstrap Pinned Source Static Audit
+
+PHASE 4 = parse versions.lock (не echo). Requires exact:
+  linstor_operator=2.10.6, linstor=1.33.2, linstor_csi=1.11.0,
+  drbd=9.3.2, drbd_utils=9.34.3.
+(кernel 6.1.158-1-generic проверяется в DRBD gate через uname -r.)
+
+versions.lock фактически: 2.10.6 / 1.33.2 / 1.11.0 / 9.3.2 / 9.34.3 — совпадают.
+
+RESULT: PASS (factual)

@@ -1,0 +1,13 @@
+# TASK-017-R3 — R2 Connector Findings
+
+R2 factual runtime state: accepted.
+R2 clean read-only run (changed=0 failed=0 unreachable=0): accepted.
+R2 bootstrap source: HOLD — semantic false-pass paths:
+  - PHASE 4 pinned-source = echo (не парсит versions.lock).
+  - PHASE 5 image-supply = manifest-file existence (не парсит images.lock).
+  - PHASE 12 LINSTOR = grep 'SATELLITE' / '^\|' (brittle count).
+  - PHASE 13 P5B compare = raw text (не canonical composite).
+  - verifier image digest gate = embedded digest values (second SoT).
+  - verifier P5B compare = first-record parser (не фильтр кандидатов).
+  - no bootstrap git baseline gate.
+Historical evidence modified: NO.

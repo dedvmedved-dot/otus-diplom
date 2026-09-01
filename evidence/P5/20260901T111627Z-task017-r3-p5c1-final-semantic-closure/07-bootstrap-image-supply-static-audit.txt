@@ -1,0 +1,13 @@
+# TASK-017-R3 — Bootstrap Image Supply Static Audit
+
+PHASE 5 = parse images.lock (не manifest-file existence). Requires each mandatory
+P5C1 component (15) has verified:true + exact sha256 digest из images.lock.
+
+15 mandatory components: piraeus-operator, linstor-server, linstor-csi, drbd9-loader,
+drbd-reactor, piraeus-ha-controller, drbd-shutdown-guard, linstor-affinity-controller,
+csi-attacher, csi-provisioner, csi-snapshotter, csi-resizer, csi-node-driver-registrar,
+csi-livenessprobe, csi-external-health-monitor-controller.
+
+images.lock фактически: все 15 verified:true + sha256 (не NOT_VERIFIED).
+
+RESULT: PASS (factual). Registry/tag/digest не менялись.

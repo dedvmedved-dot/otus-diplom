@@ -1,0 +1,13 @@
+# TASK-017-R3 — Bootstrap P5B Precondition Static Audit
+
+PHASE 2 = real composite gate (не capture-only):
+  - resolve 6 candidate disks по serial + WWN + model + exact size + type=disk (lsblk JSON)
+  - require 2/2 exact candidates per node
+  - both candidate PVs in vg_piraeus
+  - exact candidate PV membership set (2 PV UUID, no extra/missing)
+  - no protected PV (astra*) in vg_piraeus
+  - exactly one active thin_piraeus (lv_attr position 5 == 'a')
+  - VG free > 0
+  - produce canonical PRE state (JSON в /tmp)
+
+RESULT: PASS (composite / structural)

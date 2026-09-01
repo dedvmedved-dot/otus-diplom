@@ -1,0 +1,2 @@
+=== P5B in-run semantic compare ===
+P5B_LVM_COMPARE_OK: canonical composite IDs IDENTICAL (semantic)

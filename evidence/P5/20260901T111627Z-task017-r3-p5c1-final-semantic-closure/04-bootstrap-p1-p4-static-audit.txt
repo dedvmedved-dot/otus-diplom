@@ -1,0 +1,13 @@
+# TASK-017-R3 — Bootstrap P1-P4 Static Audit
+
+P1 PRE/POST: bond slaves + exact VLAN (bond0.140/141/143/700) + default route (per node).
+P2 PRE/POST: containerd 2.3.3, kubelet v1.36.2, swap=0.
+P3 PRE/POST: etcd members=3 learners=0 endpoints=3 leaders=1 health=3,
+            kube-vip 3 pods Running AND Ready, VIP aggregate owner=1, readyz=ok, livez 3/3.
+P4A PRE/POST: Nodes Ready=3, calico-node 3/3, CoreDNS 2/2/2, IPPool CIDR 10.244.0.0/16
+            IPIP Always, BGP exact, IP_AUTODETECTION_METHOD=bond0.140.
+P4B PRE/POST: validation ns NotFound, policy fingerprint PRE==POST.
+
+Fail-closed (exit 1 на нарушение). kube-vip Ready (не только Running).
+
+RESULT: PASS

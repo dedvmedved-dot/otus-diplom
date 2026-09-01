@@ -1,0 +1,4 @@
+sc=0
+pv=0
+pvc=0
+K8S_STORAGE_GATE_OK: SC/PV/PVC = 0/0/0

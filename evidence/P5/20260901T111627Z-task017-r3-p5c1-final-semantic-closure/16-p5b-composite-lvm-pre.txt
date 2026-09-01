@@ -1,0 +1,132 @@
+=== P5B composite LVM PRE ===
+--- node-01 ---
+sda | CA6C64B9 | None | OS | disk
+sdb | S5G0NC0T407845 | 0x5002538b724752b0 | MZILT3T8HBLS/007 | disk
+sdc | S5G0NC0T407844 | 0x5002538b724752a0 | MZILT3T8HBLS/007 | disk
+sdd | 32L0A34CFMCF | 0x5000039b882b5791 | AL15SEB18EQ | disk
+sde | 32L0A34BFMCF | 0x5000039b882b574d | AL15SEB18EQ | disk
+sdf | 32L0A36PFMCF | 0x5000039b882b5d49 | AL15SEB18EQ | disk
+sdg | 32L0A34JFMCF | 0x5000039b882b5831 | AL15SEB18EQ | disk
+sdh | 32L0A35AFMCF | 0x5000039b882b5a4d | AL15SEB18EQ | disk
+sdi | 32L0A36BFMCF | 0x5000039b882b5c91 | AL15SEB18EQ | disk
+sdj | AAAABBBBCCCC3 | None | Virtual HDisk0 | disk
+  {
+      "report": [
+          {
+              "pv": [
+                  {"pv_name":"/dev/sda3", "vg_name":"astra38644", "pv_uuid":"2igKvi-wFTV-deon-DxNf-OKag-miYi-CItUsN"},
+                  {"pv_name":"/dev/sdb", "vg_name":"vg_piraeus", "pv_uuid":"nUrTJz-8Ce0-2ES8-Msxi-poqF-YCxY-5L3GSU"},
+                  {"pv_name":"/dev/sdc", "vg_name":"vg_piraeus", "pv_uuid":"0tWplA-n28T-vXMp-NRPC-BuoI-xQUI-vm3uHF"}
+              ]
+          }
+      ]
+  }
+  {
+      "report": [
+          {
+              "vg": [
+                  {"vg_name":"astra38644", "vg_uuid":"kW9ySM-q5xs-dugd-qh9E-xsbU-WP3t-mu7bOw", "vg_free":"45,00g", "pv_count":"1"},
+                  {"vg_name":"vg_piraeus", "vg_uuid":"RKYkLM-nA5e-Zdjm-0Um1-hdki-U5KJ-vFX2de", "vg_free":"<715,20g", "pv_count":"2"}
+              ]
+          }
+      ]
+  }
+  {
+      "report": [
+          {
+              "lv": [
+                  {"vg_name":"astra38644", "lv_name":"lv_home", "lv_uuid":"fNydfS-IUXI-sbXX-LYAf-nCQh-y4Iw-wsmMdq", "lv_attr":"-wi-ao----", "lv_size":"328,39g"},
+                  {"vg_name":"astra38644", "lv_name":"lv_root", "lv_uuid":"Sg3WRR-gNXQ-inGs-AaBs-0R7y-ID0a-mvTUxN", "lv_attr":"-wi-ao----", "lv_size":"40,00g"},
+                  {"vg_name":"astra38644", "lv_name":"lv_swap", "lv_uuid":"6rtL4U-noyL-Bex5-lkic-CF9w-gbe3-cGMCMF", "lv_attr":"-wi-a-----", "lv_size":"32,00g"},
+                  {"vg_name":"vg_piraeus", "lv_name":"thin_piraeus", "lv_uuid":"OwNckB-Eion-6Ic1-PQXQ-ashq-UW0V-W5AGqN", "lv_attr":"twi-a-tz--", "lv_size":"<6,29t"}
+              ]
+          }
+      ]
+  }
+--- node-02 ---
+sda | 6CBDF7B9 | None | OS | disk
+sdb | S5G0NC0T407077 | 0x5002538b724722b0 | MZILT3T8HBLS/007 | disk
+sdc | S5G0NC0T407075 | 0x5002538b72472290 | MZILT3T8HBLS/007 | disk
+sdd | 12U0A3KVFMCF | 0x5000039b686ad4d5 | AL15SEB18EQ | disk
+sde | 12U0A3MSFMCF | 0x5000039b686adc19 | AL15SEB18EQ | disk
+sdf | 12U0A3JAFMCF | 0x5000039b686ace8d | AL15SEB18EQ | disk
+sdg | 12U0A3LUFMCF | 0x5000039b686ad72d | AL15SEB18EQ | disk
+sdh | 12U0A3MFFMCF | 0x5000039b686ad9f9 | AL15SEB18EQ | disk
+sdi | 12U0A3J9FMCF | 0x5000039b686ace7d | AL15SEB18EQ | disk
+sdj | AAAABBBBCCCC3 | None | Virtual HDisk0 | disk
+  {
+      "report": [
+          {
+              "pv": [
+                  {"pv_name":"/dev/sda3", "vg_name":"astra39539", "pv_uuid":"sWdp30-P2BO-2Qjl-fUFN-uzHJ-B0Lh-Ar2Cre"},
+                  {"pv_name":"/dev/sdb", "vg_name":"vg_piraeus", "pv_uuid":"tpC31z-rw1P-bGbQ-nrlN-39Qy-7QuY-Sa5k5b"},
+                  {"pv_name":"/dev/sdc", "vg_name":"vg_piraeus", "pv_uuid":"9e3AK8-Hw9l-S2t4-dmFS-lzin-Jvx1-ZvqEtz"}
+              ]
+          }
+      ]
+  }
+  {
+      "report": [
+          {
+              "vg": [
+                  {"vg_name":"astra39539", "vg_uuid":"NY6RBK-cXmT-BKUX-YS7C-Dp2E-1UXT-kWyXhS", "vg_free":"45,00g", "pv_count":"1"},
+                  {"vg_name":"vg_piraeus", "vg_uuid":"cpE1z8-qYdO-FvVa-Lk2w-6VX8-jjYi-OV3246", "vg_free":"<715,20g", "pv_count":"2"}
+              ]
+          }
+      ]
+  }
+  {
+      "report": [
+          {
+              "lv": [
+                  {"vg_name":"astra39539", "lv_name":"lv_home", "lv_uuid":"A5Iu0Z-4pmz-xxzu-e5hb-UDLn-5xW0-OiC6ov", "lv_attr":"-wi-ao----", "lv_size":"328,39g"},
+                  {"vg_name":"astra39539", "lv_name":"lv_root", "lv_uuid":"wpqxNB-iGZn-EcMz-tGIG-7O13-SPhQ-79yDVA", "lv_attr":"-wi-ao----", "lv_size":"40,00g"},
+                  {"vg_name":"astra39539", "lv_name":"lv_swap", "lv_uuid":"jCb1NT-A9IE-bQFU-sluu-7U8k-iXjC-gL1YTh", "lv_attr":"-wi-a-----", "lv_size":"32,00g"},
+                  {"vg_name":"vg_piraeus", "lv_name":"thin_piraeus", "lv_uuid":"yHYsAk-DBH8-URRt-Y61f-m3dX-q5XB-1veYi7", "lv_attr":"twi-a-tz--", "lv_size":"<6,29t"}
+              ]
+          }
+      ]
+  }
+--- node-03 ---
+sda | 5502CB3A | None | OS | disk
+sdb | S5G0NC0T403246 | 0x5002538b72453970 | MZILT3T8HBLS/007 | disk
+sdc | S5G0NC0T403289 | 0x5002538b72453c20 | MZILT3T8HBLS/007 | disk
+sdd | 12U0A481FMCF | 0x5000039b686b5889 | AL15SEB18EQ | disk
+sde | 12U0A4BBFMCF | 0x5000039b686b6841 | AL15SEB18EQ | disk
+sdf | 12U0A48QFMCF | 0x5000039b686b5e61 | AL15SEB18EQ | disk
+sdg | 12U0A48CFMCF | 0x5000039b686b5bfd | AL15SEB18EQ | disk
+sdh | 12U0A48AFMCF | 0x5000039b686b5b91 | AL15SEB18EQ | disk
+sdi | 12U0A49EFMCF | 0x5000039b686b60f5 | AL15SEB18EQ | disk
+  {
+      "report": [
+          {
+              "pv": [
+                  {"pv_name":"/dev/sda3", "vg_name":"astra03718", "pv_uuid":"gWHmTP-y0Ly-NRFI-PJu0-osw0-KHZq-0fdf9u"},
+                  {"pv_name":"/dev/sdb", "vg_name":"vg_piraeus", "pv_uuid":"CWcQkH-MHV9-8wWk-iAGp-6XuH-crlD-zVvTHq"},
+                  {"pv_name":"/dev/sdc", "vg_name":"vg_piraeus", "pv_uuid":"6XJ0bc-MvWa-289z-cj4A-OxBZ-3W07-8M3fIL"}
+              ]
+          }
+      ]
+  }
+  {
+      "report": [
+          {
+              "vg": [
+                  {"vg_name":"astra03718", "vg_uuid":"AremAF-uPne-c3bp-olMh-ohyi-x7i7-eGKQI0", "vg_free":"45,00g", "pv_count":"1"},
+                  {"vg_name":"vg_piraeus", "vg_uuid":"lwcOOJ-Jh3F-3w1X-IFDw-EcLt-uoEj-xJ05Ng", "vg_free":"<715,20g", "pv_count":"2"}
+              ]
+          }
+      ]
+  }
+  {
+      "report": [
+          {
+              "lv": [
+                  {"vg_name":"astra03718", "lv_name":"lv_home", "lv_uuid":"zfvKDy-ZZuS-YCET-f4gg-pmxA-E2q4-iRx1J2", "lv_attr":"-wi-ao----", "lv_size":"328,39g"},
+                  {"vg_name":"astra03718", "lv_name":"lv_root", "lv_uuid":"0uY093-YGEN-VIdW-H23Y-Dyb2-1DiK-Nbc3YW", "lv_attr":"-wi-ao----", "lv_size":"40,00g"},
+                  {"vg_name":"astra03718", "lv_name":"lv_swap", "lv_uuid":"4Uphv8-h4Wu-5BMP-QJK1-e1zj-adwv-9I5p0o", "lv_attr":"-wi-a-----", "lv_size":"32,00g"},
+                  {"vg_name":"vg_piraeus", "lv_name":"thin_piraeus", "lv_uuid":"XFi7l0-WWCd-4XSr-TF82-BgNz-5wrF-YZqvzv", "lv_attr":"twi-a-tz--", "lv_size":"<6,29t"}
+              ]
+          }
+      ]
+  }

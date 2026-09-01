@@ -1,0 +1,2 @@
+desired=1 available=1 ready=1
+OPERATOR_GATE_OK: 2.10.6 desired=1 available=1 ready=1

@@ -1,0 +1,31 @@
+=== drbd summary ===
+host=node-01
+loaded_version=9.3.2
+loaded_srcversion=5FD9FC5E60D0C7BA7242AA9
+lsmod_drbd=1
+drbd_transport_tcp=1
+uname=6.1.158-1-generic
+in_tree_version=8.4.11
+in_tree_srcversion=C718D2C2BEE45E82AD21432
+DRBD_GATE_OK loaded=9.3.2 in-tree=8.4.11 NOT_LOADED
+host=node-02
+loaded_version=9.3.2
+loaded_srcversion=7FDF8C8380112FC51A414E7
+lsmod_drbd=1
+drbd_transport_tcp=1
+uname=6.1.158-1-generic
+in_tree_version=8.4.11
+in_tree_srcversion=C718D2C2BEE45E82AD21432
+DRBD_GATE_OK loaded=9.3.2 in-tree=8.4.11 NOT_LOADED
+host=node-03
+loaded_version=9.3.2
+loaded_srcversion=C9052FC5DEE4F01207335F8
+lsmod_drbd=1
+drbd_transport_tcp=1
+uname=6.1.158-1-generic
+in_tree_version=8.4.11
+in_tree_srcversion=C718D2C2BEE45E82AD21432
+DRBD_GATE_OK loaded=9.3.2 in-tree=8.4.11 NOT_LOADED
+---
+ON-DISK IN-TREE 8.4.11: PRESENT / NOT LOADED (loaded srcversion != in-tree srcversion на 3/3)
+LOADED DRBD: 9.3.2 PASS 3/3

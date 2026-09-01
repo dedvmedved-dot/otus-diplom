@@ -1,0 +1,11 @@
+# TASK-017-R3 — Bootstrap Git Baseline Gate
+
+PHASE 0 (delegate localhost, /root/otus-diplom):
+  1. p5c1_mode == "authorized-runtime-bootstrap" (иначе FAIL)
+  2. p5c1_authorized_baseline — 40-char SHA (иначе BASELINE_MALFORMED)
+  3. git rev-parse HEAD == p5c1_authorized_baseline (иначе GIT_BASELINE_MISMATCH)
+  4. git status --porcelain empty (иначе GIT_TREE_DIRTY)
+
+Missing/unknown/mismatch => FAIL before any kubectl apply.
+
+RESULT: PASS (fail-closed)

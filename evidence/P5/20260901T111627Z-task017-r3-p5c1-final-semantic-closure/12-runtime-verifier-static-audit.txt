@@ -1,0 +1,18 @@
+# TASK-017-R3 — Runtime Verifier Static Audit
+
+Все gates ASSERT (не observation-only):
+
+Operator observation-only: 0 (desired/available/ready=1 + pods Running/Ready)
+LinstorCluster observation-only: 0 (Applied/Available/Configured + version/satellites/volumes/capacity)
+controller observation-only: 0 (rc=0 + 1.33.2)
+satellite count-only: 0 (exactly one per node, Running + all Ready)
+CSI CSIDriver-only: 0 (controller 1/1 + csi-node per-pod Running+Ready + 1.11.0)
+LINSTOR print-only: 0 (deterministic parser + ANSI strip + rc)
+LVM compare outside verifier: 0 (in-run composite semantic compare)
+image digest embedded SoT: 0 (parse images.lock, single SoT)
+DRBD: loaded 9.3.2 vs in-tree 8.4.11 (srcversion)
+Toleration: exact tuple + effective satellite/csi-node/ha-controller
+LB_MAKEOPTS: both flags + storagePools/hostDevices empty
+kube-vip: Running AND Ready
+
+RESULT: PASS

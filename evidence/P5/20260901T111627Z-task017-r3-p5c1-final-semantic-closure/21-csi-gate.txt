@@ -1,0 +1,7 @@
+desired=1 available=1 ready=1
+NAME                     READY   STATUS    RESTARTS   AGE
+linstor-csi-node-g76ss   3/3     Running   0          11h
+linstor-csi-node-qsqg8   3/3     Running   0          11h
+linstor-csi-node-rgsft   3/3     Running   0          11h
+NAME                     ATTACHREQUIRED   PODINFOONMOUNT   STORAGECAPACITY   TOKENREQUESTS   REQUIRESREPUBLISH   MODES        AGE
+linstor.csi.linbit.com   true             true             true              <unset>         false               Persistent   11h

@@ -1,0 +1,25 @@
+# TASK-017-R3 — Bootstrap Full Execution Graph
+
+0  mode gate + git baseline (p5c1_mode + authorized_baseline + git rev-parse + clean tree)
+1  full P1-P4 PRE
+2  P5B composite precondition (6 дисков + vg_piraeus + thin active + VG free>0)
+3  K8s storage baseline
+4  pinned source gate (parse versions.lock)
+5  image supply gate (parse images.lock)
+6  exact v2.10.6 operator apply
+6A committed toleration patches (6A-1 operator, 6A-2 gencert)
+7  fail-closed CRD established + operator Available
+8A DRBD loader LB_MAKEOPTS apply
+8B minimal LinstorCluster apply
+9  fail-closed controller/satellite/CSI Ready
+10 exact DRBD runtime gate (loaded 9.3.2 vs in-tree 8.4.11)
+11 runtime version gates (operator/linstor/csi/drbd-utils)
+12 LINSTOR deterministic parsers (node/pool/rd/res)
+13 P5B LVM semantic POST compare
+14 no project SC/PV/PVC
+15 VLAN141 exact + six-path
+16 full P1-P4 POST
+17 final gate
+
+PRE gates (1-5) before first apply (6). Mutation only after PRE PASS.
+POST/LVM (13-16) before final (17).
