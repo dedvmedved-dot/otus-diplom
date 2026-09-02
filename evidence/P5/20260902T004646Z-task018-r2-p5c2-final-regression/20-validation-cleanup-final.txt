@@ -1,0 +1,17 @@
+=== 20-validation-cleanup-final ===
+--- ns ---
+Error from server (NotFound): namespaces "p5c2-validation" not found
+--- pvc ---
+No resources found in p5c2-validation namespace.
+--- pv ---
+no p5c2 pv
+--- rd ---
++-----------------------------------------------+
+| ResourceName | ResourceGroup | Layers | State |
+|===============================================|
++-----------------------------------------------+
+--- res ---
++------------------------------------------------------------------+
+| ResourceName | Node | Layers | Usage | Conns | State | CreatedOn |
+|==================================================================|
++------------------------------------------------------------------+

@@ -1,0 +1,10 @@
+=== 04-p2-runtime-full ===
+containerd containerd v2.3.3 aad11006b869517fcd3009450b6f82da282e1a9b
+Kubernetes v1.36.2
+swap:
+containerd containerd v2.3.3 aad11006b869517fcd3009450b6f82da282e1a9b
+Kubernetes v1.36.2
+swap:
+containerd containerd v2.3.3 aad11006b869517fcd3009450b6f82da282e1a9b
+Kubernetes v1.36.2
+swap:

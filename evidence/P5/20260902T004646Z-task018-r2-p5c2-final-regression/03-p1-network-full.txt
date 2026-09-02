@@ -1,0 +1,32 @@
+=== 03-p1-network-full ===
+--- node node-01 ---
+bond0 slaves:
+ens2f0 ens2f1
+bond1 slaves:
+ens2f2 ens2f3
+14: bond0.140    inet 172.30.140.101/24 brd 172.30.140.255 scope global noprefixroute bond0.140\       valid_lft forever preferred_lft forever
+16: bond1.141    inet 172.30.141.101/24 brd 172.30.141.255 scope global noprefixroute bond1.141\       valid_lft forever preferred_lft forever
+13: bond0.143    inet 172.30.143.101/24 brd 172.30.143.255 scope global noprefixroute bond0.143\       valid_lft forever preferred_lft forever
+12: bond0.700    inet 192.168.194.38/24 brd 192.168.194.255 scope global noprefixroute bond0.700\       valid_lft forever preferred_lft forever
+default via 192.168.194.1 dev bond0.700 proto static metric 400 
+--- node node-02 ---
+bond0 slaves:
+ens2f0 ens2f1
+bond1 slaves:
+ens2f2 ens2f3
+17: bond0.140    inet 172.30.140.102/24 brd 172.30.140.255 scope global noprefixroute bond0.140\       valid_lft forever preferred_lft forever
+17: bond0.140    inet 172.30.140.100/32 scope global deprecated bond0.140\       valid_lft forever preferred_lft forever
+25: bond1.141    inet 172.30.141.102/24 brd 172.30.141.255 scope global noprefixroute bond1.141\       valid_lft forever preferred_lft forever
+26: bond0.143    inet 172.30.143.102/24 brd 172.30.143.255 scope global noprefixroute bond0.143\       valid_lft forever preferred_lft forever
+14: bond0.700    inet 192.168.194.40/24 brd 192.168.194.255 scope global noprefixroute bond0.700\       valid_lft forever preferred_lft forever
+default via 192.168.194.1 dev bond0.700 proto static metric 400 
+--- node node-03 ---
+bond0 slaves:
+ens2f0 ens2f1
+bond1 slaves:
+ens2f2 ens2f3
+1096: bond0.140    inet 172.30.140.103/24 brd 172.30.140.255 scope global noprefixroute bond0.140\       valid_lft forever preferred_lft forever
+1095: bond1.141    inet 172.30.141.103/24 brd 172.30.141.255 scope global noprefixroute bond1.141\       valid_lft forever preferred_lft forever
+1097: bond0.143    inet 172.30.143.103/24 brd 172.30.143.255 scope global noprefixroute bond0.143\       valid_lft forever preferred_lft forever
+42: bond0.700    inet 192.168.194.39/24 brd 192.168.194.255 scope global noprefixroute bond0.700\       valid_lft forever preferred_lft forever
+default via 192.168.194.1 dev bond0.700 proto static metric 400 

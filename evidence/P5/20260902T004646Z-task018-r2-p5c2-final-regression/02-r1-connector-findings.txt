@@ -1,0 +1,25 @@
+# TASK-018-R2 — R1 Connector Findings
+
+TASK-018-R1 technical storage/replication/data validation: ACCEPTED
+checkpoint sequencing: ACCEPTED
+hostNetwork corrective scope: ACCEPTED
+
+P1-P4 POST evidence: HOLD — summary-level only.
+
+29-p1-p4-post-full.txt contains only:
+nodes=3
+calico=3
+readyz=ok
+netpol fingerprint
+validation namespace NotFound
+
+This is not the full accepted P1-P4 semantic regression.
+
+Non-material deviations:
+- some mandatory evidence was consolidated into combined files;
+- p5c2-validation/05-verify-node01.yaml was added as a read-only verifier pod;
+- cleanup poll 1 had transient management SSH failure, poll 2 completed cleanly.
+
+No storage/runtime retest is required.
+
+Historical evidence is immutable.

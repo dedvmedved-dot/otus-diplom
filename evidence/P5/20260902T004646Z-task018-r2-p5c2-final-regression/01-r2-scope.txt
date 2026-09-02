@@ -1,0 +1,14 @@
+# TASK-018-R2 — Scope
+
+MODE: READ-ONLY FINAL P5C2 / P5 REGRESSION
+INFRASTRUCTURE MUTATION: 0
+P6: NOT AUTHORIZED
+
+R2 performs ZERO infrastructure mutation. Final current-state read-only
+regression and P5 closure.
+
+Redo full accepted P1-P4 regression (semantic, not summary-level), P5B final
+backing gate, P5C1/DRBD runtime, satellite hostNetwork, P5C2 production state,
+validation cleanup final gate.
+
+Do NOT redo replication/data test (already accepted by Connector).

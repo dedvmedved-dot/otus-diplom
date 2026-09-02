@@ -1,0 +1,3 @@
+=== 17-nodeconnection-final ===
+{"paths":[{"interface":"drbd141","name":"drbd141"}],"properties":[{"name":"DrbdOptions/Net/protocol","value":"C"}]}
+[{"lastTransitionTime":"2026-09-01T21:36:00Z","message":"Configured","observedGeneration":1,"reason":"AsExpected","status":"True","type":"Configured"}]

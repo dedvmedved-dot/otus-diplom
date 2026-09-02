@@ -1,0 +1,10 @@
+=== 07-p4b-networkpolicy-full ===
+Error from server (NotFound): namespaces "p4b-netpol-validation" not found
+{
+    "apiVersion": "v1",
+    "items": [],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

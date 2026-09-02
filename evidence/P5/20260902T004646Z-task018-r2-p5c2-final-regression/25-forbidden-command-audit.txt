@@ -1,0 +1,21 @@
+# TASK-018-R2 — Forbidden Command Audit
+
+R2 MODE: READ-ONLY FINAL P5C2 / P5 REGRESSION. INFRASTRUCTURE MUTATION = 0.
+
+Executed count = 0 for:
+  kubectl apply/patch/create/delete/edit: 0
+  rollout restart: 0
+  helm mutation: 0
+  LINSTOR create/delete/modify: 0
+  DRBD mutation: 0
+  modprobe/insmod/rmmod: 0
+  LVM mutation: 0
+  SC/PV/PVC mutation: 0
+  network mutation: 0
+  reboot: 0
+
+Only read-only queries (kubectl get, linstor list, cat /sys, lsblk, pvs/vgs/lvs, ip addr).
+
+Playbook recap: changed=0 failed=0 unreachable=0.
+
+RESULT: PASS

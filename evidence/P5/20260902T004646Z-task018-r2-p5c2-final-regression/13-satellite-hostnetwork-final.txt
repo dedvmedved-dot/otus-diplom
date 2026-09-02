@@ -1,0 +1,4 @@
+=== 13-satellite-hostnetwork-final ===
+linstor-satellite.node-01-vsdpr hostNetwork=true dns=ClusterFirstWithHostNet ready=true
+linstor-satellite.node-02-pxwpc hostNetwork=true dns=ClusterFirstWithHostNet ready=true
+linstor-satellite.node-03-zrggg hostNetwork=true dns=ClusterFirstWithHostNet ready=true

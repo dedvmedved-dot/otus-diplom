@@ -1,0 +1,10 @@
+=== 11-drbd-runtime-final ===
+drbd_version=9.3.2
+tcp=loaded
+6.1.158-1-generic
+drbd_version=9.3.2
+tcp=loaded
+6.1.158-1-generic
+drbd_version=9.3.2
+tcp=loaded
+6.1.158-1-generic

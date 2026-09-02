@@ -1,0 +1,13 @@
+=== 05-p3-etcd-kubevip-api-full ===
+--- members ---
+{"header":{"cluster_id":15018683188226078538,"member_id":14296685853265834734,"raft_term":5},"members":[{"ID":932788828838692852,"name":"node-03","peerURLs":["https://172.30.140.103:2380"],"clientURLs":["https://172.30.140.103:2379"]},{"ID":12205607066491537982,"name":"node-02","peerURLs":["https://172.30.140.102:2380"],"clientURLs":["https://172.30.140.102:2379"]},{"ID":14296685853265834734,"name":"node-01","peerURLs":["https://172.30.140.101:2380"],"clientURLs":["https://172.30.140.101:2379"]}]}
+--- health ---
+[{"endpoint":"https://172.30.140.103:2379","health":true,"took":"19.460116ms"},{"endpoint":"https://172.30.140.102:2379","health":true,"took":"20.272221ms"},{"endpoint":"https://172.30.140.101:2379","health":true,"took":"26.61877ms"}]
+--- status leader ---
+[{"Endpoint":"https://172.30.140.103:2379","Status":{"header":{"cluster_id":15018683188226078538,"member_id":932788828838692852,"revision":2555411,"raft_term":5},"version":"3.6.8","dbSize":9809920,"leader":14296685853265834734,"raftIndex":3585884,"raftTerm":5,"raftAppliedIndex":3585884,"dbSizeInUse":4870144,"storageVersion":"3.6.0","dbSizeQuota":2147483648,"downgradeInfo":{}}},{"Endpoint":"https://172.30.140.102:2379","Status":{"header":{"cluster_id":15018683188226078538,"member_id":12205607066491537982,"revision":2555413,"raft_term":5},"version":"3.6.8","dbSize":9842688,"leader":14296685853265834734,"raftIndex":3585888,"raftTerm":5,"raftAppliedIndex":3585888,"dbSizeInUse":4845568,"storageVersion":"3.6.0","dbSizeQuota":2147483648,"downgradeInfo":{}}},{"Endpoint":"https://172.30.140.101:2379","Status":{"header":{"cluster_id":15018683188226078538,"member_id":14296685853265834734,"revision":2555413,"raft_term":5},"version":"3.6.8","dbSize":9777152,"leader":14296685853265834734,"raftIndex":3585888,"raftTerm":5,"raftAppliedIndex":3585888,"dbSizeInUse":4870144,"storageVersion":"3.6.0","dbSizeQuota":2147483648,"downgradeInfo":{}}}]
+--- kube-vip pods ---
+kube-vip-node-01                          1/1     Running   1 (7d9h ago)    8d
+kube-vip-node-02                          1/1     Running   1 (7d5h ago)    8d
+kube-vip-node-03                          1/1     Running   1 (6d17h ago)   8d
+--- readyz/livez ---
+okok

@@ -1,0 +1,10 @@
+=== 21-production-object-final ===
+NAME                                                                  SELECTOR   APPLIED   MATCHED   AGE
+linstorsatelliteconfiguration.piraeus.io/astra-drbd-loader                       True      3         24h
+linstorsatelliteconfiguration.piraeus.io/p5c2-satellite-hostnetwork              True      3         70m
+linstorsatelliteconfiguration.piraeus.io/p5c2-storage-pool                       True      3         3h34m
+
+NAME                                                 CONFIGURED   AGE
+linstornodeconnection.piraeus.io/p5c2-drbd-vlan141   True         3h34m
+NAME         PROVISIONER              RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+piraeus-r2   linstor.csi.linbit.com   Delete          WaitForFirstConsumer   true                   3h29m
