@@ -1,0 +1,22 @@
+# TASK-P6A — Scope
+
+PROJECT: OTUS Diplom / ПАК «Портал»
+REPOSITORY: dedvmedved-dot/otus-diplom
+STAGE: P6A (PARENT: P5 — FINAL ACCEPTED)
+CLASSIFICATION: READ-ONLY PRECHECK / BASELINE DISCOVERY / ARTIFACT VERIFICATION
+MODE: STRICTLY READ-ONLY
+INFRASTRUCTURE MUTATION: FORBIDDEN
+
+PURPOSE: подготовить доказательный baseline для последующей реализации P6
+(MetalLB 0.16.1 + Envoy Gateway 1.8.3), не изменяя runtime.
+
+P6A закрывает неизвестные до P6B:
+  1. свобода ingress pool 172.30.140.110-172.30.140.119
+  2. отсутствие конфликтов (DHCP/static/LB IP/existing MetalLB/Envoy/другие LB controllers)
+  3. готовность артефактов MetalLB 0.16.1 + Envoy Gateway 1.8.3
+  4. image names/tags/immutable digests для P6 components
+  5. состояние Gateway API CRDs
+  6. P1-P5 current state не деградирован
+  7. данные для Architect decision (MetalLB L2 vs BGP)
+
+Hermes НЕ принимает decision самостоятельно, НЕ присваивает статусы.

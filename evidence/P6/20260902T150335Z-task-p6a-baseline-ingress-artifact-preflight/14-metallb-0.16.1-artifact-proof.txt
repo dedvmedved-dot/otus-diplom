@@ -1,0 +1,27 @@
+# TASK-P6A — MetalLB 0.16.1 Artifact Verification (GATE P6A-11)
+
+release/version: 0.16.1 (approved in versions.lock)
+source: https://github.com/metallb/metallb (tag v0.16.1)
+manifest: config/manifests/metallb-native.yaml (official, verified read-only)
+
+Container image references (from metallb-native.yaml):
+  quay.io/metallb/controller:v0.16.1
+  quay.io/metallb/speaker:v0.16.1
+
+CRDs provided by manifest (metallb.io group):
+  bfdprofiles (v1beta1)
+  bgpadvertisements (v1beta1)
+  bgppeers (v1beta2 / v1beta1)
+  communities (v1beta1)
+  ipaddresspools (v1beta1)
+  l2advertisements (v1beta1)
+
+Immutable digests:
+  digest: NOT_VERIFIED
+  verified: false
+  (digests were not resolved in this read-only preflight; never invent SHA256.)
+
+Availability from current environment: NOT verified in-cluster (no install).
+
+RESULT: artifact identity VERIFIED (version + image refs + CRD set);
+         digest = NOT_VERIFIED.

@@ -1,0 +1,21 @@
+# TASK-P6A — Git Preflight
+
+branch: main
+HEAD: cee0fc381f8b15857f890f8293a7aaf124cf7ab6
+worktree: clean (git status --short empty)
+remote: https://github.com/dedvmedved-dot/otus-diplom.git (no embedded credentials)
+
+git log -5 --oneline:
+  cee0fc3 TASK-018-R5: close P4B exact selector verifier gap
+  309e831 TASK-018-R4: close final verifier contract gaps
+  18dd129 TASK-018-R3: close P5 final semantic read-only gates
+  6fef535 TASK-018-R2: close P5C2 final read-only regression
+  d939712 TASK-018-R1: enable satellite hostNetwork and complete P5C2
+
+CONDITIONS MET:
+  branch == main: YES
+  HEAD == cee0fc381f8b15857f890f8293a7aaf124cf7ab6: YES
+  worktree clean: YES
+  remote URL no embedded credentials: YES
+
+RESULT: PASS

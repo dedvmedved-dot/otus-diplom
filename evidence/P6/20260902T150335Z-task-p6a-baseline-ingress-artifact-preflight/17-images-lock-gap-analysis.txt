@@ -1,0 +1,24 @@
+# TASK-P6A — images.lock GAP Analysis (GATE P6A-13)
+
+Current images.lock contains NO P6 entries for:
+  MetalLB 0.16.1
+  Envoy Gateway 1.8.3
+  (and their runtime images)
+
+READ-ONLY: images.lock NOT modified in this task.
+
+PROPOSED FACTUAL UPDATE TABLE (for Architect authorization of P6B/P6C):
+
+component          | image                              | tag     | digest        | source_registry   | internal_registry | verified
+-------------------|------------------------------------|---------|---------------|-------------------|-------------------|---------
+metallb-controller | quay.io/metallb/controller         | v0.16.1 | NOT_VERIFIED  | quay.io           | NOT_VERIFIED      | false
+metallb-speaker    | quay.io/metallb/speaker            | v0.16.1 | NOT_VERIFIED  | quay.io           | NOT_VERIFIED      | false
+envoy-gateway      | docker.io/envoyproxy/gateway       | v1.8.3  | NOT_VERIFIED  | docker.io         | NOT_VERIFIED      | false
+envoy-ratelimit    | docker.io/envoyproxy/ratelimit     | <pin>   | NOT_VERIFIED  | docker.io         | NOT_VERIFIED      | false
+envoy-proxy        | (data-plane, distroless)           | <pin>   | NOT_VERIFIED  | docker.io         | NOT_VERIFIED      | false
+
+NOTE: digests are NOT_VERIFIED (never invented). The exact Envoy data-plane
+image/tag and ratelimit tag must be pinned factually during P6B/P6C install.
+
+This table is evidence-only; actual images.lock update is a P6B/P6C action
+after Architect authorization.

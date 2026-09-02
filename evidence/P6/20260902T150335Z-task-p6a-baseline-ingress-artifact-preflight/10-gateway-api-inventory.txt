@@ -1,0 +1,4 @@
+--- gateway API CRDs ---
+NO GATEWAY API CRDs
+--- api-resources gateway ---
+no gateway api-resources

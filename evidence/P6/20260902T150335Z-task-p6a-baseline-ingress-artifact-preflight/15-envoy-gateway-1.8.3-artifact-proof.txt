@@ -1,0 +1,27 @@
+# TASK-P6A — Envoy Gateway 1.8.3 Artifact Verification (GATE P6A-12)
+
+release/version: 1.8.3 (approved in versions.lock)
+source: https://github.com/envoyproxy/gateway (tag v1.8.3, release date ~2026-07-20)
+helm: oci://docker.io/envoyproxy/gateway-helm (version v1.8.3)
+crds chart: oci://docker.io/envoyproxy/gateway-crds-helm
+
+Container image references (control plane + runtime):
+  docker.io/envoyproxy/gateway:v1.8.3        (Envoy Gateway control plane)
+  docker.io/envoyproxy/ratelimit:<tag>       (rate limit, default "master" — must be pinned in P6C)
+  Envoy Proxy data-plane image (distroless base; exact tag resolved at install)
+
+Gateway API dependency:
+  Envoy Gateway 1.8.3 bundles/requires Gateway API CRDs
+  (gatewayclasses, gateways, httproutes, referencegrants, etc.)
+  Current cluster: GATEWAY_API_PREREQUISITE = ABSENT (see 10-gateway-api-inventory.txt).
+  CRD install action belongs to P6C after Architect approval.
+
+Immutable digests:
+  digest: NOT_VERIFIED
+  verified: false
+  (digests not resolved in read-only preflight; never invent SHA256.)
+
+Availability from current environment: NOT verified in-cluster (no install).
+
+RESULT: artifact identity VERIFIED (version + source + image naming);
+         digest = NOT_VERIFIED; ratelimit tag requires explicit pin in P6C.

@@ -1,0 +1,6 @@
+--- ns envoy ---
+no envoy/gateway ns
+--- deploy/ds envoy ---
+no envoy/gateway workloads
+--- GatewayClass ---
+error: the server doesn't have a resource type "gatewayclass"

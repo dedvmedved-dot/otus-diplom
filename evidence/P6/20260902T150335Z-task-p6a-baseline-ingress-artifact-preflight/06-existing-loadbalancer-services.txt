@@ -1,0 +1,8 @@
+NAMESPACE           NAME                               TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                  AGE   SELECTOR
+default             kubernetes                         ClusterIP   10.96.0.1        <none>        443/TCP                  9d    <none>
+kube-system         kube-dns                           ClusterIP   10.96.0.10       <none>        53/UDP,53/TCP,9153/TCP   9d    k8s-app=kube-dns
+piraeus-datastore   linstor-controller                 ClusterIP   10.106.51.185    <none>        3370/TCP                 38h   app.kubernetes.io/component=linstor-controller,app.kubernetes.io/instance=linstorcluster,app.kubernetes.io/name=piraeus-datastore
+piraeus-datastore   linstor-csi-nfs                    ClusterIP   10.100.156.113   <none>        999/TCP                  38h   <none>
+piraeus-datastore   piraeus-operator-webhook-service   ClusterIP   10.100.112.197   <none>        443/TCP                  39h   app.kubernetes.io/component=piraeus-operator,app.kubernetes.io/name=piraeus-datastore
+--- LoadBalancer type only ---
+LoadBalancer services: NONE

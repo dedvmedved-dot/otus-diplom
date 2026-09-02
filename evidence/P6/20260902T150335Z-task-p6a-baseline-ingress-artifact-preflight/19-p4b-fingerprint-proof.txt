@@ -1,0 +1,4 @@
+f3624ec74cedbdda1cf3d526cb730843  -
+expected=f3624ec74cedbdda1cf3d526cb730843
+--- netpol list ---
+No resources found

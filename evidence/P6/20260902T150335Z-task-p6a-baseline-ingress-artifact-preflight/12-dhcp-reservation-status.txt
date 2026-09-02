@@ -1,0 +1,20 @@
+# TASK-P6A — DHCP / Reserved Range Verification (GATE P6A-09)
+
+Target range: 172.30.140.110 - 172.30.140.119
+
+DHCP/IPAM configuration source: NOT directly accessible from this environment
+(read-only, no access to external DHCP server / IPAM / router reservation config).
+
+Factual observations:
+  - No host currently responds on any of 172.30.140.110-119 (ICMP NO_REPLY, ARP FAILED/INCOMPLETE).
+  - No Kubernetes object references any of these addresses.
+  - VLAN140 static node addresses are 101/102/103; API VIP = 172.30.140.100/32.
+
+DHCP_RESERVATION_STATUS: NOT VERIFIED
+
+Dependency requiring network administrator / Owner confirmation:
+  - whether 172.30.140.110-119 is excluded/reserved from DHCP or other
+    address management (external DHCP scope, static reservations, IPAM DB).
+
+Hermes does NOT mark this PASS based only on absence of observed hosts.
+This fact must be confirmed by network administrator / Owner before P6B.

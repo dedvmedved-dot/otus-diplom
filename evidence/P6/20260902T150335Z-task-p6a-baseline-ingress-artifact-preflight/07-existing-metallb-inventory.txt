@@ -1,0 +1,6 @@
+--- ns metallb-system ---
+Error from server (NotFound): namespaces "metallb-system" not found
+--- metallb CRDs ---
+no metallb CRDs
+--- deploy/ds metallb ---
+no metallb workloads

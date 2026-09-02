@@ -1,0 +1,36 @@
+# TASK-P6A — MetalLB Advertisement Mode Decision Input (GATE P6A-14)
+
+METALLB_MODE_DECISION: ARCHITECT DECISION REQUIRED
+
+Hermes does NOT choose L2 or BGP.
+
+FACTUAL OPTIONS:
+
+L2:
+  facts: ingress pool 172.30.140.110-119 is in the SAME L2 subnet as node
+         VLAN140 addresses (172.30.140.101/102/103, /24). All three nodes share
+         one L2 broadcast domain (mutual REACHABLE on bond0.140). kube-vip
+         already demonstrates ARP-based VIP ownership (172.30.140.100/32,
+         vip_arp=true) on this same L2 segment — proving ARP advertisement works.
+  prerequisites: none additional; L2 requires no upstream router config.
+  blockers: none observed. (Same-L2 reachability confirmed.)
+
+BGP:
+  facts: no BGP peering is configured anywhere for Kubernetes LB services.
+         No BGPPeer/Community/BFDProfile objects exist (MetalLB absent).
+         No BGP peer addresses/ASNs documented in Source of Truth for LB services.
+         No other LB mechanism currently uses BGP on this subnet.
+  prerequisites: upstream router/switch must speak BGP; peer IP + ASN must be
+         provided by network admin; not present today.
+  blockers: no upstream BGP contract available; would require network-admin
+         coordination and BGP peer provisioning before MetalLB BGP mode.
+
+Additional observed facts:
+  1. ingress pool in same L2 subnet as node VLAN140: YES
+  2. BGP peering already configured for k8s LB services: NO
+  3. BGP peer addresses/ASNs in Source of Truth: NOT DOCUMENTED
+  4. another LB mechanism using ARP/BGP on subnet: kube-vip uses ARP (control-plane VIP only)
+  5. observable L2 adjacency between nodes: YES (all 3 REACHABLE)
+  6. upstream router/switch BGP contract available: NOT AVAILABLE
+
+NO IMPLEMENTATION.

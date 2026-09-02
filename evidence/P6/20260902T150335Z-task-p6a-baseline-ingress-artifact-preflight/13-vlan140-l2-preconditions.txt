@@ -1,0 +1,28 @@
+=== 13-vlan140-l2-preconditions ===
+--- node-01 (192.168.194.38) ---
+bond0.140@bond0  UP             172.30.140.101/24 fe80::db58:dddc:387d:e878/64 
+bond1.141@bond1  UP             172.30.141.101/24 fe80::ac4f:1274:315a:d25a/64 
+--- default route ---
+default via 192.168.194.1 dev bond0.700 proto static metric 400 
+--- neigh bond0.140 (nodes) ---
+172.30.140.103 lladdr 6c:b3:11:61:ca:78 REACHABLE 
+172.30.140.102 lladdr 6c:b3:11:61:d3:22 REACHABLE 
+--- node-02 (192.168.194.40) ---
+bond0.140@bond0  UP             172.30.140.102/24 172.30.140.100/32 fe80::df23:943a:e9ab:49d6/64 
+bond1.141@bond1  UP             172.30.141.102/24 fe80::7626:7340:9569:1e88/64 
+--- default route ---
+default via 192.168.194.1 dev bond0.700 proto static metric 400 
+--- neigh bond0.140 (nodes) ---
+172.30.140.103 lladdr 6c:b3:11:61:ca:78 REACHABLE 
+172.30.140.101 lladdr b6:6e:06:00:71:07 REACHABLE 
+--- node-03 (192.168.194.39) ---
+bond1.141@bond1  UP             172.30.141.103/24 fe80::9a38:61dc:5c63:dfcb/64 
+bond0.140@bond0  UP             172.30.140.103/24 fe80::b285:5b9a:5853:647/64 
+--- default route ---
+default via 192.168.194.1 dev bond0.700 proto static metric 400 
+--- neigh bond0.140 (nodes) ---
+172.30.140.101 lladdr b6:6e:06:00:71:07 REACHABLE 
+172.30.140.102 lladdr 6c:b3:11:61:d3:22 REACHABLE 
+=== L2 adjacency test (node-01 -> node-02/03 via VLAN140) ===
+node-01 -> 172.30.140.102 = REACHABLE
+node-01 -> 172.30.140.103 = REACHABLE

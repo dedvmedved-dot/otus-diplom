@@ -1,0 +1,8 @@
+# TASK-P6A — versions.lock (current, read-only)
+
+Relevant P6 entries present in versions.lock:
+  metallb:      0.16.1
+  envoy_gateway: 1.8.3
+
+(Полный файл versions.lock в репозитории; здесь только P6-relevant.)
+P6 components уже зафиксированы в versions.lock на нужных версиях.

@@ -1,0 +1,12 @@
+# TASK-P6A — P6 Image Digest Inventory (GATE P6A-13 companion)
+
+component          | image                              | tag     | digest       | verified
+-------------------|------------------------------------|---------|--------------|---------
+metallb-controller | quay.io/metallb/controller         | v0.16.1 | NOT_VERIFIED | false
+metallb-speaker    | quay.io/metallb/speaker            | v0.16.1 | NOT_VERIFIED | false
+envoy-gateway      | docker.io/envoyproxy/gateway       | v1.8.3  | NOT_VERIFIED | false
+envoy-ratelimit    | docker.io/envoyproxy/ratelimit     | (unpinned) | NOT_VERIFIED | false
+envoy-proxy        | (data-plane distroless)            | (unpinned) | NOT_VERIFIED | false
+
+IMAGE DIGEST INVENTORY: PARTIAL (identity known, digests NOT_VERIFIED).
+No SHA-256 values were invented.
