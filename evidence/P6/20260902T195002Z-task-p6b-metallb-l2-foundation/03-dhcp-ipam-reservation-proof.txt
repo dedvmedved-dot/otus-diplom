@@ -1,0 +1,42 @@
+# TASK-P6B — DHCP/IPAM Reservation Proof (HARD BLOCKER §3)
+
+Target range: 172.30.140.110 - 172.30.140.119
+
+DHCP_RESERVATION_STATUS: NOT VERIFIED
+
+## Factual investigation (all read-only)
+
+1. Source of Truth (repo) search for reservation proof:
+   - docs/p0/infrastructure-passport.md:
+       "Ingress pool | 172.30.140.110-172.30.140.119 | NOT VERIFIED | NOT VERIFIED"
+   - inventory/group_vars/all/network.yml.example:
+       "ingress_pool:  # e.g. reference 172.30.140.110-172.30.140.119 (VERIFY)"
+   - No other reservation/exclusion/scope statement found anywhere in repo.
+
+2. Node-local DHCP server check (node-01, read-only):
+   - /etc/dhcp/ present but contains only dhclient config (client, not server).
+   - /etc/kea/ absent.
+   - No dhcpd/kea systemd service on node-01.
+   - No local DHCP/IPAM server manages this subnet from the cluster nodes.
+
+3. No official network-administrator / Owner confirmation text in repo
+   explicitly stating that 172.30.140.110-119 is reserved for ПАК «Портал»/MetalLB.
+
+## Conclusion
+
+No acceptable proof exists (neither factual DHCP/IPAM read-only output, nor
+official network-admin confirmation containing the exact range).
+
+Per §3, absence of ping is NOT proof of reservation, and reservation may NOT be
+inferred from P6A ARP/ICMP. Range may NOT be assumed, temporarily used, reduced,
+or swapped.
+
+STATUS: BLOCKED — ARCHITECT DECISION REQUIRED
+
+DO NOT INSTALL METALLB.
+
+Required to unblock (any ONE):
+  - factual read-only DHCP/IPAM output proving exclusion, OR
+  - official network-admin/Owner confirmation explicitly containing
+    "172.30.140.110-172.30.140.119" and stating it is reserved for
+    ПАК «Портал» / MetalLB.

@@ -1,0 +1,17 @@
+# TASK-P6B — Scope
+
+PROJECT: OTUS Diplom / ПАК «Портал»
+REPOSITORY: dedvmedved-dot/otus-diplom
+STAGE: P6B (PARENT: P6A)
+CLASSIFICATION: CONTROLLED IMPLEMENTATION / METALLB L2 FOUNDATION
+TARGET: MetalLB 0.16.1 (L2 mode)
+ARCHITECT DECISION: METALLB MODE = L2 (BGP FORBIDDEN, P6C NOT AUTHORIZED)
+
+Target ingress pool: 172.30.140.110-172.30.140.119
+Target network: VLAN140, 172.30.140.0/24, bond0.140.
+
+MISSION: развернуть MetalLB 0.16.1 L2 foundation для Service type=LoadBalancer.
+
+HARD BLOCKER (§3): перед ПЕРВОЙ runtime mutation требуется фактическое
+подтверждение, что 172.30.140.110-119 выделен ПАК «Портал» и исключён из DHCP
+dynamic pool / reservations / static / IPAM / других LB pools.

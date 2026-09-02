@@ -1,0 +1,19 @@
+# TASK-P6B — Forbidden Command Audit
+
+MODE: BLOCKED BEFORE ANY MUTATION. INFRASTRUCTURE MUTATION = 0.
+
+Executed count = 0:
+  kubectl apply/create/patch/edit/delete: 0
+  helm install/upgrade: 0
+  MetalLB install/config: 0
+  IPAddressPool / L2Advertisement / BGP objects: 0
+  Service type=LoadBalancer: 0
+  namespace / validation workload: 0
+  network/route/ARP changes: 0
+  LVM/DRBD/LINSTOR mutation: 0
+  reboot / package / systemd: 0
+  force push / history rewrite: 0
+
+Read-only queries only (git, repo search, node DHCP client inspection).
+
+RESULT: PASS (no mutation occurred)

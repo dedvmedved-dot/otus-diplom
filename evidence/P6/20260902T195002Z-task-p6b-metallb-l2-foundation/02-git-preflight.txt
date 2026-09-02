@@ -1,0 +1,17 @@
+# TASK-P6B — Git Preflight
+
+branch: main
+HEAD: 28189c043216c255c3eb620aac31df8bd2abfae4
+worktree: clean
+remote: https://github.com/dedvmedved-dot/otus-diplom.git (no embedded credentials)
+
+git log -5 --oneline:
+  28189c0 TASK-P6A: collect P6 baseline ingress and artifact preflight evidence
+  cee0fc3 TASK-018-R5: close P4B exact selector verifier gap
+  309e831 TASK-018-R4: close final verifier contract gaps
+  18dd129 TASK-018-R3: close P5 final semantic read-only gates
+  6fef535 TASK-018-R2: close P5C2 final read-only regression
+
+CONDITIONS MET: branch=main YES; HEAD match YES; clean YES; no creds YES.
+
+RESULT: PASS
