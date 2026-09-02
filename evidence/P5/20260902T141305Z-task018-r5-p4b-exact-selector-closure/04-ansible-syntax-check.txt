@@ -1,0 +1,3 @@
+=== 04-ansible-syntax-check ===
+
+playbook: ansible/playbooks/p5c2-final-regression-verify.yml

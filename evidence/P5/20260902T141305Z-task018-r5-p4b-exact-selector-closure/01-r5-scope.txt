@@ -1,0 +1,21 @@
+# TASK-018-R5 — Scope
+
+CLASSIFICATION: SOURCE / VERIFIER CORRECTION ONLY
+RUNTIME DEFECT: NOT ESTABLISHED
+MODE: STRICTLY READ-ONLY
+
+PURPOSE: закрыть единственный residual verifier-contract gap после TASK-018-R4 —
+ужесточить P4B semantic source validation так, чтобы дополнительные selector
+semantics гарантированно давали FAIL (fail-closed).
+
+CURRENT P4B MANIFESTS ARE CORRECT. Манифесты НЕ изменяются, runtime НЕ меняется.
+
+AUTHORIZED SOURCE CHANGE ONLY:
+  ansible/playbooks/p5c2-final-regression-verify.yml
+плюс новый R5 evidence directory.
+
+Exact-key проверки добавлены для:
+  - baseline-allow-dns-egress (peer keys, namespaceSelector/podSelector keys, rule keys)
+  - validation-allow-client-egress-to-server (podSelector/peer/rule keys)
+  - validation-allow-server-ingress-from-client (podSelector/peer/rule keys)
+Исключают matchExpressions / ipBlock / любые дополнительные selector semantics.

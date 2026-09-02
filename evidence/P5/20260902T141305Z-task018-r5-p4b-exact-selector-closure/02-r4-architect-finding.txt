@@ -1,0 +1,18 @@
+# TASK-018-R5 — R4 Architect Finding
+
+R4 closed GATE 1 (P3 actual leader), GATE 2 (P4B semantic source), GATE 3
+(StorageClass exactness).
+
+Residual gap after R4 (R5 target):
+  P4B semantic source validation verified selector VALUES but not exact selector
+  KEY SETS. A manifest carrying additional selector semantics (matchExpressions,
+  ipBlock, extra peer selectors) could still pass value-equality checks.
+
+R5 hardens the verifier (not the manifests) to require exact selector key sets:
+  - peer keys exactly {"namespaceSelector","podSelector"} (DNS) or {"podSelector"}
+    (validation peers);
+  - selector keys exactly {"matchLabels"};
+  - rule keys exactly {"to","ports"} (egress) / {"from","ports"} (ingress).
+Any extra key => AssertionError => FAIL (fail-closed).
+
+Runtime defect: NOT ESTABLISHED. No storage/replication/data retest.

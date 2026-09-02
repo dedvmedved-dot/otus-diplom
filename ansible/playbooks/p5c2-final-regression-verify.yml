@@ -4,7 +4,7 @@
 # Every task read-only, changed=0. Full P1-P4 + P5B + P5C1/DRBD + satellite
 # hostNetwork + P5C2 production state + validation cleanup gates.
 
-- name: "P5C2 final read-only regression + verifier contract (TASK-018-R4)"
+- name: "P5C2 final read-only regression + verifier contract (TASK-018-R5)"
   hosts: all
   gather_facts: false
   vars:
@@ -370,63 +370,90 @@
           eg = spec.get("egress", [])
           assert len(eg) == 1, f"dns egress count {len(eg)}"
           rule = eg[0]
+          # GATE — DNS rule exact keys == {"to","ports"}
+          assert set(rule.keys()) == {"to","ports"}, f"dns rule keys {set(rule.keys())}"
           tos = rule.get("to", [])
           assert len(tos) == 1, f"dns to count {len(tos)}"
           to = tos[0]
-          # namespace selector exact
-          ns = to.get("namespaceSelector", {}).get("matchLabels", {})
-          assert ns == {"kubernetes.io/metadata.name":"kube-system"}, f"dns ns sel {ns}"
-          # pod selector exact
-          ps = to.get("podSelector", {}).get("matchLabels", {})
-          assert ps == {"k8s-app":"kube-dns"}, f"dns pod sel {ps}"
-          # no CIDR / no ipBlock
-          assert "ipBlock" not in to and "namespaceSelector" in to, "dns ipBlock/extra"
-          # ports exact set: UDP/53, TCP/53
+          # GATE — peer exact keys == {"namespaceSelector","podSelector"}
+          assert set(to.keys()) == {"namespaceSelector","podSelector"}, f"dns peer keys {set(to.keys())}"
+          # namespaceSelector exact keys + matchLabels exact
+          nsel = to["namespaceSelector"]
+          assert set(nsel.keys()) == {"matchLabels"}, f"dns ns keys {set(nsel.keys())}"
+          assert nsel["matchLabels"] == {"kubernetes.io/metadata.name":"kube-system"}, f"dns ns sel {nsel['matchLabels']}"
+          # podSelector exact keys + matchLabels exact
+          psel = to["podSelector"]
+          assert set(psel.keys()) == {"matchLabels"}, f"dns pod keys {set(psel.keys())}"
+          assert psel["matchLabels"] == {"k8s-app":"kube-dns"}, f"dns pod sel {psel['matchLabels']}"
+          # ports exact len 2 + semantic set
           ports = rule.get("ports", [])
-          pset = set()
-          for p in ports:
-              pset.add((p.get("protocol"), p.get("port")))
+          assert len(ports) == 2, f"dns ports len {len(ports)}"
+          pset = set((p.get("protocol"), p.get("port")) for p in ports)
           assert pset == {("UDP",53),("TCP",53)}, f"dns ports {pset}"
           # no ingress rules
           assert spec.get("ingress", []) == [], "dns has ingress"
-          print("P4B_SRC_DNS_OK name=baseline-allow-dns-egress ns=kube-system pod=k8s-app=kube-dns ports={UDP/53,TCP/53} no-CIDR no-ingress")
+          print("P4B_SRC_DNS_OK peer={namespaceSelector,podSelector} ns={matchLabels:kubernetes.io/metadata.name=kube-system} pod={matchLabels:k8s-app=kube-dns} rule={to,ports} ports=2 {UDP/53,TCP/53}")
           # validation-allow-client-egress-to-server
           ce = load("validation-allow-client-egress-to-server.yaml")
           assert ce["apiVersion"] == "networking.k8s.io/v1", "ce apiVersion"
           assert ce["kind"] == "NetworkPolicy", "ce kind"
           assert ce["metadata"]["name"] == "validation-allow-client-egress-to-server", "ce name"
           cs = ce["spec"]
-          assert cs.get("podSelector",{}).get("matchLabels",{}) == {"role":"client"}, "ce podSelector"
+          # GATE — policy podSelector exact keys == {"matchLabels"}, matchLabels exact
+          cps = cs.get("podSelector",{})
+          assert set(cps.keys()) == {"matchLabels"}, f"ce podSelector keys {set(cps.keys())}"
+          assert cps["matchLabels"] == {"role":"client"}, f"ce podSelector {cps['matchLabels']}"
           assert set(cs.get("policyTypes",[])) == {"Egress"}, "ce policyTypes"
           ceg = cs.get("egress",[])
           assert len(ceg) == 1, "ce egress count"
+          # GATE — egress rule exact keys == {"to","ports"}
+          assert set(ceg[0].keys()) == {"to","ports"}, f"ce rule keys {set(ceg[0].keys())}"
           cto = ceg[0].get("to",[])
           assert len(cto) == 1, "ce to count"
-          assert cto[0].get("podSelector",{}).get("matchLabels",{}) == {"role":"server"}, "ce peer"
-          assert "ipBlock" not in cto[0], "ce ipBlock"
-          cports = set((p.get("protocol"),p.get("port")) for p in ceg[0].get("ports",[]))
-          assert cports == {("TCP",8080)}, f"ce ports {cports}"
+          # GATE — peer exact keys == {"podSelector"}
+          cpeer = cto[0]
+          assert set(cpeer.keys()) == {"podSelector"}, f"ce peer keys {set(cpeer.keys())}"
+          cpsel = cpeer["podSelector"]
+          assert set(cpsel.keys()) == {"matchLabels"}, f"ce peer pod keys {set(cpsel.keys())}"
+          assert cpsel["matchLabels"] == {"role":"server"}, f"ce peer {cpsel['matchLabels']}"
+          # ports exact len 1 + TCP/8080
+          cports = ceg[0].get("ports",[])
+          assert len(cports) == 1, f"ce ports len {len(cports)}"
+          cpset = set((p.get("protocol"),p.get("port")) for p in cports)
+          assert cpset == {("TCP",8080)}, f"ce ports {cpset}"
           assert cs.get("ingress",[]) == [], "ce has ingress"
-          print("P4B_SRC_CLIENT_EGRESS_OK role=client -> role=server TCP/8080, no-CIDR no-ingress")
+          print("P4B_SRC_CLIENT_EGRESS_OK pod={matchLabels:role=client} rule={to,ports} peer={podSelector:matchLabels role=server} port=TCP/8080 no-ingress")
           # validation-allow-server-ingress-from-client
           si = load("validation-allow-server-ingress-from-client.yaml")
           assert si["apiVersion"] == "networking.k8s.io/v1", "si apiVersion"
           assert si["kind"] == "NetworkPolicy", "si kind"
           assert si["metadata"]["name"] == "validation-allow-server-ingress-from-client", "si name"
           ss = si["spec"]
-          assert ss.get("podSelector",{}).get("matchLabels",{}) == {"role":"server"}, "si podSelector"
+          # GATE — policy podSelector exact keys == {"matchLabels"}, matchLabels exact
+          sps = ss.get("podSelector",{})
+          assert set(sps.keys()) == {"matchLabels"}, f"si podSelector keys {set(sps.keys())}"
+          assert sps["matchLabels"] == {"role":"server"}, f"si podSelector {sps['matchLabels']}"
           assert set(ss.get("policyTypes",[])) == {"Ingress"}, "si policyTypes"
           sing = ss.get("ingress",[])
           assert len(sing) == 1, "si ingress count"
+          # GATE — ingress rule exact keys == {"from","ports"}
+          assert set(sing[0].keys()) == {"from","ports"}, f"si rule keys {set(sing[0].keys())}"
           sfrom = sing[0].get("from",[])
           assert len(sfrom) == 1, "si from count"
-          assert sfrom[0].get("podSelector",{}).get("matchLabels",{}) == {"role":"client"}, "si peer"
-          assert "ipBlock" not in sfrom[0], "si ipBlock"
-          sports = set((p.get("protocol"),p.get("port")) for p in sing[0].get("ports",[]))
-          assert sports == {("TCP",8080)}, f"si ports {sports}"
+          # GATE — peer exact keys == {"podSelector"}
+          speer = sfrom[0]
+          assert set(speer.keys()) == {"podSelector"}, f"si peer keys {set(speer.keys())}"
+          spsel = speer["podSelector"]
+          assert set(spsel.keys()) == {"matchLabels"}, f"si peer pod keys {set(spsel.keys())}"
+          assert spsel["matchLabels"] == {"role":"client"}, f"si peer {spsel['matchLabels']}"
+          # ports exact len 1 + TCP/8080
+          sports = sing[0].get("ports",[])
+          assert len(sports) == 1, f"si ports len {len(sports)}"
+          spset = set((p.get("protocol"),p.get("port")) for p in sports)
+          assert spset == {("TCP",8080)}, f"si ports {spset}"
           assert ss.get("egress",[]) == [], "si has egress"
-          print("P4B_SRC_SERVER_INGRESS_OK role=server <- role=client TCP/8080, no-CIDR no-egress")
-          print("P4B_SEMANTIC_SOURCE_OK 4/4 manifests")
+          print("P4B_SRC_SERVER_INGRESS_OK pod={matchLabels:role=server} rule={from,ports} peer={podSelector:matchLabels role=client} port=TCP/8080 no-egress")
+          print("P4B_SEMANTIC_SOURCE_OK 4/4 manifests (exact selector keys, fail-closed)")
           PYEOF
       changed_when: false
       delegate_to: localhost
