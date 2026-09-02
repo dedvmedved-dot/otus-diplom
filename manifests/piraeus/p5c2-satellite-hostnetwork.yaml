@@ -1,0 +1,14 @@
+# P5C2 — Satellite hostNetwork overlay (DRBD replication over VLAN141)
+# Architect-authorized (TASK-018-R1). Narrow corrective configuration.
+# Enables hostNetwork so satellite pods can bind 172.30.141.x for DRBD transport.
+# dnsPolicy ClusterFirstWithHostNet required with hostNetwork.
+apiVersion: piraeus.io/v1
+kind: LinstorSatelliteConfiguration
+metadata:
+  name: p5c2-satellite-hostnetwork
+  namespace: piraeus-datastore
+spec:
+  podTemplate:
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet

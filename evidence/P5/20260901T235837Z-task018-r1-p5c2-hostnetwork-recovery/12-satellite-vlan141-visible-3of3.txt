@@ -1,0 +1,7 @@
+=== VLAN141 visible inside each satellite (bond1.141) ===
+--- node-01 (linstor-satellite.node-01-vsdpr) ---
+16: bond1.141    inet 172.30.141.101/24 brd 172.30.141.255 scope global noprefixroute bond1.141\       valid_lft forever preferred_lft forever
+--- node-02 (linstor-satellite.node-02-pxwpc) ---
+25: bond1.141    inet 172.30.141.102/24 brd 172.30.141.255 scope global noprefixroute bond1.141\       valid_lft forever preferred_lft forever
+--- node-03 (linstor-satellite.node-03-zrggg) ---
+1095: bond1.141    inet 172.30.141.103/24 brd 172.30.141.255 scope global noprefixroute bond1.141\       valid_lft forever preferred_lft forever

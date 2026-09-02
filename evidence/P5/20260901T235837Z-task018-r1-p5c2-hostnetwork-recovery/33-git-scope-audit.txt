@@ -1,0 +1,4 @@
+=== GIT SCOPE ===
+?? evidence/P5/20260901T235837Z-task018-r1-p5c2-hostnetwork-recovery/
+?? manifests/piraeus/p5c2-satellite-hostnetwork.yaml
+?? manifests/piraeus/p5c2-validation/05-verify-node01.yaml

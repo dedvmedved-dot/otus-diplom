@@ -1,0 +1,17 @@
+=== LSC status ===
+apiVersion: piraeus.io/v1
+kind: LinstorSatelliteConfiguration
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"piraeus.io/v1","kind":"LinstorSatelliteConfiguration","metadata":{"annotations":{},"name":"p5c2-satellite-hostnetwork"},"spec":{"podTemplate":{"spec":{"dnsPolicy":"ClusterFirstWithHostNet","hostNetwork":true}}}}
+  creationTimestamp: "2026-09-02T00:00:15Z"
+  generation: 1
+  name: p5c2-satellite-hostnetwork
+  resourceVersion: "2531099"
+  uid: 3a8f0e89-30dc-4ec8-9bdb-d3370e5d1b88
+spec:
+  podTemplate:
+    spec:
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true

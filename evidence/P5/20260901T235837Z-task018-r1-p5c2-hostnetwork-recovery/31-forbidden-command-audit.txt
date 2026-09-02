@@ -1,0 +1,22 @@
+# TASK-018-R1 — Forbidden Command Audit
+
+R1 corrective mutation: ONLY Architect-authorized satellite hostNetwork overlay
++ original TASK-018 validation.
+
+Executed:
+  - kubectl apply LinstorSatelliteConfiguration p5c2-satellite-hostnetwork (authorized)
+  - kubectl apply/delete validation namespace/PVC/pods (authorized TASK-018)
+
+NOT executed:
+  - pvcreate/vgcreate/lvcreate of backing; lvremove/vgremove/pvremove on P5B: 0
+  - source.hostDevices / raw-disk init / partitioning: 0
+  - drbdadm primary --force / discard-my-data / invalidate: 0
+  - manual split-brain recovery / new-current-uuid / metadata edit: 0
+  - reboot / node power-off / kubelet/containerd stop: 0
+  - network config changes on Linux hosts (VLAN141/bond untouched): 0
+  - Piraeus reinstall/upgrade / version/image change: 0
+  - hostPID/hostIPC/hostPorts/securityContext/affinity/toleration/volume/initContainer changes: 0
+
+FORCE/BYPASS: 0
+
+RESULT: PASS

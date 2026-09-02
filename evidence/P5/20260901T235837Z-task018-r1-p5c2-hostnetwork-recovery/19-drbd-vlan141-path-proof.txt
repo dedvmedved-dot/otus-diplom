@@ -1,0 +1,22 @@
+=== drbdsetup show (VLAN141 path + cstate Connected) ===
+pvc-bb885e2c-71fa-4ed9-b1cf-fc1351945556 node-id:0 role:Secondary suspended:no
+    force-io-failures:no
+  volume:0 minor:1000 disk:UpToDate
+      backing_dev:/dev/vg_piraeus/pvc-bb885e2c-71fa-4ed9-b1cf-fc1351945556_00000
+      quorum:yes open:no blocked:no
+  node-02 node-id:1 connection:Connected role:Secondary tls:no congested:no
+      ap-in-flight:0 rs-in-flight:0
+    volume:0 replication:Established peer-disk:UpToDate resync-suspended:no
+  node-03 node-id:2 connection:Connected role:Secondary tls:no congested:no
+      ap-in-flight:0 rs-in-flight:0
+    volume:0 replication:Established peer-disk:Diskless peer-client:yes
+        resync-suspended:no
+
+=== drbdsetup show paths (VLAN141 endpoints) ===
+    _this_host {
+            _this_host ipv4 172.30.141.101:7000;
+            _remote_host ipv4 172.30.141.102:7000;
+        _cstate Connected;
+            _this_host ipv4 172.30.141.101:7000;
+            _remote_host ipv4 172.30.141.103:7000;
+        _cstate Connected;

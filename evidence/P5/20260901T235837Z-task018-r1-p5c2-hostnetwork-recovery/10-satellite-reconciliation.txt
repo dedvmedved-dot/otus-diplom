@@ -1,0 +1,3 @@
+=== wait satellite reconciliation (hostNetwork=true 3/3) ===
+hostNetwork=[true true true] phase=[Running Running Running]
+RECONCILED hostNetwork=3/3

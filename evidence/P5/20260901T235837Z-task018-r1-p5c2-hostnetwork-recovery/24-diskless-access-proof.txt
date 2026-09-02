@@ -1,0 +1,9 @@
+=== diskless-access proof ===
++---------------------------------------------------------------------------------------------------------------------+
+| ResourceName                             | Node    | Layers       | Usage  | Conns |    State | CreatedOn           |
+|=====================================================================================================================|
+| pvc-bb885e2c-71fa-4ed9-b1cf-fc1351945556 | node-01 | DRBD,STORAGE | Unused | [0;32mOk   [0m | [0;32mUpToDate[0m | 2026-09-01 21:51:56 |
+| pvc-bb885e2c-71fa-4ed9-b1cf-fc1351945556 | node-02 | DRBD,STORAGE | Unused | [0;32mOk   [0m | [0;32mUpToDate[0m | 2026-09-01 21:51:58 |
+| pvc-bb885e2c-71fa-4ed9-b1cf-fc1351945556 | node-03 | DRBD,STORAGE | [1;32mInUse [0m | [0;32mOk   [0m | [0;32mDiskless[0m | 2026-09-01 21:51:57 |
++---------------------------------------------------------------------------------------------------------------------+
+DISKLESS_ACCESS_TEST=PASS (node-03 diskless TieBreaker, reader mounted + read exact hashes)

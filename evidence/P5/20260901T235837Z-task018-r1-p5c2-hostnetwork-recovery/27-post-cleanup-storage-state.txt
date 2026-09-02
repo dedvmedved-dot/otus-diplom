@@ -1,0 +1,23 @@
+--- satellites ---
+linstor-satellite.node-01-vsdpr hostNetwork=true
+linstor-satellite.node-02-pxwpc hostNetwork=true
+linstor-satellite.node-03-zrggg hostNetwork=true
+--- interfaces ---
+| [1;32m+        [0m | drbd141      | 172.30.141.101 |      |                |
+| [1;32m+        [0m | drbd141      | 172.30.141.102 |      |                |
+| [1;32m+        [0m | drbd141      | 172.30.141.103 |      |                |
+--- nodeconnection ---
+[{"lastTransitionTime":"2026-09-01T21:36:00Z","message":"Configured","observedGeneration":1,"reason":"AsExpected","status":"True","type":"Configured"}]
+--- pools ---
++----------------------------------------------------------------------------------------------------------------------------------------------------------+
+| StoragePool          | Node    | Driver   | PoolName                | FreeCapacity | TotalCapacity | CanSnapshots | State | SharedName                   |
+|==========================================================================================================================================================|
+| DfltDisklessStorPool | node-01 | DISKLESS |                         |              |               | False        | [1;32mOk   [0m | node-01;DfltDisklessStorPool |
+| DfltDisklessStorPool | node-02 | DISKLESS |                         |              |               | False        | [1;32mOk   [0m | node-02;DfltDisklessStorPool |
+| DfltDisklessStorPool | node-03 | DISKLESS |                         |              |               | False        | [1;32mOk   [0m | node-03;DfltDisklessStorPool |
+| piraeus-thin         | node-01 | LVM_THIN | vg_piraeus/thin_piraeus |     6.29 TiB |      6.29 TiB | True         | [1;32mOk   [0m | node-01;piraeus-thin         |
+| piraeus-thin         | node-02 | LVM_THIN | vg_piraeus/thin_piraeus |     6.29 TiB |      6.29 TiB | True         | [1;32mOk   [0m | node-02;piraeus-thin         |
+| piraeus-thin         | node-03 | LVM_THIN | vg_piraeus/thin_piraeus |     6.29 TiB |      6.29 TiB | True         | [1;32mOk   [0m | node-03;piraeus-thin         |
++----------------------------------------------------------------------------------------------------------------------------------------------------------+
+--- SC ---
+linstor.csi.linbit.com

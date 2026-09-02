@@ -1,0 +1,18 @@
+--- linstor nodes + pool ---
++------------------------------------------------------------+
+| Node    | NodeType  | Addresses                   | State  |
+|============================================================|
+| node-01 | SATELLITE | 172.30.140.101:3366 (PLAIN) | [1;32mOnline[0m |
+| node-02 | SATELLITE | 172.30.140.102:3366 (PLAIN) | [1;32mOnline[0m |
+| node-03 | SATELLITE | 172.30.140.103:3366 (PLAIN) | [1;32mOnline[0m |
++------------------------------------------------------------+
++----------------------------------------------------------------------------------------------------------------------------------------------------------+
+| StoragePool          | Node    | Driver   | PoolName                | FreeCapacity | TotalCapacity | CanSnapshots | State | SharedName                   |
+|==========================================================================================================================================================|
+| DfltDisklessStorPool | node-01 | DISKLESS |                         |              |               | False        | [1;32mOk   [0m | node-01;DfltDisklessStorPool |
+| DfltDisklessStorPool | node-02 | DISKLESS |                         |              |               | False        | [1;32mOk   [0m | node-02;DfltDisklessStorPool |
+| DfltDisklessStorPool | node-03 | DISKLESS |                         |              |               | False        | [1;32mOk   [0m | node-03;DfltDisklessStorPool |
+| piraeus-thin         | node-01 | LVM_THIN | vg_piraeus/thin_piraeus |     6.29 TiB |      6.29 TiB | True         | [1;32mOk   [0m | node-01;piraeus-thin         |
+| piraeus-thin         | node-02 | LVM_THIN | vg_piraeus/thin_piraeus |     6.29 TiB |      6.29 TiB | True         | [1;32mOk   [0m | node-02;piraeus-thin         |
+| piraeus-thin         | node-03 | LVM_THIN | vg_piraeus/thin_piraeus |     6.29 TiB |      6.29 TiB | True         | [1;32mOk   [0m | node-03;piraeus-thin         |
++----------------------------------------------------------------------------------------------------------------------------------------------------------+

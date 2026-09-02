@@ -1,0 +1,13 @@
++-----------------------------------------------------------------------------------------------------------------------------------------------+
+| ResourceName                             | Node    | Layers       | Usage  | Conns                       |        State | CreatedOn           |
+|===============================================================================================================================================|
+| pvc-bb885e2c-71fa-4ed9-b1cf-fc1351945556 | node-01 | DRBD,STORAGE | Unused | [1;31mConnecting(node-03,node-02)[0m | [1;31m    UpToDate[0m | 2026-09-01 21:51:56 |
+| pvc-bb885e2c-71fa-4ed9-b1cf-fc1351945556 | node-02 | DRBD,STORAGE | Unused | [1;31mConnecting(node-03,node-01)[0m | [1;31mInconsistent[0m | 2026-09-01 21:51:58 |
+| pvc-bb885e2c-71fa-4ed9-b1cf-fc1351945556 | node-03 | DRBD,STORAGE | Unused | [1;31mConnecting(node-02,node-01)[0m | [1;31m  TieBreaker[0m | 2026-09-01 21:51:57 |
++-----------------------------------------------------------------------------------------------------------------------------------------------+
+--- drbdsetup status node-01 ---
+pvc-bb885e2c-71fa-4ed9-b1cf-fc1351945556 role:Secondary
+  disk:UpToDate open:no
+  node-02 connection:Connecting
+  node-03 connection:Connecting
+

@@ -1,0 +1,3 @@
+=== P4B fingerprint compare ===
+PRE netpol_fp=f3624ec74cedbdda1cf3d526cb730843 (from TASK-018 evidence 03)
+P4B_FP_UNCHANGED (validation ns NotFound, netpol unchanged)

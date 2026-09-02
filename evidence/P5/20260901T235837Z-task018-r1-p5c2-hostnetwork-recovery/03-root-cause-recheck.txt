@@ -1,0 +1,15 @@
+# TASK-018-R1 — Root Cause Recheck (read-only, before corrective mutation)
+
+Confirmed:
+  satellite count = 3 (linstor-satellite.node-01/02/03)
+  one satellite per node
+  satellite hostNetwork = false/absent 3/3
+  satellite IPs = pod CIDR (10.244.190.9 / 10.244.184.12 / 10.244.254.75)
+  test resource pvc-bb885e2c-71fa-4ed9-b1cf-fc1351945556 still exists:
+    node-01 UpToDate (diskful), node-02 Inconsistent (diskful),
+    node-03 TieBreaker (diskless), conns Connecting 3/3
+  dmesg: "Configured local address not found, retrying every 10 sec, err=-99"
+  no SplitBrain; no forced recovery performed
+  writer pod phase=Succeeded (quiescent, no continuing write loop)
+
+Root-cause model MATCHES. Proceed to corrective mutation (hostNetwork).

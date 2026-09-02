@@ -1,0 +1,7 @@
+=== wait reader node-02 ===
+=== marker ===
+P5C2_MARKER RUN_ID=20260901T212532Z
+=== hashes ===
+d59b9d6c6b79747218ff5be8d52640bf10c97375fc55ac0cb93cd4070878c301  /data/P5C2_MARKER
+3b6a07d0d404fab4e23b6d34bc6696a6a312dd92821332385e5af7c01c421351  /data/payload.bin
+READER_NODE02_DONE

@@ -1,0 +1,7 @@
+pvc-bb885e2c-71fa-4ed9-b1cf-fc1351945556 role:Secondary
+  disk:UpToDate open:no
+  node-02 role:Secondary
+    peer-disk:UpToDate
+  node-03 role:Secondary
+    peer-disk:Diskless peer-client:yes
+

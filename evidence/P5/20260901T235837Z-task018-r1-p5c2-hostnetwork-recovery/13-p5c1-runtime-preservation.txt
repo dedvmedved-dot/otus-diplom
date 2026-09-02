@@ -1,0 +1,4 @@
+=== P5C1 preservation: DRBD version + tcp + LB_MAKEOPTS + nodes + pool ===
+node-01: drbd=9.3.2 tcp=1
+node-02: drbd=9.3.2 tcp=1
+node-03: drbd=9.3.2 tcp=1

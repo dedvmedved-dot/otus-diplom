@@ -1,0 +1,10 @@
+# TASK-018-R1 — Architect Authorization
+
+Architect decision: SATELLITE hostNetwork: true — AUTHORIZED.
+Only through declarative Piraeus LinstorSatelliteConfiguration.
+Required DNS policy: ClusterFirstWithHostNet.
+
+Narrow corrective authorization for the blocked TASK-018.
+NOT authorization for arbitrary Kubernetes/host-network changes.
+
+BLOCKED CHECKPOINT SHA: 207f1110861ab7b7ff97c80dfbd76ed257aaee80

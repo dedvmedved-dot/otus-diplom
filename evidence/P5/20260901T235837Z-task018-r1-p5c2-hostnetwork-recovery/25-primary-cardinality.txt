@@ -1,0 +1,29 @@
+=== primary cardinality during node-02 mount ===
+--- node-01 ---
+pvc-bb885e2c-71fa-4ed9-b1cf-fc1351945556 role:Secondary
+  disk:UpToDate open:no
+  node-02 role:Primary
+--- node-02 ---
+pvc-bb885e2c-71fa-4ed9-b1cf-fc1351945556 role:Primary
+  disk:UpToDate open:yes
+  node-01 role:Secondary
+--- node-03 ---
+pvc-bb885e2c-71fa-4ed9-b1cf-fc1351945556 role:Secondary
+  disk:Diskless client:yes open:no
+  node-01 role:Secondary
+=== primary cardinality during node-03 (diskless) mount ===
+--- node-01 ---
+pvc-bb885e2c-71fa-4ed9-b1cf-fc1351945556 role:Secondary
+  disk:UpToDate open:no
+  node-02 role:Secondary
+    peer-disk:UpToDate
+--- node-02 ---
+pvc-bb885e2c-71fa-4ed9-b1cf-fc1351945556 role:Secondary
+  disk:UpToDate open:no
+  node-01 role:Secondary
+    peer-disk:UpToDate
+--- node-03 ---
+pvc-bb885e2c-71fa-4ed9-b1cf-fc1351945556 role:Primary
+  disk:Diskless client:yes open:yes
+  node-01 role:Secondary
+    peer-disk:UpToDate

@@ -1,0 +1,5 @@
+nodes=3
+calico=3
+readyz=ok
+netpol_fp=f3624ec74cedbdda1cf3d526cb730843
+ns_NotFound=1
