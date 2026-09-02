@@ -1,0 +1,87 @@
+=== 04-p4b-semantic-source-proof ===
+--- baseline-default-deny-all.yaml ---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: baseline-default-deny-all
+  labels:
+    managed-by: otus-diplom
+    stage: P4B
+    profile: baseline
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+--- baseline-allow-dns-egress.yaml ---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: baseline-allow-dns-egress
+  labels:
+    managed-by: otus-diplom
+    stage: P4B
+    profile: baseline
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+--- validation-allow-client-egress-to-server.yaml ---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: validation-allow-client-egress-to-server
+  labels:
+    managed-by: otus-diplom
+    stage: P4B
+    profile: validation
+spec:
+  podSelector:
+    matchLabels:
+      role: client
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              role: server
+      ports:
+        - protocol: TCP
+          port: 8080
+--- validation-allow-server-ingress-from-client.yaml ---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: validation-allow-server-ingress-from-client
+  labels:
+    managed-by: otus-diplom
+    stage: P4B
+    profile: validation
+spec:
+  podSelector:
+    matchLabels:
+      role: server
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              role: client
+      ports:
+        - protocol: TCP
+          port: 8080

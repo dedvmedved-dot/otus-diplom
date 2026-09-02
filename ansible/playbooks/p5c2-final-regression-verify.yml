@@ -4,7 +4,7 @@
 # Every task read-only, changed=0. Full P1-P4 + P5B + P5C1/DRBD + satellite
 # hostNetwork + P5C2 production state + validation cleanup gates.
 
-- name: "P5C2 final read-only regression (TASK-018-R2)"
+- name: "P5C2 final read-only regression + verifier contract (TASK-018-R4)"
   hosts: all
   gather_facts: false
   vars:
@@ -177,6 +177,15 @@
                   except: lv = int(str(ldr),16)
                   if lv != 0: leaders.add(lv)
           if len(leaders) != 1: print(f"P3_ETCD_LEADERS={len(leaders)}"); sys.exit(1)
+          # GATE 1 — actual leader endpoint count == 1:
+          # count endpoint records where Status.header.member_id == Status.leader
+          the_leader = list(leaders)[0]
+          actual = 0
+          for x in st:
+              mid = x.get("Status",{}).get("header",{}).get("member_id")
+              if str(mid) == str(the_leader):
+                  actual += 1
+          if actual != 1: print(f"P3_ACTUAL_LEADER_ENDPOINTS={actual}"); sys.exit(1)
           # kube-vip pods 3/3 running+ready (static pods, match by name kube-vip-node-*)
           kv = runj(KC + ["-n","kube-system","get","pods","-o","json"])
           kvi = [p for p in kv.get("items",[]) if p["metadata"]["name"].startswith("kube-vip-node-")]
@@ -326,6 +335,101 @@
           PYEOF
       changed_when: false
       delegate_to: node-01
+      run_once: true
+
+    # ═══ GATE 2 — P4B semantic source validation (read-only, localhost) ═══
+    - name: P4B semantic source validation — parse canonical NetworkPolicy manifests
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          python3 << 'PYEOF'
+          import yaml, sys, json
+          base = "/root/otus-diplom/ansible/playbooks/files/networkpolicy/"
+          def load(f):
+              with open(base + f) as fh:
+                  return yaml.safe_load(fh)
+          # baseline-default-deny-all
+          d = load("baseline-default-deny-all.yaml")
+          assert d["apiVersion"] == "networking.k8s.io/v1", "deny apiVersion"
+          assert d["kind"] == "NetworkPolicy", "deny kind"
+          assert d["metadata"]["name"] == "baseline-default-deny-all", "deny name"
+          assert d["spec"]["podSelector"] == {}, "deny podSelector"
+          pt = set(d["spec"].get("policyTypes", []))
+          assert pt == {"Ingress","Egress"}, f"deny policyTypes {pt}"
+          assert d["spec"].get("ingress", []) == [], "deny ingress"
+          assert d["spec"].get("egress", []) == [], "deny egress"
+          print("P4B_SRC_DENY_OK name=baseline-default-deny-all podSelector={} policyTypes={Ingress,Egress} ingress=[] egress=[]")
+          # baseline-allow-dns-egress
+          a = load("baseline-allow-dns-egress.yaml")
+          assert a["apiVersion"] == "networking.k8s.io/v1", "dns apiVersion"
+          assert a["kind"] == "NetworkPolicy", "dns kind"
+          assert a["metadata"]["name"] == "baseline-allow-dns-egress", "dns name"
+          spec = a["spec"]
+          assert spec.get("podSelector") == {}, "dns podSelector"
+          assert set(spec.get("policyTypes", [])) == {"Egress"}, "dns policyTypes"
+          eg = spec.get("egress", [])
+          assert len(eg) == 1, f"dns egress count {len(eg)}"
+          rule = eg[0]
+          tos = rule.get("to", [])
+          assert len(tos) == 1, f"dns to count {len(tos)}"
+          to = tos[0]
+          # namespace selector exact
+          ns = to.get("namespaceSelector", {}).get("matchLabels", {})
+          assert ns == {"kubernetes.io/metadata.name":"kube-system"}, f"dns ns sel {ns}"
+          # pod selector exact
+          ps = to.get("podSelector", {}).get("matchLabels", {})
+          assert ps == {"k8s-app":"kube-dns"}, f"dns pod sel {ps}"
+          # no CIDR / no ipBlock
+          assert "ipBlock" not in to and "namespaceSelector" in to, "dns ipBlock/extra"
+          # ports exact set: UDP/53, TCP/53
+          ports = rule.get("ports", [])
+          pset = set()
+          for p in ports:
+              pset.add((p.get("protocol"), p.get("port")))
+          assert pset == {("UDP",53),("TCP",53)}, f"dns ports {pset}"
+          # no ingress rules
+          assert spec.get("ingress", []) == [], "dns has ingress"
+          print("P4B_SRC_DNS_OK name=baseline-allow-dns-egress ns=kube-system pod=k8s-app=kube-dns ports={UDP/53,TCP/53} no-CIDR no-ingress")
+          # validation-allow-client-egress-to-server
+          ce = load("validation-allow-client-egress-to-server.yaml")
+          assert ce["apiVersion"] == "networking.k8s.io/v1", "ce apiVersion"
+          assert ce["kind"] == "NetworkPolicy", "ce kind"
+          assert ce["metadata"]["name"] == "validation-allow-client-egress-to-server", "ce name"
+          cs = ce["spec"]
+          assert cs.get("podSelector",{}).get("matchLabels",{}) == {"role":"client"}, "ce podSelector"
+          assert set(cs.get("policyTypes",[])) == {"Egress"}, "ce policyTypes"
+          ceg = cs.get("egress",[])
+          assert len(ceg) == 1, "ce egress count"
+          cto = ceg[0].get("to",[])
+          assert len(cto) == 1, "ce to count"
+          assert cto[0].get("podSelector",{}).get("matchLabels",{}) == {"role":"server"}, "ce peer"
+          assert "ipBlock" not in cto[0], "ce ipBlock"
+          cports = set((p.get("protocol"),p.get("port")) for p in ceg[0].get("ports",[]))
+          assert cports == {("TCP",8080)}, f"ce ports {cports}"
+          assert cs.get("ingress",[]) == [], "ce has ingress"
+          print("P4B_SRC_CLIENT_EGRESS_OK role=client -> role=server TCP/8080, no-CIDR no-ingress")
+          # validation-allow-server-ingress-from-client
+          si = load("validation-allow-server-ingress-from-client.yaml")
+          assert si["apiVersion"] == "networking.k8s.io/v1", "si apiVersion"
+          assert si["kind"] == "NetworkPolicy", "si kind"
+          assert si["metadata"]["name"] == "validation-allow-server-ingress-from-client", "si name"
+          ss = si["spec"]
+          assert ss.get("podSelector",{}).get("matchLabels",{}) == {"role":"server"}, "si podSelector"
+          assert set(ss.get("policyTypes",[])) == {"Ingress"}, "si policyTypes"
+          sing = ss.get("ingress",[])
+          assert len(sing) == 1, "si ingress count"
+          sfrom = sing[0].get("from",[])
+          assert len(sfrom) == 1, "si from count"
+          assert sfrom[0].get("podSelector",{}).get("matchLabels",{}) == {"role":"client"}, "si peer"
+          assert "ipBlock" not in sfrom[0], "si ipBlock"
+          sports = set((p.get("protocol"),p.get("port")) for p in sing[0].get("ports",[]))
+          assert sports == {("TCP",8080)}, f"si ports {sports}"
+          assert ss.get("egress",[]) == [], "si has egress"
+          print("P4B_SRC_SERVER_INGRESS_OK role=server <- role=client TCP/8080, no-CIDR no-egress")
+          print("P4B_SEMANTIC_SOURCE_OK 4/4 manifests")
+          PYEOF
+      changed_when: false
+      delegate_to: localhost
       run_once: true
 
     # ═══ P5B — composite final backing gate ═══
@@ -576,7 +680,19 @@
           if sc.get("reclaimPolicy") != "Delete": print("SC_RECLAIM"); sys.exit(1)
           if sc.get("allowVolumeExpansion") != True: print("SC_EXPAND"); sys.exit(1)
           if sc.get("volumeBindingMode") != "WaitForFirstConsumer": print("SC_BIND"); sys.exit(1)
+          # GATE 3 — StorageClass true exactness
           p = sc.get("parameters",{})
+          expected_keys = {
+              "csi.storage.k8s.io/fstype",
+              "linstor.csi.linbit.com/disklessOnRemaining",
+              "linstor.csi.linbit.com/disklessStoragePool",
+              "linstor.csi.linbit.com/placementCount",
+              "linstor.csi.linbit.com/resourceGroup",
+              "linstor.csi.linbit.com/storagePool",
+              "property.linstor.csi.linbit.com/DrbdOptions/Net/protocol",
+          }
+          if set(p.keys()) != expected_keys:
+              print(f"SC_PARAM_KEYS_MISMATCH got={set(p.keys())} want={expected_keys}"); sys.exit(1)
           want = {"linstor.csi.linbit.com/storagePool":"piraeus-thin",
                   "linstor.csi.linbit.com/placementCount":"2",
                   "linstor.csi.linbit.com/resourceGroup":"piraeus-r2",
@@ -586,10 +702,12 @@
                   "property.linstor.csi.linbit.com/DrbdOptions/Net/protocol":"C"}
           for k,v in want.items():
               if p.get(k) != v: print(f"SC_PARAM {k}"); sys.exit(1)
-          # not default
+          # source.hostDevices absent in SC (storageclass has no such field; verify none)
+          # not default — both annotations must not be "true"
           ann = sc.get("metadata",{}).get("annotations",{})
           if ann.get("storageclass.kubernetes.io/is-default-class") == "true": print("SC_IS_DEFAULT"); sys.exit(1)
-          print("NC_SC_OK nodeconnection Configured=True proto=C sc piraeus-r2 exact")
+          if ann.get("storageclass.beta.kubernetes.io/is-default-class") == "true": print("SC_IS_DEFAULT_BETA"); sys.exit(1)
+          print("NC_SC_OK nodeconnection Configured=True proto=C sc piraeus-r2 exact (7 params exact-set, not-default both annotations)")
           PYEOF
       changed_when: false
       delegate_to: node-01

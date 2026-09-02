@@ -1,0 +1,15 @@
+# TASK-018-R4 — Scope
+
+CLASSIFICATION: SOURCE / VERIFIER / EVIDENCE CORRECTION ONLY
+RUNTIME DEFECT: NOT ESTABLISHED
+MODE: STRICTLY READ-ONLY
+
+PURPOSE: закрыть оставшиеся обязательные Architect gates после TASK-018-R3.
+
+Три gate вносятся в canonical p5c2-final-regression-verify.yml:
+  GATE 1 — P3 actual leader endpoint count == 1.
+  GATE 2 — P4B semantic source validation (4 canonical NetworkPolicy manifests).
+  GATE 3 — StorageClass true exactness (exact parameter key set + both default annotations).
+
+R3 runtime/read-only evidence не повторяется без необходимости.
+Историческое evidence НЕ изменяется.

@@ -1,0 +1,27 @@
+=== 06-storageclass-exact-proof ===
+{
+    "allowVolumeExpansion": true,
+    "apiVersion": "storage.k8s.io/v1",
+    "kind": "StorageClass",
+    "metadata": {
+        "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"allowVolumeExpansion\":true,\"apiVersion\":\"storage.k8s.io/v1\",\"kind\":\"StorageClass\",\"metadata\":{\"annotations\":{},\"name\":\"piraeus-r2\"},\"parameters\":{\"csi.storage.k8s.io/fstype\":\"ext4\",\"linstor.csi.linbit.com/disklessOnRemaining\":\"true\",\"linstor.csi.linbit.com/disklessStoragePool\":\"DfltDisklessStorPool\",\"linstor.csi.linbit.com/placementCount\":\"2\",\"linstor.csi.linbit.com/resourceGroup\":\"piraeus-r2\",\"linstor.csi.linbit.com/storagePool\":\"piraeus-thin\",\"property.linstor.csi.linbit.com/DrbdOptions/Net/protocol\":\"C\"},\"provisioner\":\"linstor.csi.linbit.com\",\"reclaimPolicy\":\"Delete\",\"volumeBindingMode\":\"WaitForFirstConsumer\"}\n"
+        },
+        "creationTimestamp": "2026-09-01T21:41:14Z",
+        "name": "piraeus-r2",
+        "resourceVersion": "2482626",
+        "uid": "88135cc8-5e04-4c5f-aa31-667cf9b4774a"
+    },
+    "parameters": {
+        "csi.storage.k8s.io/fstype": "ext4",
+        "linstor.csi.linbit.com/disklessOnRemaining": "true",
+        "linstor.csi.linbit.com/disklessStoragePool": "DfltDisklessStorPool",
+        "linstor.csi.linbit.com/placementCount": "2",
+        "linstor.csi.linbit.com/resourceGroup": "piraeus-r2",
+        "linstor.csi.linbit.com/storagePool": "piraeus-thin",
+        "property.linstor.csi.linbit.com/DrbdOptions/Net/protocol": "C"
+    },
+    "provisioner": "linstor.csi.linbit.com",
+    "reclaimPolicy": "Delete",
+    "volumeBindingMode": "WaitForFirstConsumer"
+}

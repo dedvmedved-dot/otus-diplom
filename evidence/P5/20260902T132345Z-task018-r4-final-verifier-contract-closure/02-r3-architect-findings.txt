@@ -1,0 +1,13 @@
+# TASK-018-R4 — R3 Architect Findings
+
+R3 TASK_DIVERGENCE:
+  P4B acceptance statement in R3 evidence was incorrect.
+  P4B remained HOLD pending semantic source verification.
+
+The file:
+  evidence/P5/20260902T103213Z-task018-r3-p5-final-semantic-closure/02-r2-connector-findings.txt
+contained an incorrect statement "P4B accepted by Connector".
+
+Historical evidence is NOT modified. This correction is recorded here in R4 only.
+
+Hermes does NOT self-assign Architect acceptance history.
