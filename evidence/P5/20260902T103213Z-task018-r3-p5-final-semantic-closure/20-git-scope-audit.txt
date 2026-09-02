@@ -1,0 +1,3 @@
+=== GIT SCOPE ===
+?? ansible/playbooks/p5-final-semantic-verify.yml
+?? evidence/P5/20260902T103213Z-task018-r3-p5-final-semantic-closure/

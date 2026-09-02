@@ -1,0 +1,25 @@
+# TASK-018-R3 — R2 Connector Findings
+
+TASK-018-R2 commit: 6fef535673728d62cdc3e265ecc36d5bbf612e72
+
+R2 clean run:
+  node-01 ok=14 changed=0 failed=0 unreachable=0
+  node-02 ok=6 changed=0 failed=0 unreachable=0
+  node-03 ok=6 changed=0 failed=0 unreachable=0
+
+Accepted by Connector:
+  P1, P2, P4A, P4B (TASK-018 fingerprint unchanged)
+  P5B current composite state
+  DRBD runtime 9.3.2 3/3
+  Satellite hostNetwork 3/3
+  P5C2 production objects present/healthy
+  R2 infrastructure mutation=0
+  R2 secret audit=PASS
+
+Residual fail-closed gaps (R3 target):
+  1. P3 endpoint learner count=0 / actual leader endpoint=1 / livez direct 3 node APIs.
+  2. Validation PV detection via semantic csi.driver/storageClass, not name substring.
+  3. LINSTOR node/pool exact-set assertion (reject every extra node/pool).
+  4. P5B immutable explicit structural compare (thin-pool size/type, not just UUID presence).
+
+R3 does NOT repeat CSI writes, DRBD resource creation, or PVC relocation.

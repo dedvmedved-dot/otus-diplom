@@ -1,0 +1,8 @@
+=== 04-direct-api-readyz-livez-3of3 ===
+--- 172.30.140.101 readyz ---
+ok--- 172.30.140.101 livez ---
+ok--- 172.30.140.102 readyz ---
+ok--- 172.30.140.102 livez ---
+ok--- 172.30.140.103 readyz ---
+ok--- 172.30.140.103 livez ---
+ok

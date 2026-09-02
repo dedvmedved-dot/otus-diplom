@@ -1,0 +1,20 @@
+=== 16-ansible-list-tasks ===
+
+playbook: ansible/playbooks/p5-final-semantic-verify.yml
+
+  play #1 (all): P5 final semantic read-only closure (TASK-018-R3)	TAGS: []
+    tasks:
+      P3 — etcd member/endpoint/leader exact semantics	TAGS: []
+      Direct API — readyz/livez on all 3 node APIs (TLS validated)	TAGS: []
+      kube-vip — 3/3 Running+Ready (static pods, match kube-vip-node-*)	TAGS: []
+      kube-vip — VIP owner local check	TAGS: []
+      kube-vip — VIP owner aggregate exactly 1	TAGS: []
+      Validation K8s residue — semantic (csi.driver/storageClass, exact IDs)	TAGS: []
+      LINSTOR validation residue — RD=0 RES=0, exact identity absent	TAGS: []
+      LVM validation child residue — thin_piraeus present, no pvc-* child LV	TAGS: []
+      LINSTOR exact node set — node-01/02/03 only, 3 Online	TAGS: []
+      LINSTOR exact pool set — 6 rows, no unexpected diskful	TAGS: []
+      P5B immutable explicit structural compare vs TASK-018 PRE	TAGS: []
+      source.hostDevices static gate (parse committed manifest)	TAGS: []
+      Production P5C2 objects — LSC Applied + NC Configured + SC exact	TAGS: []
+      DRBD runtime final — 9.3.2 + tcp + kernel, no data resource	TAGS: []

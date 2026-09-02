@@ -1,0 +1,40 @@
+=== 08-validation-lvm-residue ===
+--- node-01 ---
+  {
+      "report": [
+          {
+              "lv": [
+                  {"vg_name":"astra38644", "lv_name":"lv_home", "lv_uuid":"fNydfS-IUXI-sbXX-LYAf-nCQh-y4Iw-wsmMdq", "lv_attr":"-wi-ao----"},
+                  {"vg_name":"astra38644", "lv_name":"lv_root", "lv_uuid":"Sg3WRR-gNXQ-inGs-AaBs-0R7y-ID0a-mvTUxN", "lv_attr":"-wi-ao----"},
+                  {"vg_name":"astra38644", "lv_name":"lv_swap", "lv_uuid":"6rtL4U-noyL-Bex5-lkic-CF9w-gbe3-cGMCMF", "lv_attr":"-wi-a-----"},
+                  {"vg_name":"vg_piraeus", "lv_name":"thin_piraeus", "lv_uuid":"OwNckB-Eion-6Ic1-PQXQ-ashq-UW0V-W5AGqN", "lv_attr":"twi-aotz--"}
+              ]
+          }
+      ]
+  }
+--- node-02 ---
+  {
+      "report": [
+          {
+              "lv": [
+                  {"vg_name":"astra39539", "lv_name":"lv_home", "lv_uuid":"A5Iu0Z-4pmz-xxzu-e5hb-UDLn-5xW0-OiC6ov", "lv_attr":"-wi-ao----"},
+                  {"vg_name":"astra39539", "lv_name":"lv_root", "lv_uuid":"wpqxNB-iGZn-EcMz-tGIG-7O13-SPhQ-79yDVA", "lv_attr":"-wi-ao----"},
+                  {"vg_name":"astra39539", "lv_name":"lv_swap", "lv_uuid":"jCb1NT-A9IE-bQFU-sluu-7U8k-iXjC-gL1YTh", "lv_attr":"-wi-a-----"},
+                  {"vg_name":"vg_piraeus", "lv_name":"thin_piraeus", "lv_uuid":"yHYsAk-DBH8-URRt-Y61f-m3dX-q5XB-1veYi7", "lv_attr":"twi-aotz--"}
+              ]
+          }
+      ]
+  }
+--- node-03 ---
+  {
+      "report": [
+          {
+              "lv": [
+                  {"vg_name":"astra03718", "lv_name":"lv_home", "lv_uuid":"zfvKDy-ZZuS-YCET-f4gg-pmxA-E2q4-iRx1J2", "lv_attr":"-wi-ao----"},
+                  {"vg_name":"astra03718", "lv_name":"lv_root", "lv_uuid":"0uY093-YGEN-VIdW-H23Y-Dyb2-1DiK-Nbc3YW", "lv_attr":"-wi-ao----"},
+                  {"vg_name":"astra03718", "lv_name":"lv_swap", "lv_uuid":"4Uphv8-h4Wu-5BMP-QJK1-e1zj-adwv-9I5p0o", "lv_attr":"-wi-a-----"},
+                  {"vg_name":"vg_piraeus", "lv_name":"thin_piraeus", "lv_uuid":"XFi7l0-WWCd-4XSr-TF82-BgNz-5wrF-YZqvzv", "lv_attr":"twi-aotz--"}
+              ]
+          }
+      ]
+  }

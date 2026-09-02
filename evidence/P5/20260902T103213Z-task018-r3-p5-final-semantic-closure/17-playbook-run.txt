@@ -1,0 +1,71 @@
+
+PLAY [P5 final semantic read-only closure (TASK-018-R3)] ***********************
+
+TASK [P3 — etcd member/endpoint/leader exact semantics] ************************
+[WARNING]: Platform linux on host node-01 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-01]
+
+TASK [Direct API — readyz/livez on all 3 node APIs (TLS validated)] ************
+ok: [node-01]
+
+TASK [kube-vip — 3/3 Running+Ready (static pods, match kube-vip-node-*)] *******
+ok: [node-01]
+
+TASK [kube-vip — VIP owner local check] ****************************************
+ok: [node-01]
+[WARNING]: Platform linux on host node-02 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-02]
+[WARNING]: Platform linux on host node-03 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-03]
+
+TASK [kube-vip — VIP owner aggregate exactly 1] ********************************
+ok: [node-01]
+
+TASK [Validation K8s residue — semantic (csi.driver/storageClass, exact IDs)] ***
+ok: [node-01]
+
+TASK [LINSTOR validation residue — RD=0 RES=0, exact identity absent] **********
+ok: [node-01]
+
+TASK [LVM validation child residue — thin_piraeus present, no pvc-* child LV] ***
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [LINSTOR exact node set — node-01/02/03 only, 3 Online] *******************
+ok: [node-01]
+
+TASK [LINSTOR exact pool set — 6 rows, no unexpected diskful] ******************
+ok: [node-01]
+
+TASK [P5B immutable explicit structural compare vs TASK-018 PRE] ***************
+ok: [node-01 -> localhost]
+
+TASK [source.hostDevices static gate (parse committed manifest)] ***************
+ok: [node-01 -> localhost]
+
+TASK [Production P5C2 objects — LSC Applied + NC Configured + SC exact] ********
+ok: [node-01]
+
+TASK [DRBD runtime final — 9.3.2 + tcp + kernel, no data resource] *************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+PLAY RECAP *********************************************************************
+node-01                    : ok=14   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-02                    : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-03                    : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+

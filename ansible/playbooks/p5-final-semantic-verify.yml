@@ -1,0 +1,479 @@
+---
+# TASK-018-R3 — P5 final semantic read-only closure.
+# MODE: READ-ONLY P5 FINAL SEMANTIC CLOSURE. INFRASTRUCTURE MUTATION = 0.
+# Closes 4 residual fail-closed gaps:
+#  1. P3 endpoint learner=0 / actual leader endpoint=1 / livez direct 3 APIs.
+#  2. Validation PV detection semantic (csi.driver/storageClass), not name substring.
+#  3. LINSTOR node/pool exact-set assertion (reject extras).
+#  4. P5B immutable explicit structural compare (thin-pool size/type).
+
+- name: "P5 final semantic read-only closure (TASK-018-R3)"
+  hosts: all
+  gather_facts: false
+  vars:
+    op_ns: piraeus-datastore
+    val_ns: p5c2-validation
+    val_pvc: p5c2-r2-test
+    val_pv: pvc-bb885e2c-71fa-4ed9-b1cf-fc1351945556
+    vlan141:
+      node-01: "172.30.141.101"
+      node-02: "172.30.141.102"
+      node-03: "172.30.141.103"
+    node_ips:
+      node-01: "172.30.140.101"
+      node-02: "172.30.140.102"
+      node-03: "172.30.140.103"
+
+  tasks:
+    # ═══ P3 — etcd member/endpoint/leader semantics (run on node-01) ═══
+    - name: P3 — etcd member/endpoint/leader exact semantics
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          def run(c):
+              r = subprocess.run(c, capture_output=True, text=True)
+              return r.returncode, r.stdout, r.stderr
+          # etcd pod
+          rc,o,e = run(KC + ["-n","kube-system","get","pods","-l","component=etcd","-o","json"])
+          if rc != 0: print("P3_ETCD_POD_FAIL"); sys.exit(1)
+          items = json.loads(o).get("items",[])
+          if len(items) != 3: print(f"P3_ETCD_POD_COUNT={len(items)}"); sys.exit(1)
+          ep = items[0]["metadata"]["name"]
+          ETCDCTL = ["etcdctl","--cacert","/etc/kubernetes/pki/etcd/ca.crt",
+                     "--cert","/etc/kubernetes/pki/etcd/server.crt",
+                     "--key","/etc/kubernetes/pki/etcd/server.key"]
+          # member list
+          rc,o,e = run(KC + ["-n","kube-system","exec",ep,"--"] + ETCDCTL + ["member","list","-w","json"])
+          if rc != 0: print("P3_MEMBER_LIST_FAIL"); sys.exit(1)
+          members = json.loads(o).get("members",[])
+          if len(members) != 3: print(f"P3_MEMBERS={len(members)}"); sys.exit(1)
+          names = sorted(m.get("name","") for m in members)
+          if names != ["node-01","node-02","node-03"]: print(f"P3_MEMBER_NAMES={names}"); sys.exit(1)
+          learners = [m for m in members if m.get("isLearner")]
+          if len(learners) != 0: print(f"P3_MEMBER_LEARNERS={len(learners)}"); sys.exit(1)
+          member_ids = {str(m.get("ID")) for m in members}
+          # endpoint status
+          rc,o,e = run(KC + ["-n","kube-system","exec",ep,"--"] + ETCDCTL + ["endpoint","status","--cluster","-w","json"])
+          if rc != 0: print("P3_ENDPOINT_STATUS_FAIL"); sys.exit(1)
+          st = json.loads(o)
+          if len(st) != 3: print(f"P3_ENDPOINTS={len(st)}"); sys.exit(1)
+          # endpoint learners = 0: each Status.header.member_id maps to known member (non-learner)
+          for x in st:
+              mid = str(x.get("Status",{}).get("header",{}).get("member_id",""))
+              if mid not in member_ids: print(f"P3_ENDPOINT_UNKNOWN_MEMBER {mid}"); sys.exit(1)
+          # leader: unique nonzero = 1
+          leaders = set(x.get("Status",{}).get("leader") for x in st)
+          nz = [l for l in leaders if l and int(l) != 0]
+          if len(nz) != 1: print(f"P3_LEADERS={len(nz)}"); sys.exit(1)
+          lead = nz[0]
+          # actual leader endpoint count = 1
+          actual = [x for x in st if str(x.get("Status",{}).get("header",{}).get("member_id","")) == str(lead)]
+          if len(actual) != 1: print(f"P3_ACTUAL_LEADER_ENDPOINTS={len(actual)}"); sys.exit(1)
+          # health 3/3
+          rc,o,e = run(KC + ["-n","kube-system","exec",ep,"--"] + ETCDCTL + ["endpoint","health","--cluster","-w","json"])
+          if rc != 0: print("P3_HEALTH_FAIL"); sys.exit(1)
+          hp = json.loads(o)
+          if len(hp) != 3: print(f"P3_HEALTH_RECORDS={len(hp)}"); sys.exit(1)
+          healthy = [x for x in hp if str(x.get("health", x.get("Health",""))).lower() in ("true","1")]
+          if len(healthy) != 3: print(f"P3_HEALTHY={len(healthy)}/3"); sys.exit(1)
+          print("P3_ETCD_SEMANTICS_OK members=3 learners=0 endpoints=3 leader=1 health=3/3")
+          PYEOF
+      changed_when: false
+      delegate_to: node-01
+      run_once: true
+
+    # ═══ Direct API readyz/livez 3/3 node APIs ═══
+    - name: Direct API — readyz/livez on all 3 node APIs (TLS validated)
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          python3 << 'PYEOF'
+          import subprocess, sys
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          nodes = ["172.30.140.101","172.30.140.102","172.30.140.103"]
+          readyz_ok = 0; livez_ok = 0
+          for ip in nodes:
+              for path in ("readyz","livez"):
+                  r = subprocess.run(KC + ["get","--raw=/"+path,"--server=https://"+ip+":6443"],
+                                     capture_output=True, text=True)
+                  if r.returncode == 0 and "ok" in r.stdout:
+                      if path == "readyz": readyz_ok += 1
+                      else: livez_ok += 1
+                  else:
+                      print(f"DIRECT_API_FAIL {ip} {path} rc={r.returncode} err={r.stderr[:200]}")
+                      sys.exit(1)
+          print(f"DIRECT_API_READYZ={readyz_ok}/3 LIVEZ={livez_ok}/3")
+          if readyz_ok != 3 or livez_ok != 3:
+              print("DIRECT_API_INCOMPLETE"); sys.exit(1)
+          print("DIRECT_API_OK")
+          PYEOF
+      changed_when: false
+      delegate_to: node-01
+      run_once: true
+
+    # ═══ kube-vip / VIP ═══
+    - name: kube-vip — 3/3 Running+Ready (static pods, match kube-vip-node-*)
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          r = subprocess.run(KC + ["-n","kube-system","get","pods","-o","json"], capture_output=True, text=True)
+          if r.returncode != 0: print("KUBEVIP_QUERY_FAIL"); sys.exit(1)
+          items = json.loads(r.stdout).get("items",[])
+          kv = [p for p in items if p["metadata"]["name"].startswith("kube-vip-node-")]
+          if len(kv) != 3: print(f"KUBEVIP_COUNT={len(kv)}"); sys.exit(1)
+          running = [p for p in kv if p.get("status",{}).get("phase")=="Running"]
+          if len(running) != 3: print(f"KUBEVIP_RUNNING={len(running)}"); sys.exit(1)
+          def ready(p):
+              cs = p.get("status",{}).get("containerStatuses",[])
+              return bool(cs) and all(c.get("ready",False) for c in cs)
+          rdy = [p for p in running if ready(p)]
+          if len(rdy) != 3: print(f"KUBEVIP_READY={len(rdy)}"); sys.exit(1)
+          print("KUBEVIP_OK 3/3 Running+Ready")
+          PYEOF
+      changed_when: false
+      delegate_to: node-01
+      run_once: true
+
+    - name: kube-vip — VIP owner local check
+      ansible.builtin.shell:
+        cmd: |
+          C=$(ip -4 addr show 2>/dev/null | grep -c '172.30.140.100/32' || true)
+          echo "VIP_OWNER_LOCAL=$C"
+      register: vip_local
+      changed_when: false
+
+    - name: kube-vip — VIP owner aggregate exactly 1
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          TOTAL=0
+          {% for h in groups['all'] %}
+          V=$(echo "{{ hostvars[h].vip_local.stdout }}" | grep -oE '[0-9]+' | head -1)
+          TOTAL=$((TOTAL + V))
+          {% endfor %}
+          echo "VIP_OWNER_AGGREGATE=$TOTAL"
+          [ "$TOTAL" = "1" ] || { echo "VIP_OWNER_WRONG"; exit 1; }
+      changed_when: false
+      delegate_to: node-01
+      run_once: true
+
+    # ═══ Validation K8s residue — semantic ═══
+    - name: Validation K8s residue — semantic (csi.driver/storageClass, exact IDs)
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          def run(c):
+              r = subprocess.run(c, capture_output=True, text=True)
+              return r.returncode, r.stdout, r.stderr
+          def runj(c):
+              r = subprocess.run(c, capture_output=True, text=True)
+              return json.loads(r.stdout) if r.returncode==0 else None
+          # namespace NotFound
+          rc,o,e = run(KC + ["get","namespace","p5c2-validation"])
+          if "NotFound" not in e: print("VAL_NS_EXISTS"); sys.exit(1)
+          # exact PV NotFound
+          rc,o,e = run(KC + ["get","pv","pvc-bb885e2c-71fa-4ed9-b1cf-fc1351945556"])
+          if "NotFound" not in e: print("VAL_PV_EXISTS"); sys.exit(1)
+          # semantic: PV with csi.driver == linstor.csi.linbit.com = 0
+          pvs = runj(KC + ["get","pv","-o","json"])
+          linstor_pv = [p for p in pvs.get("items",[]) if p.get("spec",{}).get("csi",{}).get("driver")=="linstor.csi.linbit.com"]
+          if linstor_pv: print(f"VAL_LINSTOR_PV={len(linstor_pv)}"); sys.exit(1)
+          # PV with storageClassName == piraeus-r2 = 0
+          sc_pv = [p for p in pvs.get("items",[]) if p.get("spec",{}).get("storageClassName")=="piraeus-r2"]
+          if sc_pv: print(f"VAL_SC_PV={len(sc_pv)}"); sys.exit(1)
+          # PVC cluster-wide with storageClassName=piraeus-r2 = 0
+          pvcs = runj(KC + ["get","pvc","-A","-o","json"])
+          sc_pvc = [p for p in pvcs.get("items",[]) if p.get("spec",{}).get("storageClassName")=="piraeus-r2"]
+          if sc_pvc: print(f"VAL_SC_PVC={len(sc_pvc)}"); sys.exit(1)
+          print("VAL_K8S_RESIDUE_OK ns=NotFound pv=NotFound linstor_pv=0 sc_pv=0 sc_pvc=0")
+          PYEOF
+      changed_when: false
+      delegate_to: node-01
+      run_once: true
+
+    # ═══ LINSTOR validation residue — exact zero ═══
+    - name: LINSTOR validation residue — RD=0 RES=0, exact identity absent
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          python3 << 'PYEOF'
+          import json, subprocess, sys, re
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          def run(c):
+              r = subprocess.run(c, capture_output=True, text=True)
+              return r.returncode, r.stdout, r.stderr
+          rc,o,e = run(KC + ["-n","piraeus-datastore","exec","deploy/linstor-controller","--","linstor","resource-definition","list"])
+          if rc != 0: print("RD_LIST_FAIL"); sys.exit(1)
+          r1 = re.sub(r"\x1b\[[0-9;]*m","",o)
+          if "pvc-bb885e2c" in r1: print("VAL_RD_STILL_EXISTS"); sys.exit(1)
+          # count RD rows (table rows excluding header/borders)
+          rows = [l for l in r1.splitlines() if re.match(r'\s*\|\s*\w', l) and "ResourceName" not in l]
+          # strip separator lines (==== / ----)
+          data_rows = [l for l in rows if not re.match(r'^\s*\|[\s=\-+]*\|?$', l)]
+          if len(data_rows) != 0: print(f"VAL_RD_COUNT={len(data_rows)}"); sys.exit(1)
+          rc,o,e = run(KC + ["-n","piraeus-datastore","exec","deploy/linstor-controller","--","linstor","resource","list"])
+          if rc != 0: print("RES_LIST_FAIL"); sys.exit(1)
+          r2 = re.sub(r"\x1b\[[0-9;]*m","",o)
+          if "pvc-bb885e2c" in r2: print("VAL_RES_STILL_EXISTS"); sys.exit(1)
+          rows2 = [l for l in r2.splitlines() if re.match(r'\s*\|\s*\w', l) and "ResourceName" not in l]
+          data_rows2 = [l for l in rows2 if not re.match(r'^\s*\|[\s=\-+]*\|?$', l)]
+          if len(data_rows2) != 0: print(f"VAL_RES_COUNT={len(data_rows2)}"); sys.exit(1)
+          print("VAL_LINSTOR_RESIDUE_OK RD=0 RES=0")
+          PYEOF
+      changed_when: false
+      delegate_to: node-01
+      run_once: true
+
+    # ═══ LVM validation child residue — exact zero ═══
+    - name: LVM validation child residue — thin_piraeus present, no pvc-* child LV
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          r = subprocess.run("lvs --reportformat json -o vg_name,lv_name,lv_uuid,lv_attr", shell=True, capture_output=True, text=True)
+          if r.returncode != 0: print("LVS_FAIL"); sys.exit(1)
+          lvs = json.loads(r.stdout)["report"][0]["lv"]
+          thin = [l for l in lvs if l["vg_name"]=="vg_piraeus" and l["lv_name"]=="thin_piraeus"]
+          if len(thin) != 1: print("THIN_PIRAEUS_MISSING"); sys.exit(1)
+          children = [l for l in lvs if l["vg_name"]=="vg_piraeus" and l["lv_name"]!="thin_piraeus"]
+          # reject any child LV (pvc-* or otherwise) as leaked CSI data LV
+          if len(children) != 0: print(f"VAL_CHILD_LV={[c['lv_name'] for c in children]}"); sys.exit(1)
+          print("VAL_LVM_RESIDUE_OK thin_piraeus=present child_lv=0")
+          PYEOF
+      changed_when: false
+
+    # ═══ LINSTOR exact node set ═══
+    - name: LINSTOR exact node set — node-01/02/03 only, 3 Online
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          python3 << 'PYEOF'
+          import subprocess, sys, re
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          r = subprocess.run(KC + ["-n","piraeus-datastore","exec","deploy/linstor-controller","--","linstor","node","list"], capture_output=True, text=True)
+          if r.returncode != 0: print("NODE_LIST_FAIL"); sys.exit(1)
+          raw = re.sub(r"\x1b\[[0-9;]*m","",r.stdout)
+          lines = [l for l in raw.splitlines() if re.match(r'\s*\|\s*node-', l)]
+          nodes = set()
+          online = 0
+          for l in lines:
+              m = re.match(r'\s*\|\s*(\S+)\s*\|', l)
+              if m:
+                  nodes.add(m.group(1))
+                  if "Online" in l: online += 1
+          if nodes != {"node-01","node-02","node-03"}: print(f"NODE_SET={nodes}"); sys.exit(1)
+          if len(nodes) != 3: print(f"NODE_COUNT={len(nodes)}"); sys.exit(1)
+          if online != 3: print(f"NODE_ONLINE={online}"); sys.exit(1)
+          print("LINSTOR_NODE_SET_OK node-01/02/03 only, 3 Online")
+          PYEOF
+      changed_when: false
+      delegate_to: node-01
+      run_once: true
+
+    # ═══ LINSTOR exact pool set — 6 rows ═══
+    - name: LINSTOR exact pool set — 6 rows, no unexpected diskful
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          python3 << 'PYEOF'
+          import subprocess, sys, re
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          r = subprocess.run(KC + ["-n","piraeus-datastore","exec","deploy/linstor-controller","--","linstor","storage-pool","list"], capture_output=True, text=True)
+          if r.returncode != 0: print("POOL_LIST_FAIL"); sys.exit(1)
+          raw = re.sub(r"\x1b\[[0-9;]*m","",r.stdout)
+          rows = [l for l in raw.splitlines() if re.match(r'\s*\|\s*(DfltDisklessStorPool|piraeus-thin)\s*\|', l)]
+          if len(rows) != 6: print(f"POOL_ROWS={len(rows)}"); sys.exit(1)
+          diskless = [l for l in rows if "DfltDisklessStorPool" in l]
+          thin = [l for l in rows if "piraeus-thin" in l]
+          if len(diskless) != 3: print(f"POOL_DISKLESS={len(diskless)}"); sys.exit(1)
+          if len(thin) != 3: print(f"POOL_THIN={len(thin)}"); sys.exit(1)
+          # each thin row must be LVM_THIN + vg_piraeus/thin_piraeus + Ok
+          for l in thin:
+              if "LVM_THIN" not in l: print("POOL_THIN_NOT_LVM_THIN"); sys.exit(1)
+              if "vg_piraeus/thin_piraeus" not in l: print("POOL_THIN_BACKING_WRONG"); sys.exit(1)
+              if "Ok" not in l: print("POOL_THIN_NOT_OK"); sys.exit(1)
+          # unexpected diskful rows = 0 (any row that is neither diskless nor thin)
+          other = [l for l in raw.splitlines() if re.match(r'\s*\|\s*\S+\s*\|', l) and "StoragePool" not in l and "DfltDisklessStorPool" not in l and "piraeus-thin" not in l and not re.match(r'^\s*\|[\s=\-+]*\|?$', l)]
+          if other: print(f"POOL_UNEXPECTED={other[:3]}"); sys.exit(1)
+          print("LINSTOR_POOL_SET_OK 6 rows (diskless 3 + thin 3 LVM_THIN Ok)")
+          PYEOF
+      changed_when: false
+      delegate_to: node-01
+      run_once: true
+
+    # ═══ P5B immutable explicit compare — localhost (PRE evidence lives here) ═══
+    - name: P5B immutable explicit structural compare vs TASK-018 PRE
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          python3 << 'PYEOF'
+          import json, subprocess, sys, re
+          PRE = "/root/otus-diplom/evidence/P5/20260901T212532Z-task018-p5c2-storage-replication/04-p5b-backing-pre.txt"
+          PP = open("/etc/hermes/pak_root_pass.txt").read().strip()
+          nodes = {"node-01":"192.168.194.38","node-02":"192.168.194.40","node-03":"192.168.194.39"}
+          pre = open(PRE).read()
+
+          def parse_pre():
+              out = {}
+              # split by node markers
+              parts = re.split(r'--- (node-\d+) ---', pre)
+              # parts: ['', 'node-01', <json text>, 'node-02', <json text>, ...]
+              i = 1
+              while i < len(parts)-1:
+                  name = parts[i]
+                  text = parts[i+1]
+                  # extract all balanced JSON objects in text
+                  pvs=[]; vgs=[]; lvs=[]
+                  # find { ... } blocks via regex of json lines: each report object
+                  for m in re.finditer(r'\{\s*"pv_name":\s*"([^"]+)",\s*"vg_name":\s*"([^"]+)",\s*"pv_uuid":\s*"([^"]+)"', text):
+                      pvs.append({"pv_name":m.group(1),"vg_name":m.group(2),"pv_uuid":m.group(3)})
+                  for m in re.finditer(r'\{\s*"vg_name":\s*"([^"]+)",\s*"vg_uuid":\s*"([^"]+)",\s*"vg_free":\s*"([^"]+)",\s*"pv_count":\s*"([^"]+)"', text):
+                      vgs.append({"vg_name":m.group(1),"vg_uuid":m.group(2),"vg_free":m.group(3),"pv_count":m.group(4)})
+                  for m in re.finditer(r'\{\s*"vg_name":\s*"([^"]+)",\s*"lv_name":\s*"([^"]+)",\s*"lv_uuid":\s*"([^"]+)",\s*"lv_attr":\s*"([^"]+)",\s*"lv_size":\s*"([^"]+)"', text):
+                      lvs.append({"vg_name":m.group(1),"lv_name":m.group(2),"lv_uuid":m.group(3),"lv_attr":m.group(4),"lv_size":m.group(5)})
+                  out[name] = {"pvs":pvs,"vgs":vgs,"lvs":lvs}
+                  i += 2
+              return out
+          pre_data = parse_pre()
+
+          def run_remote(ip, cmd):
+              r = subprocess.run(["sshpass","-p",PP,"ssh","-o","StrictHostKeyChecking=yes","-o","ConnectTimeout=12",f"root@{ip}",cmd],
+                                 capture_output=True, text=True)
+              return r.stdout
+
+          ok = 0
+          for n, ip in nodes.items():
+              if n not in pre_data: print(f"P5B_PRE_NODE_MISSING {n}"); sys.exit(1)
+              pr = pre_data[n]
+              cur = run_remote(ip, "pvs --reportformat json -o pv_name,vg_name,pv_uuid; vgs --reportformat json -o vg_name,vg_uuid; lvs --reportformat json -o vg_name,lv_name,lv_uuid,lv_attr,lv_size")
+              # parse current
+              cur_pv = set(); cur_vg={}; cur_thin={}; cur_os=None
+              for m in re.finditer(r'\{\s*"pv_name":\s*"([^"]+)",\s*"vg_name":\s*"([^"]+)",\s*"pv_uuid":\s*"([^"]+)"', cur):
+                  if m.group(2) == "vg_piraeus":
+                      cur_pv.add(m.group(3))
+                  else:
+                      cur_os = (m.group(1), m.group(2))
+              for m in re.finditer(r'\{\s*"vg_name":\s*"([^"]+)",\s*"vg_uuid":\s*"([^"]+)"', cur):
+                  if m.group(1) == "vg_piraeus":
+                      cur_vg = m.group(2)
+              for m in re.finditer(r'\{\s*"vg_name":\s*"([^"]+)",\s*"lv_name":\s*"([^"]+)",\s*"lv_uuid":\s*"([^"]+)",\s*"lv_attr":\s*"([^"]+)",\s*"lv_size":\s*"([^"]+)"', cur):
+                  if m.group(1) == "vg_piraeus" and m.group(2) == "thin_piraeus":
+                      cur_thin = {"uuid":m.group(3),"attr":m.group(4),"size":m.group(5)}
+              # PRE expected
+              pre_pv = set(p["pv_uuid"] for p in pr["pvs"] if p["vg_name"]=="vg_piraeus")
+              pre_vg = next((v["vg_uuid"] for v in pr["vgs"] if v["vg_name"]=="vg_piraeus"), None)
+              pre_thin = next(({"uuid":l["lv_uuid"],"attr":l["lv_attr"],"size":l["lv_size"]} for l in pr["lvs"] if l["vg_name"]=="vg_piraeus" and l["lv_name"]=="thin_piraeus"), None)
+              pre_os = next(((p["pv_name"],p["vg_name"]) for p in pr["pvs"] if p["vg_name"]!="vg_piraeus"), None)
+              # compare
+              if cur_pv != pre_pv: print(f"P5B_PV_UUID_MISMATCH {n}"); sys.exit(1)
+              if cur_vg != pre_vg: print(f"P5B_VG_UUID_MISMATCH {n}"); sys.exit(1)
+              if not pre_thin or not cur_thin: print(f"P5B_THIN_MISSING {n}"); sys.exit(1)
+              if cur_thin["uuid"] != pre_thin["uuid"]: print(f"P5B_THIN_UUID_MISMATCH {n}"); sys.exit(1)
+              if cur_thin["size"] != pre_thin["size"]: print(f"P5B_THIN_SIZE_MISMATCH {n} {cur_thin['size']} vs {pre_thin['size']}"); sys.exit(1)
+              # type: first char of lv_attr (t = thin-pool)
+              if cur_thin["attr"][0:1] != pre_thin["attr"][0:1]: print(f"P5B_THIN_TYPE_MISMATCH {n}"); sys.exit(1)
+              if cur_os != pre_os: print(f"P5B_OS_PV_MISMATCH {n}"); sys.exit(1)
+              ok += 1
+          print(f"P5B_IMMUTABLE_EXPLICIT_COMPARE_OK {ok}/3")
+          if ok != 3: sys.exit(1)
+          PYEOF
+      changed_when: false
+      delegate_to: localhost
+      run_once: true
+
+    # ═══ source.hostDevices static gate — localhost ═══
+    - name: source.hostDevices static gate (parse committed manifest)
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          python3 << 'PYEOF'
+          import yaml, sys
+          m = yaml.safe_load(open("/root/otus-diplom/manifests/piraeus/p5c2-storage-pool.yaml"))
+          sp = m["spec"].get("storagePools",[])
+          if len(sp) != 1: print("SP_COUNT"); sys.exit(1)
+          s = sp[0]
+          if s.get("name") != "piraeus-thin": print("SP_NAME"); sys.exit(1)
+          ltp = s.get("lvmThinPool",{})
+          if ltp.get("volumeGroup") != "vg_piraeus": print("SP_VG"); sys.exit(1)
+          if ltp.get("thinPool") != "thin_piraeus": print("SP_THIN"); sys.exit(1)
+          spec = m["spec"]
+          for k in ("source","hostDevices"):
+              if "source" in spec or "hostDevices" in spec or "source" in s or "hostDevices" in s:
+                  print("SP_HAS_SOURCE_HOSTDEVICES"); sys.exit(1)
+          print("SOURCE_HOSTDEVICES_GATE_OK storagePools[0]=piraeus-thin vg_piraeus/thin_piraeus, source/hostDevices absent")
+          PYEOF
+      changed_when: false
+      delegate_to: localhost
+      run_once: true
+
+    # ═══ Production P5C2 objects final ═══
+    - name: Production P5C2 objects — LSC Applied + NC Configured + SC exact
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          KC = ["kubectl","--kubeconfig","/etc/kubernetes/admin.conf"]
+          def runj(c):
+              r = subprocess.run(c, capture_output=True, text=True)
+              return json.loads(r.stdout) if r.returncode==0 else None
+          # LSC Applied=True for the three configs
+          for name in ["astra-drbd-loader","p5c2-satellite-hostnetwork","p5c2-storage-pool"]:
+              d = runj(KC + ["-n","piraeus-datastore","get","linstorsatelliteconfiguration",name,"-o","json"])
+              if not d: print(f"LSC_MISSING {name}"); sys.exit(1)
+              # Applied condition
+              conds = d.get("status",{}).get("conditions",[])
+              app = [c for c in conds if c.get("type")=="Applied" and c.get("status")=="True"]
+              if len(app) != 1: print(f"LSC_NOT_APPLIED {name}"); sys.exit(1)
+          # hostnetwork config spec
+          hn = runj(KC + ["-n","piraeus-datastore","get","linstorsatelliteconfiguration","p5c2-satellite-hostnetwork","-o","json"])
+          if hn["spec"]["podTemplate"]["spec"].get("hostNetwork") != True: print("HN_NOT_TRUE"); sys.exit(1)
+          if hn["spec"]["podTemplate"]["spec"].get("dnsPolicy") != "ClusterFirstWithHostNet": print("HN_DNS_WRONG"); sys.exit(1)
+          # NodeConnection Configured=True
+          nc = runj(KC + ["-n","piraeus-datastore","get","linstornodeconnection","p5c2-drbd-vlan141","-o","json"])
+          conf = [c for c in nc.get("status",{}).get("conditions",[]) if c.get("type")=="Configured" and c.get("status")=="True"]
+          if len(conf) != 1: print("NC_NOT_CONFIGURED"); sys.exit(1)
+          # drbd141 interfaces
+          for n, ip in [("node-01","172.30.141.101"),("node-02","172.30.141.102"),("node-03","172.30.141.103")]:
+              r = subprocess.run(KC + ["-n","piraeus-datastore","exec","deploy/linstor-controller","--","linstor","node","interface","list",n], capture_output=True, text=True)
+              import re
+              r2 = re.sub(r"\x1b\[[0-9;]*m","",r.stdout)
+              if "drbd141" not in r2 or ip not in r2: print(f"IFACE_MISSING {n} {ip}"); sys.exit(1)
+          # StorageClass exact + not default
+          sc = runj(KC + ["get","storageclass","piraeus-r2","-o","json"])
+          if not sc: print("SC_MISSING"); sys.exit(1)
+          if sc.get("provisioner") != "linstor.csi.linbit.com": print("SC_PROV"); sys.exit(1)
+          ann = sc.get("metadata",{}).get("annotations",{})
+          if ann.get("storageclass.kubernetes.io/is-default-class") == "true": print("SC_DEFAULT"); sys.exit(1)
+          print("PROD_P5C2_OK LSC 3/3 Applied, hostNetwork=true, NC Configured, drbd141 3/3, SC piraeus-r2")
+          PYEOF
+      changed_when: false
+      delegate_to: node-01
+      run_once: true
+
+    # ═══ DRBD runtime final ═══
+    - name: DRBD runtime final — 9.3.2 + tcp + kernel, no data resource
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          python3 << 'PYEOF'
+          import subprocess, sys
+          r = subprocess.run("cat /sys/module/drbd/version 2>/dev/null", shell=True, capture_output=True, text=True)
+          if "9.3.2" not in r.stdout: print("DRBD_VERSION"); sys.exit(1)
+          r = subprocess.run("lsmod | grep -c '^drbd_transport_tcp ' || true", shell=True, capture_output=True, text=True)
+          if int(r.stdout.strip() or 0) < 1: print("DRBD_TCP"); sys.exit(1)
+          r = subprocess.run("uname -r", shell=True, capture_output=True, text=True)
+          if "6.1.158-1-generic" not in r.stdout: print("KERNEL"); sys.exit(1)
+          print("DRBD_RUNTIME_OK 9.3.2 tcp=loaded kernel=6.1.158-1-generic")
+          PYEOF
+      changed_when: false

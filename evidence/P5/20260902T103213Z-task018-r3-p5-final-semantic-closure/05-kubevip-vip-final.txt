@@ -1,0 +1,10 @@
+=== 05-kubevip-vip-final ===
+kube-vip-node-01                          1/1     Running   1 (7d19h ago)   8d
+kube-vip-node-02                          1/1     Running   1 (7d14h ago)   8d
+kube-vip-node-03                          1/1     Running   1 (7d2h ago)    8d
+--- VIP owner per node ---
+0
+0
+1
+0
+0

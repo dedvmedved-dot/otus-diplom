@@ -1,0 +1,10 @@
+=== 06-validation-k8s-residue-semantic ===
+--- ns ---
+Error from server (NotFound): namespaces "p5c2-validation" not found
+--- exact pv ---
+Error from server (NotFound): persistentvolumes "pvc-bb885e2c-71fa-4ed9-b1cf-fc1351945556" not found
+--- linstor pv ---
+linstor_pv= 0
+sc_piraeus_pv= 0
+--- sc pvc ---
+sc_piraeus_pvc= 0

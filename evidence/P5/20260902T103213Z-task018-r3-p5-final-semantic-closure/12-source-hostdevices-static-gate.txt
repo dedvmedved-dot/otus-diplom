@@ -1,0 +1,14 @@
+=== 12-source-hostdevices-static-gate ===
+# P5C2 — Existing-thinpool binding (register already-prepared P5B backing thin pool)
+# Binds the existing host thin pool vg_piraeus/thin_piraeus into LINSTOR as
+# storage pool `piraeus-thin`. NO raw-device source, NO hostDevices.
+apiVersion: piraeus.io/v1
+kind: LinstorSatelliteConfiguration
+metadata:
+  name: p5c2-storage-pool
+spec:
+  storagePools:
+    - name: piraeus-thin
+      lvmThinPool:
+        volumeGroup: vg_piraeus
+        thinPool: thin_piraeus

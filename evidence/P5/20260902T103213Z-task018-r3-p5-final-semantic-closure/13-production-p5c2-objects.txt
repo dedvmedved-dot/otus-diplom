@@ -1,0 +1,10 @@
+=== 13-production-p5c2-objects ===
+NAME                                                                  SELECTOR   APPLIED   MATCHED   AGE
+linstorsatelliteconfiguration.piraeus.io/astra-drbd-loader                       True      3         34h
+linstorsatelliteconfiguration.piraeus.io/p5c2-satellite-hostnetwork              True      3         10h
+linstorsatelliteconfiguration.piraeus.io/p5c2-storage-pool                       True      3         13h
+
+NAME                                                 CONFIGURED   AGE
+linstornodeconnection.piraeus.io/p5c2-drbd-vlan141   True         13h
+--- SC ---
+linstor.csi.linbit.com allowVolumeExpansion=true reclaim=Delete

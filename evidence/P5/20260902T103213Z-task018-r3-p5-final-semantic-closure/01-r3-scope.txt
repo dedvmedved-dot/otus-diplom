@@ -1,0 +1,13 @@
+# TASK-018-R3 — Scope
+
+MODE: READ-ONLY P5 FINAL SEMANTIC CLOSURE
+INFRASTRUCTURE MUTATION: 0
+P6: NOT AUTHORIZED
+
+R3 closes 4 residual fail-closed gaps from R2 acceptance source:
+1. P3 endpoint learner=0 / actual leader endpoint=1 / livez direct 3 node APIs.
+2. Validation cleanup PV detection (semantic csi.driver/storageClass, not name substring).
+3. LINSTOR node/pool exact-set assertion (reject extras).
+4. P5B immutable explicit structural compare (size/type, not just UUID presence).
+
+One strictly read-only run. No storage/replication/data test repeated.
