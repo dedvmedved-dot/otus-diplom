@@ -1,0 +1,29 @@
+# TASK-P6B-R4 — Runtime Mutation Audit (R4-10)
+
+MODE: STRICTLY READ-ONLY AGAINST RUNNING CLUSTER.
+
+RUNTIME MUTATION COUNT = 0
+
+  kubectl apply:        0
+  kubectl create:       0
+  kubectl delete:       0
+  kubectl patch:        0
+  kubectl edit:         0
+  kubectl label:        0
+  kubectl annotate:     0
+  kubectl taint:        0
+  kubectl rollout restart: 0
+  helm install/upgrade: 0
+  systemctl mutation:   0
+  network mutation:     0
+  reboot:               0
+
+Runtime operations were READ-ONLY only:
+  - kubectl get nodes / -n metallb-system get deploy/ds/ipaddresspool/l2advertisement
+  - kubectl get bgppeer/bgpadvertisement
+  - kubectl get pod kube-vip-node-01 -o json (env read)
+  - kubectl get namespace (validation residue read)
+  - read-only Ansible verification (p5c2-final-regression-verify.yml,
+    p6b-final-readonly-verify.yml)
+
+RESULT: PASS (0 runtime mutations)

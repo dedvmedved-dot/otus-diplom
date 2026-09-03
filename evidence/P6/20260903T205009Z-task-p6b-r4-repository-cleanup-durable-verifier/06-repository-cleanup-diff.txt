@@ -1,0 +1,9 @@
+=== 06-repository-cleanup-diff ===
+rm 'manifests/metallb/p6b-r3-validation-namespace.yaml'
+rm 'manifests/metallb/p6b-r3-validation-netpol.yaml'
+rm 'manifests/metallb/p6b-r3-validation-workload.yaml'
+--- diff stat ---
+D  manifests/metallb/p6b-r3-validation-namespace.yaml
+D  manifests/metallb/p6b-r3-validation-netpol.yaml
+D  manifests/metallb/p6b-r3-validation-workload.yaml
+?? evidence/P6/20260903T205009Z-task-p6b-r4-repository-cleanup-durable-verifier/

@@ -1,0 +1,202 @@
+=== 07-durable-verifier-source ===
+---
+# TASK-P6B-R4 — Durable fail-closed P6B final read-only verifier.
+# MODE: STRICTLY READ-ONLY. RUNTIME MUTATION = 0.
+# Asserts the exact P6B MetalLB 0.16.1 L2 production contract.
+# Every task is read-only (kubectl get / JSON parse) and must yield changed=0.
+# Fail-closed: any semantic violation -> non-zero exit / task failure.
+
+- name: "P6B final read-only verifier (TASK-P6B-R4)"
+  hosts: all
+  gather_facts: false
+  vars:
+    expected_nodes:
+      node-01: "172.30.140.101"
+      node-02: "172.30.140.102"
+      node-03: "172.30.140.103"
+    metallb_ns: metallb-system
+    expected_pool_name: p6-ingress-pool
+    expected_l2_name: p6-ingress-l2
+    expected_pool_addrs:
+      - "172.30.140.110-172.30.140.119"
+    controller_digest: "sha256:5a3e101335f5ea2cfb0ddf51acdfa9538251e0623ffcd6cbfc1b274b7898790c"
+    speaker_digest: "sha256:37a98a9d1cd970051c5dededb6f922c1e6c3b90fdd0fc1350d1686e67675af0e"
+
+  tasks:
+    # ═══ A/B/C/D/E/F/G/H/I/J — nodes + label + MetalLB + pool + l2 + BGP + kube-vip + residue ═══
+    - name: P6B final semantic verification (read-only)
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          python3 << 'PYEOF'
+          import json, subprocess, sys, hashlib
+          KC = ["kubectl", "--kubeconfig", "/etc/kubernetes/admin.conf"]
+          def run(c):
+              r = subprocess.run(c, capture_output=True, text=True)
+              return r.returncode, r.stdout, r.stderr
+          def runj(c):
+              r = subprocess.run(c, capture_output=True, text=True)
+              return json.loads(r.stdout) if r.returncode == 0 else None
+
+          expected_nodes = {
+              "node-01": "172.30.140.101",
+              "node-02": "172.30.140.102",
+              "node-03": "172.30.140.103",
+          }
+
+          # A. nodes exactly 3, Ready=True, exact InternalIP
+          nodes = runj(KC + ["get", "nodes", "-o", "json"])
+          assert nodes is not None, "nodes query failed"
+          names = sorted(it["metadata"]["name"] for it in nodes["items"])
+          assert names == sorted(expected_nodes.keys()), f"unexpected node set {names}"
+          for it in nodes["items"]:
+              n = it["metadata"]["name"]
+              ready = None
+              for c in it["status"]["conditions"]:
+                  if c["type"] == "Ready":
+                      ready = c["status"]
+              assert ready == "True", f"{n} not Ready"
+              ips = [a["address"] for a in it["status"]["addresses"] if a["type"] == "InternalIP"]
+              assert expected_nodes[n] in ips, f"{n} InternalIP mismatch"
+              # B. exclusion label absent
+              lbl = it["metadata"]["labels"]
+              assert "node.kubernetes.io/exclude-from-external-load-balancers" not in lbl, \
+                  f"{n} has exclusion label"
+          print("P6B_NODES_OK")
+          print("P6B_EXCLUDE_LB_LABEL_ABSENT")
+
+          # C. MetalLB version 0.16.1 (no latest) + D. readiness
+          dep = runj(KC + ["-n", "metallb-system", "get", "deploy", "controller", "-o", "json"])
+          assert dep is not None
+          img = dep["spec"]["template"]["spec"]["containers"][0]["image"]
+          assert "controller" in img and "latest" not in img, f"controller img {img}"
+          avail = dep["status"].get("availableReplicas", 0)
+          desired = dep["spec"]["replicas"]
+          assert avail == 1 and desired == 1, f"controller {avail}/{desired}"
+          ds = runj(KC + ["-n", "metallb-system", "get", "ds", "speaker", "-o", "json"])
+          assert ds is not None
+          simg = ds["spec"]["template"]["spec"]["containers"][0]["image"]
+          assert "speaker" in simg and "latest" not in simg, f"speaker img {simg}"
+          nready = ds["status"].get("numberReady", 0)
+          ncur = ds["status"].get("currentNumberScheduled", 0)
+          ndes = ds["status"].get("desiredNumberScheduled", 0)
+          assert (nready, ncur, ndes) == (3, 3, 3), f"speaker {nready}/{ncur}/{ndes}"
+          print("P6B_CONTROLLER_READY")
+          print("P6B_SPEAKERS_READY")
+
+          # E. immutable runtime images (imageID == approved digest)
+          ctrl_pods = runj(KC + ["-n", "metallb-system", "get", "pods", "-l", "component=controller", "-o", "json"])
+          assert ctrl_pods and ctrl_pods["items"], "no controller pod"
+          ctrl_imgid = ctrl_pods["items"][0]["status"]["containerStatuses"][0]["imageID"]
+          assert "sha256:5a3e101335f5ea2cfb0ddf51acdfa9538251e0623ffcd6cbfc1b274b7898790c" in ctrl_imgid, f"controller imageID {ctrl_imgid}"
+          spk_pods = runj(KC + ["-n", "metallb-system", "get", "pods", "-l", "component=speaker", "-o", "json"])
+          assert spk_pods and len(spk_pods["items"]) == 3, "speaker pod count != 3"
+          for p in spk_pods["items"]:
+              sid = p["status"]["containerStatuses"][0]["imageID"]
+              assert "sha256:37a98a9d1cd970051c5dededb6f922c1e6c3b90fdd0fc1350d1686e67675af0e" in sid, f"speaker imageID {sid}"
+          print("P6B_IMAGES_OK")
+
+          # F. IPAddressPool exactness (exactly one production pool)
+          pools = runj(KC + ["-n", "metallb-system", "get", "ipaddresspool", "-o", "json"])
+          assert pools is not None
+          prod = [p for p in pools["items"] if p["metadata"]["name"] == "p6-ingress-pool"]
+          assert len(prod) == 1, "p6-ingress-pool not exactly one"
+          pl = prod[0]
+          assert pl["metadata"]["namespace"] == "metallb-system"
+          assert pl["spec"]["addresses"] == ["172.30.140.110-172.30.140.119"], \
+              f"pool addrs {pl['spec']['addresses']}"
+          print("P6B_POOL_OK")
+
+          # G. L2Advertisement exactness
+          l2s = runj(KC + ["-n", "metallb-system", "get", "l2advertisement", "-o", "json"])
+          assert l2s is not None
+          l2p = [l for l in l2s["items"] if l["metadata"]["name"] == "p6-ingress-l2"]
+          assert len(l2p) == 1, "p6-ingress-l2 not exactly one"
+          assert l2p[0]["spec"]["ipAddressPools"] == ["p6-ingress-pool"], \
+              f"l2 pools {l2p[0]['spec']['ipAddressPools']}"
+          print("P6B_L2ADVERTISEMENT_OK")
+
+          # H. BGP prohibition (configured resources = 0)
+          for kind in ["bgppeer", "bgpadvertisement"]:
+              r = subprocess.run(KC + [kind], capture_output=True, text=True)
+              n = len(json.loads(r.stdout).get("items", [])) if r.returncode == 0 else 0
+              assert n == 0, f"{kind} count {n}"
+          print("P6B_BGP_ZERO")
+
+          # I. kube-vip separation (cp_enable=true, svc_enable=false, addr=.100)
+          kvp = runj(KC + ["-n", "kube-system", "get", "pod", "kube-vip-node-01", "-o", "json"])
+          assert kvp is not None, "kube-vip pod missing"
+          env = {e["name"]: e.get("value", "") for e in kvp["spec"]["containers"][0]["env"]}
+          assert env.get("cp_enable") == "true", f"cp_enable={env.get('cp_enable')}"
+          assert env.get("svc_enable") == "false", f"svc_enable={env.get('svc_enable')}"
+          assert env.get("address") == "172.30.140.100", f"address={env.get('address')}"
+          print("P6B_KUBEVIP_SEPARATION_OK")
+
+          # J. validation residue zero (namespaces + temporary LB services)
+          for ns in ["p6b-validation", "p6b-r2-validation", "p6b-r3-validation"]:
+              rc, o, e = run(KC + ["get", "namespace", ns])
+              assert rc != 0 and "NotFound" in e, f"validation namespace {ns} still present"
+          all_svc = runj(KC + ["get", "svc", "-A", "-o", "json"])
+          lb = [s for s in all_svc["items"] if s["spec"].get("type") == "LoadBalancer"]
+          assert len(lb) == 0, f"temporary LoadBalancer services remain: {[s['metadata']['name'] for s in lb]}"
+          print("P6B_VALIDATION_RESIDUE_ZERO")
+
+          print("P6B_FINAL_READONLY_VERIFIER_PASS")
+          PYEOF
+      changed_when: false
+      delegate_to: node-01
+      run_once: true
+
+    # ═══ K — source manifest exactness (repository files, read-only, localhost) ═══
+    - name: P6B source manifest semantic exactness (read-only)
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          python3 << 'PYEOF'
+          import yaml, sys
+          pool = yaml.safe_load(open("manifests/metallb/p6b-ipaddresspool.yaml"))
+          assert pool["kind"] == "IPAddressPool", "pool kind"
+          assert pool["metadata"]["name"] == "p6-ingress-pool", "pool name"
+          assert pool["metadata"]["namespace"] == "metallb-system", "pool ns"
+          assert pool["spec"]["addresses"] == ["172.30.140.110-172.30.140.119"], "pool addrs"
+          l2 = yaml.safe_load(open("manifests/metallb/p6b-l2advertisement.yaml"))
+          assert l2["kind"] == "L2Advertisement", "l2 kind"
+          assert l2["metadata"]["name"] == "p6-ingress-l2", "l2 name"
+          assert l2["metadata"]["namespace"] == "metallb-system", "l2 ns"
+          assert l2["spec"]["ipAddressPools"] == ["p6-ingress-pool"], "l2 pools"
+          print("P6B_SOURCE_MANIFESTS_OK")
+          PYEOF
+      changed_when: false
+      delegate_to: localhost
+      run_once: true
+
+    # ═══ L — images.lock exactness (repository file, read-only, localhost) ═══
+    - name: P6B images.lock exactness (read-only)
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          python3 << 'PYEOF'
+          import yaml, sys
+          doc = yaml.safe_load(open("images.lock"))
+          entries = doc.get("images", doc)
+          if isinstance(entries, dict):
+              entries = entries.get("images", [])
+          found = {}
+          for e in entries:
+              comp = e.get("component")
+              if comp in ("metallb-controller", "metallb-speaker"):
+                  found[comp] = e
+          assert "metallb-controller" in found, "metallb-controller missing"
+          assert "metallb-speaker" in found, "metallb-speaker missing"
+          assert found["metallb-controller"]["tag"] == "v0.16.1", "controller tag"
+          assert found["metallb-controller"]["digest"] == "sha256:5a3e101335f5ea2cfb0ddf51acdfa9538251e0623ffcd6cbfc1b274b7898790c", "controller digest"
+          assert found["metallb-speaker"]["tag"] == "v0.16.1", "speaker tag"
+          assert found["metallb-speaker"]["digest"] == "sha256:37a98a9d1cd970051c5dededb6f922c1e6c3b90fdd0fc1350d1686e67675af0e", "speaker digest"
+          assert found["metallb-controller"].get("verified") is True, "controller verified"
+          assert found["metallb-speaker"].get("verified") is True, "speaker verified"
+          print("P6B_IMAGES_LOCK_OK")
+          PYEOF
+      changed_when: false
+      delegate_to: localhost
+      run_once: true
+

@@ -1,0 +1,24 @@
+--- nodes ---
+node-01 Ready=True ver=v1.36.2
+node-02 Ready=True ver=v1.36.2
+node-03 Ready=True ver=v1.36.2
+--- metallb ---
+controller=1/1
+speaker=3/3
+--- pool ---
+p6-ingress-pool ns=metallb-system addrs=["172.30.140.110-172.30.140.119"]
+--- l2adv ---
+p6-ingress-l2 pools=["p6-ingress-pool"]
+--- bgp ---
+0
+0
+--- kube-vip ---
+cp=true svc=false addr=172.30.140.100
+--- label ---
+node-01 LABEL_ABSENT
+node-02 LABEL_ABSENT
+node-03 LABEL_ABSENT
+--- validation residue ---
+p6b-validation NotFound
+p6b-r2-validation NotFound
+p6b-r3-validation NotFound

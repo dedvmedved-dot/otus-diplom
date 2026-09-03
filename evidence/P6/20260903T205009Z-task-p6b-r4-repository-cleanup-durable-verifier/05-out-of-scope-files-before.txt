@@ -1,0 +1,12 @@
+# TASK-P6B-R4 — Out-of-scope files BEFORE removal (R4-03)
+
+Files committed outside R3 authorized Git scope (to be removed):
+
+manifests/metallb/p6b-r3-validation-namespace.yaml    (present, 101 bytes)
+manifests/metallb/p6b-r3-validation-netpol.yaml       (present, 1056 bytes)
+manifests/metallb/p6b-r3-validation-workload.yaml     (present, 1302 bytes)
+
+Production files to PRESERVE (not touched):
+manifests/metallb/p6b-metallb-v0.16.1.yaml
+manifests/metallb/p6b-ipaddresspool.yaml
+manifests/metallb/p6b-l2advertisement.yaml

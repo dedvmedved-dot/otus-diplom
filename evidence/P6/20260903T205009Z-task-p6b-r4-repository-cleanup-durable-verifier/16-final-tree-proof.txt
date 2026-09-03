@@ -1,0 +1,11 @@
+=== 16-final-tree-proof ===
+--- removed files must be ABSENT ---
+p6b-r3-validation-namespace.yaml: ABSENT (OK)
+p6b-r3-validation-netpol.yaml: ABSENT (OK)
+p6b-r3-validation-workload.yaml: ABSENT (OK)
+--- production files must be PRESENT ---
+p6b-metallb-v0.16.1.yaml: PRESENT (OK)
+p6b-ipaddresspool.yaml: PRESENT (OK)
+p6b-l2advertisement.yaml: PRESENT (OK)
+--- durable verifier must be PRESENT ---
+p6b-final-readonly-verify.yml: PRESENT (OK)

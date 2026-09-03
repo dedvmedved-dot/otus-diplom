@@ -1,0 +1,30 @@
+=== 08-verifier-static-safety-audit ===
+Audit for mutation operations in p6b-final-readonly-verify.yml:
+kubectl apply: 0
+0
+kubectl create: 0
+0
+kubectl delete: 0
+0
+kubectl patch: 0
+0
+kubectl edit: 0
+0
+kubectl label: 0
+0
+kubectl annotate: 0
+0
+kubectl taint: 0
+0
+rollout restart: 0
+0
+helm install: 0
+0
+helm upgrade: 0
+0
+systemctl: 0
+0
+reboot: 0
+0
+--- all mutation ops must be 0 ---
+RESULT: 0 executable mutation operations

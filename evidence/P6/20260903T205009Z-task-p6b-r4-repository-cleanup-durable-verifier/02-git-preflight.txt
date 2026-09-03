@@ -1,0 +1,15 @@
+# TASK-P6B-R4 — Git Preflight
+
+branch: main
+HEAD: 46d996ece1ec279701c60e568de5ca68e24c5a08
+worktree: clean
+remote: https://github.com/dedvmedved-dot/otus-diplom.git (no embedded credentials)
+
+git log -5 --oneline:
+  46d996e TASK-P6B-R3: remove external-LB exclusion and prove L2 announcement
+  8de96cf TASK-P6B-R2: prove MetalLB L2 root cause - node exclusion label blocks announce
+  948b46e TASK-P6B-R1: resume MetalLB L2 after DHCP blocker closure
+  dea3121 TASK-P6B: BLOCKED - DHCP reservation not verified (blocker evidence)
+  28189c0 TASK-P6A: collect P6 baseline ingress and artifact preflight evidence
+
+CONDITIONS MET. RESULT: PASS

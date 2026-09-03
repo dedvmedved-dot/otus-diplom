@@ -1,0 +1,19 @@
+# TASK-P6B-R4 — Scope
+
+PROJECT: OTUS Diplom / ПАК «Портал»
+REPOSITORY: dedvmedved-dot/otus-diplom
+STAGE: P6B-R4 (PARENT: TASK-P6B-R3)
+CLASSIFICATION: REPOSITORY GOVERNANCE CORRECTION / DURABLE VERIFIER HARDENING
+
+TARGET:
+  1. Remove three R3 validation manifests committed outside authorized Git scope.
+  2. Add a permanent reproducible fail-closed P6B verifier.
+  3. Prove no runtime mutation is performed.
+  4. Prove P1-P5 remain unchanged and healthy.
+  5. Prepare P6B for final Architect acceptance.
+
+RUNTIME: STRICTLY READ-ONLY (mutation count = 0).
+P6C / ENVOY GATEWAY: NOT AUTHORIZED.
+
+GAP-1: remove manifests/metallb/p6b-r3-validation-{namespace,netpol,workload}.yaml
+GAP-2: create durable verifier ansible/playbooks/p6b-final-readonly-verify.yml

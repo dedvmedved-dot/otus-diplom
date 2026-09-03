@@ -1,0 +1,8 @@
+=== 15-git-scope-audit ===
+D  manifests/metallb/p6b-r3-validation-namespace.yaml
+D  manifests/metallb/p6b-r3-validation-netpol.yaml
+D  manifests/metallb/p6b-r3-validation-workload.yaml
+?? ansible/playbooks/p6b-final-readonly-verify.yml
+?? evidence/P6/20260903T205009Z-task-p6b-r4-repository-cleanup-durable-verifier/
+--- allowed only check ---
+ONLY_ALLOWED_PATHS
