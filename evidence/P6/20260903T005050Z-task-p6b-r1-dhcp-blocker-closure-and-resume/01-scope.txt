@@ -1,0 +1,21 @@
+# TASK-P6B-R1 — Scope
+
+PROJECT: OTUS Diplom / ПАК «Портал»
+REPOSITORY: dedvmedved-dot/otus-diplom
+STAGE: P6B-R1 (PARENT: TASK-P6B — BLOCKED BEFORE MUTATION)
+CLASSIFICATION: BLOCKER CLOSURE + CONTROLLED RESUME
+TARGET: MetalLB 0.16.1 L2 Foundation
+P6C / ENVOY GATEWAY: NOT AUTHORIZED
+
+MISSION:
+  1. Close the TASK-P6B DHCP blocker in evidence.
+  2. Re-run all pre-mutation safety checks.
+  3. Resume approved P6B implementation.
+  4. Deploy MetalLB 0.16.1 L2.
+  5. Validate LB allocation, ARP/L2, HTTP.
+  6. Preserve P1-P5 accepted state.
+  7. Remove temporary validation objects.
+  8. STOP before P6C.
+
+Ingress pool: 172.30.140.110-172.30.140.119
+Network: VLAN140, 172.30.140.0/24, bond0.140.

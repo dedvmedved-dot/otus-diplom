@@ -1,0 +1,9 @@
+# P6B — MetalLB L2Advertisement (references only p6-ingress-pool)
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: p6-ingress-l2
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+    - p6-ingress-pool

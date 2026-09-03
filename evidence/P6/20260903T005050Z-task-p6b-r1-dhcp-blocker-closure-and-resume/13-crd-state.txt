@@ -1,0 +1,10 @@
+=== 13-crd-state ===
+customresourcedefinition.apiextensions.k8s.io/bfdprofiles.metallb.io
+customresourcedefinition.apiextensions.k8s.io/bgpadvertisements.metallb.io
+customresourcedefinition.apiextensions.k8s.io/bgppeers.metallb.io
+customresourcedefinition.apiextensions.k8s.io/communities.metallb.io
+customresourcedefinition.apiextensions.k8s.io/configurationstates.metallb.io
+customresourcedefinition.apiextensions.k8s.io/ipaddresspools.metallb.io
+customresourcedefinition.apiextensions.k8s.io/l2advertisements.metallb.io
+customresourcedefinition.apiextensions.k8s.io/servicebgpstatuses.metallb.io
+customresourcedefinition.apiextensions.k8s.io/servicel2statuses.metallb.io

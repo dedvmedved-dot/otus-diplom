@@ -1,0 +1,52 @@
+# P6B-R1 — validation HTTP backend + LoadBalancer service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: p6b-http-backend
+  namespace: p6b-validation
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: p6b-http-backend
+  template:
+    metadata:
+      labels:
+        app: p6b-http-backend
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: httpd
+          image: docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              mkdir -p /tmp/www
+              echo "P6B_METALLB_HTTP_OK" > /tmp/www/index.html
+              httpd -f -p 8080 -h /tmp/www
+          ports:
+            - containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - all
+            runAsNonRoot: true
+            runAsUser: 65534
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: p6b-http-lb
+  namespace: p6b-validation
+spec:
+  type: LoadBalancer
+  selector:
+    app: p6b-http-backend
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP

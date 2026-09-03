@@ -1,0 +1,13 @@
+# TASK-P6B-R1 — Owner DHCP Confirmation (R1-01)
+
+OWNER CONFIRMATION:
+  Network 172.30.140.0/24 has no DHCP service.
+
+METALLB INGRESS POOL:
+  172.30.140.110-172.30.140.119
+
+DHCP/IPAM BLOCKER:
+  CLOSED BY OWNER CONFIRMATION
+
+This closes the TASK-P6B hard blocker. The previous BLOCKED evidence
+(evidence/P6/20260902T195002Z-task-p6b-metallb-l2-foundation/) is NOT modified.

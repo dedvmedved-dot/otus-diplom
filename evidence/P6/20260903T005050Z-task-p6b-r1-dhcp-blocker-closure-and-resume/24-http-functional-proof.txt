@@ -1,0 +1,9 @@
+--- curl body ---
+P6B_METALLB_HTTP_OK
+
+--- HTTP code ---
+200=== HTTP from node-02 (backend on node-01) ===
+HTTP=200
+P6B_METALLB_HTTP_OK
+
+--- ARP node-02 ---

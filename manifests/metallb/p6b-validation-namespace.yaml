@@ -1,0 +1,5 @@
+# P6B-R1 — validation namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: p6b-validation

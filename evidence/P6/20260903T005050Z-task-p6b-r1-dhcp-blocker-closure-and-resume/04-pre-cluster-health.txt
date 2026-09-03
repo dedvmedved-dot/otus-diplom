@@ -1,0 +1,15 @@
+NAME      STATUS   ROLES           AGE   VERSION   INTERNAL-IP      EXTERNAL-IP   OS-IMAGE      KERNEL-VERSION              CONTAINER-RUNTIME
+node-01   Ready    control-plane   9d    v1.36.2   172.30.140.101   <none>        Astra Linux   6.1.158-1-generic (amd64)   containerd://2.3.3
+node-02   Ready    control-plane   9d    v1.36.2   172.30.140.102   <none>        Astra Linux   6.1.158-1-generic (amd64)   containerd://2.3.3
+node-03   Ready    control-plane   9d    v1.36.2   172.30.140.103   <none>        Astra Linux   6.1.158-1-generic (amd64)   containerd://2.3.3
+--- readyz ---
+ok--- etcd ---
+[{"endpoint":"https://172.30.140.101:2379","health":true,"took":"18.193232ms"},{"endpoint":"https://172.30.140.103:2379","health":true,"took":"21.889719ms"},{"endpoint":"https://172.30.140.102:2379","health":true,"took":"24.50061ms"}]
+--- linstor ---
++------------------------------------------------------------+
+| Node    | NodeType  | Addresses                   | State  |
+|============================================================|
+| node-01 | SATELLITE | 172.30.140.101:3366 (PLAIN) | [1;32mOnline[0m |
+| node-02 | SATELLITE | 172.30.140.102:3366 (PLAIN) | [1;32mOnline[0m |
+| node-03 | SATELLITE | 172.30.140.103:3366 (PLAIN) | [1;32mOnline[0m |
++------------------------------------------------------------+

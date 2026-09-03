@@ -1,0 +1,37 @@
+PING 172.30.140.110 (172.30.140.110) 56(84) bytes of data.
+
+--- 172.30.140.110 ping statistics ---
+3 packets transmitted, 0 received, 100% packet loss, time 2042ms
+
+--- ARP node-01 ---
+172.30.140.110 dev bond0.140 INCOMPLETE 
+--- which node holds /32 ---
+=== ARP check on all nodes + which holds VIP ===
+--- node-01 ---
+172.30.140.110 dev bond0.140 FAILED 
+no-local-vip
+--- node-02 ---
+no-local-vip
+--- node-03 ---
+no-local-vip
+=== servicel2status now ===
+No resources found in metallb-system namespace.
+=== speaker announce + servicel2status (final) ===
+No resources found in metallb-system namespace.
+--- speaker announce events ---
+=== arping LB IP from node-02 (ARP responder proof) ===
+bash: строка 1: arping: команда не найдена
+172.30.140.110 dev bond0.140 INCOMPLETE 
+=== HTTP + immediate ARP (node-02) ===
+--- neigh after HTTP ---
+172.30.140.110 dev bond0.140 FAILED 
+--- who answered (MAC) ---
+
+=== route get to .110 from node-02 + node-01 ===
+172.30.140.110 dev bond0.140 src 172.30.140.102 uid 0 
+    cache 
+=== does .110 resolve to anything on node-01 (where backend is)? check iptables/nat ===
+*   Trying 172.30.140.110:80...
+* Connected to 172.30.140.110 (172.30.140.110) port 80 (#0)
+> GET / HTTP/1.1
+< HTTP/1.1 200 OK

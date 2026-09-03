@@ -1,0 +1,17 @@
+# TASK-P6B-R1 — MetalLB Image Digest Proof (R1-05)
+
+Resolved via registry v2 API (quay.io), read-only, on 2026-09-03.
+
+quay.io/metallb/controller:v0.16.1
+  OCI index mediaType: application/vnd.oci.image.index.v1+json
+  linux/amd64 digest: sha256:5a3e101335f5ea2cfb0ddf51acdfa9538251e0623ffcd6cbfc1b274b7898790c
+
+quay.io/metallb/speaker:v0.16.1
+  OCI index mediaType: application/vnd.oci.image.index.v1+json
+  linux/amd64 digest: sha256:37a98a9d1cd970051c5dededb6f922c1e6c3b90fdd0fc1350d1686e67675af0e
+
+RESULT: digest VERIFIED (factual, not invented).
+
+Pin strategy for install:
+  controller image: quay.io/metallb/controller@sha256:5a3e101335f5ea2cfb0ddf51acdfa9538251e0623ffcd6cbfc1b274b7898790c
+  speaker image:    quay.io/metallb/speaker@sha256:37a98a9d1cd970051c5dededb6f922c1e6c3b90fdd0fc1350d1686e67675af0e

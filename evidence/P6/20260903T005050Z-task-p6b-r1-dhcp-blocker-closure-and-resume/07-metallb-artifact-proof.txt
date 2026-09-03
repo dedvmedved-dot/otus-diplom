@@ -1,0 +1,20 @@
+# TASK-P6B-R1 — MetalLB Artifact Proof (R1-05/R1-06)
+
+release/version: 0.16.1
+source: https://github.com/metallb/metallb (tag v0.16.1)
+official manifest: config/manifests/metallb-native.yaml
+
+CRD set (metallb.io group):
+  bfdprofiles.metallb.io (v1beta1)
+  bgpadvertisements.metallb.io (v1beta1)
+  bgppeers.metallb.io (v1beta2/v1beta1)
+  communities.metallb.io (v1beta1)
+  ipaddresspools.metallb.io (v1beta1)
+  l2advertisements.metallb.io (v1beta1)
+
+Images (digest-pinned, linux/amd64):
+  quay.io/metallb/controller@sha256:5a3e101335f5ea2cfb0ddf51acdfa9538251e0623ffcd6cbfc1b274b7898790c
+  quay.io/metallb/speaker@sha256:37a98a9d1cd970051c5dededb6f922c1e6c3b90fdd0fc1350d1686e67675af0e
+
+namespace: metallb-system
+No BGP objects created. No secrets. No latest/unpinned images.

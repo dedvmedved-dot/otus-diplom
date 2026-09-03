@@ -1,0 +1,4 @@
+172.30.140.110
+--- pod ready ---
+NAME                                READY   STATUS    RESTARTS   AGE
+p6b-http-backend-74787f9c8c-sgnz6   0/1     Pending   0          32s

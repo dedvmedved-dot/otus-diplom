@@ -1,0 +1,24 @@
+# TASK-P6B-R1 — Forbidden Command Audit
+
+MODE: CONTROLLED IMPLEMENTATION (P6B authorized scope).
+
+Authorized runtime mutation (executed):
+  - install MetalLB 0.16.1 (kubectl apply digest-pinned manifest)
+  - create p6-ingress-pool (IPAddressPool)
+  - create p6-ingress-l2 (L2Advertisement)
+  - create temporary p6b-validation (namespace + netpol + workload + LB svc)
+  - delete temporary p6b-validation after proof
+
+NOT executed (forbidden, count = 0):
+  - Envoy Gateway installation: 0
+  - GatewayClass/Gateway/HTTPRoute: 0
+  - BGP/BGPPeer/BGPAdvertisement/BFD/ASN: 0
+  - router/switch changes: 0
+  - different ingress range / MetalLB version: 0
+  - latest/unpinned MetalLB images: 0
+  - kube-vip / Calico / CoreDNS / P4B baseline changes: 0
+  - LINSTOR/DRBD/LVM/PVC/PV/StorageClass changes: 0
+  - reboot / unrelated OS/package/systemd/network changes: 0
+  - force push / history rewrite: 0
+
+RESULT: PASS (mutation strictly within P6B authorized scope)

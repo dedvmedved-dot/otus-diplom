@@ -1,0 +1,4 @@
+=== git scope ===
+ M images.lock
+?? evidence/P6/20260903T005050Z-task-p6b-r1-dhcp-blocker-closure-and-resume/
+?? manifests/metallb/

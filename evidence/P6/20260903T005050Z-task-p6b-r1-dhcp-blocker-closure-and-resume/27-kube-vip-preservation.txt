@@ -1,0 +1,10 @@
+cp_enable= true svc_enable= false address= 172.30.140.100
+--- VIP owner aggregate ---
+bash: строка 1: sshpass: команда не найдена
+bash: строка 1: sshpass: команда не найдена
+bash: строка 1: sshpass: команда не найдена
+=== VIP owner aggregate (from Hermes host) ===
+node-01: VIP_owner=00
+node-02: VIP_owner=1
+node-03: VIP_owner=00
+VIP_OWNER_AGGREGATE=1

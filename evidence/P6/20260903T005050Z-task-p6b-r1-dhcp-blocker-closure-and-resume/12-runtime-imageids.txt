@@ -1,0 +1,6 @@
+--- controller ---
+quay.io/metallb/controller@sha256:5a3e101335f5ea2cfb0ddf51acdfa9538251e0623ffcd6cbfc1b274b7898790c
+quay.io/metallb/controller@sha256:5a3e101335f5ea2cfb0ddf51acdfa9538251e0623ffcd6cbfc1b274b7898790c
+--- speaker ---
+quay.io/metallb/speaker@sha256:37a98a9d1cd970051c5dededb6f922c1e6c3b90fdd0fc1350d1686e67675af0e
+quay.io/metallb/speaker@sha256:37a98a9d1cd970051c5dededb6f922c1e6c3b90fdd0fc1350d1686e67675af0e

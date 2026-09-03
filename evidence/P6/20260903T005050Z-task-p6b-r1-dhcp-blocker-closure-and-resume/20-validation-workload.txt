@@ -1,0 +1,2 @@
+=== 20-validation-workload (already applied, summary) ===
+namespace p6b-validation + 3 NetworkPolicies (default-deny-all, dns-egress, allow-http-backend) + deployment p6b-http-backend (busybox httpd, marker P6B_METALLB_HTTP_OK) + svc p6b-http-lb (LoadBalancer)

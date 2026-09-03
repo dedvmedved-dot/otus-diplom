@@ -1,0 +1,12 @@
+--- metallb ---
+controller available=1/1
+speaker ready=3/3
+--- pool ---
+["172.30.140.110-172.30.140.119"]
+--- l2adv ---
+["p6-ingress-pool"]
+--- bgp ---
+0
+0 bgp objects
+--- validation ns ---
+Error from server (NotFound): namespaces "p6b-validation" not found

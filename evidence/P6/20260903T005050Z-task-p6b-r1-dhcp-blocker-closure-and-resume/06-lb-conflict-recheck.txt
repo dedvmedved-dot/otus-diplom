@@ -1,0 +1,8 @@
+--- metallb ns ---
+Error from server (NotFound): namespaces "metallb-system" not found
+--- envoy ---
+no envoy/gateway ns
+--- LB services ---
+LB services: NONE
+--- kube-vip config ---
+cp_enable= true svc_enable= false address= 172.30.140.100

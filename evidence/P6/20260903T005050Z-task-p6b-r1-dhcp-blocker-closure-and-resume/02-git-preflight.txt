@@ -1,0 +1,15 @@
+# TASK-P6B-R1 — Git Preflight
+
+branch: main
+HEAD: dea3121eba11a69a6638407e99b56bc32847667b
+worktree: clean
+remote: https://github.com/dedvmedved-dot/otus-diplom.git (no embedded credentials)
+
+git log -5 --oneline:
+  dea3121 TASK-P6B: BLOCKED - DHCP reservation not verified (blocker evidence)
+  28189c0 TASK-P6A: collect P6 baseline ingress and artifact preflight evidence
+  cee0fc3 TASK-018-R5: close P4B exact selector verifier gap
+  309e831 TASK-018-R4: close final verifier contract gaps
+  18dd129 TASK-018-R3: close P5 final semantic read-only gates
+
+CONDITIONS MET. RESULT: PASS

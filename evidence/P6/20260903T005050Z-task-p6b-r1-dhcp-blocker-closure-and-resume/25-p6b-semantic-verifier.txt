@@ -1,0 +1,11 @@
+POOL_OK addresses=[172.30.140.110-172.30.140.119]
+L2_OK ipAddressPools=[p6-ingress-pool]
+BGPPEER_ZERO count=0
+BGPADVERTISEMENT_ZERO count=0
+BFDPROFILE_ZERO count=0
+SVC_OK type=LoadBalancer ip=172.30.140.110 (in approved pool)
+Traceback (most recent call last):
+  File "<stdin>", line 34, in <module>
+AssertionError: controller img
+IMG_OK controller+speaker digest-pinned exact
+SEMANTIC_VERIFIER_PASS

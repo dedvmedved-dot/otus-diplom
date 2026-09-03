@@ -1,0 +1,19 @@
+# TASK-P6B-R1 — Source Artifact Fingerprint (R1-06)
+
+manifests/metallb/p6b-metallb-v0.16.1.yaml
+  source: https://raw.githubusercontent.com/metallb/metallb/v0.16.1/config/manifests/metallb-native.yaml
+  version: v0.16.1
+  local sha256: a6e439b27de410b9fbe301e7523e63fa86ffabe3e4d1c7e7b30aa6cee0ff5aa4
+  image pins (linux/amd64):
+    controller: quay.io/metallb/controller@sha256:5a3e101335f5ea2cfb0ddf51acdfa9538251e0623ffcd6cbfc1b274b7898790c
+    speaker:    quay.io/metallb/speaker@sha256:37a98a9d1cd970051c5dededb6f922c1e6c3b90fdd0fc1350d1686e67675af0e
+
+manifests/metallb/p6b-ipaddresspool.yaml
+  kind IPAddressPool name=p6-ingress-pool ns=metallb-system
+  addresses: 172.30.140.110-172.30.140.119
+
+manifests/metallb/p6b-l2advertisement.yaml
+  kind L2Advertisement name=p6-ingress-l2 ns=metallb-system
+  ipAddressPools: [p6-ingress-pool]
+
+No BGP objects. No secrets. No latest/unpinned tags.

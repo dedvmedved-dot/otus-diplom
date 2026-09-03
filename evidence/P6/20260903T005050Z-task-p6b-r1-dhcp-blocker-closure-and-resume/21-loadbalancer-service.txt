@@ -1,0 +1,26 @@
+=== wait LB IP assignment ===
+poll 1: [{"ip":"172.30.140.110","ipMode":"VIP"}]
+NAME                                READY   STATUS    RESTARTS   AGE
+p6b-http-backend-74787f9c8c-sgnz6   0/1     Pending   0          16s
+LB_IP_ASSIGNED
+poll 1: Running/true
+BACKEND_READY
+poll 1: ready=true
+=== check L2Advertisement status + controller view ===
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"metallb.io/v1beta1","kind":"L2Advertisement","metadata":{"annotations":{},"name":"p6-ingress-l2","namespace":"metallb-system"},"spec":{"ipAddressPools":["p6-ingress-pool"]}}
+  creationTimestamp: "2026-09-03T01:03:32Z"
+  generation: 1
+  name: p6-ingress-l2
+  namespace: metallb-system
+  resourceVersion: "3053525"
+  uid: 5b414204-d54e-4d41-a4b8-de0806a3624f
+spec:
+  ipAddressPools:
+  - p6-ingress-pool
+poll 1: ready=false
+poll 2: ready=true

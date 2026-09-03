@@ -1,0 +1,53 @@
+# P6B-R1 — validation NetworkPolicies (reuse canonical baseline sources)
+# default-deny-all + allow-dns-egress applied to p6b-validation, then explicit
+# HTTP access rules (allow client -> backend TCP/8080).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: baseline-default-deny-all
+  namespace: p6b-validation
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: baseline-allow-dns-egress
+  namespace: p6b-validation
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+# Explicit application allow: ingress to backend HTTP/8080 from anywhere in cluster
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-http-backend
+  namespace: p6b-validation
+spec:
+  podSelector:
+    matchLabels:
+      app: p6b-http-backend
+  policyTypes:
+    - Ingress
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 8080

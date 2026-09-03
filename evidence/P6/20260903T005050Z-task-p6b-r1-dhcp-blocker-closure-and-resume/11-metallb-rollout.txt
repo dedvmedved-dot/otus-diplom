@@ -1,0 +1,64 @@
+=== wait MetalLB rollout ===
+poll 1: available=/1
+speaker=0/3
+poll 2: available=/1
+speaker=0/3
+poll 3: ssh: connect to host 192.168.194.38 port 22: Network is unreachable
+poll 4: ssh: connect to host 192.168.194.38 port 22: Network is unreachable
+poll 5: available=/1
+speaker=0/3
+poll 6: available=/1
+speaker=0/3
+poll 7: available=/1
+speaker=0/3
+poll 8: available=/1
+speaker=0/3
+poll 9: available=/1
+speaker=0/3
+poll 10: available=/1
+speaker=0/3
+poll 11: available=/1
+speaker=0/3
+poll 12: available=/1
+speaker=0/3
+poll 13: available=/1
+speaker=0/3
+poll 14: available=/1
+speaker=0/3
+poll 15: available=/1
+speaker=0/3
+poll 16: available=/1
+speaker=0/3
+poll 17: available=/1
+speaker=0/3
+poll 18: available=/1
+speaker=0/3
+poll 19: available=/1
+speaker=0/3
+poll 20: available=/1
+speaker=0/3
+poll 21: available=/1
+speaker=0/3
+poll 22: available=/1
+speaker=0/3
+poll 23: available=/1
+speaker=0/3
+poll 24: available=/1
+speaker=0/3
+=== wait rollout (with toleration) ===
+poll 1: available=/1
+speaker=0/3
+poll 2: available=/1
+speaker=0/3
+poll 3: available=1/1
+speaker=0/3
+poll 4: available=1/1
+speaker=0/3
+poll 5: available=1/1
+speaker=0/3
+poll 6: available=1/1
+speaker=0/3
+poll 7: ssh: connect to host 192.168.194.38 port 22: Network is unreachable
+poll 8: available=1/1
+speaker=3/3
+METALLB_READY controller=1/1 speaker=3/3

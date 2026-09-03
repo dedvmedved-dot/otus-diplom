@@ -187,3 +187,19 @@ images:
     source_registry: quay.io
     internal_registry: NOT_VERIFIED
     verified: true
+
+  - component: metallb-controller
+    image: quay.io/metallb/controller
+    tag: "v0.16.1"
+    digest: "sha256:5a3e101335f5ea2cfb0ddf51acdfa9538251e0623ffcd6cbfc1b274b7898790c"
+    source_registry: quay.io
+    internal_registry: NOT_VERIFIED
+    verified: true
+
+  - component: metallb-speaker
+    image: quay.io/metallb/speaker
+    tag: "v0.16.1"
+    digest: "sha256:37a98a9d1cd970051c5dededb6f922c1e6c3b90fdd0fc1350d1686e67675af0e"
+    source_registry: quay.io
+    internal_registry: NOT_VERIFIED
+    verified: true
