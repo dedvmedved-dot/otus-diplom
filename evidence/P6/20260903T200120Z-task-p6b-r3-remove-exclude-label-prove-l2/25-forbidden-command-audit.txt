@@ -1,0 +1,22 @@
+# TASK-P6B-R3 — Forbidden Command Audit
+
+MODE: AUTHORIZED CORRECTIVE IMPLEMENTATION (P6B scope).
+
+Authorized runtime mutation (executed):
+  - remove label node.kubernetes.io/exclude-from-external-load-balancers
+    from node-01, node-02, node-03 (exact Architect-authorized mutation).
+  - create/delete temporary p6b-r3-validation resources.
+
+NOT executed (forbidden, count=0):
+  - other node labels/roles/taints: 0
+  - MetalLB reinstall/version/image changes: 0
+  - ingress pool changes: 0
+  - Envoy/Gateway API/P6C: 0
+  - BGP/BFD/ASN: 0
+  - kube-vip/kube-proxy/Calico/CoreDNS/P4B changes: 0
+  - LINSTOR/DRBD/LVM/PVC/PV/StorageClass changes: 0
+  - bond/VLAN/NIC/route/switch/router changes: 0
+  - reboot / unrelated packages/systemd: 0
+  - force push / history rewrite: 0
+
+RESULT: PASS (mutation strictly within authorized scope)

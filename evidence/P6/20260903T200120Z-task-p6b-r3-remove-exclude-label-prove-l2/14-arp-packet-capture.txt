@@ -1,0 +1,55 @@
+=== ARP capture + ping test (.110) ===
+started
+PING 172.30.140.110 (172.30.140.110) 56(84) bytes of data.
+
+--- 172.30.140.110 ping statistics ---
+3 packets transmitted, 0 received, 100% packet loss, time 2054ms
+
+--- neigh ---
+172.30.140.110 dev bond0.140 INCOMPLETE 
+=== captured ARP ===
+ts=1788466019.754 REQUEST(who-has) srcMAC=6c:b3:11:61:d3:22 srcIP=172.30.140.100 -> dstMAC=ff:ff:ff:ff:ff:ff dstIP=172.30.140.100
+ts=1788466019.980 REQUEST(who-has) srcMAC=b6:6e:06:00:71:07 srcIP=172.30.140.101 -> dstMAC=00:00:00:00:00:00 dstIP=172.30.140.110
+ts=1788466021.010 REQUEST(who-has) srcMAC=b6:6e:06:00:71:07 srcIP=172.30.140.101 -> dstMAC=00:00:00:00:00:00 dstIP=172.30.140.110
+ts=1788466022.034 REQUEST(who-has) srcMAC=b6:6e:06:00:71:07 srcIP=172.30.140.101 -> dstMAC=00:00:00:00:00:00 dstIP=172.30.140.110
+ts=1788466022.746 REPLY(is-at) srcMAC=6c:b3:11:61:d3:22 srcIP=172.30.140.100 -> dstMAC=6c:b3:11:61:d3:22 dstIP=172.30.140.100
+TOTAL_ARP_PACKETS=5
+=== ARP capture retry (announce now active) ===
+--- 172.30.140.110 ping statistics ---
+3 packets transmitted, 0 received, 100% packet loss, time 2044ms
+
+--- neigh ---
+172.30.140.110 dev bond0.140 INCOMPLETE 
+=== captured ARP (retry) ===
+ts=1788466061.762 REQUEST(who-has) srcMAC=6c:b3:11:61:d3:22 srcIP=172.30.140.100 -> dstMAC=ff:ff:ff:ff:ff:ff dstIP=172.30.140.100
+ts=1788466064.086 REQUEST(who-has) srcMAC=b6:6e:06:00:71:07 srcIP=172.30.140.101 -> dstMAC=00:00:00:00:00:00 dstIP=172.30.140.110
+ts=1788466064.750 REPLY(is-at) srcMAC=6c:b3:11:61:d3:22 srcIP=172.30.140.100 -> dstMAC=6c:b3:11:61:d3:22 dstIP=172.30.140.100
+ts=1788466065.110 REQUEST(who-has) srcMAC=b6:6e:06:00:71:07 srcIP=172.30.140.101 -> dstMAC=00:00:00:00:00:00 dstIP=172.30.140.110
+ts=1788466065.160 REQUEST(who-has) srcMAC=6c:b3:11:61:ca:78 srcIP=172.30.140.103 -> dstMAC=00:00:00:00:00:00 dstIP=172.30.140.100
+ts=1788466065.160 REPLY(is-at) srcMAC=6c:b3:11:61:d3:22 srcIP=172.30.140.100 -> dstMAC=6c:b3:11:61:ca:78 dstIP=172.30.140.103
+ts=1788466066.130 REQUEST(who-has) srcMAC=b6:6e:06:00:71:07 srcIP=172.30.140.101 -> dstMAC=00:00:00:00:00:00 dstIP=172.30.140.110
+ts=1788466067.746 REQUEST(who-has) srcMAC=6c:b3:11:61:d3:22 srcIP=172.30.140.100 -> dstMAC=ff:ff:ff:ff:ff:ff dstIP=172.30.140.100
+TOTAL_ARP_PACKETS=8
+=== ARP capture (announcer=node-01, probe from node-03) ===
+P6B_R3_METALLB_L2_OK
+
+=== captured ARP (node-03) ===
+ts=1788466193.774 REQUEST(who-has) srcMAC=6c:b3:11:61:d3:22 srcIP=172.30.140.100 -> dstMAC=ff:ff:ff:ff:ff:ff dstIP=172.30.140.100
+ts=1788466196.746 REPLY(is-at) srcMAC=6c:b3:11:61:d3:22 srcIP=172.30.140.100 -> dstMAC=6c:b3:11:61:d3:22 dstIP=172.30.140.100
+ts=1788466199.770 REQUEST(who-has) srcMAC=6c:b3:11:61:d3:22 srcIP=172.30.140.100 -> dstMAC=ff:ff:ff:ff:ff:ff dstIP=172.30.140.100
+TOTAL_ARP_PACKETS=3
+=== clean ARP capture: flush + ping from node-02, capture on node-01 ===
+--- 172.30.140.110 ping statistics ---
+3 packets transmitted, 0 received, 100% packet loss, time 2039ms
+
+--- neigh after ---
+172.30.140.110 dev bond0.140 lladdr b6:6e:06:00:71:07 REACHABLE 
+=== captured ARP (node-01) ===
+ts=1788466232.770 REPLY(is-at) srcMAC=6c:b3:11:61:d3:22 srcIP=172.30.140.100 -> dstMAC=6c:b3:11:61:d3:22 dstIP=172.30.140.100
+ts=1788466233.351 REQUEST(who-has) srcMAC=6c:b3:11:61:d3:22 srcIP=172.30.140.102 -> dstMAC=00:00:00:00:00:00 dstIP=172.30.140.110
+ts=1788466233.351 REPLY(is-at) srcMAC=b6:6e:06:00:71:07 srcIP=172.30.140.110 -> dstMAC=6c:b3:11:61:d3:22 dstIP=172.30.140.102
+ts=1788466233.351 REQUEST(who-has) srcMAC=b6:6e:06:00:71:07 srcIP=172.30.140.101 -> dstMAC=00:00:00:00:00:00 dstIP=172.30.140.110
+ts=1788466234.354 REQUEST(who-has) srcMAC=b6:6e:06:00:71:07 srcIP=172.30.140.101 -> dstMAC=00:00:00:00:00:00 dstIP=172.30.140.110
+ts=1788466235.377 REQUEST(who-has) srcMAC=b6:6e:06:00:71:07 srcIP=172.30.140.101 -> dstMAC=00:00:00:00:00:00 dstIP=172.30.140.110
+ts=1788466235.754 REQUEST(who-has) srcMAC=6c:b3:11:61:d3:22 srcIP=172.30.140.100 -> dstMAC=ff:ff:ff:ff:ff:ff dstIP=172.30.140.100
+TOTAL_ARP_PACKETS=7

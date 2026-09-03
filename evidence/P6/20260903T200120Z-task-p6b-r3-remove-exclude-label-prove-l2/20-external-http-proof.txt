@@ -1,0 +1,5 @@
+NOT EXECUTED — EXTERNAL CLIENT UNAVAILABLE
+
+(L2 mechanism proven via ARP packet capture; external end-to-end HTTP from a
+true non-Kubernetes L2 client was not executed because no such client exists in
+VLAN140. Per task §11, cluster-node curl is not a substitute.)

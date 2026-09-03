@@ -1,0 +1,17 @@
+# TASK-P6B-R3 — External Client Discovery (R3-07)
+
+Hermes control host (5.187.1.37) reaches VLAN140 only via L3 VPN (tun0,
+192.168.99.133) — NOT in the VLAN140 L2 broadcast domain.
+
+VLAN140 L2 peers (from node ARP tables):
+  node-01 bond0.140 MAC b6:6e:06:00:71:07
+  node-02 bond0.140 MAC 6c:b3:11:61:d3:22 (also holds kube-vip .100)
+  node-03 bond0.140 MAC 6c:b3:11:61:ca:78
+
+No non-Kubernetes host exists in VLAN140 to serve as a true external L2 client.
+
+EXTERNAL CLIENT: UNAVAILABLE
+
+Per task §11: if no true external non-K8s L2 client exists, report and STOP
+without substituting curl from cluster nodes. The L2 MECHANISM (ARP reply) was
+proven via packet capture; external end-to-end is not executed.

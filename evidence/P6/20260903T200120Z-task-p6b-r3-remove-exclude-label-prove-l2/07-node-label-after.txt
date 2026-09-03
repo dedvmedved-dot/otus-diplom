@@ -1,0 +1,4 @@
+=== 07-node-label-after ===
+--- node-01 --- LABEL_ABSENT
+--- node-02 --- LABEL_ABSENT
+--- node-03 --- LABEL_ABSENT

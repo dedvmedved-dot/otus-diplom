@@ -1,0 +1,17 @@
+# TASK-P6B-R3 — Scope
+
+PROJECT: OTUS Diplom / ПАК «Портал»
+REPOSITORY: dedvmedved-dot/otus-diplom
+CLASS: AUTHORIZED CORRECTIVE IMPLEMENTATION / L2 PROOF
+METALLB: 0.16.1 / L2. BGP FORBIDDEN. P6C NOT AUTHORIZED.
+
+Architect decision: remove exactly label
+  node.kubernetes.io/exclude-from-external-load-balancers
+from exactly node-01, node-02, node-03 (no other label/role/taint changes).
+
+Root cause (R2 proven): label present on all 3 nodes -> MetalLB layer2
+controller "skipping should announce l2" + "no available nodes".
+
+Mission: remove label, prove MetalLB emits ARP reply for allocated LB IP,
+attribute responder MAC, check duplicates, preserve kube-vip .100, run clean
+semantic verifier, clean validation, run P1-P5 regression.

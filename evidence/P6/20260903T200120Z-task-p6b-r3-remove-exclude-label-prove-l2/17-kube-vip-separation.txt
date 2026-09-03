@@ -1,0 +1,6 @@
+cp_enable=true svc_enable=false address=172.30.140.100
+--- VIP owner aggregate ---
+node-01: .100 owner=00
+node-02: .100 owner=1
+node-03: .100 owner=00
+VIP_OWNER_AGGREGATE=1

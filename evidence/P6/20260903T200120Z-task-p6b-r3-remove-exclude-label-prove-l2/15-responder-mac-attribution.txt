@@ -1,0 +1,24 @@
+# TASK-P6B-R3 — Responder MAC Attribution (R3-05)
+
+ARP capture (node-01 bond0.140) shows:
+
+  REQUEST(who-has) srcIP=172.30.140.102 -> dstIP=172.30.140.110
+  REPLY(is-at) srcMAC=b6:6e:06:00:71:07 srcIP=172.30.140.110
+
+RESPONDER_MAC: b6:6e:06:00:71:07
+
+MAC -> node/interface mapping (ip link show):
+  node-01 bond0.140  MAC b6:6e:06:00:71:07   <- RESPONDER
+  node-02 bond0.140  MAC 6c:b3:11:61:d3:22
+  node-03 bond0.140  MAC 6c:b3:11:61:22:78
+
+RESPONDER_NODE: node-01
+RESPONDER_INTERFACE: bond0.140 (VLAN140)
+RESPONDER_SPEAKER: speaker-xwxtr (node-01, hostNetwork)
+
+This matches speaker log "serviceAnnounced ips=["172.30.140.110"]" from
+speaker-xwxtr on node-01.
+
+Neighbor state after resolution: REACHABLE (node-02).
+
+ATTRIBUTION: CONFIRMED (b6:6e:06:00:71:07 == node-01 bond0.140)

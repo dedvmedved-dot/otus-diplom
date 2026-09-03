@@ -1,0 +1,19 @@
+--- node-01 ---
+ready=True version=v1.36.2 ip=172.30.140.101 roles=
+  taints=[{"effect":"NoSchedule","key":"node-role.kubernetes.io/control-plane"}]
+--- node-02 ---
+ready=True version=v1.36.2 ip=172.30.140.102 roles=
+  taints=[{"effect":"NoSchedule","key":"node-role.kubernetes.io/control-plane"}]
+--- node-03 ---
+ready=True version=v1.36.2 ip=172.30.140.103 roles=
+  taints=[{"effect":"NoSchedule","key":"node-role.kubernetes.io/control-plane"}]
+=== control-plane AFTER removal ===
+--- node-01 ---
+ready=True ip=172.30.140.101
+  taints=[{"effect":"NoSchedule","key":"node-role.kubernetes.io/control-plane"}]
+--- node-02 ---
+ready=True ip=172.30.140.102
+  taints=[{"effect":"NoSchedule","key":"node-role.kubernetes.io/control-plane"}]
+--- node-03 ---
+ready=True ip=172.30.140.103
+  taints=[{"effect":"NoSchedule","key":"node-role.kubernetes.io/control-plane"}]

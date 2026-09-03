@@ -1,0 +1,5 @@
+=== wait backend + LB IP ===
+poll 1: [{"ip":"172.30.140.110","ipMode":"VIP"}]
+true
+LB_IP + BACKEND_READY
+172.30.140.110

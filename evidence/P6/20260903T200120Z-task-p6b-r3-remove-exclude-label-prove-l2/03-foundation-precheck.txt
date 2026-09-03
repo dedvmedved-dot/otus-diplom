@@ -1,0 +1,7 @@
+controller=1/1
+speaker=3/3
+pool=["172.30.140.110-172.30.140.119"]
+l2adv=["p6-ingress-pool"]
+0
+bgp=0
+kube-vip cp_enable=true svc_enable=false address=172.30.140.100

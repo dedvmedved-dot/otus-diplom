@@ -1,0 +1,14 @@
+=== 13-speaker-announcer-state ===
+--- speaker no longer reports 'no available nodes'? (check via ARP first) ---
+=== speaker log: still 'no available nodes'? ===
+=== speaker-d956q ===
+=== speaker-pcszv ===
+=== speaker-xwxtr ===
+{"caller":"main.go:481","event":"serviceAnnounced","ips":["172.30.140.110"],"level":"info","msg":"service has IP, announcing","pool":"p6-ingress-pool","protocol":"layer2","ts":"2026-09-03T20:06:27Z"}
+=== which node is speaker-xwxtr + full announce log ===
+NAME            READY   STATUS    RESTARTS   AGE   IP               NODE      NOMINATED NODE   READINESS GATES
+speaker-d956q   1/1     Running   0          52m   172.30.140.103   node-03   <none>           <none>
+speaker-pcszv   1/1     Running   0          51m   172.30.140.102   node-02   <none>           <none>
+speaker-xwxtr   1/1     Running   0          52m   172.30.140.101   node-01   <none>           <none>
+--- xwxtr log: announce + interface ---
+{"caller":"main.go:481","event":"serviceAnnounced","ips":["172.30.140.110"],"level":"info","msg":"service has IP, announcing","pool":"p6-ingress-pool","protocol":"layer2","ts":"2026-09-03T20:06:27Z"}

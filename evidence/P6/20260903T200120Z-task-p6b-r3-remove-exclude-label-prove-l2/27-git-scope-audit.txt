@@ -1,0 +1,5 @@
+=== GIT SCOPE ===
+?? evidence/P6/20260903T200120Z-task-p6b-r3-remove-exclude-label-prove-l2/
+?? manifests/metallb/p6b-r3-validation-namespace.yaml
+?? manifests/metallb/p6b-r3-validation-netpol.yaml
+?? manifests/metallb/p6b-r3-validation-workload.yaml

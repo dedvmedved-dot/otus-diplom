@@ -1,0 +1,10 @@
+=== 05-node-label-before (exact, all 3) ===
+--- node-01 ---
+uid=a5cd8860-c194-430a-b7f1-534967c06f0c
+LABEL_FOUND: "node.kubernetes.io/exclude-from-external-load-balancers":""}
+--- node-02 ---
+uid=90584980-4377-4e09-b36b-f09daf2bbbf2
+LABEL_FOUND: "node.kubernetes.io/exclude-from-external-load-balancers":""}
+--- node-03 ---
+uid=f7ce30c9-ac66-4128-9f9c-f94b565660e8
+LABEL_FOUND: "node.kubernetes.io/exclude-from-external-load-balancers":""}

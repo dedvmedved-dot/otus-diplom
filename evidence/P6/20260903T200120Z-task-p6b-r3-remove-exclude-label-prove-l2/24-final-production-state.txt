@@ -1,0 +1,14 @@
+controller=1/1
+speaker=3/3
+pool=["172.30.140.110-172.30.140.119"]
+l2adv=["p6-ingress-pool"]
+0
+bgp=0
+--- exclude label on nodes ---
+node-01 LABEL_ABSENT
+node-02 LABEL_ABSENT
+node-03 LABEL_ABSENT
+--- validation ns ---
+Error from server (NotFound): namespaces "p6b-r3-validation" not found
+--- LB services ---
+LB: NONE
