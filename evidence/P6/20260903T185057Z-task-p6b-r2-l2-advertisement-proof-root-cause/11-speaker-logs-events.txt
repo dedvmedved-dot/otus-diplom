@@ -1,0 +1,20 @@
+===== speaker-6qhg7 =====
+{"caller":"speakerlist.go:283","level":"info","msg":"memberlist join successfully","number of other nodes":1,"op":"Member detection","ts":"2026-09-03T01:02:26Z"}
+{"caller":"config_controller.go:64","controller":"ConfigReconciler","level":"info","start reconcile":"metallb-system/memberlist","ts":"2026-09-03T01:02:27Z"}
+{"caller":"config_controller.go:226","controller":"ConfigReconciler","end reconcile":"metallb-system/memberlist","level":"info","ts":"2026-09-03T01:02:27Z"}
+{"caller":"config_controller.go:64","controller":"ConfigReconciler","level":"info","start reconcile":"metallb-system/metallb-excludel2","ts":"2026-09-03T01:02:27Z"}
+{"caller":"config_controller.go:226","controller":"ConfigReconciler","end reconcile":"metallb-system/metallb-excludel2","level":"info","ts":"2026-09-03T01:02:27Z"}
+===== speaker-fh8fn =====
+{"caller":"config_controller.go:64","controller":"ConfigReconciler","level":"info","start reconcile":"metallb-system/memberlist","ts":"2026-09-03T01:02:28Z"}
+{"caller":"config_controller.go:226","controller":"ConfigReconciler","end reconcile":"metallb-system/memberlist","level":"info","ts":"2026-09-03T01:02:28Z"}
+{"caller":"config_controller.go:64","controller":"ConfigReconciler","level":"info","start reconcile":"metallb-system/metallb-excludel2","ts":"2026-09-03T01:02:28Z"}
+{"caller":"config_controller.go:226","controller":"ConfigReconciler","end reconcile":"metallb-system/metallb-excludel2","level":"info","ts":"2026-09-03T01:02:28Z"}
+===== speaker-trsvv =====
+{"caller":"config_controller.go:64","controller":"ConfigReconciler","level":"info","start reconcile":"metallb-system/metallb-excludel2","ts":"2026-09-03T01:02:26Z"}
+{"caller":"config_controller.go:226","controller":"ConfigReconciler","end reconcile":"metallb-system/metallb-excludel2","level":"info","ts":"2026-09-03T01:02:26Z"}
+{"caller":"config_controller.go:64","controller":"ConfigReconciler","level":"info","start reconcile":"metallb-system/memberlist","ts":"2026-09-03T01:02:26Z"}
+{"caller":"config_controller.go:226","controller":"ConfigReconciler","end reconcile":"metallb-system/memberlist","level":"info","ts":"2026-09-03T01:02:26Z"}
+=== speaker logs: search SetEvent / announce / shouldAnnounce / service pool matching ===
+===== speaker-6qhg7 =====
+===== speaker-fh8fn =====
+===== speaker-trsvv =====

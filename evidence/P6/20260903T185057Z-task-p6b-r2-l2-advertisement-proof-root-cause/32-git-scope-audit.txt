@@ -1,0 +1,5 @@
+=== GIT SCOPE ===
+?? evidence/P6/20260903T185057Z-task-p6b-r2-l2-advertisement-proof-root-cause/
+?? manifests/metallb/p6b-r2-validation-namespace.yaml
+?? manifests/metallb/p6b-r2-validation-netpol.yaml
+?? manifests/metallb/p6b-r2-validation-workload.yaml

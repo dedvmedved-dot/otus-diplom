@@ -1,0 +1,7 @@
+controller=1/1
+speaker=3/3
+pool=["172.30.140.110-172.30.140.119"]
+l2adv=["p6-ingress-pool"]
+0
+bgp=0
+Error from server (NotFound): namespaces "p6b-r2-validation" not found

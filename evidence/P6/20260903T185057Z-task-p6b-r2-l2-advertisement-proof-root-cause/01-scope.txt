@@ -1,0 +1,15 @@
+# TASK-P6B-R2 — Scope
+
+PROJECT: OTUS Diplom / ПАК «Портал»
+REPOSITORY: dedvmedved-dot/otus-diplom
+STAGE: P6B-R2 (PARENT: TASK-P6B-R1 — NOT ACCEPTED)
+CLASSIFICATION: CORRECTIVE VALIDATION / ROOT-CAUSE ANALYSIS / EVIDENCE CLOSURE
+TARGET: prove real MetalLB L2 advertisement; close P6B L2/ARP acceptance gap
+METALLB: 0.16.1, MODE: L2. BGP FORBIDDEN. P6C NOT AUTHORIZED.
+
+Missing acceptance chain to close:
+  external non-K8s L2 client -> ARP who-has LB_IP -> MetalLB ARP reply ->
+  resolved MAC -> HTTP 200 -> deterministic marker.
+
+Absolute rules: no MetalLB reinstall/version change, no pool change, no BGP,
+no P6C, no kube-vip/Calico/CoreDNS/P4B/P5 changes.

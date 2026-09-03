@@ -1,0 +1,2 @@
+=== 22-responder-mac-proof ===
+RESPONDER_MAC: NONE (no ARP reply for .110; root cause = node exclusion label)

@@ -1,0 +1,14 @@
+# TASK-P6B-R2 — Post P1-P5 Regression (R2-18)
+
+STATUS: NOT RUN (BLOCKED — ARCHITECT DECISION REQUIRED).
+
+No corrective mutation was applied (root cause requires node-label removal,
+outside auto-authority). Production state was restored to exact pre-R2 baseline:
+  - speaker 3/3 Ready, --log-level=info (reverted)
+  - L2Advertisement exact {ipAddressPools:[p6-ingress-pool]} (reverted)
+  - validation namespace deleted
+  - MetalLB foundation unchanged
+
+Since no net mutation occurred, the P1-P5 state is unchanged from the R2-01
+baseline (which was clean at task start). A post-regression is not required
+for a BLOCKED task; it would be re-run after Architect-authorized correction.

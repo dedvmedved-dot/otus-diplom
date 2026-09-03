@@ -1,0 +1,6 @@
+controller=1/1
+speaker=3/3
+["172.30.140.110-172.30.140.119"]
+["p6-ingress-pool"]
+BGP:
+No resources found

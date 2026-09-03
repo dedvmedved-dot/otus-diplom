@@ -1,0 +1,2 @@
+namespace "p6b-r2-validation" deleted
+validation NotFound=1

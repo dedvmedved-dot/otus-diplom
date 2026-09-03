@@ -1,0 +1,17 @@
+--- node-01 ---
+ (label)
+--- node-02 ---
+ (label)
+--- node-03 ---
+ (label)
+=== node labels: exclude-from-external-load-balancers (exact) ===
+--- node-01 ---
+ <- value
+--- node-02 ---
+ <- value
+--- node-03 ---
+ <- value
+--- full labels (grep exclude) ---
+"node.kubernetes.io/exclude-from-external-load-balancers":""}
+"node.kubernetes.io/exclude-from-external-load-balancers":""}
+"node.kubernetes.io/exclude-from-external-load-balancers":""}

@@ -1,0 +1,1 @@
+speaker=3/3 args=["--port=9120","--log-level=info"]

@@ -1,0 +1,4 @@
+=== 06-validation-workload-service ===
+namespace p6b-r2-validation (deleted in cleanup)
+deployment p6b-r2-http-backend (busybox httpd, marker P6B_R2_METALLB_L2_OK)
+svc p6b-r2-http-lb type=LoadBalancer -> assigned IP 172.30.140.110

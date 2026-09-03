@@ -1,0 +1,10 @@
+# TASK-P6B-R2 — Kube-VIP Preservation (R2-18)
+
+kube-vip config unchanged during R2 (no kube-vip mutation performed).
+
+cp_enable=true, svc_enable=false, address=172.30.140.100.
+
+ARP capture confirms kube-vip .100 still replies to ARP (REPLY is-at
+6c:b3:11:61:d3:22) — kube-vip L2 advertisement is unaffected and preserved.
+
+RESULT: PRESERVED

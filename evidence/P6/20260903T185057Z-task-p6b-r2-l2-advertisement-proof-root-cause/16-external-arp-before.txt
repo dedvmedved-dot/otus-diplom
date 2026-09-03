@@ -1,0 +1,29 @@
+# TASK-P6B-R2 — External ARP (R2-12 / R2-16)
+
+LB_IP: 172.30.140.110
+RESPONDER_MAC: NONE
+RESPONDER_NODE: NONE
+RESPONDER_INTERFACE: NONE
+NEIGHBOR_STATE: INCOMPLETE / FAILED
+
+## Packet capture evidence (13-packet-capture-before.txt)
+
+While generating ARP for .110 (ping from node-01), capture on node-02 bond0.140:
+
+  REQUEST(who-has) srcIP=172.30.140.101 -> dstIP=172.30.140.110  (x3, no reply)
+  REQUEST(who-has) srcIP=172.30.140.101 -> dstIP=172.30.140.100  -> REPLY(is-at 6c:b3:11:61:d3:22)
+
+MetalLB does NOT reply to ARP for .110. kube-vip DOES reply for .100.
+
+L2_ARP: FAIL (no reply for .110).
+
+## Root cause (proven)
+
+All 3 nodes carry label
+  node.kubernetes.io/exclude-from-external-load-balancers = ""
+MetalLB layer2_controller skips announce: "speaker's node has labeled
+'node.kubernetes.io/exclude-from-external-load-balancers'" + "no available nodes".
+
+DUPLICATE RESPONDER: NOT VERIFIED (no responder exists at all for .110).
+
+Correction (label removal) requires Architect authorization (§13/§17).

@@ -1,0 +1,2 @@
+=== 15-external-client-route ===
+N/A - no external L2 client available (see 14-external-client-identity.txt)

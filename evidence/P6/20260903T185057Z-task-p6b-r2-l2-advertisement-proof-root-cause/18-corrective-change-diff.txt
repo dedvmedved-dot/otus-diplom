@@ -1,0 +1,25 @@
+# TASK-P6B-R2 — Corrective Change Diff (R2-13/R2-14)
+
+## Applied (temporary, diagnostic — ALL REVERTED)
+
+1. speaker log-level info -> debug (temporary, to expose layer2_controller
+   "skipping should announce" reason). REVERTED to --log-level=info.
+
+2. L2Advertisement p6-ingress-l2 spec + interfaces=[bond0.140] (temporary test
+   of interface-selection hypothesis). REVERTED to exact
+   {ipAddressPools:[p6-ingress-pool]}.
+
+3. speaker daemonset rollout restart (to force config re-read + full memberlist
+   join). This is state-neutral (pods recreated, 3/3 Ready).
+
+## Final corrective mutation
+
+NO CORRECTIVE MUTATION APPLIED.
+
+Root cause (node label node.kubernetes.io/exclude-from-external-load-balancers
+present on all 3 nodes) requires removal of node exclusion labels, which is in
+the "NOT automatically authorized" class per §13/§17. Hermes did NOT remove the
+labels and reports BLOCKED — ARCHITECT DECISION REQUIRED.
+
+Production state restored to exact pre-R2 baseline (speaker info log, L2Advertisement
+exact, validation namespace deleted).

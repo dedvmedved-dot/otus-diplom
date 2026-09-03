@@ -1,0 +1,19 @@
+=== R2-10 packet capture BEFORE (node-02 bond0.140) ===
+started
+PING 172.30.140.110 (172.30.140.110) 56(84) bytes of data.
+
+--- 172.30.140.110 ping statistics ---
+3 packets transmitted, 0 received, 100% packet loss, time 2030ms
+
+--- neigh ---
+172.30.140.110 dev bond0.140 INCOMPLETE 
+=== captured ARP ===
+ts=1788462124.561 REQUEST(who-has) srcMAC=b6:6e:06:00:71:07 srcIP=172.30.140.101 -> dstMAC=00:00:00:00:00:00 dstIP=172.30.140.100
+ts=1788462124.561 REPLY(is-at) srcMAC=6c:b3:11:61:d3:22 srcIP=172.30.140.100 -> dstMAC=b6:6e:06:00:71:07 dstIP=172.30.140.101
+ts=1788462125.758 REQUEST(who-has) srcMAC=6c:b3:11:61:d3:22 srcIP=172.30.140.100 -> dstMAC=ff:ff:ff:ff:ff:ff dstIP=172.30.140.100
+ts=1788462126.468 REQUEST(who-has) srcMAC=b6:6e:06:00:71:07 srcIP=172.30.140.101 -> dstMAC=00:00:00:00:00:00 dstIP=172.30.140.110
+ts=1788462127.473 REQUEST(who-has) srcMAC=b6:6e:06:00:71:07 srcIP=172.30.140.101 -> dstMAC=00:00:00:00:00:00 dstIP=172.30.140.110
+ts=1788462128.497 REQUEST(who-has) srcMAC=b6:6e:06:00:71:07 srcIP=172.30.140.101 -> dstMAC=00:00:00:00:00:00 dstIP=172.30.140.110
+ts=1788462128.762 REPLY(is-at) srcMAC=6c:b3:11:61:d3:22 srcIP=172.30.140.100 -> dstMAC=6c:b3:11:61:d3:22 dstIP=172.30.140.100
+ts=1788462131.762 REQUEST(who-has) srcMAC=6c:b3:11:61:d3:22 srcIP=172.30.140.100 -> dstMAC=ff:ff:ff:ff:ff:ff dstIP=172.30.140.100
+TOTAL_ARP_PACKETS=8

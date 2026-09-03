@@ -1,0 +1,13 @@
+# TASK-P6B-R2 — Final Semantic Verifier (R2-17)
+
+STATUS: NOT RUN (BLOCKED).
+
+The final clean semantic verifier is skipped because the task is BLOCKED —
+ARCHITECT DECISION REQUIRED. Root cause requires removal of node exclusion
+label, which is not auto-authorized.
+
+MetalLB foundation objects were verified as present/exact during R2-01
+(controller 1/1, speaker 3/3, pool .110-.119, l2adv [p6-ingress-pool], BGP=0).
+
+The semantic verifier would PASS on object exactness but the L2 announce gate
+fails (no ARP reply), which is the point of this task.

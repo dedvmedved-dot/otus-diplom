@@ -1,0 +1,2 @@
+=== 20-packet-capture-after ===
+N/A - no corrective mutation applied (BLOCKED). Capture AFTER == capture BEFORE.

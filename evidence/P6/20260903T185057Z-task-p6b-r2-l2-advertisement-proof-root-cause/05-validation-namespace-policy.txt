@@ -1,0 +1,7 @@
+=== apply validation ===
+namespace/p6b-r2-validation created
+networkpolicy.networking.k8s.io/baseline-default-deny-all created
+networkpolicy.networking.k8s.io/baseline-allow-dns-egress created
+networkpolicy.networking.k8s.io/allow-http-backend created
+deployment.apps/p6b-r2-http-backend created
+service/p6b-r2-http-lb created

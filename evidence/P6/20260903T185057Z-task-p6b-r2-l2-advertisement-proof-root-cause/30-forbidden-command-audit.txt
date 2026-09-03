@@ -1,0 +1,25 @@
+# TASK-P6B-R2 — Forbidden Command Audit
+
+MODE: CORRECTIVE VALIDATION / ROOT-CAUSE ANALYSIS. P6B scope.
+
+Executed (within P6B authorized scope):
+  - temporary validation namespace p6b-r2-validation (created + deleted)
+  - temporary LoadBalancer service (created + deleted with namespace)
+  - speaker daemonset restart (state-neutral)
+  - speaker log-level info<->debug (temporary, reverted)
+  - L2Advertisement interfaces test (temporary, reverted)
+  - packet capture via python AF_PACKET raw socket (non-mutating)
+
+NOT executed (forbidden, count=0):
+  - MetalLB reinstall / version change: 0
+  - Envoy Gateway / GatewayClass / Gateway / HTTPRoute: 0
+  - BGP/BGPPeer/BGPAdvertisement/BFD peering: 0
+  - kube-vip / Calico / CoreDNS / P4B changes: 0
+  - kube-proxy changes: 0
+  - LINSTOR/DRBD/LVM/PVC/PV/StorageClass changes: 0
+  - bond/VLAN/NIC/route/switch/router changes: 0
+  - node exclusion label removal: 0 (NOT authorized — blocked)
+  - reboot / unrelated package/systemd changes: 0
+  - force push / history rewrite: 0
+
+RESULT: PASS (no forbidden mutation; node label intentionally NOT removed)

@@ -1,0 +1,8 @@
+--- speaker-6qhg7 ---
+node=node-02 hostNetwork=true ready=true imageID=quay.io/metallb/speaker@sha256:37a98a9d1cd970051c5dededb6f922c1e6c3b90fdd0fc1350d1686e67675af0e
+--- speaker-fh8fn ---
+node=node-01 hostNetwork=true ready=true imageID=quay.io/metallb/speaker@sha256:37a98a9d1cd970051c5dededb6f922c1e6c3b90fdd0fc1350d1686e67675af0e
+--- speaker-trsvv ---
+node=node-03 hostNetwork=true ready=true imageID=quay.io/metallb/speaker@sha256:37a98a9d1cd970051c5dededb6f922c1e6c3b90fdd0fc1350d1686e67675af0e
+=== tcpdump availability ===
+bash: строка 1: tcpdump: команда не найдена

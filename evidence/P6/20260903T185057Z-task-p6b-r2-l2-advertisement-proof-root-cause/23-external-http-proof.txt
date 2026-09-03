@@ -1,0 +1,2 @@
+=== 23-external-http-proof ===
+N/A - external HTTP not reached (no external L2 client + no ARP responder).
