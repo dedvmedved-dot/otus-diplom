@@ -1,0 +1,3 @@
+pod=envoy-p6c-r1-validation-p6c-r1-gateway-e9f70ef3-56cb567446ltnv4
+envoy imageID=docker.io/envoyproxy/envoy@sha256:9e24a3b459b463dd37e116a0f46d2abfcb6a1cb9897d87e85cf2ee25edbe373b
+shutdown-manager imageID=docker.io/envoyproxy/gateway@sha256:2999d87c3a2b3e890e0ee1a2b11a159b60963aadb2cbb9f2c0a49e0197df3c72

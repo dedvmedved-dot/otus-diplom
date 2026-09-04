@@ -1,0 +1,2 @@
+=== 08-envoy-1.9.1-release-proof + chart digests ===
+release: envoyproxy/gateway v1.9.1 (ArtifactHub shows gateway-helm 1.9.1)

@@ -1,0 +1,1 @@
+A. Gateway query failure: PASS

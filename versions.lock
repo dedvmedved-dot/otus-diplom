@@ -22,7 +22,7 @@ components:
   drbd:                "9.3.2"
   drbd_utils:          "9.34.3"
   metallb:             "0.16.1"
-  envoy_gateway:       "1.8.3"
+  envoy_gateway:       "1.9.1"
   cloudnative_pg:      "1.29.1"
   cert_manager:        "1.21.0"
   barman_cloud_plugin: "0.13.0"

@@ -1,0 +1,14 @@
+=== wait Gateway Programmed + LB IP ===
+poll 1: Acc=True Prog=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-r1-validation-p6c-r1-gateway-e9f70ef3 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 2: Acc=True Prog=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-r1-validation-p6c-r1-gateway-e9f70ef3 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 3: Acc=True Prog=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-r1-validation-p6c-r1-gateway-e9f70ef3 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 4: Acc=True Prog=True
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-r1-validation-p6c-r1-gateway-e9f70ef3 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+GATEWAY_PROGRAMMED + LB_IP

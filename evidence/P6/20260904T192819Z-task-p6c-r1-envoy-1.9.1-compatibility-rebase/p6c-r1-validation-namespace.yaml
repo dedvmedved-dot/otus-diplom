@@ -1,0 +1,5 @@
+# P6C-R1 — validation namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: p6c-r1-validation

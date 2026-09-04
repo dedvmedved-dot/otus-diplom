@@ -1,0 +1,3 @@
+=== 19-controller-rollout ===
+poll 1: available=1/1 image=docker.io/envoyproxy/gateway@sha256:2999d87c3a2b3e890e0ee1a2b11a159b60963aadb2cbb9f2c0a49e0197df3c72
+CONTROLLER_READY_1.9.1

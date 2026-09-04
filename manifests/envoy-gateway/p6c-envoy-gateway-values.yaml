@@ -1,14 +1,14 @@
-# P6C — Envoy Gateway 1.8.3 values (digest-pinned, HTTP-only foundation)
+# P6C-R1 — Envoy Gateway 1.9.1 values (digest-pinned, HTTP-only foundation)
 global:
   images:
     envoyGateway:
-      image: docker.io/envoyproxy/gateway@sha256:3c3b5b6132002462b5c652cb9f1f72f532d3c848110e669f49690d9e11d9ce6e
+      image: docker.io/envoyproxy/gateway@sha256:2999d87c3a2b3e890e0ee1a2b11a159b60963aadb2cbb9f2c0a49e0197df3c72
       pullPolicy: IfNotPresent
     envoyProxy:
-      image: docker.io/envoyproxy/envoy@sha256:747460ac10544a8c7698d5d958142ffbda740e1ef1f36981b4b0e18f640658b7
+      image: docker.io/envoyproxy/envoy@sha256:9e24a3b459b463dd37e116a0f46d2abfcb6a1cb9897d87e85cf2ee25edbe373b
       pullPolicy: IfNotPresent
     ratelimit:
-      image: docker.io/envoyproxy/ratelimit:1e50889b
+      image: docker.io/envoyproxy/ratelimit:8fe6ea42
       pullPolicy: IfNotPresent
 
 crds:

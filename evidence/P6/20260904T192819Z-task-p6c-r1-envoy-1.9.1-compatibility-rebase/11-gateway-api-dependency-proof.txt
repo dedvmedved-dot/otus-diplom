@@ -1,0 +1,24 @@
+=== 11-gateway-api-dependency-proof ===
+Envoy Gateway v1.9.1 requires Gateway API v1.6.1 (compatibility matrix).
+CRD chart gateway-crds-helm v1.9.1 renders 18 CRDs.
+--- v1.9.1 CRDs (all) ---
+name: backends.gateway.envoyproxy.io
+name: backendtlspolicies.gateway.networking.k8s.io
+name: backendtrafficpolicies.gateway.envoyproxy.io
+name: clienttrafficpolicies.gateway.envoyproxy.io
+name: envoyextensionpolicies.gateway.envoyproxy.io
+name: envoypatchpolicies.gateway.envoyproxy.io
+name: envoyproxies.gateway.envoyproxy.io
+name: gatewayclasses.gateway.networking.k8s.io
+name: gateways.gateway.networking.k8s.io
+name: grpcroutes.gateway.networking.k8s.io
+name: httproutefilters.gateway.envoyproxy.io
+name: httproutes.gateway.networking.k8s.io
+name: listenersets.gateway.networking.k8s.io
+name: referencegrants.gateway.networking.k8s.io
+name: securitypolicies.gateway.envoyproxy.io
+name: tcproutes.gateway.networking.k8s.io
+name: tlsroutes.gateway.networking.k8s.io
+name: udproutes.gateway.networking.k8s.io
+--- v1.8.3 CRD count vs v1.9.1 (delta) ---
+v1.8.3 = 16 CRDs, v1.9.1 = 18 CRDs (delta +2)

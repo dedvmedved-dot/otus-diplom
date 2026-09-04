@@ -1,0 +1,24 @@
+# TASK-P6C-R1 — Runtime Mutation Summary
+
+MODE: AUTHORIZED IMPLEMENTATION (P6C-R1 scope: Envoy Gateway 1.8.3 -> 1.9.1 rebase).
+
+Authorized runtime mutation (executed):
+  - CRD upgrade: gateway-crds-helm 1.8.3 -> 1.9.1 (server-side apply --force-conflicts)
+  - Envoy Gateway controller upgrade: 1.8.3 -> 1.9.1 (deployment/configmap/rbac)
+  - create/delete temporary p6c-r1-validation resources (ns/Gateway/HTTPRoute/backend)
+
+NOT changed (count=0, preserved):
+  - Kubernetes v1.36.2 (unchanged)
+  - MetalLB version/images/pool/L2Advertisement: 0 (preserved)
+  - MetalLB BGP/BFD: 0
+  - kube-vip: 0 (svc_enable=false preserved)
+  - Calico/CoreDNS/P4B: 0
+  - LINSTOR/DRBD/LVM/storage: 0
+  - bond/VLAN/NIC/routes: 0
+  - cert-manager/external-dns: 0
+  - production TLS/routes: 0
+  - rate-limit master: 0 (not enabled)
+  - reboot / unrelated packages: 0
+  - force push / history rewrite: 0
+
+RESULT: PASS (mutation strictly within P6C-R1 authorized scope)

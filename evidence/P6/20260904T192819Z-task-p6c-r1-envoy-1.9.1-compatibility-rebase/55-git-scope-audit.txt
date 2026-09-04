@@ -1,0 +1,11 @@
+=== 55-git-scope-audit ===
+ M ansible/playbooks/p6c-final-readonly-verify.yml
+ M images.lock
+ M manifests/envoy-gateway/p6c-envoy-gateway-values.yaml
+ M versions.lock
+?? evidence/P6/20260904T192819Z-task-p6c-r1-envoy-1.9.1-compatibility-rebase/
+?? gateway-crds-helm-v1.9.1.tgz
+?? gateway-crds-helm/
+?? gateway-helm-v1.9.1.tgz
+?? gateway-helm/
+--- allowed only check ---

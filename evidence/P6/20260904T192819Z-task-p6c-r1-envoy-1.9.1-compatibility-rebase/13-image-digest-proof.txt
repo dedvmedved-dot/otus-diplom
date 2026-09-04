@@ -1,0 +1,6 @@
+=== envoyproxy/gateway:v1.9.1 ===
+linux amd64 sha256:2999d87c3a2b3e890e0ee1a2b11a159b60963aadb2cbb9f2c0a49e0197df3c72
+linux arm64 sha256:b45ad63b5aeec34791b7b944a877a6542738dd4f48c07a8f4db1e9fce983823e
+=== envoyproxy/envoy:distroless-v1.39.0 ===
+linux amd64 sha256:9e24a3b459b463dd37e116a0f46d2abfcb6a1cb9897d87e85cf2ee25edbe373b
+linux arm64 sha256:8dbb967dba5d22a28f0e7974173aa6d4a5621ce48ac6d44142d9b4d9c960af14

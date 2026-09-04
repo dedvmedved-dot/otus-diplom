@@ -1,0 +1,7 @@
+v1.36.2
+controller image=docker.io/envoyproxy/gateway@sha256:3c3b5b6132002462b5c652cb9f1f72f532d3c848110e669f49690d9e11d9ce6e ready=1/1
+gatewayclass Accepted=True
+--- envoy crds count ---
+16
+--- validation residue ---
+No resources found

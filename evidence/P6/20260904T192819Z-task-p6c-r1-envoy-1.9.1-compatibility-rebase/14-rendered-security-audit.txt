@@ -1,0 +1,7 @@
+=== 14-rendered-security-audit ===
+privileged=true: 0
+hostNetwork=true: 0
+hostPath: 0
+runAsNonRoot=true: 4
+--- LB/NodePort in controller service ---
+--- floating check ---

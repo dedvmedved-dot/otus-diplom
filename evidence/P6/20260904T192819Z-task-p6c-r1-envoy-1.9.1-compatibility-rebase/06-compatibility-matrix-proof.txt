@@ -1,0 +1,23 @@
+# TASK-P6C-R1 — Compatibility Matrix Proof (R1-04)
+
+Source: https://gateway.envoyproxy.io/news/releases/matrix/
+(official Envoy Gateway compatibility matrix, retrieved 2026-09-04)
+
+Kubernetes = v1.36.2 (this cluster, verified via kubectl get nodes)
+Envoy Gateway target = v1.9.1
+
+Official matrix row for v1.9:
+  Envoy Gateway v1.9
+  Envoy Proxy: distroless-v1.39.0
+  Rate Limit: 17b1956c
+  Gateway API: v1.6.1
+  Kubernetes: v1.33, v1.34, v1.35, v1.36   <-- includes v1.36
+
+v1.8 row (for contrast):
+  Envoy Gateway v1.8 -> Kubernetes v1.32-v1.35 (does NOT include v1.36)
+
+Conclusion:
+K8S_1_36_COMPATIBLE_WITH_ENVOY_GATEWAY_1_9 = TRUE
+(Envoy Gateway v1.9 explicitly supports Kubernetes v1.36; v1.8 does not.)
+
+Envoy Gateway 1.8.3 was therefore correctly REJECTED as final baseline.

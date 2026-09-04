@@ -1,0 +1,17 @@
+serviceaccount/envoy-gateway configured
+configmap/envoy-gateway-config configured
+clusterrole.rbac.authorization.k8s.io/eg-gateway-helm-envoy-gateway-role configured
+clusterrolebinding.rbac.authorization.k8s.io/eg-gateway-helm-envoy-gateway-rolebinding configured
+role.rbac.authorization.k8s.io/eg-gateway-helm-infra-manager configured
+role.rbac.authorization.k8s.io/eg-gateway-helm-leader-election-role configured
+rolebinding.rbac.authorization.k8s.io/eg-gateway-helm-infra-manager configured
+rolebinding.rbac.authorization.k8s.io/eg-gateway-helm-leader-election-rolebinding configured
+service/envoy-gateway configured
+deployment.apps/envoy-gateway configured
+serviceaccount/eg-gateway-helm-certgen configured
+clusterrole.rbac.authorization.k8s.io/eg-gateway-helm-certgen:envoy-gateway-system configured
+clusterrolebinding.rbac.authorization.k8s.io/eg-gateway-helm-certgen:envoy-gateway-system configured
+role.rbac.authorization.k8s.io/eg-gateway-helm-certgen configured
+rolebinding.rbac.authorization.k8s.io/eg-gateway-helm-certgen configured
+job.batch/eg-gateway-helm-certgen created
+mutatingwebhookconfiguration.admissionregistration.k8s.io/envoy-gateway-topology-injector.envoy-gateway-system configured

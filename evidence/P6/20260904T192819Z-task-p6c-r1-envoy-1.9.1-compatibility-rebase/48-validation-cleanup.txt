@@ -1,0 +1,9 @@
+namespace "p6c-r1-validation" deleted
+VALIDATION_NOTFOUND
+=== verify residue ===
+No resources found
+--- envoy deploy ---
+NAME            READY   UP-TO-DATE   AVAILABLE   AGE
+envoy-gateway   1/1     1            1           8h
+--- LB services ---
+LB: NONE

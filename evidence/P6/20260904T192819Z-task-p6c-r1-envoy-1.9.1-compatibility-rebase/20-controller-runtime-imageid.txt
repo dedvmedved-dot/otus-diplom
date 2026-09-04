@@ -1,0 +1,1 @@
+docker.io/envoyproxy/gateway@sha256:2999d87c3a2b3e890e0ee1a2b11a159b60963aadb2cbb9f2c0a49e0197df3c72

@@ -1,0 +1,13 @@
+=== Gateway fail-closed tests ===
+A. Gateway query failure: PASS
+B. Gateway malformed JSON: PASS
+C. Gateway one item: PASS
+D. Gateway zero items: PASS
+=== HTTPRoute fail-closed tests ===
+E. HTTPRoute query failure: PASS
+F. HTTPRoute malformed JSON: PASS
+G. HTTPRoute one item: PASS
+H. HTTPRoute zero items: PASS
+=== version tests ===
+I. wrong Envoy version (1.8.3): PASS
+J. incompatible k8s (v1.35.0): PASS

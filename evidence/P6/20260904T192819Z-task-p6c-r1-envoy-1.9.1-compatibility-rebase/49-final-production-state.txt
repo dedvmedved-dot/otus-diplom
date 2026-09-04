@@ -1,0 +1,15 @@
+--- k8s ---
+v1.36.2
+--- envoy controller ---
+ready=1/1 img=docker.io/envoyproxy/gateway@sha256:2999d87c3a2b3e890e0ee1a2b11a159b60963aadb2cbb9f2c0a49e0197df3c72
+--- gatewayclass ---
+Accepted=True
+--- metallb ---
+controller=1/1
+speaker=3/3
+--- bgp/bfd ---
+bgppeer=0
+bgpadvertisement=0
+bfdprofile=0
+--- kube-vip ---
+cp=true svc=false addr=172.30.140.100

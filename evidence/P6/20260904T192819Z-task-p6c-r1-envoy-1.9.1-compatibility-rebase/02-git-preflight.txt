@@ -1,0 +1,15 @@
+# TASK-P6C-R1 — Git Preflight
+
+branch: main
+HEAD: 4dfbac45578b5129c5eb3fa4fafb49ea16c1c112
+worktree: clean
+remote: https://github.com/dedvmedved-dot/otus-diplom.git (no embedded credentials)
+
+git log -5 --oneline:
+  4dfbac4 TASK-P6C: deploy Envoy Gateway 1.8.3 foundation
+  74e54e3 TASK-P6B-R5: fix fail-closed BGP BFD verifier checks
+  03e8869 TASK-P6B-R4: add durable fail-closed P6B verifier and evidence
+  3010dec TASK-P6B-R4: clean validation artifacts and add durable verifier
+  46d996e TASK-P6B-R3: remove external-LB exclusion and prove L2 announcement
+
+CONDITIONS MET. RESULT: PASS

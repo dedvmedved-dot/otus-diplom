@@ -1,0 +1,15 @@
+# TASK-P6C-R1 — Scope
+
+PROJECT: OTUS Diplom / ПАК «Портал»
+REPOSITORY: dedvmedved-dot/otus-diplom
+STAGE: P6C-R1 (PARENT: TASK-P6C — NOT ACCEPTED)
+CLASSIFICATION: ARCHITECTURE BASELINE CORRECTION / COMPATIBILITY REBASE / VERIFIER HARDENING
+
+KUBERNETES: v1.36.2 — KEEP (no downgrade)
+METALLB: 0.16.1 — KEEP / FINAL ACCEPTED
+ENVOY GATEWAY: 1.8.3 -> 1.9.1 (1.8.3 REJECTED: k8s v1.36 not in v1.8 matrix)
+
+Reason: Envoy Gateway v1.8 does not support Kubernetes v1.36; v1.9 does.
+Kubernetes must NOT be downgraded. P1-P6B remain unchanged.
+
+P6D NOT AUTHORIZED. EXTERNAL E2E DEFERRED TO P6D.

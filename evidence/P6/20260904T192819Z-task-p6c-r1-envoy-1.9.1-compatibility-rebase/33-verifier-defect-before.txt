@@ -1,0 +1,21 @@
+# TASK-P6C-R1 — Verifier Defect Before (R1-18)
+
+Defects in the R1-pre verifier (ansible/playbooks/p6c-final-readonly-verify.yml):
+
+A. Gateway residue query is fail-open:
+   ```
+   gw = subprocess.run(KC + ["get", "gateway", "-A", "-o", "json"], ...)
+   gw_items = json.loads(gw.stdout).get("items", []) if gw.returncode == 0 else []
+   assert len(gw_items) == 0, ...
+   ```
+   A failed query (rc != 0) silently yields empty list -> assert passes
+   (false P6C_VALIDATION_RESIDUE_ZERO).
+
+B. HTTPRoute residue is NOT independently checked at all.
+
+C. Version pinned to 1.8.3 (no 1.9.1, no Kubernetes v1.36.2, no compatibility
+   marker).
+
+D. BGP/BFD grouped into a single loop without separate markers.
+
+All corrected in R1 verifier.
