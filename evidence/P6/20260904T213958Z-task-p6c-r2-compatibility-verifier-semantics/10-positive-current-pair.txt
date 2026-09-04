@@ -1,0 +1,2 @@
+A. Envoy 1.9.1 + K8s 1.36.2 (compat): PASS  [OK]
+CURRENT PAIR COMPATIBILITY = PASS

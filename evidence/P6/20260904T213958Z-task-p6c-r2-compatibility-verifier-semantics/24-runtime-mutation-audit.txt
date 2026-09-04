@@ -1,0 +1,19 @@
+# TASK-P6C-R2 — Runtime Mutation Audit
+
+MODE: STRICTLY READ-ONLY AGAINST RUNNING CLUSTER.
+
+RUNTIME MUTATION COUNT = 0
+
+  kubectl apply/create/delete/patch/edit/label/annotate/taint: 0
+  kubectl rollout restart: 0
+  helm install/upgrade: 0
+  Envoy restart/upgrade: 0
+  CRD mutation: 0
+  Gateway/GatewayClass/HTTPRoute mutation: 0
+  MetalLB/kube-vip/Calico/CoreDNS/storage/network mutation: 0
+  systemctl mutation: 0
+  reboot: 0
+
+Only read-only kubectl get / ansible verification performed.
+
+RESULT: PASS (0 runtime mutations)

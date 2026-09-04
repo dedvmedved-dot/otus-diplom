@@ -1,0 +1,23 @@
+# TASK-P6C-R2 — Compatibility Policy (R2-02)
+
+Envoy Gateway minor -> supported Kubernetes minors (official matrix):
+
+  Envoy minor 1.9 -> Kubernetes minors {1.33, 1.34, 1.35, 1.36}
+
+Current project pair:
+  Envoy Gateway 1.9.1
+  Kubernetes 1.36.2
+  => COMPATIBLE = TRUE
+
+Semantics:
+- COMPATIBILITY check: parse Envoy major.minor + Kubernetes major.minor,
+  assert k8s minor is in the supported set for the Envoy minor.
+- PROJECT BASELINE check: require exact Kubernetes v1.36.2 AND Envoy v1.9.1.
+- Unknown Envoy minor (no policy entry) => FAIL-CLOSED.
+- Compatibility must NOT be inferred from image digest equality.
+
+Distinction (mandatory):
+  k8s 1.35.0 + Envoy 1.9.1 => COMPATIBILITY PASS, PROJECT BASELINE FAIL.
+  k8s 1.32.9 + Envoy 1.9.1 => COMPATIBILITY FAIL.
+  Envoy 1.8.3 + k8s 1.36.2 => COMPATIBILITY FAIL (v1.8 supports 1.32-1.35 only).
+  Envoy 2.0.0 + k8s 1.36.2 => COMPATIBILITY FAIL-CLOSED (no policy).

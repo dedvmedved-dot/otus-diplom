@@ -1,0 +1,5 @@
+=== 26-git-scope-audit ===
+ M ansible/playbooks/p6c-final-readonly-verify.yml
+?? evidence/P6/20260904T213958Z-task-p6c-r2-compatibility-verifier-semantics/
+--- allowed only check ---
+ONLY_ALLOWED_PATHS

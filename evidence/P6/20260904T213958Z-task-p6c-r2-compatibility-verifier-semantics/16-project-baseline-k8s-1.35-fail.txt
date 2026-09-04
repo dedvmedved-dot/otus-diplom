@@ -1,0 +1,3 @@
+G. Envoy 1.9.1 + K8s 1.35.0 (baseline): FAIL (project baseline k8s violation: v1.35.0)  [OK]
+compat=PASS baseline=FAIL  [OK]
+PROJECT BASELINE K8S 1.35 = FAIL AS EXPECTED (compatibility remains PASS)

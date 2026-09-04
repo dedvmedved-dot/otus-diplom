@@ -1,0 +1,7 @@
+
+playbook: ansible/playbooks/p6c-final-readonly-verify.yml
+
+  play #1 (all): P6C final read-only verifier (TASK-P6C-R1)	TAGS: []
+    tasks:
+      P6C final semantic verification (read-only)	TAGS: []
+      P6C images.lock + versions.lock exactness (read-only)	TAGS: []

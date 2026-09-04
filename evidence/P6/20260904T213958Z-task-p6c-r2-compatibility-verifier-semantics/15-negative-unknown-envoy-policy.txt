@@ -1,0 +1,2 @@
+F. Envoy 2.0.0 + K8s 1.36.2 (compat): FAIL (no compatibility policy for Envoy minor 2.0)  [OK]
+UNKNOWN ENVOY POLICY = FAIL-CLOSED

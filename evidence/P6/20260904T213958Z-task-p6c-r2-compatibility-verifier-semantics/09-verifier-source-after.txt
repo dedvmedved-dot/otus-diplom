@@ -1,3 +1,4 @@
+=== 09-verifier-source-after ===
 ---
 # TASK-P6C-R1 — Durable fail-closed P6C read-only verifier (Envoy Gateway 1.9.1).
 # MODE: STRICTLY READ-ONLY. RUNTIME MUTATION = 0.

@@ -1,0 +1,2 @@
+D. Envoy 1.9.1 + K8s 1.32.9 (compat): FAIL (k8s v1.32.9 not supported by Envoy 1.9)  [OK]
+UNSUPPORTED 1.9.1 + K8S 1.32 = FAIL AS EXPECTED

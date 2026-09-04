@@ -1,0 +1,17 @@
+# TASK-P6C-R2 — Scope
+
+PROJECT: OTUS Diplom / ПАК «Портал»
+REPOSITORY: dedvmedved-dot/otus-diplom
+STAGE: P6C-R2 (PARENT: TASK-P6C-R1)
+CLASSIFICATION: MINIMAL REPOSITORY / READ-ONLY VERIFIER CORRECTION
+
+Architect finding: R1 evidence incorrectly used Kubernetes v1.35.0 as an
+incompatible negative-test pair. Envoy Gateway v1.9 supports k8s 1.33-1.36,
+so 1.35 is SUPPORTED (not a valid incompatible example).
+
+R2 corrects compatibility semantics in the durable verifier and adds factual
+evidence. Historical R1 evidence MUST NOT be modified.
+
+RUNTIME: STRICTLY READ-ONLY. RUNTIME MUTATION COUNT = 0.
+
+P6D NOT AUTHORIZED. EXTERNAL E2E DEFERRED TO P6D.

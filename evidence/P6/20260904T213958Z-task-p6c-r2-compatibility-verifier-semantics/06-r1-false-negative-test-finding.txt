@@ -1,0 +1,21 @@
+# TASK-P6C-R2 — R1 False-Negative Test Finding (R2-02)
+
+Finding: In TASK-P6C-R1 evidence, the negative test "J. incompatible k8s (v1.35.0)"
+incorrectly used Kubernetes v1.35.0 as an incompatible example.
+
+Facts:
+- Official Envoy Gateway v1.9 Kubernetes support set = {1.33, 1.34, 1.35, 1.36}.
+- Kubernetes v1.35 IS supported by Envoy Gateway v1.9.
+- Therefore v1.9.1 + v1.35.0 is COMPATIBLE (PASS), not incompatible.
+
+This was a factual error in the R1 negative-test example only. The R1 runtime
+rebase itself (1.8.3 -> 1.9.1, k8s v1.36.2) is technically verified and NOT in
+question.
+
+R2 correction:
+1. Compatibility semantics separated from exact project-baseline enforcement.
+2. Compatible k8s minor = {1.33, 1.34, 1.35, 1.36} for Envoy minor 1.9.
+3. Unknown Envoy minor => FAIL-CLOSED (no policy).
+4. Project baseline (k8s 1.36.2 + Envoy 1.9.1) enforced separately.
+
+Historical R1 evidence is NOT modified.

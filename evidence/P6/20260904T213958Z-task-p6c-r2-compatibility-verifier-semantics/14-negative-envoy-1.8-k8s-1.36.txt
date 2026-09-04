@@ -1,0 +1,2 @@
+E. Envoy 1.8.3 + K8s 1.36.2 (compat): FAIL (no compatibility policy for Envoy minor 1.8)  [OK]
+UNSUPPORTED 1.8.3 + K8S 1.36 = FAIL AS EXPECTED
