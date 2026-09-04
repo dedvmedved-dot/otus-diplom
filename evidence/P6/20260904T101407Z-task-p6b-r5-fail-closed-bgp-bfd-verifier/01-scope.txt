@@ -1,0 +1,17 @@
+# TASK-P6B-R5 — Scope
+
+PROJECT: OTUS Diplom / ПАК «Портал»
+REPOSITORY: dedvmedved-dot/otus-diplom
+STAGE: P6B-R5 (PARENT: TASK-P6B-R4)
+CLASSIFICATION: MINIMAL REPOSITORY CORRECTION / VERIFIER CONTRACT HARDENING
+
+Architect finding: p6b-final-readonly-verify.yml has a fail-open defect —
+current BGP check uses `kubectl <kind>` (no `get -o json`) and treats non-zero
+rc as count 0, so a failed BGP query falsely yields P6B_BGP_ZERO. BFDProfile
+not checked at all.
+
+This task fixes ONLY that defect and proves strict fail-closed behavior.
+
+RUNTIME: STRICTLY READ-ONLY (mutation count = 0).
+P6C / ENVOY GATEWAY: NOT AUTHORIZED.
+EXTERNAL E2E: DEFERRED TO P6D.

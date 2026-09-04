@@ -1,0 +1,20 @@
+=== 07-verifier-source-after (BGP/BFD section) ===
+118:          # H. BGP/BFD prohibition (configured resources = 0, fail-closed)
+119-          for kind, marker in [
+120-              ("bgppeer", "P6B_BGPPEER_ZERO"),
+121-              ("bgpadvertisement", "P6B_BGPADVERTISEMENT_ZERO"),
+122-              ("bfdprofile", "P6B_BFDPROFILE_ZERO"),
+123-          ]:
+124-              r = subprocess.run(
+125-                  KC + ["-n", "metallb-system", "get", kind, "-o", "json"],
+126-                  capture_output=True,
+127-                  text=True,
+128-              )
+129-              assert r.returncode == 0, (
+130-                  f"{kind} query failed rc={r.returncode} stderr={r.stderr}"
+131-              )
+132-              obj = json.loads(r.stdout)
+133-              assert isinstance(obj.get("items"), list), (
+134-                  f"{kind} invalid JSON payload"
+135-              )
+136-              assert len(obj["items"]) == 0, (

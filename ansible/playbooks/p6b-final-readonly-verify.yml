@@ -115,12 +115,28 @@
               f"l2 pools {l2p[0]['spec']['ipAddressPools']}"
           print("P6B_L2ADVERTISEMENT_OK")
 
-          # H. BGP prohibition (configured resources = 0)
-          for kind in ["bgppeer", "bgpadvertisement"]:
-              r = subprocess.run(KC + [kind], capture_output=True, text=True)
-              n = len(json.loads(r.stdout).get("items", [])) if r.returncode == 0 else 0
-              assert n == 0, f"{kind} count {n}"
-          print("P6B_BGP_ZERO")
+          # H. BGP/BFD prohibition (configured resources = 0, fail-closed)
+          for kind, marker in [
+              ("bgppeer", "P6B_BGPPEER_ZERO"),
+              ("bgpadvertisement", "P6B_BGPADVERTISEMENT_ZERO"),
+              ("bfdprofile", "P6B_BFDPROFILE_ZERO"),
+          ]:
+              r = subprocess.run(
+                  KC + ["-n", "metallb-system", "get", kind, "-o", "json"],
+                  capture_output=True,
+                  text=True,
+              )
+              assert r.returncode == 0, (
+                  f"{kind} query failed rc={r.returncode} stderr={r.stderr}"
+              )
+              obj = json.loads(r.stdout)
+              assert isinstance(obj.get("items"), list), (
+                  f"{kind} invalid JSON payload"
+              )
+              assert len(obj["items"]) == 0, (
+                  f"{kind} count={len(obj['items'])}"
+              )
+              print(marker)
 
           # I. kube-vip separation (cp_enable=true, svc_enable=false, addr=.100)
           kvp = runj(KC + ["-n", "kube-system", "get", "pod", "kube-vip-node-01", "-o", "json"])

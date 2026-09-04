@@ -1,0 +1,8 @@
+
+playbook: ansible/playbooks/p6b-final-readonly-verify.yml
+
+  play #1 (all): P6B final read-only verifier (TASK-P6B-R4)	TAGS: []
+    tasks:
+      P6B final semantic verification (read-only)	TAGS: []
+      P6B source manifest semantic exactness (read-only)	TAGS: []
+      P6B images.lock exactness (read-only)	TAGS: []

@@ -1,0 +1,14 @@
+=== 05-verifier-before-defect (current BGP/BFD section) ===
+118:          # H. BGP prohibition (configured resources = 0)
+119-          for kind in ["bgppeer", "bgpadvertisement"]:
+120-              r = subprocess.run(KC + [kind], capture_output=True, text=True)
+121-              n = len(json.loads(r.stdout).get("items", [])) if r.returncode == 0 else 0
+122-              assert n == 0, f"{kind} count {n}"
+123-          print("P6B_BGP_ZERO")
+124-
+125-          # I. kube-vip separation (cp_enable=true, svc_enable=false, addr=.100)
+126-          kvp = runj(KC + ["-n", "kube-system", "get", "pod", "kube-vip-node-01", "-o", "json"])
+127-          assert kvp is not None, "kube-vip pod missing"
+128-          env = {e["name"]: e.get("value", "") for e in kvp["spec"]["containers"][0]["env"]}
+129-          assert env.get("cp_enable") == "true", f"cp_enable={env.get('cp_enable')}"
+130-          assert env.get("svc_enable") == "false", f"svc_enable={env.get('svc_enable')}"

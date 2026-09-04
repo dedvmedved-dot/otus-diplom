@@ -1,0 +1,1 @@
+C object present: PASS (raised: bgppeer count=1)

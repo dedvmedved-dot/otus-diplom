@@ -1,0 +1,2 @@
+
+playbook: ansible/playbooks/p6b-final-readonly-verify.yml

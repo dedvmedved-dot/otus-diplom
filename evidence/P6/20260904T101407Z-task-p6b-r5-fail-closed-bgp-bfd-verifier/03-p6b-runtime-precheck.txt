@@ -1,0 +1,5 @@
+node-01 Ready=True
+node-02 Ready=True
+node-03 Ready=True
+controller=1/1
+speaker=3/3

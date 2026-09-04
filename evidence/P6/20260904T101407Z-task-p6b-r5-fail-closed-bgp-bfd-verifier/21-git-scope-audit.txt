@@ -1,0 +1,5 @@
+=== 21-git-scope-audit ===
+ M ansible/playbooks/p6b-final-readonly-verify.yml
+?? evidence/P6/20260904T101407Z-task-p6b-r5-fail-closed-bgp-bfd-verifier/
+--- allowed only check ---
+ONLY_ALLOWED_PATHS

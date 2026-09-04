@@ -1,0 +1,24 @@
+node-01 Ready=True
+node-02 Ready=True
+node-03 Ready=True
+controller=1/1
+speaker=3/3
+pool=["172.30.140.110-172.30.140.119"]
+l2adv=["p6-ingress-pool"]
+--- bgp/bfd ---
+=0
+=0
+=0
+--- label ---
+node-01 ABSENT
+node-02 ABSENT
+node-03 ABSENT
+--- kube-vip ---
+cp=true svc=false addr=172.30.140.100
+=== explicit BGP/BFD counts (fix kind labels) ===
+bgppeer:
+0
+bgpadvertisement:
+0
+bfdprofile:
+0

@@ -1,0 +1,24 @@
+# TASK-P6B-R5 — Runtime Mutation Audit
+
+MODE: STRICTLY READ-ONLY AGAINST RUNNING CLUSTER.
+
+RUNTIME MUTATION COUNT = 0
+
+  kubectl apply:        0
+  kubectl create:       0
+  kubectl delete:       0
+  kubectl patch:        0
+  kubectl edit:         0
+  kubectl label:        0
+  kubectl annotate:     0
+  kubectl taint:        0
+  kubectl rollout restart: 0
+  helm install/upgrade: 0
+  systemctl mutation:   0
+  network mutation:     0
+  reboot:               0
+
+Runtime operations were READ-ONLY only (kubectl get -o json, read-only
+Ansible verification, isolated fail-closed contract tests run locally in /tmp).
+
+RESULT: PASS (0 runtime mutations)
