@@ -1,0 +1,21 @@
+=== 11-rendered-manifest-security-audit ===
+--- privileged/hostNetwork/hostPID/hostIPC/hostPath ---
+privileged=true count: 0
+hostNetwork=true count: 0
+hostPath count: 0
+--- LoadBalancer/NodePort exposure in controller service ---
+--- namespaces rendered ---
+namespace: envoy-gateway-system
+--- kinds rendered ---
+kind: ClusterRole
+kind: ClusterRoleBinding
+kind: ConfigMap
+kind: Deployment
+kind: Job
+kind: MutatingWebhookConfiguration
+kind: Role
+kind: RoleBinding
+kind: Service
+kind: ServiceAccount
+--- securityContext summary ---
+runAsNonRoot=true count: 2

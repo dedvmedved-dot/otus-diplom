@@ -1,0 +1,2 @@
+=== apply GatewayClass ===
+gatewayclass.gateway.networking.k8s.io/eg created

@@ -1,0 +1,166 @@
+=== wait GatewayClass Accepted + Gateway Programmed + LB IP ===
+poll 1: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 2: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 3: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 4: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 5: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 6: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 7: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 8: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 9: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 10: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 11: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 12: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 13: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 14: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 15: ssh: connect to host 192.168.194.38 port 22: Network is unreachable
+poll 16: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 17: ssh: connect to host 192.168.194.38 port 22: Network is unreachable
+poll 18: ssh: connect to host 192.168.194.38 port 22: Network is unreachable
+poll 19: ssh: connect to host 192.168.194.38 port 22: Network is unreachable
+poll 20: ssh: connect to host 192.168.194.38 port 22: Network is unreachable
+poll 21: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 22: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 23: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 24: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 25: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 26: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 27: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 28: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 29: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 30: Accepted=True
+Accepted=True Programmed=False
+envoy-gateway type=ClusterIP lb=
+envoy-p6c-validation-p6c-gateway-7b1b6f36 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+poll 1: Acc=True Prog=False
+envoy-gateway ready=1/1
+envoy-p6c-validation-p6c-gateway-7b1b6f36 ready=/1
+poll 2: Acc=True Prog=False
+envoy-gateway ready=1/1
+envoy-p6c-validation-p6c-gateway-7b1b6f36 ready=/1
+poll 3: Acc=True Prog=False
+envoy-gateway ready=1/1
+envoy-p6c-validation-p6c-gateway-7b1b6f36 ready=/1
+poll 4: Acc=True Prog=False
+envoy-gateway ready=1/1
+envoy-p6c-validation-p6c-gateway-7b1b6f36 ready=/1
+poll 5: Acc=True Prog=False
+envoy-gateway ready=1/1
+envoy-p6c-validation-p6c-gateway-7b1b6f36 ready=/1
+poll 6: Acc=True Prog=False
+envoy-gateway ready=1/1
+envoy-p6c-validation-p6c-gateway-7b1b6f36 ready=/1
+poll 7: Acc=True Prog=False
+envoy-gateway ready=1/1
+envoy-p6c-validation-p6c-gateway-7b1b6f36 ready=/1
+poll 8: Acc=True Prog=False
+envoy-gateway ready=1/1
+envoy-p6c-validation-p6c-gateway-7b1b6f36 ready=/1
+poll 9: Acc=True Prog=False
+envoy-gateway ready=1/1
+envoy-p6c-validation-p6c-gateway-7b1b6f36 ready=/1
+poll 10: Acc=True Prog=False
+envoy-gateway ready=1/1
+envoy-p6c-validation-p6c-gateway-7b1b6f36 ready=/1
+poll 11: Acc=True Prog=False
+envoy-gateway ready=1/1
+envoy-p6c-validation-p6c-gateway-7b1b6f36 ready=/1
+poll 12: Acc=True Prog=False
+envoy-gateway ready=1/1
+envoy-p6c-validation-p6c-gateway-7b1b6f36 ready=/1
+poll 13: Acc=True Prog=False
+envoy-gateway ready=1/1
+envoy-p6c-validation-p6c-gateway-7b1b6f36 ready=/1
+poll 14: Acc=True Prog=False
+envoy-gateway ready=1/1
+envoy-p6c-validation-p6c-gateway-7b1b6f36 ready=/1
+poll 15: Acc=True Prog=False
+envoy-gateway ready=1/1
+envoy-p6c-validation-p6c-gateway-7b1b6f36 ready=/1
+poll 16: Acc=True Prog=False
+envoy-gateway ready=1/1
+envoy-p6c-validation-p6c-gateway-7b1b6f36 ready=/1
+poll 17: Acc=True Prog=False
+envoy-gateway ready=1/1
+envoy-p6c-validation-p6c-gateway-7b1b6f36 ready=/1
+poll 18: Acc=True Prog=False
+envoy-gateway ready=1/1
+envoy-p6c-validation-p6c-gateway-7b1b6f36 ready=/1
+poll 19: Acc=True Prog=False
+envoy-gateway ready=1/1
+envoy-p6c-validation-p6c-gateway-7b1b6f36 ready=/1
+poll 20: Acc=True Prog=False
+envoy-gateway ready=1/1
+envoy-p6c-validation-p6c-gateway-7b1b6f36 ready=/1

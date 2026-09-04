@@ -1,0 +1,56 @@
+# P6C — Envoy Gateway 1.8.3 values (digest-pinned, HTTP-only foundation)
+global:
+  images:
+    envoyGateway:
+      image: docker.io/envoyproxy/gateway@sha256:3c3b5b6132002462b5c652cb9f1f72f532d3c848110e669f49690d9e11d9ce6e
+      pullPolicy: IfNotPresent
+    envoyProxy:
+      image: docker.io/envoyproxy/envoy@sha256:747460ac10544a8c7698d5d958142ffbda740e1ef1f36981b4b0e18f640658b7
+      pullPolicy: IfNotPresent
+    ratelimit:
+      image: docker.io/envoyproxy/ratelimit:1e50889b
+      pullPolicy: IfNotPresent
+
+crds:
+  enabled: false
+
+deployment:
+  envoyGateway:
+    image:
+      repository: ""
+      tag: ""
+    replicas: 1
+  pod:
+    tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+
+certgen:
+  job:
+    tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+
+config:
+  envoyGateway:
+    gateway:
+      controllerName: gateway.envoyproxy.io/gatewayclass-controller
+    provider:
+      type: Kubernetes
+    envoyProxy:
+      provider:
+        kubernetes:
+          envoyDeployment:
+            pod:
+              tolerations:
+                - key: node-role.kubernetes.io/control-plane
+                  operator: Exists
+                  effect: NoSchedule
+    logging:
+      level:
+        default: info
+
+service:
+  type: ClusterIP

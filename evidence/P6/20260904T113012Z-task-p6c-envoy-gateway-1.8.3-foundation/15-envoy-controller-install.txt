@@ -1,0 +1,58 @@
+clusterrole.rbac.authorization.k8s.io/eg-gateway-helm-envoy-gateway-role created
+clusterrolebinding.rbac.authorization.k8s.io/eg-gateway-helm-envoy-gateway-rolebinding created
+clusterrole.rbac.authorization.k8s.io/eg-gateway-helm-certgen:envoy-gateway-system created
+clusterrolebinding.rbac.authorization.k8s.io/eg-gateway-helm-certgen:envoy-gateway-system created
+mutatingwebhookconfiguration.admissionregistration.k8s.io/envoy-gateway-topology-injector.envoy-gateway-system created
+Error from server (NotFound): error when creating "/tmp/p6c-rendered.yaml": namespaces "envoy-gateway-system" not found
+Error from server (NotFound): error when creating "/tmp/p6c-rendered.yaml": namespaces "envoy-gateway-system" not found
+Error from server (NotFound): error when creating "/tmp/p6c-rendered.yaml": namespaces "envoy-gateway-system" not found
+Error from server (NotFound): error when creating "/tmp/p6c-rendered.yaml": namespaces "envoy-gateway-system" not found
+Error from server (NotFound): error when creating "/tmp/p6c-rendered.yaml": namespaces "envoy-gateway-system" not found
+Error from server (NotFound): error when creating "/tmp/p6c-rendered.yaml": namespaces "envoy-gateway-system" not found
+Error from server (NotFound): error when creating "/tmp/p6c-rendered.yaml": namespaces "envoy-gateway-system" not found
+Error from server (NotFound): error when creating "/tmp/p6c-rendered.yaml": namespaces "envoy-gateway-system" not found
+Error from server (NotFound): error when creating "/tmp/p6c-rendered.yaml": namespaces "envoy-gateway-system" not found
+Error from server (NotFound): error when creating "/tmp/p6c-rendered.yaml": namespaces "envoy-gateway-system" not found
+Error from server (NotFound): error when creating "/tmp/p6c-rendered.yaml": namespaces "envoy-gateway-system" not found
+Error from server (NotFound): error when creating "/tmp/p6c-rendered.yaml": namespaces "envoy-gateway-system" not found
+namespace/envoy-gateway-system created
+serviceaccount/envoy-gateway created
+configmap/envoy-gateway-config created
+clusterrole.rbac.authorization.k8s.io/eg-gateway-helm-envoy-gateway-role configured
+clusterrolebinding.rbac.authorization.k8s.io/eg-gateway-helm-envoy-gateway-rolebinding unchanged
+role.rbac.authorization.k8s.io/eg-gateway-helm-infra-manager created
+role.rbac.authorization.k8s.io/eg-gateway-helm-leader-election-role created
+rolebinding.rbac.authorization.k8s.io/eg-gateway-helm-infra-manager created
+rolebinding.rbac.authorization.k8s.io/eg-gateway-helm-leader-election-rolebinding created
+service/envoy-gateway created
+deployment.apps/envoy-gateway created
+serviceaccount/eg-gateway-helm-certgen created
+clusterrole.rbac.authorization.k8s.io/eg-gateway-helm-certgen:envoy-gateway-system unchanged
+clusterrolebinding.rbac.authorization.k8s.io/eg-gateway-helm-certgen:envoy-gateway-system unchanged
+role.rbac.authorization.k8s.io/eg-gateway-helm-certgen created
+rolebinding.rbac.authorization.k8s.io/eg-gateway-helm-certgen created
+job.batch/eg-gateway-helm-certgen created
+mutatingwebhookconfiguration.admissionregistration.k8s.io/envoy-gateway-topology-injector.envoy-gateway-system configured
+=== re-apply rendered ===
+serviceaccount/envoy-gateway unchanged
+configmap/envoy-gateway-config unchanged
+clusterrole.rbac.authorization.k8s.io/eg-gateway-helm-envoy-gateway-role configured
+clusterrolebinding.rbac.authorization.k8s.io/eg-gateway-helm-envoy-gateway-rolebinding unchanged
+role.rbac.authorization.k8s.io/eg-gateway-helm-infra-manager unchanged
+role.rbac.authorization.k8s.io/eg-gateway-helm-leader-election-role unchanged
+rolebinding.rbac.authorization.k8s.io/eg-gateway-helm-infra-manager unchanged
+rolebinding.rbac.authorization.k8s.io/eg-gateway-helm-leader-election-rolebinding unchanged
+service/envoy-gateway unchanged
+deployment.apps/envoy-gateway configured
+serviceaccount/eg-gateway-helm-certgen unchanged
+clusterrole.rbac.authorization.k8s.io/eg-gateway-helm-certgen:envoy-gateway-system unchanged
+clusterrolebinding.rbac.authorization.k8s.io/eg-gateway-helm-certgen:envoy-gateway-system unchanged
+role.rbac.authorization.k8s.io/eg-gateway-helm-certgen unchanged
+rolebinding.rbac.authorization.k8s.io/eg-gateway-helm-certgen unchanged
+mutatingwebhookconfiguration.admissionregistration.k8s.io/envoy-gateway-topology-injector.envoy-gateway-system configured
+The Job "eg-gateway-helm-certgen" is invalid: spec.template: Invalid value: {"labels":{"app":"certgen","batch.kubernetes.io/controller-uid":"7f458b8b-dea5-414d-84af-675760fefcda","batch.kubernetes.io/job-name":"eg-gateway-helm-certgen","controller-uid":"7f458b8b-dea5-414d-84af-675760fefcda","job-name":"eg-gateway-helm-certgen"},"Spec":{"Volumes":null,"InitContainers":null,"Containers":[{"Name":"envoy-gateway-certgen","Image":"docker.io/envoyproxy/gateway@sha256:3c3b5b6132002462b5c652cb9f1f72f532d3c848110e669f49690d9e11d9ce6e","Command":["envoy-gateway","certgen"],"Args":null,"WorkingDir":"","Ports":null,"EnvFrom":null,"Env":[{"Name":"ENVOY_GATEWAY_NAMESPACE","Value":"","ValueFrom":{"FieldRef":{"APIVersion":"v1","FieldPath":"metadata.namespace"},"ResourceFieldRef":null,"ConfigMapKeyRef":null,"SecretKeyRef":null,"FileKeyRef":null}},{"Name":"KUBERNETES_CLUSTER_DOMAIN","Value":"cluster.local","ValueFrom":null}],"Resources":{"Limits":null,"Requests":null,"Claims":null},"ResizePolicy":null,"RestartPolicy":null,"RestartPolicyRules":null,"VolumeMounts":null,"VolumeDevices":null,"LivenessProbe":null,"ReadinessProbe":null,"StartupProbe":null,"Lifecycle":null,"TerminationMessagePath":"/dev/termination-log","TerminationMessagePolicy":"File","ImagePullPolicy":"IfNotPresent","SecurityContext":{"Capabilities":{"Add":null,"Drop":["ALL"]},"Privileged":false,"SELinuxOptions":null,"WindowsOptions":null,"RunAsUser":65532,"RunAsGroup":65532,"RunAsNonRoot":true,"ReadOnlyRootFilesystem":true,"AllowPrivilegeEscalation":false,"ProcMount":null,"SeccompProfile":{"Type":"RuntimeDefault","LocalhostProfile":null},"AppArmorProfile":null},"Stdin":false,"StdinOnce":false,"TTY":false}],"EphemeralContainers":null,"RestartPolicy":"Never","TerminationGracePeriodSeconds":30,"ActiveDeadlineSeconds":null,"DNSPolicy":"ClusterFirst","NodeSelector":null,"ServiceAccountName":"eg-gateway-helm-certgen","AutomountServiceAccountToken":null,"NodeName":"","SecurityContext":{"HostNetwork":false,"HostPID":false,"HostIPC":false,"ShareProcessNamespace":null,"HostUsers":null,"SELinuxOptions":null,"WindowsOptions":null,"RunAsUser":null,"RunAsGroup":null,"RunAsNonRoot":null,"SupplementalGroups":null,"SupplementalGroupsPolicy":null,"FSGroup":null,"FSGroupChangePolicy":null,"Sysctls":null,"SeccompProfile":null,"AppArmorProfile":null,"SELinuxChangePolicy":null},"ImagePullSecrets":[],"Hostname":"","Subdomain":"","SetHostnameAsFQDN":null,"Affinity":null,"SchedulerName":"default-scheduler","Tolerations":[{"Key":"node-role.kubernetes.io/control-plane","Operator":"Exists","Value":"","Effect":"NoSchedule","TolerationSeconds":null}],"HostAliases":null,"PriorityClassName":"","Priority":null,"PreemptionPolicy":null,"DNSConfig":null,"ReadinessGates":null,"RuntimeClassName":null,"Overhead":null,"EnableServiceLinks":null,"TopologySpreadConstraints":null,"OS":null,"SchedulingGates":null,"ResourceClaims":null,"Resources":null,"HostnameOverride":null,"SchedulingGroup":null}}: field is immutable
+job.batch "eg-gateway-helm-certgen" deleted from envoy-gateway-system namespace
+deployment.apps/envoy-gateway configured
+job.batch/eg-gateway-helm-certgen created
+configmap/envoy-gateway-config configured
+deployment.apps/envoy-gateway configured

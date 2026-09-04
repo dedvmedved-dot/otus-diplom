@@ -1,0 +1,17 @@
+NAME                                                         READY   STATUS    RESTARTS   AGE     IP              NODE      NOMINATED NODE   READINESS GATES
+envoy-gateway-5bb8c68497-lhs49                               1/1     Running   0          18m     10.244.190.16   node-01   <none>           <none>
+envoy-p6c-validation-p6c-gateway-7b1b6f36-5856b8b566-84gpg   0/2     Pending   0          8m35s   <none>          <none>    <none>           <none>
+=== wait data plane ready + gateway programmed ===
+poll 1: envoy-gateway ready=1/1
+envoy-p6c-validation-p6c-gateway-7b1b6f36 ready=/1
+Prog=False
+poll 2: envoy-gateway ready=1/1
+envoy-p6c-validation-p6c-gateway-7b1b6f36 ready=/1
+Prog=False
+poll 3: envoy-gateway ready=1/1
+envoy-p6c-validation-p6c-gateway-7b1b6f36 ready=/1
+Prog=False
+poll 4: envoy-gateway ready=1/1
+envoy-p6c-validation-p6c-gateway-7b1b6f36 ready=1/1
+Prog=True
+DATAPLANE_READY + GATEWAY_PROGRAMMED

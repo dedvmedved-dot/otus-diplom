@@ -1,0 +1,16 @@
+customresourcedefinition.apiextensions.k8s.io/backends.gateway.envoyproxy.io Established=True
+customresourcedefinition.apiextensions.k8s.io/backendtlspolicies.gateway.networking.k8s.io Established=True
+customresourcedefinition.apiextensions.k8s.io/backendtrafficpolicies.gateway.envoyproxy.io Established=True
+customresourcedefinition.apiextensions.k8s.io/clienttrafficpolicies.gateway.envoyproxy.io Established=True
+customresourcedefinition.apiextensions.k8s.io/envoyextensionpolicies.gateway.envoyproxy.io Established=True
+customresourcedefinition.apiextensions.k8s.io/envoypatchpolicies.gateway.envoyproxy.io Established=True
+customresourcedefinition.apiextensions.k8s.io/envoyproxies.gateway.envoyproxy.io Established=True
+customresourcedefinition.apiextensions.k8s.io/gatewayclasses.gateway.networking.k8s.io Established=True
+customresourcedefinition.apiextensions.k8s.io/gateways.gateway.networking.k8s.io Established=True
+customresourcedefinition.apiextensions.k8s.io/grpcroutes.gateway.networking.k8s.io Established=True
+customresourcedefinition.apiextensions.k8s.io/httproutefilters.gateway.envoyproxy.io Established=True
+customresourcedefinition.apiextensions.k8s.io/httproutes.gateway.networking.k8s.io Established=True
+customresourcedefinition.apiextensions.k8s.io/listenersets.gateway.networking.k8s.io Established=True
+customresourcedefinition.apiextensions.k8s.io/referencegrants.gateway.networking.k8s.io Established=True
+customresourcedefinition.apiextensions.k8s.io/securitypolicies.gateway.envoyproxy.io Established=True
+customresourcedefinition.apiextensions.k8s.io/tlsroutes.gateway.networking.k8s.io Established=True

@@ -1,0 +1,14 @@
+=== 09-rendered-image-inventory (helm template with pinned digests) ===
+render exit: 0
+--- images in rendered manifest ---
+36:              image: docker.io/envoyproxy/envoy@sha256:747460ac10544a8c7698d5d958142ffbda740e1ef1f36981b4b0e18f640658b7
+455:        image: docker.io/envoyproxy/gateway@sha256:3c3b5b6132002462b5c652cb9f1f72f532d3c848110e669f49690d9e11d9ce6e
+49:            image: /:1e50889b
+60:          image: docker.io/envoyproxy/gateway@sha256:3c3b5b6132002462b5c652cb9f1f72f532d3c848110e669f49690d9e11d9ce6e
+673:        image: docker.io/envoyproxy/gateway@sha256:3c3b5b6132002462b5c652cb9f1f72f532d3c848110e669f49690d9e11d9ce6e
+--- any latest/master? ---
+=== images in rendered manifest (final) ===
+image: docker.io/envoyproxy/envoy@sha256:747460ac10544a8c7698d5d958142ffbda740e1ef1f36981b4b0e18f640658b7
+image: docker.io/envoyproxy/gateway@sha256:3c3b5b6132002462b5c652cb9f1f72f532d3c848110e669f49690d9e11d9ce6e
+image: docker.io/envoyproxy/ratelimit:1e50889b
+--- floating check (latest/master/unpinned tag) ---

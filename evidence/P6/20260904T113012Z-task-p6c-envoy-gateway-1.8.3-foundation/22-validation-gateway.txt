@@ -1,0 +1,3 @@
+=== apply Gateway + HTTPRoute ===
+gateway.gateway.networking.k8s.io/p6c-gateway created
+httproute.gateway.networking.k8s.io/p6c-http created

@@ -1,0 +1,5 @@
+docker.io/envoyproxy/gateway@sha256:3c3b5b6132002462b5c652cb9f1f72f532d3c848110e669f49690d9e11d9ce6e
+docker.io/envoyproxy/gateway@sha256:3c3b5b6132002462b5c652cb9f1f72f532d3c848110e669f49690d9e11d9ce6e
+--- all pods ---
+NAME                             READY   STATUS    RESTARTS   AGE     IP              NODE      NOMINATED NODE   READINESS GATES
+envoy-gateway-5bb8c68497-lhs49   1/1     Running   0          8m42s   10.244.190.16   node-01   <none>           <none>

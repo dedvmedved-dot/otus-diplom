@@ -1,0 +1,2 @@
+Gateway Accepted=True Programmed=True
+HTTPRoute Accepted=True ResolvedRefs=True

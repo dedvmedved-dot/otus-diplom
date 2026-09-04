@@ -1,0 +1,81 @@
+
+PLAY [P5C2 final read-only regression + verifier contract (TASK-018-R5)] *******
+
+TASK [P1 — bond slaves + VLAN addresses + default route] ***********************
+[WARNING]: Platform linux on host node-01 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-01]
+[WARNING]: Platform linux on host node-02 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-02]
+[WARNING]: Platform linux on host node-03 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-03]
+
+TASK [P2 — containerd 2.3.3 + kubelet v1.36.2 + swap 0] ************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [P3 — etcd members/health + kube-vip + VIP owner + readyz/livez] **********
+ok: [node-01]
+ok: [node-03]
+ok: [node-02]
+
+TASK [P3 — VIP owner local check] **********************************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [P3 — VIP owner aggregate exactly 1] **************************************
+ok: [node-01]
+
+TASK [P4A — calico + coredns + ippool + bgp] ***********************************
+ok: [node-01]
+
+TASK [P4B — validation ns NotFound + canonical fingerprint + TASK-018 fp] ******
+ok: [node-01]
+
+TASK [P4B semantic source validation — parse canonical NetworkPolicy manifests] ***
+ok: [node-01 -> localhost]
+
+TASK [P5B — composite 6/6 + immutable IDs] *************************************
+ok: [node-01]
+ok: [node-03]
+ok: [node-02]
+
+TASK [P5B — immutable ID compare vs TASK-018 PRE] ******************************
+ok: [node-01 -> localhost]
+
+TASK [DRBD runtime — 9.3.2 + transport tcp + kernel] ***************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [LINSTOR — 3/3 nodes Online + drbd141 + pools] ****************************
+ok: [node-01]
+
+TASK [Satellite hostNetwork — 3/3 true + dnsPolicy + VLAN141 inside + LB_MAKEOPTS] ***
+ok: [node-01]
+
+TASK [NodeConnection + StorageClass exact] *************************************
+ok: [node-01]
+
+TASK [Validation cleanup — residue 0 + production objects present] *************
+ok: [node-01]
+
+PLAY RECAP *********************************************************************
+node-01                    : ok=15   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-02                    : ok=6    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-03                    : ok=6    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+P1P5_EXIT=0

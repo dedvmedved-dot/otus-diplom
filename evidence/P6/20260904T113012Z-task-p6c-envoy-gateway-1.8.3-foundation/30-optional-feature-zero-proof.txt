@@ -1,0 +1,20 @@
+backendtrafficpolicy: 0
+0
+clienttrafficpolicy: 0
+0
+securitypolicy: 0
+0
+envoyextensionpolicy: 0
+0
+envoypatchpolicy: 0
+0
+tlsroute: 0
+0
+tcproute: 0
+0
+udproute: 0
+0
+grpcroute: 0
+0
+--- cert-manager / external-dns ---
+none

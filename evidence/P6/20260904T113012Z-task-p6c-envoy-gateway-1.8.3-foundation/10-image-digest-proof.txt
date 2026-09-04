@@ -1,0 +1,19 @@
+=== envoyproxy/gateway ===
+mediaType= application/vnd.oci.image.index.v1+json
+linux amd64 sha256:3c3b5b6132002462b5c652cb9f1f72f532d3c848110e669f49690d9e11d9ce6e
+linux arm64 sha256:6b5b943cc12127c979b34f27f926fd2eba2862ad34148b8df213ac91c75a0229
+=== envoyproxy/envoy-distroless ===
+mediaType= ?
+no manifest list; digest= ?
+=== envoy-distroless v1.38.0 (data plane) ===
+mediaType= ?
+err {'errors': [{'code': 'MANIFEST_UNKNOWN', 'message': 'manifest unknown', 'detail': 'unknown tag=v1.38.0'}]}
+=== try envoyproxy/envoy tags ===
+--- envoyproxy/envoy:v1.38.0 ---
+mediaType= application/vnd.oci.image.index.v1+json
+linux amd64 sha256:a85fb4ac4bce750803b9db6306152db456864486e36f61559731f9033a9293f0
+linux arm64 sha256:a5fe282453442a3ec2b8428c3053ea304a168840b477dfffe5e5f12c67d76235
+--- envoyproxy/envoy:distroless-v1.38.0 ---
+mediaType= application/vnd.oci.image.index.v1+json
+linux amd64 sha256:747460ac10544a8c7698d5d958142ffbda740e1ef1f36981b4b0e18f640658b7
+linux arm64 sha256:0e6d0644b7d83c0e85bf5361b6d66f6f9644238af80ff60750422caaa062c2cc

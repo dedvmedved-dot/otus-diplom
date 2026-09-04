@@ -1,0 +1,25 @@
+# TASK-P6C — Forbidden Command Audit
+
+MODE: AUTHORIZED IMPLEMENTATION (P6C scope).
+
+Authorized runtime mutation (executed):
+  - install Envoy Gateway CRDs (gateway-crds-helm v1.8.3, 16 CRDs)
+  - install Envoy Gateway 1.8.3 controller (namespace envoy-gateway-system)
+  - create GatewayClass eg
+  - create/delete temporary p6c-validation resources (ns/Gateway/HTTPRoute/backend)
+
+NOT executed (forbidden, count=0):
+  - MetalLB reinstall/version/pool/L2Advertisement change: 0
+  - MetalLB BGP/BFD: 0
+  - kube-vip changes: 0
+  - Calico/CoreDNS/P4B changes: 0
+  - LINSTOR/DRBD/LVM/storage changes: 0
+  - bond/VLAN/NIC/route/switch/router changes: 0
+  - cert-manager/external-dns: 0
+  - production TLS/routes: 0
+  - rate-limit using master: 0 (ratelimit not enabled)
+  - any latest/master deployed image: 0 (all digest-pinned)
+  - reboot / unrelated packages: 0
+  - force push / history rewrite: 0
+
+RESULT: PASS (mutation strictly within P6C authorized scope)

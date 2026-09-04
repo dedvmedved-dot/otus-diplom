@@ -1,0 +1,12 @@
+# P6C — temporary validation Gateway (HTTP only, no TLS)
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: p6c-gateway
+  namespace: p6c-validation
+spec:
+  gatewayClassName: eg
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80

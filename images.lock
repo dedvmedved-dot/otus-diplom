@@ -203,3 +203,21 @@ images:
     source_registry: quay.io
     internal_registry: NOT_VERIFIED
     verified: true
+
+  - component: envoy-gateway
+    image: docker.io/envoyproxy/gateway
+    tag: "v1.8.3"
+    digest: "sha256:3c3b5b6132002462b5c652cb9f1f72f532d3c848110e669f49690d9e11d9ce6e"
+    platform: linux/amd64
+    source_registry: docker.io
+    internal_registry: NOT_VERIFIED
+    verified: true
+
+  - component: envoy-proxy-dataplane
+    image: docker.io/envoyproxy/envoy
+    tag: "distroless-v1.38.0"
+    digest: "sha256:747460ac10544a8c7698d5d958142ffbda740e1ef1f36981b4b0e18f640658b7"
+    platform: linux/amd64
+    source_registry: docker.io
+    internal_registry: NOT_VERIFIED
+    verified: true

@@ -1,0 +1,7 @@
+# P6C — Envoy Gateway CRD chart values (v1.8.3)
+crds:
+  gatewayAPI:
+    enabled: true
+    channel: standard
+  envoyGateway:
+    enabled: true

@@ -1,0 +1,6 @@
+--- gateway api CRDs ---
+no gateway/envoy CRDs
+--- envoy ns ---
+no envoy/gateway ns
+--- gatewayclass/gateway/httproute ---
+error: the server doesn't have a resource type "gatewayclass"

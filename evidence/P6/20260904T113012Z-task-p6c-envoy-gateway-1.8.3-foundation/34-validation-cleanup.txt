@@ -1,0 +1,8 @@
+namespace "p6c-validation" deleted
+VALIDATION_NOTFOUND
+=== verify envoy data plane GC'd ===
+NAME            READY   UP-TO-DATE   AVAILABLE   AGE
+envoy-gateway   1/1     1            1           24m
+--- gateway/httproute ---
+No resources found
+LB services: NONE

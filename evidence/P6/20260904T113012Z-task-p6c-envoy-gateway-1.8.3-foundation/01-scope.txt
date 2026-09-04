@@ -1,0 +1,15 @@
+# TASK-P6C — Scope
+
+PROJECT: OTUS Diplom / ПАК «Портал»
+REPOSITORY: dedvmedved-dot/otus-diplom
+STAGE: P6C (PARENT: P6B FINAL ACCEPTED)
+CLASSIFICATION: AUTHORIZED IMPLEMENTATION / GATEWAY API FOUNDATION / ENVOY GATEWAY
+APPROVED VERSION: Envoy Gateway 1.8.3
+METALLB: 0.16.1 — FINAL ACCEPTED (NOT reopened)
+P6D: NOT AUTHORIZED. EXTERNAL E2E: DEFERRED TO P6D.
+
+Architecture: external -> MetalLB L2 LB IP -> Envoy Gateway data plane ->
+Gateway API -> backend.
+
+P6C foundation uses HTTP validation only. No TLS, no BGP/BFD, no ratelimit,
+no cert-manager, no production routes.

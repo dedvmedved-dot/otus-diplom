@@ -1,0 +1,7 @@
+=== 41-git-scope-audit (final) ===
+ M images.lock
+?? ansible/playbooks/p6c-final-readonly-verify.yml
+?? evidence/P6/20260904T113012Z-task-p6c-envoy-gateway-1.8.3-foundation/
+?? manifests/envoy-gateway/
+--- allowed only check ---
+ONLY_ALLOWED_PATHS

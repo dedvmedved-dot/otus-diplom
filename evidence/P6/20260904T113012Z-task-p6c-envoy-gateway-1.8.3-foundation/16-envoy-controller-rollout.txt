@@ -1,0 +1,125 @@
+=== 16-envoy-controller-rollout ===
+poll 1: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 2: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 3: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 4: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 5: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 6: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 7: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 8: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 9: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 10: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 11: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 12: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 13: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 14: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 15: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 16: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 17: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 18: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 19: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 20: ssh: connect to host 192.168.194.38 port 22: Network is unreachable
+poll 21: ssh: connect to host 192.168.194.38 port 22: Network is unreachable
+poll 22: ssh: connect to host 192.168.194.38 port 22: Network is unreachable
+poll 23: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 24: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 25: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 26: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 27: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 28: ssh: connect to host 192.168.194.38 port 22: Network is unreachable
+poll 29: ssh: connect to host 192.168.194.38 port 22: Network is unreachable
+poll 30: available=/1 ready=
+eg-gateway-helm-certgen-fbs6n Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+=== wait controller ready ===
+poll 1: available=/1
+eg-gateway-helm-certgen-mjrpc Pending
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 2: available=/1
+eg-gateway-helm-certgen-mjrpc Succeeded
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 3: available=/1
+eg-gateway-helm-certgen-mjrpc Succeeded
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 4: available=/1
+eg-gateway-helm-certgen-mjrpc Succeeded
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 5: available=/1
+eg-gateway-helm-certgen-mjrpc Succeeded
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 6: available=/1
+eg-gateway-helm-certgen-mjrpc Succeeded
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 7: available=/1
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 8: available=/1
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 9: available=/1
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 10: available=/1
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 11: available=/1
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 12: available=/1
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 13: available=/1
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 14: available=/1
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 15: available=/1
+envoy-gateway-5bb8c68497-lhs49 Pending
+poll 16: available=/1
+envoy-gateway-5bb8c68497-lhs49 Running
+poll 17: available=/1
+envoy-gateway-5bb8c68497-lhs49 Running
+poll 18: available=1/1
+envoy-gateway-5bb8c68497-lhs49 Running
+CONTROLLER_READY

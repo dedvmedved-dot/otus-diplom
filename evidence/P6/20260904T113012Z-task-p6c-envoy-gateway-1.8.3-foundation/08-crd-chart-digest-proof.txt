@@ -1,0 +1,3 @@
+=== pull gateway-crds-helm chart v1.8.3 ===
+Pulled: docker.io/envoyproxy/gateway-crds-helm:v1.8.3
+Digest: sha256:99b14db0bc57c8f413023d66145a2c53e8ed47f85fe0163b675c04165ff242d4

@@ -1,0 +1,15 @@
+# TASK-P6C — Git Preflight
+
+branch: main
+HEAD: 74e54e39cf96f422338887d7131de2daa4dd3761
+worktree: clean
+remote: https://github.com/dedvmedved-dot/otus-diplom.git (no embedded credentials)
+
+git log -5 --oneline:
+  74e54e3 TASK-P6B-R5: fix fail-closed BGP BFD verifier checks
+  03e8869 TASK-P6B-R4: add durable fail-closed P6B verifier and evidence
+  3010dec TASK-P6B-R4: clean validation artifacts and add durable verifier
+  46d996e TASK-P6B-R3: remove external-LB exclusion and prove L2 announcement
+  8de96cf TASK-P6B-R2: prove MetalLB L2 root cause - node exclusion label blocks announce
+
+CONDITIONS MET. RESULT: PASS

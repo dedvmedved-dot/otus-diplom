@@ -1,0 +1,15 @@
+=== 32-p6c-verifier-static-safety-audit ===
+kubectl apply: 0
+kubectl create: 0
+kubectl delete: 0
+kubectl patch: 0
+kubectl edit: 0
+kubectl label: 0
+kubectl annotate: 0
+kubectl taint: 0
+rollout restart: 0
+helm install: 0
+helm upgrade: 0
+systemctl: 0
+reboot: 0
+RESULT: 0 executable mutation operations

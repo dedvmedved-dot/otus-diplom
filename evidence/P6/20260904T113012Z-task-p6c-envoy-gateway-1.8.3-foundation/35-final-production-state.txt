@@ -1,0 +1,17 @@
+--- envoy controller ---
+ready=1/1
+--- gatewayclass ---
+Accepted=True
+--- metallb ---
+controller=1/1
+speaker=3/3
+pool=["172.30.140.110-172.30.140.119"]
+l2adv=["p6-ingress-pool"]
+--- bgp/bfd ---
+bgppeer=0
+bgpadvertisement=0
+bfdprofile=0
+--- kube-vip ---
+cp=true svc=false addr=172.30.140.100
+--- validation residue ---
+1

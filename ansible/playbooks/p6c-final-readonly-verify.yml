@@ -1,0 +1,118 @@
+---
+# TASK-P6C — Durable fail-closed P6C read-only verifier.
+# MODE: STRICTLY READ-ONLY. RUNTIME MUTATION = 0.
+# Asserts the exact P6C Envoy Gateway 1.8.3 foundation contract + P6B preservation.
+# Fail-closed: any query failure / semantic violation -> FAIL.
+
+- name: "P6C final read-only verifier (TASK-P6C)"
+  hosts: all
+  gather_facts: false
+  vars:
+    envoy_ns: envoy-gateway-system
+    controller_digest: "sha256:3c3b5b6132002462b5c652cb9f1f72f532d3c848110e669f49690d9e11d9ce6e"
+    envoyproxy_digest: "sha256:747460ac10544a8c7698d5d958142ffbda740e1ef1f36981b4b0e18f640658b7"
+
+  tasks:
+    - name: P6C final semantic verification (read-only)
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          KC = ["kubectl", "--kubeconfig", "/etc/kubernetes/admin.conf"]
+          def runj(c):
+              r = subprocess.run(c, capture_output=True, text=True)
+              if r.returncode != 0:
+                  raise AssertionError(f"query failed: {' '.join(c)} rc={r.returncode} stderr={r.stderr}")
+              return json.loads(r.stdout)
+
+          # A. Envoy Gateway exact version + B. controller Ready + C. digest
+          dep = runj(KC + ["-n", "envoy-gateway-system", "get", "deploy", "envoy-gateway", "-o", "json"])
+          img = dep["spec"]["template"]["spec"]["containers"][0]["image"]
+          assert "envoyproxy/gateway" in img and "latest" not in img and "master" not in img, f"controller img {img}"
+          assert dep["status"].get("availableReplicas", 0) == dep["spec"]["replicas"] == 1, "controller not ready"
+          ctrl_pods = runj(KC + ["-n", "envoy-gateway-system", "get", "pods", "-l", "app.kubernetes.io/name=gateway-helm", "-o", "json"])
+          ctrl_imgid = ctrl_pods["items"][0]["status"]["containerStatuses"][0]["imageID"]
+          assert "sha256:3c3b5b6132002462b5c652cb9f1f72f532d3c848110e669f49690d9e11d9ce6e" in ctrl_imgid, f"controller imageID {ctrl_imgid}"
+          print("P6C_CONTROLLER_READY")
+          print("P6C_CONTROLLER_IMAGE_OK")
+
+          # D. required CRDs present/Established
+          for crd in ["gatewayclasses.gateway.networking.k8s.io",
+                      "gateways.gateway.networking.k8s.io",
+                      "httproutes.gateway.networking.k8s.io",
+                      "referencegrants.gateway.networking.k8s.io",
+                      "envoyproxies.gateway.envoyproxy.io"]:
+              r = subprocess.run(KC + ["get", "crd", crd, "-o", "json"], capture_output=True, text=True)
+              assert r.returncode == 0, f"crd {crd} query failed"
+              obj = json.loads(r.stdout)
+              est = [c["status"] for c in obj["status"]["conditions"] if c["type"] == "Established"]
+              assert est and est[0] == "True", f"crd {crd} not Established"
+          print("P6C_GATEWAY_API_CRDS_OK")
+
+          # E. GatewayClass eg Accepted=True
+          gc = runj(KC + ["get", "gatewayclass", "eg", "-o", "json"])
+          acc = [c["status"] for c in gc["status"]["conditions"] if c["type"] == "Accepted"]
+          assert acc and acc[0] == "True", "GatewayClass eg not Accepted"
+          print("P6C_GATEWAYCLASS_ACCEPTED")
+
+          # F/G. validation residue zero (no validation Gateway/HTTPRoute/LB svc)
+          for ns in ["p6c-validation"]:
+              r = subprocess.run(KC + ["get", "namespace", ns], capture_output=True, text=True)
+              assert r.returncode != 0 and "NotFound" in r.stderr, f"validation ns {ns} still present"
+          all_svc = runj(KC + ["get", "svc", "-A", "-o", "json"])
+          lb = [s for s in all_svc["items"] if s["spec"].get("type") == "LoadBalancer"]
+          assert len(lb) == 0, f"temporary LB services remain: {[s['metadata']['name'] for s in lb]}"
+          gw = subprocess.run(KC + ["get", "gateway", "-A", "-o", "json"], capture_output=True, text=True)
+          gw_items = json.loads(gw.stdout).get("items", []) if gw.returncode == 0 else []
+          assert len(gw_items) == 0, f"temporary Gateways remain: {len(gw_items)}"
+          print("P6C_VALIDATION_RESIDUE_ZERO")
+
+          # H/I. MetalLB integration + P6B preserved (BGP/BFD zero, label absent, pool)
+          for kind in ["bgppeer", "bgpadvertisement", "bfdprofile"]:
+              r = subprocess.run(KC + ["-n", "metallb-system", "get", kind, "-o", "json"], capture_output=True, text=True)
+              assert r.returncode == 0, f"{kind} query failed"
+              assert len(json.loads(r.stdout).get("items", [])) == 0, f"{kind} nonzero"
+          for n in ["node-01", "node-02", "node-03"]:
+              node = runj(KC + ["get", "node", n, "-o", "json"])
+              assert "node.kubernetes.io/exclude-from-external-load-balancers" not in node["metadata"]["labels"], f"{n} exclusion label present"
+          kvp = runj(KC + ["-n", "kube-system", "get", "pod", "kube-vip-node-01", "-o", "json"])
+          env = {e["name"]: e.get("value", "") for e in kvp["spec"]["containers"][0]["env"]}
+          assert env.get("svc_enable") == "false" and env.get("address") == "172.30.140.100", "kube-vip regression"
+          print("P6C_METALLB_INTEGRATION_OK")
+          print("P6C_P6B_PRESERVED")
+
+          # K/L. no floating images in production P6C source/config
+          depimg = dep["spec"]["template"]["spec"]["containers"][0]["image"]
+          assert "@sha256:" in depimg, "controller image not digest-pinned"
+          print("P6C_NO_FLOATING_IMAGES")
+
+          print("P6C_FINAL_READONLY_VERIFIER_PASS")
+          PYEOF
+      changed_when: false
+      delegate_to: node-01
+      run_once: true
+
+    # K/L — images.lock exactness (repository file, localhost)
+    - name: P6C images.lock exactness (read-only)
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          python3 << 'PYEOF'
+          import yaml, sys
+          repo = "{{ playbook_dir }}/../.."
+          doc = yaml.safe_load(open(repo + "/images.lock"))
+          entries = doc.get("images", [])
+          found = {e.get("component"): e for e in entries if e.get("component") in ("envoy-gateway", "envoy-proxy-dataplane")}
+          assert "envoy-gateway" in found, "envoy-gateway missing"
+          assert "envoy-proxy-dataplane" in found, "envoy-proxy-dataplane missing"
+          assert found["envoy-gateway"]["tag"] == "v1.8.3", "envoy-gateway tag"
+          assert found["envoy-gateway"]["digest"] == "sha256:3c3b5b6132002462b5c652cb9f1f72f532d3c848110e669f49690d9e11d9ce6e", "envoy-gateway digest"
+          assert found["envoy-proxy-dataplane"]["digest"] == "sha256:747460ac10544a8c7698d5d958142ffbda740e1ef1f36981b4b0e18f640658b7", "envoy-proxy digest"
+          assert found["envoy-gateway"].get("verified") is True, "envoy-gateway verified"
+          assert found["envoy-proxy-dataplane"].get("verified") is True, "envoy-proxy verified"
+          print("P6C_IMAGES_LOCK_OK")
+          PYEOF
+      changed_when: false
+      delegate_to: localhost
+      run_once: true

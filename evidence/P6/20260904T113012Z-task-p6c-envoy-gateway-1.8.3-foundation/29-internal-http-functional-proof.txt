@@ -1,0 +1,5 @@
+=== 29-internal-http-functional-proof ===
+INTERNAL FUNCTIONAL ROUTING PROOF (node-02 -> Envoy LB .110 -> HTTPRoute -> backend)
+HTTP=200
+P6C_ENVOY_GATEWAY_HTTP_OK
+
