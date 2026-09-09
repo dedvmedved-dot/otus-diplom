@@ -1,0 +1,5 @@
+=== 39-git-scope-audit ===
+?? ansible/playbooks/p6d-final-readonly-verify.yml
+?? evidence/P6/20260908T174149Z-task-p6d-external-e2e-integration-acceptance/
+--- allowed only check ---
+ONLY_ALLOWED_PATHS

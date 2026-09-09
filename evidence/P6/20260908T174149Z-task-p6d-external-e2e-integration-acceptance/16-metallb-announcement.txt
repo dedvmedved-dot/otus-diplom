@@ -1,0 +1,15 @@
+--- speaker logs (serviceAnnounced .110) ---
+{"caller":"main.go:481","event":"serviceAnnounced","ips":["172.30.140.110"],"level":"info","msg":"service has IP, announcing","pool":"p6-ingress-pool","protocol":"layer2","ts":"2026-09-03T20:16:20Z"}
+{"caller":"main.go:525","event":"serviceWithdrawn","ip":["172.30.140.110"],"ips":["172.30.140.110"],"level":"info","msg":"withdrawing service announcement","pool":"p6-ingress-pool","protocol":"layer2","reason":"notOwner","ts":"2026-09-03T20:16:50Z"}
+{"caller":"main.go:481","event":"serviceAnnounced","ips":["172.30.140.110"],"level":"info","msg":"service has IP, announcing","pool":"p6-ingress-pool","protocol":"layer2","ts":"2026-09-04T19:40:43Z"}
+{"caller":"main.go:525","event":"serviceWithdrawn","ip":["172.30.140.110"],"level":"info","msg":"withdrawing service announcement","reason":"serviceDeleted","ts":"2026-09-04T19:46:59Z"}
+{"caller":"main.go:481","event":"serviceAnnounced","ips":["172.30.140.110"],"level":"info","msg":"service has IP, announcing","pool":"p6-ingress-pool","protocol":"layer2","ts":"2026-09-09T14:32:59Z"}
+--- speaker pods ---
+NAME            READY   STATUS    RESTARTS   AGE     IP               NODE      NOMINATED NODE   READINESS GATES
+speaker-d956q   1/1     Running   0          5d19h   172.30.140.103   node-03   <none>           <none>
+speaker-pcszv   1/1     Running   0          5d19h   172.30.140.102   node-02   <none>           <none>
+speaker-xwxtr   1/1     Running   0          5d19h   172.30.140.101   node-01   <none>           <none>
+=== announcer node identification ===
+speaker-d956q (node=node-03): {"caller":"main.go:481","event":"serviceAnnounced","ips":["172.30.140.110"],"level":"info","msg":"service has IP, announcing","pool":"p6-ingress-pool","protocol":"layer2","ts":"2026-09-04T12:01:13Z"}
+speaker-pcszv (node=node-02): 
+speaker-xwxtr (node=node-01): {"caller":"main.go:481","event":"serviceAnnounced","ips":["172.30.140.110"],"level":"info","msg":"service has IP, announcing","pool":"p6-ingress-pool","protocol":"layer2","ts":"2026-09-09T14:32:59Z"}

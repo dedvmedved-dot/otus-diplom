@@ -1,0 +1,28 @@
+# TASK-P6D — Runtime Mutation Audit
+
+MODE: EXTERNAL E2E INTEGRATION ACCEPTANCE.
+
+Authorized runtime mutation (P6D §29 — temporary validation only):
+  - namespace p6d-validation (create + delete)
+  - NetworkPolicies (default-deny ingress/egress, DNS egress, allow envoy->backend)
+  - backend Deployment/Service (p6d-backend)
+  - Gateway p6d-gateway + HTTPRoute p6d-http
+  - generated Envoy validation data plane (auto GC'd on cleanup)
+
+Production foundation NOT changed:
+  - Kubernetes v1.36.2: unchanged
+  - MetalLB 0.16.1 / pool / L2Advertisement: unchanged
+  - Envoy Gateway 1.9.1 controller / GatewayClass eg / CRDs: unchanged
+  - kube-vip .100 / svc_enable=false: unchanged
+  - BGP/BFD: 0 (unchanged)
+  - Calico/CoreDNS/P4B/storage/network bonds: unchanged
+
+Owner-authorized network change (required for external routed path):
+  - Added static route on node-01/02/03:
+    172.30.20.0/24 via 172.30.140.1 dev bond0.140   [temporary, ip route add]
+  - Reason: symmetric return path via SVI (fixes strict rp_filter drop of
+    asymmetric traffic). Authorized by Owner to enable external routed E2E.
+
+No destructive HA testing (no reboot/cordon/drain/speaker-stop/kill).
+
+RESULT: PASS (mutation within P6D scope + Owner-authorized route for external path)

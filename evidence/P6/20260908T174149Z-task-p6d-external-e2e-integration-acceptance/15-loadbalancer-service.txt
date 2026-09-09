@@ -1,0 +1,1 @@
+type=LoadBalancer lbIP=172.30.140.110

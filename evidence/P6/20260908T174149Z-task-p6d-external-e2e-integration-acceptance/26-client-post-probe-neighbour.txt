@@ -1,0 +1,2 @@
+--- speaker announcer for .110 ---
+{"caller":"main.go:481","event":"serviceAnnounced","ips":["172.30.140.110"],"level":"info","msg":"service has IP, announcing","pool":"p6-ingress-pool","protocol":"layer2","ts":"2026-09-09T14:32:59Z"}

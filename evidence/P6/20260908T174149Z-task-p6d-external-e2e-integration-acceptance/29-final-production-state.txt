@@ -1,0 +1,16 @@
+--- k8s ---
+v1.36.2
+--- envoy ---
+ready=1/1
+GatewayClass Accepted=True
+--- metallb ---
+controller=1/1
+speaker=3/3
+--- bgp/bfd ---
+bgppeer=0
+bgpadvertisement=0
+bfdprofile=0
+--- kube-vip ---
+cp=true svc=false addr=172.30.140.100
+--- residue ---
+1

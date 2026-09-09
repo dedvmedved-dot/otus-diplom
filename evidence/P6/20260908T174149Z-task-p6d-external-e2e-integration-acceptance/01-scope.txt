@@ -1,0 +1,20 @@
+# TASK-P6D — Scope
+
+PROJECT: OTUS Diplom / ПАК «Портал»
+REPOSITORY: dedvmedved-dot/otus-diplom
+STAGE: P6D (PARENT: P6C FINAL ACCEPTED)
+CLASSIFICATION: EXTERNAL END-TO-END INTEGRATION ACCEPTANCE
+
+Goal: prove ingress path from a real non-Kubernetes external client:
+external client -> network/VLAN140 -> MetalLB L2 -> Envoy Gateway 1.9.1 -> HTTPRoute -> backend
+
+Accepted foundation (MUST NOT change):
+- Kubernetes v1.36.2
+- MetalLB v0.16.1, L2 pool 172.30.140.110-172.30.140.119
+- Envoy Gateway v1.9.1
+- kube-vip 172.30.140.100, svc_enable=false
+
+External client: routed path via new SVI 172.30.140.1 (network engineer opened
+172.30.20.0/24 -> 172.30.140.0/24 routing). Client = 172.30.20.51/52/53 hosts.
+
+P7 NOT AUTHORIZED.

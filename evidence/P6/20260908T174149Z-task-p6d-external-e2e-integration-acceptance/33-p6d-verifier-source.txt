@@ -1,0 +1,90 @@
+=== 33-p6d-verifier-source ===
+---
+# TASK-P6D — Durable fail-closed P6D read-only verifier (post-cleanup durable state).
+# MODE: STRICTLY READ-ONLY. RUNTIME MUTATION = 0.
+# Validates post-cleanup durable state only. Does NOT reproduce external HTTP.
+# Fail-closed: any query failure / semantic violation -> FAIL.
+
+- name: "P6D final read-only verifier (TASK-P6D)"
+  hosts: all
+  gather_facts: false
+  vars:
+    envoy_ns: envoy-gateway-system
+
+  tasks:
+    - name: P6D final semantic verification (read-only)
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          python3 << 'PYEOF'
+          import json, subprocess, sys
+          KC = ["kubectl", "--kubeconfig", "/etc/kubernetes/admin.conf"]
+          def runj(c):
+              r = subprocess.run(c, capture_output=True, text=True)
+              if r.returncode != 0:
+                  raise AssertionError(f"query failed: {' '.join(c)} rc={r.returncode} stderr={r.stderr}")
+              return json.loads(r.stdout)
+
+          # Kubernetes v1.36.2
+          nodes = runj(KC + ["get", "nodes", "-o", "json"])
+          for it in nodes["items"]:
+              assert it["status"]["nodeInfo"]["kubeletVersion"] == "v1.36.2", "k8s version drift"
+          print("P6D_K8S_OK")
+
+          # Envoy Gateway 1.9.1 controller Ready + digest
+          dep = runj(KC + ["-n", "envoy-gateway-system", "get", "deploy", "envoy-gateway", "-o", "json"])
+          img = dep["spec"]["template"]["spec"]["containers"][0]["image"]
+          assert "v1.9.1" in img or "2999d87c3a2b3e890e0ee1a2b11a159b60963aadb2cbb9f2c0a49e0197df3c72" in img, "envoy version drift"
+          assert dep["status"].get("availableReplicas", 0) == dep["spec"]["replicas"] == 1, "envoy controller not ready"
+          ctrl_pods = runj(KC + ["-n", "envoy-gateway-system", "get", "pods", "-l", "app.kubernetes.io/name=gateway-helm", "-o", "json"])
+          ctrl_imgid = ctrl_pods["items"][0]["status"]["containerStatuses"][0]["imageID"]
+          assert "sha256:2999d87c3a2b3e890e0ee1a2b11a159b60963aadb2cbb9f2c0a49e0197df3c72" in ctrl_imgid, "envoy controller digest drift"
+          print("P6D_ENVOY_OK")
+
+          # GatewayClass eg Accepted=True
+          gc = runj(KC + ["get", "gatewayclass", "eg", "-o", "json"])
+          acc = [c["status"] for c in gc["status"]["conditions"] if c["type"] == "Accepted"]
+          assert acc and acc[0] == "True", "GatewayClass eg not Accepted"
+          print("P6D_GATEWAYCLASS_OK")
+
+          # MetalLB P6B preserved: controller 1/1, speaker 3/3
+          mc = runj(KC + ["-n", "metallb-system", "get", "deploy", "controller", "-o", "json"])
+          assert mc["status"].get("availableReplicas", 0) == 1, "metallb controller not ready"
+          ms = runj(KC + ["-n", "metallb-system", "get", "ds", "speaker", "-o", "json"])
+          assert ms["status"].get("numberReady", 0) == 3 and ms["status"].get("desiredNumberScheduled", 0) == 3, "metallb speaker not 3/3"
+          print("P6D_METALLB_OK")
+
+          # BGP/BFD zero
+          for kind in ["bgppeer", "bgpadvertisement", "bfdprofile"]:
+              obj = runj(KC + ["-n", "metallb-system", "get", kind, "-o", "json"])
+              assert isinstance(obj.get("items"), list), f"{kind} invalid JSON"
+              assert len(obj["items"]) == 0, f"{kind} nonzero"
+          print("P6D_BGP_BFD_ZERO")
+
+          # kube-vip .100, svc_enable=false
+          kvp = runj(KC + ["-n", "kube-system", "get", "pod", "kube-vip-node-01", "-o", "json"])
+          env = {e["name"]: e.get("value", "") for e in kvp["spec"]["containers"][0]["env"]}
+          assert env.get("svc_enable") == "false" and env.get("address") == "172.30.140.100", "kube-vip regression"
+          print("P6D_KUBEVIP_OK")
+
+          # Validation residue zero
+          r = subprocess.run(KC + ["get", "namespace", "p6d-validation"], capture_output=True, text=True)
+          assert r.returncode != 0 and "NotFound" in r.stderr, "p6d-validation ns still present"
+          gw = runj(KC + ["get", "gateway", "-A", "-o", "json"])
+          assert len(gw.get("items", [])) == 0, "temporary Gateway residue"
+          hr = runj(KC + ["get", "httproute", "-A", "-o", "json"])
+          assert len(hr.get("items", [])) == 0, "temporary HTTPRoute residue"
+          all_svc = runj(KC + ["get", "svc", "-A", "-o", "json"])
+          lb = [s for s in all_svc["items"] if s["spec"].get("type") == "LoadBalancer"]
+          assert len(lb) == 0, "temporary LB service residue"
+          ep = runj(KC + ["-n", "envoy-gateway-system", "get", "deploy", "-o", "json"])
+          dp = [d for d in ep["items"] if d["metadata"]["name"] != "envoy-gateway"]
+          assert len(dp) == 0, "temporary Envoy data plane residue"
+          print("P6D_VALIDATION_RESIDUE_ZERO")
+          print("P6D_P6C_PRESERVED")
+
+          print("P6D_FINAL_READONLY_VERIFIER_PASS")
+          PYEOF
+      changed_when: false
+      delegate_to: node-01
+      run_once: true

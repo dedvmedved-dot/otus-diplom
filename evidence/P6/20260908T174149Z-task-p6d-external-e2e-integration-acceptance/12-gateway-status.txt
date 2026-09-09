@@ -1,0 +1,5 @@
+=== wait Gateway Programmed + LB IP ===
+poll 1: Acc=True Prog=True
+envoy-gateway type=ClusterIP lb=
+envoy-p6d-validation-p6d-gateway-b6c03a20 type=LoadBalancer lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+GATEWAY_PROGRAMMED + LB_IP_ASSIGNED

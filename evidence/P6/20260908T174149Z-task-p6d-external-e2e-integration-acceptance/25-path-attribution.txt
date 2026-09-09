@@ -1,0 +1,12 @@
+--- LB Service ---
+name=envoy-p6d-validation-p6d-gateway-b6c03a20 type=LoadBalancer lbIP=172.30.140.110
+--- Gateway ---
+Accepted=True Programmed=True
+--- Envoy pod ---
+envoy-p6d-validation-p6d-gateway-b6c03a20-6b9dd8488d-w9n2r node=node-01 ip=10.244.190.21
+--- HTTPRoute ---
+Accepted=True ResolvedRefs=True
+--- backend Service ---
+name=p6d-backend clusterIP=10.102.212.144 port=8080
+--- backend Pod ---
+p6d-backend-5d5c9c48f-chpqh node=node-03 ip=10.244.254.82

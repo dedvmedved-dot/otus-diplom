@@ -1,0 +1,12 @@
+# P6D — temporary validation Gateway (HTTP only, no TLS)
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: p6d-gateway
+  namespace: p6d-validation
+spec:
+  gatewayClassName: eg
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
