@@ -1,0 +1,15 @@
+# TASK-P6D-R1 — Route Persistence Plan (R1-03)
+
+Mechanism: NetworkManager (nmcli) on existing bond0.140 connection profile.
+Target: 172.30.20.0/24 via 172.30.140.1 dev bond0.140 (node-01/02/03).
+
+bond0.140 connection profiles:
+  node-01: UUID 9f1f26e5-49f7-48f9-9f5e-b8fca6719928 (VLAN 140 Management)
+  node-02: UUID 2ac0036f-fe09-4776-bafb-64128ca7b194
+  node-03: UUID 0317a359-82ac-4442-8434-51a87b4a7451
+
+Command (per node, by UUID):
+  nmcli connection modify <UUID> +ipv4.routes '172.30.20.0/24 172.30.140.1'
+  nmcli connection up <UUID>
+
+No new profile. No address/gateway/method/VLAN/bond change.

@@ -1,0 +1,2 @@
+C. wrong device: FAIL  [OK]
+(wrong device bond0.700 => FAIL)

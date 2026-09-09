@@ -1,0 +1,16 @@
+# TASK-P6D-R1 — Scope
+
+PROJECT: OTUS Diplom / ПАК «Портал»
+REPOSITORY: dedvmedved-dot/otus-diplom
+STAGE: P6D-R1 (PARENT: TASK-P6D — EXTERNAL E2E)
+CLASSIFICATION: NETWORK PERSISTENCE CORRECTION / EXTERNAL E2E RE-VALIDATION /
+VERIFIER HARDENING / EVIDENCE CLOSURE
+
+Target: convert temporary return route into persistent host-network config,
+harden P6D verifier (route + persistence + fail-closed residue),
+re-run routed external E2E with raw source-identity evidence, cleanup, STOP.
+
+Persistent dependency:
+  172.30.20.0/24 via 172.30.140.1 dev bond0.140  on node-01/02/03
+
+P7 NOT AUTHORIZED.

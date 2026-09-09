@@ -1,0 +1,8 @@
+# TASK-P6D-R1 — Git Preflight
+
+branch: main
+HEAD: cc05c59721adb96c1707c511141d6f746cbcc1fc
+worktree: clean
+remote: https://github.com/dedvmedved-dot/otus-diplom.git (no embedded credentials)
+
+CONDITIONS MET. RESULT: PASS

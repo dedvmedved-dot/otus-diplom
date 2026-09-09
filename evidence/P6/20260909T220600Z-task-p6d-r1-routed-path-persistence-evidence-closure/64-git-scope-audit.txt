@@ -1,0 +1,6 @@
+=== 64-git-scope-audit ===
+ M ansible/playbooks/p6d-final-readonly-verify.yml
+?? ansible/playbooks/p6d-external-return-route.yml
+?? evidence/P6/20260909T220600Z-task-p6d-r1-routed-path-persistence-evidence-closure/
+--- allowed only check ---
+ONLY_ALLOWED_PATHS

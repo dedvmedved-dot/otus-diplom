@@ -1,0 +1,5 @@
+=== wait Gateway Programmed + LB IP ===
+poll 1: Acc=True Prog=True
+envoy-gateway lb=
+envoy-p6d-r1-validation-p6d-r1-gateway-6757b0dc lb=[{"ip":"172.30.140.110","ipMode":"VIP"}]
+GATEWAY_PROGRAMMED + LB_IP

@@ -1,0 +1,2 @@
+A. route missing: FAIL  [OK]
+(route absent on node => verifier FAIL)

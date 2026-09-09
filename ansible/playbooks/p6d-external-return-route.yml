@@ -1,0 +1,37 @@
+---
+# TASK-P6D-R1 — Persistent external return route (idempotent, narrowly scoped).
+# Ensures: 172.30.20.0/24 via 172.30.140.1 dev bond0.140 on node-01/02/03.
+# Mechanism: NetworkManager (nmcli) on the existing bond0.140 connection profile.
+# Idempotent: no-op when route already present. Secret-free. Safe to re-run.
+# Does NOT change default route / address / gateway / VLAN / bond membership.
+
+- name: "P6D-R1 persistent external return route"
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Ensure external return route in bond0.140 NetworkManager profile
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          U=$(nmcli -t -f UUID,DEVICE connection show 2>/dev/null | grep 'bond0.140' | cut -d: -f1)
+          if [ -z "$U" ]; then
+            echo "ERROR: bond0.140 connection not found"
+            exit 1
+          fi
+          if nmcli connection show "$U" 2>/dev/null | grep -q '172.30.20.0/24'; then
+            echo "route already present"
+          else
+            nmcli connection modify "$U" +ipv4.routes '172.30.20.0/24 172.30.140.1'
+            nmcli connection up "$U"
+            echo "route added"
+          fi
+          # verify
+          ip route show 172.30.20.0/24 | grep -q '172.30.20.0/24 via 172.30.140.1 dev bond0.140' || {
+            echo "ERROR: route verification failed"
+            exit 1
+          }
+          echo "verified: $(ip route show 172.30.20.0/24)"
+      register: route_result
+      changed_when: "'route added' in route_result.stdout"
+      failed_when: "'ERROR' in route_result.stdout or route_result.rc != 0"

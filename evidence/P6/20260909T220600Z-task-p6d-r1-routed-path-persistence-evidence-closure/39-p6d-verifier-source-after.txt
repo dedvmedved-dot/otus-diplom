@@ -1,3 +1,4 @@
+=== 39-p6d-verifier-source-after ===
 ---
 # TASK-P6D-R1 — Durable fail-closed P6D read-only verifier (post-cleanup durable state).
 # MODE: STRICTLY READ-ONLY. RUNTIME MUTATION = 0.

@@ -1,0 +1,7 @@
+
+playbook: ansible/playbooks/p6d-final-readonly-verify.yml
+
+  play #1 (all): P6D final read-only verifier (TASK-P6D-R1)	TAGS: []
+    tasks:
+      P6D final semantic verification (read-only)	TAGS: []
+      P6D external return route + persistence check (read-only)	TAGS: []

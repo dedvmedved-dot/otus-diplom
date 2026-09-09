@@ -1,0 +1,2 @@
+E. correct + persistent: PASS  [OK]
+(kernel route correct + nmcli persistent => PASS)

@@ -1,0 +1,20 @@
+=== 54-verifier-static-safety ===
+kubectl apply: 0
+kubectl create: 0
+kubectl delete: 0
+kubectl patch: 0
+kubectl edit: 0
+kubectl label: 0
+kubectl annotate: 0
+kubectl taint: 0
+rollout restart: 0
+helm install: 0
+helm upgrade: 0
+nmcli connection modify: 0
+nmcli connection up: 0
+nmcli connection down: 0
+ip route add: 0
+ip route del: 0
+systemctl: 0
+reboot: 0
+VERIFIER_RUNTIME_MUTATION_OPS=0

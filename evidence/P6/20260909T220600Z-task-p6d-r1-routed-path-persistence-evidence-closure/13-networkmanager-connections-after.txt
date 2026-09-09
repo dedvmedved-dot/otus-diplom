@@ -1,0 +1,10 @@
+=== 13-networkmanager-connections-after ===
+===== 192.168.194.38 =====
+connection.id:                          VLAN 140 Management
+ipv4.routes:                            { ip = 172.30.20.0/24, nh = 172.30.140.1 }
+===== 192.168.194.40 =====
+connection.id:                          VLAN 140 Management
+ipv4.routes:                            { ip = 172.30.20.0/24, nh = 172.30.140.1 }
+===== 192.168.194.39 =====
+connection.id:                          VLAN 140 Management
+ipv4.routes:                            { ip = 172.30.20.0/24, nh = 172.30.140.1 }

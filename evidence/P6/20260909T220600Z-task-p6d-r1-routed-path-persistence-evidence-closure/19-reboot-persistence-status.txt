@@ -1,0 +1,4 @@
+REBOOT PERSISTENCE TEST = NOT EXECUTED — NOT AUTHORIZED
+
+NetworkManager persistent profile + nmcli reload/reapply conclusively proven
+(see 16-networkmanager-reload-proof.txt). Route survives reload with proto static.

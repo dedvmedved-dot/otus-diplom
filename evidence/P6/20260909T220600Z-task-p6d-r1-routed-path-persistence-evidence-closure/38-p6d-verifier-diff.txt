@@ -1,0 +1,121 @@
+=== 38-p6d-verifier-diff ===
+diff --git a/ansible/playbooks/p6d-final-readonly-verify.yml b/ansible/playbooks/p6d-final-readonly-verify.yml
+index 2a69053..f85b8b4 100644
+--- a/ansible/playbooks/p6d-final-readonly-verify.yml
++++ b/ansible/playbooks/p6d-final-readonly-verify.yml
+@@ -1,16 +1,17 @@
+ ---
+-# TASK-P6D — Durable fail-closed P6D read-only verifier (post-cleanup durable state).
++# TASK-P6D-R1 — Durable fail-closed P6D read-only verifier (post-cleanup durable state).
+ # MODE: STRICTLY READ-ONLY. RUNTIME MUTATION = 0.
+-# Validates post-cleanup durable state only. Does NOT reproduce external HTTP.
+-# Fail-closed: any query failure / semantic violation -> FAIL.
++# Validates post-cleanup durable state + persistent external return route.
++# Fail-closed: any query failure / malformed JSON / non-list / nonzero => FAIL.
+ 
+-- name: "P6D final read-only verifier (TASK-P6D)"
++- name: "P6D final read-only verifier (TASK-P6D-R1)"
+   hosts: all
+   gather_facts: false
+   vars:
+     envoy_ns: envoy-gateway-system
+ 
+   tasks:
++    # ── Task 1: cluster-wide semantic checks (kubectl, delegate node-01) ──
+     - name: P6D final semantic verification (read-only)
+       ansible.builtin.shell:
+         cmd: |
+@@ -46,18 +47,19 @@
+           assert acc and acc[0] == "True", "GatewayClass eg not Accepted"
+           print("P6D_GATEWAYCLASS_OK")
+ 
+-          # MetalLB P6B preserved: controller 1/1, speaker 3/3
++          # MetalLB P6B preserved
+           mc = runj(KC + ["-n", "metallb-system", "get", "deploy", "controller", "-o", "json"])
+           assert mc["status"].get("availableReplicas", 0) == 1, "metallb controller not ready"
+           ms = runj(KC + ["-n", "metallb-system", "get", "ds", "speaker", "-o", "json"])
+           assert ms["status"].get("numberReady", 0) == 3 and ms["status"].get("desiredNumberScheduled", 0) == 3, "metallb speaker not 3/3"
+           print("P6D_METALLB_OK")
+ 
+-          # BGP/BFD zero
++          # BGP/BFD zero (fail-closed)
+           for kind in ["bgppeer", "bgpadvertisement", "bfdprofile"]:
+               obj = runj(KC + ["-n", "metallb-system", "get", kind, "-o", "json"])
+-              assert isinstance(obj.get("items"), list), f"{kind} invalid JSON"
+-              assert len(obj["items"]) == 0, f"{kind} nonzero"
++              items = obj.get("items")
++              assert isinstance(items, list), f"{kind} invalid items payload"
++              assert len(items) == 0, f"{kind} nonzero"
+           print("P6D_BGP_BFD_ZERO")
+ 
+           # kube-vip .100, svc_enable=false
+@@ -66,19 +68,28 @@
+           assert env.get("svc_enable") == "false" and env.get("address") == "172.30.140.100", "kube-vip regression"
+           print("P6D_KUBEVIP_OK")
+ 
+-          # Validation residue zero
+-          r = subprocess.run(KC + ["get", "namespace", "p6d-validation"], capture_output=True, text=True)
+-          assert r.returncode != 0 and "NotFound" in r.stderr, "p6d-validation ns still present"
++          # Validation residue zero (fail-closed — no obj.get("items", []))
++          for ns in ["p6d-validation", "p6d-r1-validation"]:
++              r = subprocess.run(KC + ["get", "namespace", ns], capture_output=True, text=True)
++              assert r.returncode != 0 and "NotFound" in r.stderr, f"{ns} ns still present"
+           gw = runj(KC + ["get", "gateway", "-A", "-o", "json"])
+-          assert len(gw.get("items", [])) == 0, "temporary Gateway residue"
++          gitems = gw.get("items")
++          assert isinstance(gitems, list), "gateway invalid items payload"
++          assert len(gitems) == 0, f"temporary Gateway residue: {len(gitems)}"
+           hr = runj(KC + ["get", "httproute", "-A", "-o", "json"])
+-          assert len(hr.get("items", [])) == 0, "temporary HTTPRoute residue"
++          hitems = hr.get("items")
++          assert isinstance(hitems, list), "httproute invalid items payload"
++          assert len(hitems) == 0, f"temporary HTTPRoute residue: {len(hitems)}"
+           all_svc = runj(KC + ["get", "svc", "-A", "-o", "json"])
+-          lb = [s for s in all_svc["items"] if s["spec"].get("type") == "LoadBalancer"]
+-          assert len(lb) == 0, "temporary LB service residue"
++          sitems = all_svc.get("items")
++          assert isinstance(sitems, list), "svc invalid items payload"
++          lb = [s for s in sitems if s["spec"].get("type") == "LoadBalancer"]
++          assert len(lb) == 0, f"temporary LB service residue: {len(lb)}"
+           ep = runj(KC + ["-n", "envoy-gateway-system", "get", "deploy", "-o", "json"])
+-          dp = [d for d in ep["items"] if d["metadata"]["name"] != "envoy-gateway"]
+-          assert len(dp) == 0, "temporary Envoy data plane residue"
++          eitems = ep.get("items")
++          assert isinstance(eitems, list), "deploy invalid items payload"
++          dp = [d for d in eitems if d["metadata"]["name"] != "envoy-gateway"]
++          assert len(dp) == 0, f"temporary Envoy data plane residue: {len(dp)}"
+           print("P6D_VALIDATION_RESIDUE_ZERO")
+           print("P6D_P6C_PRESERVED")
+ 
+@@ -87,3 +98,31 @@
+       changed_when: false
+       delegate_to: node-01
+       run_once: true
++
++    # ── Task 2: persistent external return route (kernel + nmcli) on all nodes ──
++    - name: P6D external return route + persistence check (read-only)
++      ansible.builtin.shell:
++        cmd: |
++          set -e
++          python3 << 'PYEOF'
++          import subprocess
++          # kernel route
++          r = subprocess.run(["ip", "route", "show", "172.30.20.0/24"], capture_output=True, text=True)
++          assert r.returncode == 0, "route query failed"
++          assert "172.30.20.0/24 via 172.30.140.1 dev bond0.140" in r.stdout, f"route wrong: {r.stdout!r}"
++          rg = subprocess.run(["ip", "route", "get", "172.30.20.51"], capture_output=True, text=True)
++          assert "via 172.30.140.1 dev bond0.140" in rg.stdout, f"route get wrong: {rg.stdout!r}"
++          print("P6D_EXTERNAL_RETURN_ROUTE_OK")
++
++          # persistent NetworkManager source
++          u = subprocess.run(["bash", "-c", "nmcli -t -f UUID,DEVICE connection show 2>/dev/null | grep bond0.140 | cut -d: -f1"],
++                             capture_output=True, text=True)
++          uuid = u.stdout.strip()
++          assert uuid, "bond0.140 NetworkManager connection not found"
++          n = subprocess.run(["nmcli", "connection", "show", uuid], capture_output=True, text=True)
++          assert n.returncode == 0, "nmcli query failed"
++          assert "172.30.20.0/24" in n.stdout and "172.30.140.1" in n.stdout, \
++              f"nmcli route not persistent in profile {uuid}"
++          print("P6D_EXTERNAL_RETURN_ROUTE_PERSISTENT")
++          PYEOF
++      changed_when: false

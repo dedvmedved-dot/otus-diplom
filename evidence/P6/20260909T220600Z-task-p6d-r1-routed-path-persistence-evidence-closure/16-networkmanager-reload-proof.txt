@@ -1,0 +1,16 @@
+=== 16-networkmanager-reload-proof ===
+===== 192.168.194.38 =====
+node-01
+after reload:
+172.30.20.0/24 via 172.30.140.1 dev bond0.140 proto static metric 404 
+172.30.20.51 via 172.30.140.1 dev bond0.140 src 172.30.140.101 uid 0 
+===== 192.168.194.40 =====
+node-02
+after reload:
+172.30.20.0/24 via 172.30.140.1 dev bond0.140 proto static metric 404 
+172.30.20.51 via 172.30.140.1 dev bond0.140 src 172.30.140.102 uid 0 
+===== 192.168.194.39 =====
+node-03
+after reload:
+172.30.20.0/24 via 172.30.140.1 dev bond0.140 proto static metric 404 
+172.30.20.51 via 172.30.140.1 dev bond0.140 src 172.30.140.103 uid 0 

@@ -1,0 +1,15 @@
+# TASK-P6D-R1 — Network Mutation Audit
+
+Authorized permanent network mutation (P6D-R1 §39):
+  node-01/02/03: persistent route 172.30.20.0/24 via 172.30.140.1 dev bond0.140
+  (via nmcli on existing bond0.140 profile — NOT ip route add temporary)
+
+NOT changed:
+  default route: unchanged (via 192.168.194.1)
+  node VLAN140 addresses: unchanged (101/102/103)
+  VLAN/bond membership: unchanged
+  rp_filter: unchanged (all=1, bond0.140=1, bond0.700=2)
+  NAT: none added
+  policy routing: none added
+
+RESULT: PASS (only authorized persistent route added)

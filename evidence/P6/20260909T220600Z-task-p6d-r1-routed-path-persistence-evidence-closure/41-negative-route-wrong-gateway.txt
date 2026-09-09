@@ -1,0 +1,2 @@
+B. wrong gateway: FAIL  [OK]
+(wrong gateway 172.30.140.9 => FAIL)

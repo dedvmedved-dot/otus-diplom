@@ -1,0 +1,8 @@
+--- LB Service ---
+name=envoy-p6d-r1-validation-p6d-r1-gateway-6757b0dc lbIP=172.30.140.110
+--- Envoy pod ---
+envoy-p6d-r1-validation-p6d-r1-gateway-6757b0dc-64f9dc999fdtk89 node=node-03 ip=10.244.254.83
+--- backend pod ---
+p6d-r1-backend-586fc9f69f-4szkr node=node-01 ip=10.244.190.22
+--- backend svc ---
+name=p6d-r1-backend clusterIP=10.102.141.193 port=8080

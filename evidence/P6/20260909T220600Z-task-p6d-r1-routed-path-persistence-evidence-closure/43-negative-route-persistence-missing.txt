@@ -1,0 +1,2 @@
+D. nmcli persistence absent: FAIL  [OK]
+(kernel route present but nmcli profile lacks route => FAIL)

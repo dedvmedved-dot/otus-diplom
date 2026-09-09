@@ -1,0 +1,4 @@
+node-01 (UUID 9f1f26e5-49f7-48f9-9f5e-b8fca6719928):
+nmcli connection modify 9f1f26e5-49f7-48f9-9f5e-b8fca6719928 +ipv4.routes '172.30.20.0/24 172.30.140.1'
+nmcli connection up 9f1f26e5-49f7-48f9-9f5e-b8fca6719928
+Result: ipv4.routes = { ip = 172.30.20.0/24, nh = 172.30.140.1 }

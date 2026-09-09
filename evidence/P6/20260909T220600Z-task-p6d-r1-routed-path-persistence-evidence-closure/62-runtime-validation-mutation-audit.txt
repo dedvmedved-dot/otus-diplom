@@ -1,0 +1,14 @@
+# TASK-P6D-R1 — Runtime Validation Mutation Audit
+
+Authorized temporary Kubernetes validation (P6D-R1 §39):
+  namespace p6d-r1-validation (create + delete)
+  NetworkPolicies (default-deny ingress/egress, DNS egress, envoy->backend)
+  backend Deployment/Service (p6d-r1-backend)
+  Gateway p6d-r1-gateway + HTTPRoute p6d-r1-http
+  generated Envoy validation data plane (auto GC'd)
+
+Production foundation NOT changed:
+  Kubernetes/Envoy/MetalLB/kube-vip/Calico/CoreDNS/storage: unchanged
+  BGP/BFD: 0
+
+RESULT: PASS (only temporary validation resources, cleaned to residue=0)
