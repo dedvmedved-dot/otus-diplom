@@ -1,0 +1,8 @@
+atlas-1.brest.local
+Ср 09 сен 2026 23:31:59 UTC
+bond0            UP             fe80::f6e5:f2ff:fec1:db39/64 
+bond0.21@bond0   UP             172.30.20.51/24 fe80::f6e5:f2ff:fec1:db39/64 
+bond0.101@bond0  UP             172.30.100.51/24 fe80::f6e5:f2ff:fec1:db39/64 
+bond0.301@bond0  UP             fe80::f6e5:f2ff:fec1:db39/64 
+default via 172.30.20.1 dev bond0.21 onlink 
+172.30.20.0/24 dev bond0.21 proto kernel scope link src 172.30.20.51 

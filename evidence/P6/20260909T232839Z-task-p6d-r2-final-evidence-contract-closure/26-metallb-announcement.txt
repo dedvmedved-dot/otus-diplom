@@ -1,0 +1,7 @@
+speaker-d956q (node=node-03): {"caller":"main.go:481","event":"serviceAnnounced","ips":["172.30.140.110"],"level":"info","msg":"service has IP, announcing","pool":"p6-ingress-pool","protocol":"layer2","ts":"2026-09-09T23:33:41Z"}
+speaker-pcszv (node=node-02): 
+speaker-xwxtr (node=node-01): {"caller":"main.go:481","event":"serviceAnnounced","ips":["172.30.140.110"],"level":"info","msg":"service has IP, announcing","pool":"p6-ingress-pool","protocol":"layer2","ts":"2026-09-09T14:37:54Z"}
+--- bgp/bfd ---
+bgppeer=0
+bgpadvertisement=0
+bfdprofile=0

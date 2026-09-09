@@ -1,0 +1,4 @@
+TIMESTAMP=2026-09-09T23:34:20Z
+COMMAND=kubectl -n p6d-r2-validation get httproute p6d-r2-http -o json
+namespace=p6d-r2-validation name=p6d-r2-http parentGateway=p6d-r2-gateway Accepted=True ResolvedRefs=True observedGeneration=1
+COMMAND_EXIT=0

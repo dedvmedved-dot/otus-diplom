@@ -1,0 +1,4 @@
+TIMESTAMP=2026-09-09T23:34:17Z
+COMMAND=kubectl -n envoy-gateway-system get svc envoy-p6d-r2-validation-p6d-r2-gateway-2333ab75 -o json
+namespace=envoy-gateway-system name=envoy-p6d-r2-validation-p6d-r2-gateway-2333ab75 type=LoadBalancer lbIP=172.30.140.110
+COMMAND_EXIT=0

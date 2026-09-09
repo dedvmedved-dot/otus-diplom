@@ -1,0 +1,12 @@
+# TASK-P6D-R2 — Scope
+
+PROJECT: OTUS Diplom / ПАК «Портал»
+REPOSITORY: dedvmedved-dot/otus-diplom
+STAGE: P6D-R2 (PARENT: TASK-P6D-R1)
+CLASSIFICATION: FINAL EVIDENCE CONTRACT CLOSURE / REPRODUCIBLE NEGATIVE-TEST PROOF
+
+P6D-R1 infrastructure result remains historical and unchanged.
+R2 exists only to close missing raw evidence files (LB Service, HTTPRoute raw JSON)
+and replace summary-only negative-test claims with reproducible executable evidence.
+
+P7 NOT AUTHORIZED.

@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+"""
+TASK-P6D-R2 — Reproducible isolated negative-test harness for the durable P6D verifier.
+
+MODE: strictly isolated. NO cluster mutation. NO production mutation.
+Uses synthetic/mock inputs only. Exercises semantic logic equivalent to
+ansible/playbooks/p6d-final-readonly-verify.yml (route check + fail-closed residue).
+
+Exit 0 only when every expected PASS/FAIL outcome matches.
+"""
+
+import json
+import sys
+
+# ── Semantic logic under test (mirrors p6d-final-readonly-verify.yml) ──────────
+
+EXPECTED_ROUTE = "172.30.20.0/24 via 172.30.140.1 dev bond0.140"
+
+def check_route(kernel_route_line: str, route_get_line: str, nmcli_profile: str) -> None:
+    """Return-route check: kernel route + persistence (NetworkManager)."""
+    if EXPECTED_ROUTE not in kernel_route_line:
+        raise AssertionError(f"route wrong/absent: {kernel_route_line!r}")
+    if "via 172.30.140.1 dev bond0.140" not in route_get_line:
+        raise AssertionError(f"route get wrong: {route_get_line!r}")
+    if "172.30.20.0/24" not in nmcli_profile or "172.30.140.1" not in nmcli_profile:
+        raise AssertionError("nmcli route not persistent in profile")
+
+def check_residue(rc: int, stdout: str) -> None:
+    """Fail-closed residue: rc!=0 / malformed JSON / missing items / non-list / nonzero => FAIL."""
+    if rc != 0:
+        raise AssertionError(f"query failed rc={rc}")
+    obj = json.loads(stdout)
+    items = obj.get("items")
+    if not isinstance(items, list):
+        raise AssertionError("invalid items payload (missing/non-list)")
+    if len(items) != 0:
+        raise AssertionError(f"residue nonzero: {len(items)}")
+
+# ── Synthetic fixtures ────────────────────────────────────────────────────────
+
+GOOD_ROUTE = EXPECTED_ROUTE + " proto static metric 404"
+GOOD_GET = "172.30.20.51 via 172.30.140.1 dev bond0.140 src 172.30.140.101 uid 0"
+GOOD_PROFILE = "ipv4.routes: { ip = 172.30.20.0/24, nh = 172.30.140.1 }"
+
+# ── Harness ───────────────────────────────────────────────────────────────────
+
+TESTS = [
+    ("A", "route missing on one node", True,
+     lambda: check_route("", GOOD_GET, GOOD_PROFILE)),
+    ("B", "wrong route gateway", True,
+     lambda: check_route("172.30.20.0/24 via 172.30.140.9 dev bond0.140", GOOD_GET, GOOD_PROFILE)),
+    ("C", "wrong route device", True,
+     lambda: check_route("172.30.20.0/24 via 172.30.140.1 dev bond0.700", GOOD_GET, GOOD_PROFILE)),
+    ("D", "persistent NetworkManager route absent", True,
+     lambda: check_route(GOOD_ROUTE, GOOD_GET, "ipv4.routes: --")),
+    ("E", "kernel route correct + persistent profile correct", False,
+     lambda: check_route(GOOD_ROUTE, GOOD_GET, GOOD_PROFILE)),
+    ("F", "Gateway query rc != 0", True,
+     lambda: check_residue(1, "")),
+    ("G", "Gateway malformed JSON", True,
+     lambda: check_residue(0, "{not json")),
+    ("H", "Gateway missing items", True,
+     lambda: check_residue(0, '{"kind":"GatewayList"}')),
+    ("I", "Gateway one residue item", True,
+     lambda: check_residue(0, '{"items":[{"metadata":{"name":"g"}}]}')),
+    ("J", "Gateway zero items", False,
+     lambda: check_residue(0, '{"items":[]}')),
+    ("K", "HTTPRoute query rc != 0", True,
+     lambda: check_residue(1, "")),
+    ("L", "HTTPRoute malformed JSON", True,
+     lambda: check_residue(0, "invalid")),
+    ("M", "HTTPRoute one residue item", True,
+     lambda: check_residue(0, '{"items":[{"metadata":{"name":"h"}}]}')),
+    ("N", "HTTPRoute zero items", False,
+     lambda: check_residue(0, '{"items":[]}')),
+]
+
+def main() -> int:
+    total = 0
+    matched = 0
+    failed = 0
+
+    for idx, (tid, scenario, expect_fail, fn) in enumerate(TESTS, 1):
+        total += 1
+        print(f"--- TEST {tid}: {scenario} ---")
+        print(f"  expected result: {'FAIL' if expect_fail else 'PASS'}")
+        actual = "PASS"
+        assertion = None
+        try:
+            fn()
+        except Exception as e:
+            actual = "FAIL"
+            assertion = f"{type(e).__name__}: {e}"
+        print(f"  actual result:   {actual}")
+        if assertion:
+            print(f"  assertion:       {assertion}")
+        ok = (actual == "FAIL") == expect_fail
+        if ok:
+            matched += 1
+            print(f"  outcome:         OK")
+        else:
+            failed += 1
+            print(f"  outcome:         *** MISMATCH ***")
+
+    print("")
+    print(f"TESTS_TOTAL={total}")
+    print(f"TESTS_EXPECTED_RESULT_MATCH={matched}")
+    print(f"TESTS_FAILED={failed}")
+    print(f"HARNESS_EXIT={0 if failed == 0 else 1}")
+    return 0 if failed == 0 else 1
+
+if __name__ == "__main__":
+    sys.exit(main())

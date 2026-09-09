@@ -1,0 +1,22 @@
+# TASK-P6D-R2 — Runtime Mutation Audit
+
+Production network/persistence mutation:
+  NETWORKMANAGER_MUTATION=0
+  IP_ROUTE_MUTATION=0
+  SYSCTL_MUTATION=0
+  DEFAULT_ROUTE_MUTATION=0
+  NODE_ADDRESS_MUTATION=0
+  VLAN_MUTATION=0
+  BOND_MUTATION=0
+  METALLB_PRODUCTION_MUTATION=0
+  ENVOY_PRODUCTION_MUTATION=0
+  STORAGE_MUTATION=0
+  REBOOT_COUNT=0
+
+Temporary validation (authorized, enumerated):
+  - create namespace p6d-r2-validation (+ NetworkPolicies, backend Deployment/Service,
+    Gateway p6d-r2-gateway, HTTPRoute p6d-r2-http)
+  - generated Envoy validation data plane + LoadBalancer Service (auto)
+  - delete namespace p6d-r2-validation (cleanup)
+
+RESULT: PASS (only temporary validation resources; production unchanged)

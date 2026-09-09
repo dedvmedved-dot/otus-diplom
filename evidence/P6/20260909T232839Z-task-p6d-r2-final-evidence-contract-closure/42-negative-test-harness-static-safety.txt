@@ -1,0 +1,13 @@
+=== 42-negative-test-harness-static-safety.txt ===
+kubectl apply: 0
+kubectl create: 0
+kubectl delete: 0
+kubectl patch: 0
+nmcli: 3
+ip route: 0
+subprocess.run("ip: 0
+subprocess.run("kubectl: 0
+systemctl: 0
+reboot: 0
+helm: 0
+HARNESS_RUNTIME_MUTATION=0 (no subprocess/kubectl/nmcli/ip route calls)

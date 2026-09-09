@@ -1,0 +1,9 @@
+namespace/p6d-r2-validation created
+networkpolicy.networking.k8s.io/default-deny-ingress created
+networkpolicy.networking.k8s.io/default-deny-egress created
+networkpolicy.networking.k8s.io/allow-dns-egress created
+networkpolicy.networking.k8s.io/allow-envoy-to-backend created
+deployment.apps/p6d-r2-backend created
+service/p6d-r2-backend created
+gateway.gateway.networking.k8s.io/p6d-r2-gateway created
+httproute.gateway.networking.k8s.io/p6d-r2-http created

@@ -1,0 +1,76 @@
+=== 40-negative-test-harness-run.txt ===
+COMMAND: python3 ansible/tests/p6d_verifier_negative_tests.py
+
+--- TEST A: route missing on one node ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       AssertionError: route wrong/absent: ''
+  outcome:         OK
+--- TEST B: wrong route gateway ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       AssertionError: route wrong/absent: '172.30.20.0/24 via 172.30.140.9 dev bond0.140'
+  outcome:         OK
+--- TEST C: wrong route device ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       AssertionError: route wrong/absent: '172.30.20.0/24 via 172.30.140.1 dev bond0.700'
+  outcome:         OK
+--- TEST D: persistent NetworkManager route absent ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       AssertionError: nmcli route not persistent in profile
+  outcome:         OK
+--- TEST E: kernel route correct + persistent profile correct ---
+  expected result: PASS
+  actual result:   PASS
+  outcome:         OK
+--- TEST F: Gateway query rc != 0 ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       AssertionError: query failed rc=1
+  outcome:         OK
+--- TEST G: Gateway malformed JSON ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+  outcome:         OK
+--- TEST H: Gateway missing items ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       AssertionError: invalid items payload (missing/non-list)
+  outcome:         OK
+--- TEST I: Gateway one residue item ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       AssertionError: residue nonzero: 1
+  outcome:         OK
+--- TEST J: Gateway zero items ---
+  expected result: PASS
+  actual result:   PASS
+  outcome:         OK
+--- TEST K: HTTPRoute query rc != 0 ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       AssertionError: query failed rc=1
+  outcome:         OK
+--- TEST L: HTTPRoute malformed JSON ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+  outcome:         OK
+--- TEST M: HTTPRoute one residue item ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       AssertionError: residue nonzero: 1
+  outcome:         OK
+--- TEST N: HTTPRoute zero items ---
+  expected result: PASS
+  actual result:   PASS
+  outcome:         OK
+
+TESTS_TOTAL=14
+TESTS_EXPECTED_RESULT_MATCH=14
+TESTS_FAILED=0
+HARNESS_EXIT=0
+ACTUAL_HARNESS_EXIT=0

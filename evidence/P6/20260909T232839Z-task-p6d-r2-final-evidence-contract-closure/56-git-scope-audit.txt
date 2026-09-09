@@ -1,0 +1,4 @@
+=== 56-git-scope-audit ===
+?? ansible/tests/
+?? evidence/P6/20260909T232839Z-task-p6d-r2-final-evidence-contract-closure/
+--- allowed only check ---

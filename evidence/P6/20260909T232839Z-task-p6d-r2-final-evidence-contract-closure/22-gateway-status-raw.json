@@ -1,0 +1,98 @@
+{
+    "apiVersion": "gateway.networking.k8s.io/v1",
+    "kind": "Gateway",
+    "metadata": {
+        "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"gateway.networking.k8s.io/v1\",\"kind\":\"Gateway\",\"metadata\":{\"annotations\":{},\"name\":\"p6d-r2-gateway\",\"namespace\":\"p6d-r2-validation\"},\"spec\":{\"gatewayClassName\":\"eg\",\"listeners\":[{\"name\":\"http\",\"port\":80,\"protocol\":\"HTTP\"}]}}\n"
+        },
+        "creationTimestamp": "2026-09-09T23:33:30Z",
+        "generation": 1,
+        "name": "p6d-r2-gateway",
+        "namespace": "p6d-r2-validation",
+        "resourceVersion": "6759630",
+        "uid": "0658680c-786f-404d-9e72-25d046b57c4e"
+    },
+    "spec": {
+        "gatewayClassName": "eg",
+        "listeners": [
+            {
+                "allowedRoutes": {
+                    "namespaces": {
+                        "from": "Same"
+                    }
+                },
+                "name": "http",
+                "port": 80,
+                "protocol": "HTTP"
+            }
+        ]
+    },
+    "status": {
+        "addresses": [
+            {
+                "type": "IPAddress",
+                "value": "172.30.140.110"
+            }
+        ],
+        "conditions": [
+            {
+                "lastTransitionTime": "2026-09-09T23:33:41Z",
+                "message": "The Gateway has been scheduled by Envoy Gateway",
+                "observedGeneration": 1,
+                "reason": "Accepted",
+                "status": "True",
+                "type": "Accepted"
+            },
+            {
+                "lastTransitionTime": "2026-09-09T23:33:41Z",
+                "message": "Address assigned to the Gateway, 1/1 envoy replicas available",
+                "observedGeneration": 1,
+                "reason": "Programmed",
+                "status": "True",
+                "type": "Programmed"
+            }
+        ],
+        "listeners": [
+            {
+                "attachedRoutes": 1,
+                "conditions": [
+                    {
+                        "lastTransitionTime": "2026-09-09T23:33:41Z",
+                        "message": "Sending translated listener configuration to the data plane",
+                        "observedGeneration": 1,
+                        "reason": "Programmed",
+                        "status": "True",
+                        "type": "Programmed"
+                    },
+                    {
+                        "lastTransitionTime": "2026-09-09T23:33:41Z",
+                        "message": "Listener has been successfully translated",
+                        "observedGeneration": 1,
+                        "reason": "Accepted",
+                        "status": "True",
+                        "type": "Accepted"
+                    },
+                    {
+                        "lastTransitionTime": "2026-09-09T23:33:41Z",
+                        "message": "Listener references have been resolved",
+                        "observedGeneration": 1,
+                        "reason": "ResolvedRefs",
+                        "status": "True",
+                        "type": "ResolvedRefs"
+                    }
+                ],
+                "name": "http",
+                "supportedKinds": [
+                    {
+                        "group": "gateway.networking.k8s.io",
+                        "kind": "HTTPRoute"
+                    },
+                    {
+                        "group": "gateway.networking.k8s.io",
+                        "kind": "GRPCRoute"
+                    }
+                ]
+            }
+        ]
+    }
+}

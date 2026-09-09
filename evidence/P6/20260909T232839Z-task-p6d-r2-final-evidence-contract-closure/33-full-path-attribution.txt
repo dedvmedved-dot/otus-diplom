@@ -1,0 +1,4 @@
+--- envoy pod ---
+envoy-p6d-r2-validation-p6d-r2-gateway-2333ab75-b7ccbfdd9-fhtvk node=node-03 ip=10.244.254.84
+--- backend pod ---
+p6d-r2-backend-d45f6846c-n45zq node=node-01 ip=10.244.190.23
