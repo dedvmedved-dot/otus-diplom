@@ -1,0 +1,10 @@
+node-03 serving cert trust classification
+
+cert subject: CN=node-03@1787618620
+cert issuer:  CN=node-03-ca@1787618620
+cluster CA subject: CN=kubernetes
+
+issuer (node-03-ca) != cluster CA (kubernetes) => NOT cluster-CA-signed.
+
+TRUST_CLASS=SELF_SIGNED
+CLUSTER_CA_TRUST=FAIL

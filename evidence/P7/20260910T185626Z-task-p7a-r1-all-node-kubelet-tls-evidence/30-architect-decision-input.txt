@@ -1,0 +1,52 @@
+# TASK-P7A-R1 — Architecture Decision Input (support only, NO implementation)
+
+## Option A — kubelet serving certificates via serverTLSBootstrap
+
+What would change:
+  - Set `serverTLSBootstrap: true` in KubeletConfiguration on node-01/02/03.
+  - kubelet would generate a CertificateSigningRequest with
+    signerName=kubernetes.io/kubelet-serving and stop using the self-signed cert.
+  - A CSR approver (or manual approval) must sign with the cluster CA.
+
+Lifecycle:
+  - Serving CSR created at kubelet startup/rotation; must be Approved, then
+    kubelet writes cluster-CA-signed serving cert.
+  - Enabling serverTLSBootstrap alone does NOT produce a valid serving cert —
+    it only creates an unapproved CSR.
+
+Required decision:
+  - An approval model is mandatory (manual or automated approver with strict
+    node-identity + SAN policy). Blind auto-approval of arbitrary CSRs is
+    unacceptable.
+
+Rollback:
+  - Revert serverTLSBootstrap=false; kubelet returns to self-signed serving cert.
+
+Security/operational implications:
+  - Serving certs become cluster-CA-signed, short-lived, centrally revocable.
+  - Requires ongoing CSR approval automation + monitoring.
+
+## Option B — controlled kubelet-serving CSR approval mechanism
+
+  - Manual approval: operator reviews each serving CSR (username=system:node:<name>,
+    requested SANs) and approves. Operationally heavy at scale/rotation.
+  - Automated approver: only approves kubernetes.io/kubelet-serving CSRs whose
+    username matches system:node:<name> and whose requested SANs include exactly
+    the node's own hostname/IP; denies everything else.
+  - Security controls: signerName allow-list, strict identity+SAN validation,
+    no approval of arbitrary/mismatched CSRs.
+
+## Option C — alternative secure Metrics Server connectivity
+
+  - Secure alternative is NOT available from current facts without enabling
+    serverTLSBootstrap or replacing the serving cert. The cluster-CA-signed
+    cert does not exist for kubelet serving, and --kubelet-insecure-tls /
+    certificate verification bypass are forbidden.
+  - No supported, evidence-backed secure alternative identified in this preflight.
+
+## Conclusion
+
+ARCHITECT_DECISION_REQUIRED=YES
+RECOMMENDED_DIRECTION=Option A (serverTLSBootstrap) + Option B controlled
+  kubelet-serving CSR approver with strict node-identity+SAN policy.
+IMPLEMENTATION_AUTHORIZED=NO

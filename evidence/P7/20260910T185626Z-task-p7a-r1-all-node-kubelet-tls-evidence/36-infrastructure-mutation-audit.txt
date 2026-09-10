@@ -1,0 +1,16 @@
+# TASK-P7A-R1 — Infrastructure Mutation Audit
+
+kubectl_mutation_ops=0
+helm_mutation_ops=0
+systemd_mutation_ops=0
+network_mutation_ops=0
+storage_mutation_ops=0
+certificate_mutation_ops=0
+csr_approve_deny_ops=0
+INFRASTRUCTURE_MUTATION=0
+
+Only read-only commands used: kubectl get, openssl x509/s_client (read), cat/grep/awk,
+stat/sha256sum, ip addr/route show, nmcli connection show, systemctl status (not used
+for mutation), kubelet config inspection.
+
+RESULT: PASS

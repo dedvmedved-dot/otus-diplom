@@ -1,0 +1,10 @@
+# TASK-P7A-R1 — Observability readiness conclusion
+
+OBSERVABILITY_READINESS=BLOCKED
+OBSERVABILITY_REASON=All 3 nodes serve self-signed kubelet certificates
+  (issuer=node-XX-ca, not cluster CA CN=kubernetes) with SAN=DNS:node-XX only
+  (no InternalIP SAN). Metrics Server 0.8.1 uses secure kubelet path
+  (--kubelet-preferred-address-types=InternalIP), so TLS verification against the
+  cluster CA fails on every node. Enabling serverTLSBootstrap (cluster-CA-signed
+  serving cert + approved CSR) requires control-plane config change and a CSR
+  approval model => Architect decision. --kubelet-insecure-tls is forbidden.

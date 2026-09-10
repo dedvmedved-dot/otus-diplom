@@ -1,0 +1,4 @@
+=== 40-final-tree-audit ===
+?? evidence/P7/20260910T185626Z-task-p7a-r1-all-node-kubelet-tls-evidence/
+--- untracked outside R1 evidence? ---
+NO_SCRATCH_FILES_OUTSIDE_R1

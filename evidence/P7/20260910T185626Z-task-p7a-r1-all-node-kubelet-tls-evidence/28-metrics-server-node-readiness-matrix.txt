@@ -1,0 +1,13 @@
+# TASK-P7A-R1 — Metrics Server per-node readiness matrix
+
+Metrics Server 0.8.1 default: --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+
+| Node    | Preferred Metrics Address | Serving Cert Trust | IP SAN  | Hostname SAN | Secure Metrics TLS |
+|---------|---------------------------|--------------------|---------|--------------|--------------------|
+| node-01 | InternalIP 172.30.140.101 | SELF_SIGNED       | NO      | DNS:node-01  | BLOCKED            |
+| node-02 | InternalIP 172.30.140.102 | SELF_SIGNED       | NO      | DNS:node-02  | BLOCKED            |
+| node-03 | InternalIP 172.30.140.103 | SELF_SIGNED       | NO      | DNS:node-03  | BLOCKED            |
+
+All three nodes: serving cert is self-signed (node-XX-ca), has NO InternalIP SAN,
+so Metrics Server secure TLS (verify against cluster CA) FAILS on every node.
+--kubelet-insecure-tls is forbidden.

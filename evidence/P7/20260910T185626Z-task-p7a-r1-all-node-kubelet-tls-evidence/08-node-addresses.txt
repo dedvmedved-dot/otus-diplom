@@ -1,0 +1,3 @@
+node-01 addresses=[{"address":"172.30.140.101","type":"InternalIP"},{"address":"node-01","type":"Hostname"}]
+node-02 addresses=[{"address":"172.30.140.102","type":"InternalIP"},{"address":"node-02","type":"Hostname"}]
+node-03 addresses=[{"address":"172.30.140.103","type":"InternalIP"},{"address":"node-03","type":"Hostname"}]

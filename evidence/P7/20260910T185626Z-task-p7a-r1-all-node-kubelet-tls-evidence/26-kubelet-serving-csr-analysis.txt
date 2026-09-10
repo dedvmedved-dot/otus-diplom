@@ -1,0 +1,12 @@
+# TASK-P7A-R1 — Kubelet CSR analysis
+
+kubectl get csr -o wide => "No resources found"
+
+KUBELET_SERVING_CSR_PRESENT=NO (no kubernetes.io/kubelet-serving signerName objects)
+KUBELET_SERVING_CSR_APPROVAL_MODEL=NOT_ACTIVE (no serving CSR workflow; self-signed serving cert)
+KUBELET_CLIENT_CSR_PRESENT=NO (no kubernetes.io/kube-apiserver-client-kubelet objects; bootstrap complete)
+
+Interpretation:
+  kubelet client cert bootstrap completed (rotateCertificates=true handles client cert).
+  serving cert is self-signed (serverTLSBootstrap unset => false), so no serving CSR
+  is ever created and no CSR signer approves a serving cert.

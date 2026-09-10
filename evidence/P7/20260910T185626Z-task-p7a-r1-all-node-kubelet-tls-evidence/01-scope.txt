@@ -1,0 +1,12 @@
+# TASK-P7A-R1 — Scope
+
+PROJECT: OTUS Diplom / ПАК «Портал»
+REPOSITORY: dedvmedved-dot/otus-diplom
+STAGE: P7A-R1 (PARENT: TASK-P7A)
+CLASSIFICATION: MINIMAL READ-ONLY EVIDENCE CORRECTION / ARCHITECTURE PREPARATION
+
+Purpose: close evidence gap — P7A recorded kubelet serving-cert evidence only for
+node-01; R1 collects complete, reproducible, fail-closed TLS evidence for node-01/02/03
+without changing runtime infrastructure (INFRASTRUCTURE_MUTATION=0).
+
+P7B/P7C/P8 NOT AUTHORIZED.

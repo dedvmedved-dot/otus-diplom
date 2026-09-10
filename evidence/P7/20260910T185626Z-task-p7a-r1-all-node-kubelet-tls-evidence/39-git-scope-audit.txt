@@ -1,0 +1,4 @@
+=== 39-git-scope-audit ===
+?? evidence/P7/20260910T185626Z-task-p7a-r1-all-node-kubelet-tls-evidence/
+--- allowed only check ---
+ONLY_ALLOWED_PATHS

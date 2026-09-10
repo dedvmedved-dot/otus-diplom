@@ -1,0 +1,6 @@
+=== TLS by InternalIP 172.30.140.101:10250 ===
+verify error:num=19:self-signed certificate in certificate chain
+40A77F51C47E0000:error:0A000086:SSL routines:tls_post_process_server_certificate:certificate verify failed:../ssl/statem/statem_clnt.c:2103:
+Verification error: self-signed certificate in certificate chain
+Verify return code: 19 (self-signed certificate in certificate chain)
+rc=0

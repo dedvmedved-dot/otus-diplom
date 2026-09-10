@@ -1,0 +1,11 @@
+node-01 serving cert trust classification
+
+cert subject: CN=node-01@1787580092
+cert issuer:  CN=node-01-ca@1787580092
+cluster CA subject: CN=kubernetes (issuer CN=kubernetes)
+
+issuer (node-01-ca) != cluster CA (kubernetes) => NOT cluster-CA-signed.
+subject CN=node-01@... vs issuer CN=node-01-ca@... => node-local self-signed.
+
+TRUST_CLASS=SELF_SIGNED
+CLUSTER_CA_TRUST=FAIL (serving cert chains to node-01-ca, not CN=kubernetes)

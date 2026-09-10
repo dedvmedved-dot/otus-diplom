@@ -1,0 +1,5 @@
+=== Cluster CA (from node-01 /etc/kubernetes/pki/ca.crt) ===
+subject=CN=kubernetes
+issuer=CN=kubernetes
+sha256 Fingerprint=BF:1E:36:EC:3B:1F:A6:AC:C8:8E:8D:C3:2D:83:46:6A:EA:3F:31:A3:7E:22:83:65:D2:71:E6:8C:6E:23:14:D9
+
