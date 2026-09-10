@@ -1,0 +1,5 @@
+127.0.1.1       node-02
+GETENT_EXIT=0
+127.0.1.1       STREAM node-02
+127.0.1.1       DGRAM  
+127.0.1.1       RAW    

@@ -1,0 +1,16 @@
+# TASK-P7A-R2 — Metrics Server readiness matrix (normalized, all 3 nodes)
+
+| Node    | InternalIP      | Leaf Trust Class   | Leaf->Local CA | Leaf->Cluster CA | DNS SAN    | IP SAN | InternalIP TLS | Hostname TLS | serverTLSBootstrap | rotateCertificates | Metrics Secure TLS |
+|---------|-----------------|--------------------|----------------|------------------|------------|--------|----------------|--------------|--------------------|--------------------|--------------------|
+| node-01 | 172.30.140.101  | NODE_LOCAL_CA_SIGNED | YES (exit 0) | NO (error 20)   | DNS:node-01 | NO     | FAIL (exit 1)  | FAIL (trust) | false              | true               | BLOCKED            |
+| node-02 | 172.30.140.102  | NODE_LOCAL_CA_SIGNED | YES (exit 0) | NO (error 20)   | DNS:node-02 | NO     | FAIL (exit 1)  | FAIL (trust) | false              | true               | BLOCKED            |
+| node-03 | 172.30.140.103  | NODE_LOCAL_CA_SIGNED | YES (exit 0) | NO (error 20)   | DNS:node-03 | NO     | FAIL (exit 1)  | FAIL (trust) | false              | true               | BLOCKED            |
+
+DNS resolution: node-01 FAIL (getent exit 2), node-02 PASS, node-03 PASS (127.0.1.1).
+Hostname TLS identity NOT_REACHED_DUE_TO_TRUST on all nodes (verify fails before identity).
+
+OBSERVABILITY_READINESS=BLOCKED
+OBSERVABILITY_REASON=Every node's kubelet serving leaf is signed by a self-signed
+  node-local CA (not the cluster CA CN=kubernetes) and lacks an InternalIP SAN.
+  Metrics Server secure TLS (verify against cluster CA) fails on every node.
+  --kubelet-insecure-tls is forbidden.

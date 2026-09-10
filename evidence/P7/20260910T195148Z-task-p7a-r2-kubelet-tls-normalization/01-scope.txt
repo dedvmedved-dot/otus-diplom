@@ -1,0 +1,14 @@
+# TASK-P7A-R2 — Scope
+
+PROJECT: OTUS Diplom / ПАК «Портал»
+REPOSITORY: dedvmedved-dot/otus-diplom
+STAGE: P7A-R2 (PARENT: TASK-P7A-R1)
+CLASSIFICATION: STRICT READ-ONLY EVIDENCE CORRECTION / TLS TRUST NORMALIZATION /
+  ARCHITECTURE DECISION SUPPORT
+
+Purpose: close R1 evidence-quality defects (A-F) — normalize kubelet TLS trust
+classification cryptographically, capture exact kubelet PID/cmdline, fail-closed
+TLS probes, separate DNS resolution from hostname cert verification, and decompose
+the serving cert chain. No runtime change (INFRASTRUCTURE_MUTATION=0).
+
+P7B/P7C/P8 NOT AUTHORIZED.

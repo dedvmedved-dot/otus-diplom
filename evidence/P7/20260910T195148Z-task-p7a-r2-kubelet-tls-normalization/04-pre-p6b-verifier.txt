@@ -1,0 +1,21 @@
+
+PLAY [P6B final read-only verifier (TASK-P6B-R4)] ******************************
+
+TASK [P6B final semantic verification (read-only)] *****************************
+[WARNING]: Platform linux on host node-01 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-01]
+
+TASK [P6B source manifest semantic exactness (read-only)] **********************
+ok: [node-01 -> localhost]
+
+TASK [P6B images.lock exactness (read-only)] ***********************************
+ok: [node-01 -> localhost]
+
+PLAY RECAP *********************************************************************
+node-01                    : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+P6B_EXIT=0

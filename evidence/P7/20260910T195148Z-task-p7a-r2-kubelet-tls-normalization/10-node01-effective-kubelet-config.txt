@@ -1,0 +1,11 @@
+=== config.yaml fields ===
+serverTLSBootstrap=UNSET
+rotateCertificates: true
+tlsCertFile=UNSET
+tlsPrivateKeyFile=UNSET
+=== clientCAFile ===
+  x509:
+    clientCAFile: /etc/kubernetes/pki/ca.crt
+authorization:
+=== serving cert source discovery ===
+-rw-r--r-- 1 root root 2262 авг 24 17:01 /var/lib/kubelet/pki/kubelet.crt

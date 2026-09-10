@@ -1,0 +1,16 @@
+===LEAF===
+subject=CN=node-03@1787618620
+issuer=CN=node-03-ca@1787618620
+serial=1176257B6BE09E8F
+notBefore=Aug 24 23:43:40 2026 GMT
+notAfter=Aug 24 23:43:40 2027 GMT
+sha256 Fingerprint=7B:3E:70:B0:07:4F:33:F4:67:99:B0:80:D3:0A:D5:D8:2B:FA:1E:3C:B3:72:6D:77:25:41:BC:E7:53:D3:FF:8B
+X509v3 Subject Alternative Name: 
+    DNS:node-03
+---LEAF_EXT---
+            X509v3 Key Usage: critical
+            X509v3 Extended Key Usage: 
+            X509v3 Basic Constraints: critical
+                CA:FALSE
+            X509v3 Authority Key Identifier: 
+                7E:CA:DF:8F:CD:DD:EA:55:91:56:87:61:39:EF:26:DE:79:E5:91:16

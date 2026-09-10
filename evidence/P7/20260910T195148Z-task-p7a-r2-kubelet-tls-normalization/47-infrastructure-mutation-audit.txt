@@ -1,0 +1,23 @@
+# TASK-P7A-R2 — Infrastructure Mutation Audit
+
+kubectl_mutation_ops=0
+helm_mutation_ops=0
+systemd_mutation_ops=0
+network_mutation_ops=0
+storage_mutation_ops=0
+certificate_mutation_ops=0
+csr_create_ops=0
+csr_approve_ops=0
+csr_deny_ops=0
+kubelet_config_mutation_ops=0
+service_restart_ops=0
+reboot_ops=0
+INFRASTRUCTURE_MUTATION=0
+
+Only read-only commands: kubectl get, systemctl show/status, pgrep, readlink,
+tr (cmdline read), grep/awk, openssl x509/verify/s_client (read), getent, sha256sum.
+
+Temporary split files created only under /tmp/p7a-r2-<RUN_ID>/ and removed after
+analysis. No private keys copied/inspected.
+
+RESULT: PASS

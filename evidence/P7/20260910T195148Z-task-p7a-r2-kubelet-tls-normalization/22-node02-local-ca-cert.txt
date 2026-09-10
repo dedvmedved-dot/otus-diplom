@@ -1,0 +1,12 @@
+
+subject=CN=node-02-ca@1787584398
+issuer=CN=node-02-ca@1787584398
+serial=5C828D4017DEBBE6
+notBefore=Aug 24 14:13:18 2026 GMT
+notAfter=Aug 24 14:13:18 2027 GMT
+sha256 Fingerprint=2C:B5:F3:0B:71:32:DD:63:69:FD:D7:4A:24:49:98:09:3A:CD:FB:75:1B:D9:61:F5:A7:EC:2C:09:59:2C:94:9E
+---LOCALCA_EXT---
+            X509v3 Key Usage: critical
+            X509v3 Basic Constraints: critical
+                CA:TRUE
+            X509v3 Subject Key Identifier: 

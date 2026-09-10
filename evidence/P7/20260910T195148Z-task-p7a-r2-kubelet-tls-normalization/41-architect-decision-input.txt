@@ -1,0 +1,44 @@
+# TASK-P7A-R2 — Architecture Decision Input (support only, NO implementation)
+
+## Option A — serverTLSBootstrap
+
+Required KubeletConfiguration change:
+  - Set serverTLSBootstrap: true on node-01/02/03 config (requires kubelet restart,
+    which is a mutation => NOT performed in R2).
+
+Expected serving CSR lifecycle:
+  - kubelet creates CSR with signerName=kubernetes.io/kubelet-serving, username
+    system:node:<node>, requested SANs = node hostname + InternalIP.
+  - CSR must be Approved by a signer (manual or automated); then kubelet writes a
+    cluster-CA-signed serving cert to /var/lib/kubelet/pki/kubelet-server-current.pem.
+
+Rotation/rollback:
+  - serving cert rotates via the same CSR flow; revert serverTLSBootstrap=false
+    returns to node-local self-signed CA serving cert.
+
+Implication:
+  - Enabling serverTLSBootstrap alone does NOT produce a trusted serving cert — it
+    only creates an unapproved CSR. An approval mechanism is mandatory.
+
+## Option B — controlled serving CSR approval
+
+  - Manual approval: operator reviews each kubernetes.io/kubelet-serving CSR
+    (username system:node:<name>, requested SANs) before approving. Operationally
+    heavy at scale and at every rotation.
+  - Automated approver: must validate at minimum signerName, username
+    system:node:<node>, node existence, requested DNS/IP SANs (must equal the node's
+    own hostname/IP), requested usages, and node identity/ownership. Denies anything
+    else. Blind auto-approval of arbitrary CSRs is prohibited.
+
+## Option C — other secure solution
+
+  - No evidence-backed secure alternative is available from current facts without
+    serverTLSBootstrap or serving-cert replacement. --kubelet-insecure-tls and
+    certificate-verification bypass are forbidden.
+
+## Conclusion
+
+ARCHITECT_DECISION_REQUIRED=YES
+RECOMMENDED_DIRECTION=Option A (serverTLSBootstrap) + Option B controlled
+  kubelet-serving CSR approver (strict node-identity + SAN policy).
+IMPLEMENTATION_AUTHORIZED=NO

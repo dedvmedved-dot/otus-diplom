@@ -1,0 +1,9 @@
+# TASK-P7A-R2 — Observability readiness conclusion
+
+OBSERVABILITY_READINESS=BLOCKED
+OBSERVABILITY_REASON=All 3 nodes' kubelet serving certificates are NODE_LOCAL_CA_SIGNED
+  (leaf signed by self-signed node-local CA, not cluster CA CN=kubernetes), with
+  SAN=DNS:node-XX only (no InternalIP SAN). openssl verify against cluster CA fails
+  (error 20) on every node; InternalIP/hostname TLS probes fail (verify 19, exit 1).
+  Metrics Server 0.8.1 secure path cannot verify kubelet TLS. --kubelet-insecure-tls
+  is forbidden; serverTLSBootstrap is unset (false).

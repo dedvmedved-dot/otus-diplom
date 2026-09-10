@@ -1,0 +1,7 @@
+
+/tmp/p7a-r2-20260910T195148Z/cert1.pem: OK
+EXIT=0
+===VERIFY_LEAF_CLUSTERCA===
+CN=node-01@1787580092
+error 20 at 0 depth lookup: unable to get local issuer certificate
+error /tmp/p7a-r2-20260910T195148Z/cert1.pem: verification failed

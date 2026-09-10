@@ -1,0 +1,4 @@
+COMMAND=openssl s_client -connect 172.30.140.103:10250 -servername node-03 -verify_hostname node-03 -verify_return_error -CAfile /etc/kubernetes/pki/ca.crt
+Verification error: self-signed certificate in certificate chain
+Verify return code: 19 (self-signed certificate in certificate chain)
+COMMAND_EXIT=1

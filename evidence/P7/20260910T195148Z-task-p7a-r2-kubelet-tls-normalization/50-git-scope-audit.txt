@@ -1,0 +1,3 @@
+=== 50-git-scope-audit ===
+?? evidence/P7/20260910T195148Z-task-p7a-r2-kubelet-tls-normalization/
+ONLY_ALLOWED_PATHS

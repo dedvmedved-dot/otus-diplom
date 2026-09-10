@@ -1,0 +1,18 @@
+SYSTEMD_MAINPID=96530
+PGREP_KUBELET_PID=96530
+PID_MATCH=YES
+ACTUAL_KUBELET_PID=96530
+ACTUAL_KUBELET_EXE=/usr/bin/kubelet
+--- cmdline ---
+/usr/bin/kubelet
+--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf
+--kubeconfig=/etc/kubernetes/kubelet.conf
+--config=/var/lib/kubelet/config.yaml
+--node-ip=172.30.140.101
+--- TLS flags presence ---
+--tls-cert-file=ABSENT
+--tls-private-key-file=ABSENT
+--rotate-certificates=ABSENT
+--bootstrap-kubeconfig=PRESENT
+--config=PRESENT
+--kubeconfig=PRESENT

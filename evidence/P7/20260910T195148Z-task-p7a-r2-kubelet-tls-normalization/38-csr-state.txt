@@ -1,0 +1,10 @@
+No resources found
+--- json ---
+{
+    "apiVersion": "v1",
+    "items": [],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}

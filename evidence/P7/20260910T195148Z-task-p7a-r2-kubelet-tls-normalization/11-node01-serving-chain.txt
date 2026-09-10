@@ -1,0 +1,9 @@
+PEM_CERT_COUNT=2
+--- all certs (subject/issuer/fingerprint) ---
+subject=CN=node-01@1787580092
+issuer=CN=node-01-ca@1787580092
+
+subject=CN=node-01-ca@1787580092
+issuer=CN=node-01-ca@1787580092
+
+--- per-cert via split ---
