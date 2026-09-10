@@ -1,0 +1,29 @@
+=== 21-metrics-server-render-static-analysis ===
+--- apiVersion/kind summary ---
+kind: ServiceAccount	  name: metrics-server
+kind: ClusterRole	  name: system:aggregated-metrics-reader
+kind: ClusterRole	  name: system:metrics-server
+kind: RoleBinding	  name: metrics-server-auth-reader
+  name: extension-apiserver-authentication-reader	  name: metrics-server
+kind: ClusterRoleBinding	  name: metrics-server:system:auth-delegator
+  name: system:auth-delegator	  name: metrics-server
+kind: ClusterRoleBinding	  name: system:metrics-server
+  name: system:metrics-server	  name: metrics-server
+kind: Service	  name: metrics-server
+kind: Deployment	  name: metrics-server
+kind: APIService	  name: v1beta1.metrics.k8s.io
+--- image ---
+        image: registry.k8s.io/metrics-server/metrics-server:v0.8.1
+--- security/host/privileged ---
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+--- args ---
+        - --cert-dir=/tmp
+        - --secure-port=10250
+        - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+        - --kubelet-use-node-status-port
+        - --metric-resolution=15s

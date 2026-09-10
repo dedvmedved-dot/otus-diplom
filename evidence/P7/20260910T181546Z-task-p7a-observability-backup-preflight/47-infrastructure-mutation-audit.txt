@@ -1,0 +1,16 @@
+# TASK-P7A — Infrastructure Mutation Audit
+
+INFRASTRUCTURE_MUTATION=0
+
+kubectl apply/create/delete/patch/edit: 0
+helm install/upgrade/uninstall: 0
+nmcli / ip route / ip addr / systemctl / reboot: 0
+LVM/DRBD/LINSTOR mutation: 0
+
+Only read-only collection performed:
+  kubectl get (nodes/pods/svc/storageclass/csidrivers/apiservices/volumesnapshotclass/...)
+  ip -br addr show / ip route show / nmcli connection show
+  openssl x509 -in <cert> -noout (read-only cert inspection)
+  curl to public registries / GitHub / velero.io (read-only upstream fetch)
+
+RESULT: PASS (strictly read-only; production foundation unchanged)

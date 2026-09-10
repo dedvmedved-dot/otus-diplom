@@ -1,0 +1,12 @@
+=== Metrics Server v0.8.1 release (GitHub) ===
+name: v0.8.1
+tag: v0.8.1
+published: 2026-01-29T13:32:00Z
+body: ## Installation
+
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.8.1/components.yaml
+
+## Changes since v0.8.0
+
+### Improvements
+- Bump Golang to v1.24.12 and Kubernetes dependencies to v0.33.7 (@dgrisonnet, #1758)

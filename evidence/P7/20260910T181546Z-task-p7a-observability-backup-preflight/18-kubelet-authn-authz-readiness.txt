@@ -1,0 +1,24 @@
+Kubernetes v1.36.2
+authentication:
+  anonymous:
+  webhook:
+  x509:
+authorization:
+  webhook:
+authentication:
+  anonymous:
+    enabled: false
+  webhook:
+    cacheTTL: 0s
+    enabled: true
+  x509:
+    clientCAFile: /etc/kubernetes/pki/ca.crt
+authorization:
+authorization:
+  mode: Webhook
+  webhook:
+    cacheAuthorizedTTL: 0s
+    cacheUnauthorizedTTL: 0s
+cgroupDriver: systemd
+--- kubelet port args ---
+--authorization-mode=Node,RBAC

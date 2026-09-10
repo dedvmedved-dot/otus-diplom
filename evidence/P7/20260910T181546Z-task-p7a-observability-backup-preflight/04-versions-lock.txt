@@ -1,0 +1,6 @@
+  kubernetes:          "1.36.2"
+  metallb:             "0.16.1"
+  envoy_gateway:       "1.9.1"
+  metrics_server:      "0.8.1"
+  velero:              "1.18.1"
+  helm:                "4.1.3"

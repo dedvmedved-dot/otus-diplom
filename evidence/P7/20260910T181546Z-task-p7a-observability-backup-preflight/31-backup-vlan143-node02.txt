@@ -1,0 +1,5 @@
+node-02
+--- bond0.143 ---
+bond0.143@bond0  UP             172.30.143.102/24 fe80::a7c2:8f2a:37e7:27e6/64 
+--- route (143) ---
+172.30.143.0/24 dev bond0.143 proto kernel scope link src 172.30.143.102 metric 403 

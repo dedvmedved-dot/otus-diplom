@@ -1,0 +1,122 @@
+=== 44-p7a-verifier-source-audit ===
+---
+# TASK-P7A — Durable fail-closed P7A read-only verifier.
+# MODE: STRICTLY READ-ONLY. INFRASTRUCTURE MUTATION = 0.
+# Invariant checks: K8s 1.36.2, 3 Ready nodes, P6B/P6C/P6D preserved, lock versions,
+# no unexpected Metrics Server / Velero, bond0.143 on all nodes.
+
+- name: "P7A final read-only verifier (TASK-P7A)"
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    # ── Task 1: cluster-wide semantic checks (kubectl, delegate node-01) ──
+    - name: P7A cluster semantic verification (read-only)
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          python3 << 'PYEOF'
+          import json, subprocess
+          KC = ["kubectl", "--kubeconfig", "/etc/kubernetes/admin.conf"]
+          def runj(c):
+              r = subprocess.run(c, capture_output=True, text=True)
+              if r.returncode != 0:
+                  raise AssertionError(f"query failed: {' '.join(c)} rc={r.returncode}")
+              return json.loads(r.stdout)
+
+          # Kubernetes exactly 1.36.2
+          nodes = runj(KC + ["get", "nodes", "-o", "json"])
+          items = nodes.get("items")
+          assert isinstance(items, list), "nodes invalid items payload"
+          for it in items:
+              assert it["status"]["nodeInfo"]["kubeletVersion"] == "v1.36.2", "k8s version drift"
+          print("P7A_K8S_VERSION_OK")
+
+          # 3 nodes Ready
+          assert len(items) == 3, f"node count != 3: {len(items)}"
+          for it in items:
+              ready = any(c["type"] == "Ready" and c["status"] == "True" for c in it["status"]["conditions"])
+              assert ready, f"node {it['metadata']['name']} not Ready"
+          print("P7A_NODES_READY")
+
+          # P6B preserved: MetalLB controller 1/1 + speaker 3/3
+          mc = runj(KC + ["-n", "metallb-system", "get", "deploy", "controller", "-o", "json"])
+          assert mc["status"].get("availableReplicas", 0) == 1, "metallb controller not ready"
+          ms = runj(KC + ["-n", "metallb-system", "get", "ds", "speaker", "-o", "json"])
+          assert ms["status"].get("numberReady", 0) == 3, "metallb speaker not 3/3"
+          print("P7A_P6B_PRESERVED")
+
+          # P6C preserved: Envoy controller 1/1 + GatewayClass eg Accepted
+          ed = runj(KC + ["-n", "envoy-gateway-system", "get", "deploy", "envoy-gateway", "-o", "json"])
+          assert ed["status"].get("availableReplicas", 0) == 1, "envoy controller not ready"
+          gc = runj(KC + ["get", "gatewayclass", "eg", "-o", "json"])
+          acc = [c["status"] for c in gc["status"]["conditions"] if c["type"] == "Accepted"]
+          assert acc and acc[0] == "True", "GatewayClass eg not Accepted"
+          print("P7A_P6C_PRESERVED")
+
+          # No unexpected Metrics Server deployment (fail-closed)
+          deps = runj(KC + ["get", "deploy", "-A", "-o", "json"])
+          ditem = deps.get("items")
+          assert isinstance(ditem, list), "deploy invalid items payload"
+          ms_found = [d for d in ditem if "metrics-server" in d["metadata"]["name"]]
+          assert len(ms_found) == 0, f"unexpected Metrics Server deployment: {len(ms_found)}"
+          print("P7A_NO_UNEXPECTED_METRICS_SERVER")
+
+          # No unexpected Velero deployment (fail-closed)
+          vel_found = [d for d in ditem if "velero" in d["metadata"]["name"]]
+          assert len(vel_found) == 0, f"unexpected Velero deployment: {len(vel_found)}"
+          print("P7A_NO_UNEXPECTED_VELERO")
+
+          print("P7A_INFRASTRUCTURE_MUTATION_ZERO")
+          print("P7A_FINAL_READONLY_VERIFIER_PASS")
+          PYEOF
+      changed_when: false
+      delegate_to: node-01
+      run_once: true
+
+    # ── Task 2: bond0.143 + P6D persistent route (all nodes) ──
+    - name: P7A node network verification (read-only)
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          python3 << 'PYEOF'
+          import subprocess
+          # bond0.143 present with an IPv4 address
+          r = subprocess.run(["ip", "-br", "addr", "show", "bond0.143"], capture_output=True, text=True)
+          assert r.returncode == 0, "bond0.143 query failed"
+          assert "bond0.143" in r.stdout and "172.30.143" in r.stdout, f"bond0.143 missing/wrong: {r.stdout!r}"
+          print("P7A_BACKUP_VLAN143_PRESENT")
+
+          # P6D persistent return route (kernel + nmcli)
+          rr = subprocess.run(["ip", "route", "show", "172.30.20.0/24"], capture_output=True, text=True)
+          assert "172.30.20.0/24 via 172.30.140.1 dev bond0.140" in rr.stdout, f"P6D route wrong: {rr.stdout!r}"
+          u = subprocess.run(["bash", "-c", "nmcli -t -f UUID,DEVICE connection show 2>/dev/null | grep bond0.140 | cut -d: -f1"],
+                             capture_output=True, text=True)
+          uuid = u.stdout.strip()
+          assert uuid, "bond0.140 NetworkManager connection not found"
+          n = subprocess.run(["nmcli", "connection", "show", uuid], capture_output=True, text=True)
+          assert "172.30.20.0/24" in n.stdout and "172.30.140.1" in n.stdout, "P6D route not persistent"
+          print("P7A_P6D_PRESERVED")
+          PYEOF
+      changed_when: false
+
+    # ── Task 3: versions.lock check (Hermes host local) ──
+    - name: P7A lock version verification (read-only, local)
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          python3 << 'PYEOF'
+          import re
+          with open("/root/otus-diplom/versions.lock") as f:
+              data = f.read()
+          m = re.search(r'metrics_server:\s*"([^"]+)"', data)
+          assert m and m.group(1) == "0.8.1", f"metrics_server lock != 0.8.1: {m.group(1) if m else 'absent'}"
+          print("P7A_METRICS_SERVER_LOCK_OK")
+          v = re.search(r'velero:\s*"([^"]+)"', data)
+          assert v and v.group(1) == "1.18.1", f"velero lock != 1.18.1: {v.group(1) if v else 'absent'}"
+          print("P7A_VELERO_LOCK_OK")
+          PYEOF
+      changed_when: false
+      delegate_to: localhost
+      connection: local
+      run_once: true

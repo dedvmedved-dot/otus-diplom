@@ -1,0 +1,6 @@
+--- volumesnapshotclass ---
+error: the server doesn't have a resource type "volumesnapshotclass"
+--- volumesnapshot ---
+error: the server doesn't have a resource type "volumesnapshot"
+--- snapshot CRDs ---
+no snapshot CRDs

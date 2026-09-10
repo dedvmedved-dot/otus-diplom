@@ -1,0 +1,16 @@
+# TASK-P7A — Velero Object-Store Plugin Gap (Architect decision gate)
+
+Fact: S3 endpoint/bucket/region are NOT specified in Source of Truth (see 29).
+
+If the factual S3-compatible target is served by an S3-compatible API, the
+appropriate object-store plugin is velero-plugin-for-aws (AWS SDK S3-compatible).
+
+Velero release body v1.18.1 (image velero/velero:v1.18.1, digest sha256:2752a011...)
+confirms object-store via plugin; core Velero image does not bundle object-store plugins.
+
+Required output:
+  VELERO_OBJECT_STORE_PLUGIN_REQUIRED=velero-plugin-for-aws (pending factual S3 target)
+  PLUGIN_VERSION_PINNED_IN_SOT=NO (not present in versions.lock)
+  ARCHITECT_DECISION_REQUIRED=YES
+
+Hermes MUST NOT select a production plugin version. Candidate matrix in 37/38.

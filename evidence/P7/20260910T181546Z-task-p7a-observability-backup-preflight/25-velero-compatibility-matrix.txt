@@ -1,0 +1,38 @@
+=== Velero support matrix v1.18 ===
+--- path: site/content/docs/v1.18/support-matrix.md ---
+--- path: site/content/docs/v1.18/supported-providers.md ---
+Velero supports a variety of storage providers for different backup and snapshot operations. Velero has a plugin system which allows anyone to add compatibility for additional backup and volume storage platforms without modifying the Velero codebase.
+{{< table caption="Velero supported providers" >}}
+Contact: [#Velero Slack](https://kubernetes.slack.com/messages/velero), [GitHub Issues](https://github.com/velero-io/velero/issues)
+{{< table caption="Community supported providers" >}}
+| [Portworx](https://portworx.com/)            | 🚫                           | Portworx Volume                    | [Portworx](https://docs.portworx.com/scheduler/kubernetes/ark.html)         | [Slack](https://portworx.slack.com/messages/px-k8s), [GitHub Issue](https://github.com/portworx/ark-plugin/issues) |
+## S3-Compatible object store providers
+Velero's AWS Object Store plugin uses [Amazon's Go SDK][0] to connect to the AWS S3 API. Some third-party storage providers also support the S3 API, and users have reported the following providers work with Velero:
+## Non-supported volume snapshots
+In the case you want to take volume snapshots but didn't find a plugin for your provider, Velero has support for snapshotting using File System Backup. Please see the [File System Backup][30] documentation.
+--- path: site/content/docs/v1.18/overview.md ---
+=== Velero compatibility (velero-io repo) ===
+--- site/content/docs/v1.18/support-matrix.md ---
+--- site/content/docs/v1.18/overview.md ---
+=== Velero support matrix (velero.io) ===
+=== Velero docs v1.18 file list ===
+overview-plugins.md
+support-process.md
+supported-configmaps
+supported-providers.md
+=== Velero README compatibility ===
+Velero (formerly Heptio Ark) gives you tools to back up and restore your Kubernetes cluster resources and persistent volumes. You can run Velero with a public cloud platform or on-premises. 
+If you encounter issues, review the [troubleshooting docs][30], [file an issue][4], or talk to us on the [#velero-users][25] and [#velero-dev][26] channel on the Kubernetes Slack server.
+* Chat with us on the [Kubernetes Slack][25] `#velero-users` channel and join the [mailing list][24].
+### Velero compatibility matrix
+The following is a list of the supported Kubernetes versions for each Velero version.
+| Velero version | Expected Kubernetes version compatibility | Tested on Kubernetes version        |
+| 1.18           | 1.18-latest                               | 1.33.7, 1.34.1, and 1.35.0          |
+| 1.17           | 1.18-latest                               | 1.31.7, 1.32.3, 1.33.1, and 1.34.0  |
+| 1.16           | 1.18-latest                               | 1.31.4, 1.32.3, and 1.33.0          |
+| 1.15           | 1.18-latest                               | 1.28.8, 1.29.8, 1.30.4 and 1.31.1   |
+The Velero maintainers are continuously working to expand testing coverage, but are not able to test every combination of Velero and supported Kubernetes versions for each Velero release. The table above is meant to track the current testing coverage and the expected supported Kubernetes versions for each Velero version.
+If you are interested in using a different version of Kubernetes with a given Velero version, we'd recommend that you perform testing before installing or upgrading your environment. For full information around capabilities within a release, also see the Velero [release notes](https://github.com/velero-io/velero/releases) or Kubernetes [release notes](https://github.com/kubernetes/kubernetes/tree/master/CHANGELOG). See the Velero [support page](https://velero.io/docs/latest/support-process/) for information about supported versions of Velero.
+[9]: https://kubernetes.io/docs/setup/
+[10]: https://kubernetes.io/docs/tasks/tools/install-kubectl/#install-with-homebrew-on-macos
+[11]: https://kubernetes.io/docs/tasks/tools/install-kubectl/#tabset-1

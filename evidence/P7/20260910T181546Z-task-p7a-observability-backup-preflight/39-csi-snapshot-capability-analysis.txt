@@ -1,0 +1,24 @@
+# TASK-P7A — LINSTOR/DRBD CSI Snapshot Capability Analysis
+
+Read-only discovery (evidence 11/12):
+
+StorageClass: piraeus-r2 (provisioner=linstor.csi.linbit.com, ReclaimPolicy=Delete,
+  VolumeBindingMode=WaitForFirstConsumer, AllowVolumeExpansion=true)
+
+CSIDriver: linstor.csi.linbit.com (attachRequired=true, podInfoOnMount=true,
+  storageCapacity=true, mode=Persistent)
+
+VolumeSnapshot API:
+  API definitions present: NO  (kubectl get volumesnapshotclass -> "no such resource")
+  RBAC references present: NOT VERIFIED in this preflight
+  snapshot-controller present: NO (no snapshot CRDs / no snapshot-controller pod)
+  VolumeSnapshotClass present: NO
+  driver snapshot capability: NOT_VERIFIED (cannot be exercised — snapshot API absent)
+  actual snapshot workflow verified: NO
+
+Classification: CSI snapshot-based backup is NOT currently available on this cluster.
+VolumeSnapshot API CRDs + snapshot-controller + VolumeSnapshotClass are absent and
+would be a NEW dependency if introduced (requires Architect decision, not P7A).
+
+LINSTOR/DRBD is accepted for persistent volumes (P5C2), but its CSI snapshot path
+has not been validated here.

@@ -1,0 +1,10 @@
+kubelet-client-2026-08-24-17-01-32.pem
+kubelet-client-current.pem
+kubelet.crt
+kubelet.key
+--- cert ---
+CERT=/var/lib/kubelet/pki/kubelet.crt
+subject=CN=node-01@1787580092
+issuer=CN=node-01-ca@1787580092
+X509v3 Subject Alternative Name: 
+    DNS:node-01

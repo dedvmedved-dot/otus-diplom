@@ -1,0 +1,13 @@
+# TASK-P7A — Metrics Server P4B Network Flow Plan (proposed, NOT applied)
+
+P4B requires default-deny ingress+egress + DNS baseline per non-system workload namespace.
+Metrics Server 0.8.1 deploys to kube-system (official manifest). Proposed flows:
+
+SOURCE            | DESTINATION       | PROTOCOL | PORT  | PURPOSE                          | REQUIRED_BY
+kube-apiserver    | metrics-server    | TCP      | 10250 | aggregation / metrics API pull   | APIService v1beta1.metrics.k8s.io
+metrics-server    | kubelet           | TCP      | 10250 | scrape resource metrics          | --kubelet-preferred-address-types
+metrics-server    | kube-apiserver    | TCP      | 6443  | API discovery (if needed)        | client-go informers
+metrics-server    | kube-dns          | UDP/TCP  | 53    | DNS (if hostname resolution)     | coreDNS baseline
+
+Note: no NodePort/LoadBalancer; APIService aggregation handled by kube-apiserver
+in-cluster. P4B NetworkPolicy is NOT created in P7A.

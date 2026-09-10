@@ -1,0 +1,57 @@
+--- pods -A ---
+NAMESPACE              NAME                                                   READY   STATUS    RESTARTS      AGE
+envoy-gateway-system   envoy-gateway-84d867bb9d-zs2nv                         1/1     Running   0             5d22h
+kube-system            calico-kube-controllers-6b9b5f7c4-48mqk                1/1     Running   0             14d
+kube-system            calico-node-4krkt                                      1/1     Running   0             14d
+kube-system            calico-node-lgmtz                                      1/1     Running   0             14d
+kube-system            calico-node-mqrgg                                      1/1     Running   0             14d
+kube-system            coredns-589f44dc88-khx9s                               1/1     Running   0             17d
+kube-system            coredns-589f44dc88-xt9px                               1/1     Running   0             17d
+kube-system            etcd-node-01                                           1/1     Running   1 (16d ago)   17d
+kube-system            etcd-node-02                                           1/1     Running   1 (15d ago)   17d
+kube-system            etcd-node-03                                           1/1     Running   1 (15d ago)   16d
+kube-system            kube-apiserver-node-01                                 1/1     Running   1 (16d ago)   17d
+kube-system            kube-apiserver-node-02                                 1/1     Running   1 (15d ago)   17d
+kube-system            kube-apiserver-node-03                                 1/1     Running   1 (15d ago)   16d
+kube-system            kube-controller-manager-node-01                        1/1     Running   1 (16d ago)   17d
+kube-system            kube-controller-manager-node-02                        1/1     Running   1 (15d ago)   17d
+kube-system            kube-controller-manager-node-03                        1/1     Running   1 (15d ago)   16d
+kube-system            kube-proxy-dlgqq                                       1/1     Running   0             17d
+kube-system            kube-proxy-ftsf4                                       1/1     Running   0             17d
+kube-system            kube-proxy-vlh6z                                       1/1     Running   0             16d
+kube-system            kube-scheduler-node-01                                 1/1     Running   1 (16d ago)   17d
+kube-system            kube-scheduler-node-02                                 1/1     Running   1 (15d ago)   17d
+kube-system            kube-scheduler-node-03                                 1/1     Running   1 (15d ago)   16d
+kube-system            kube-vip-node-01                                       1/1     Running   2 (24h ago)   17d
+kube-system            kube-vip-node-02                                       1/1     Running   2 (24h ago)   17d
+kube-system            kube-vip-node-03                                       1/1     Running   1 (15d ago)   16d
+metallb-system         controller-74d5cc54bb-wkztr                            1/1     Running   0             7d17h
+metallb-system         speaker-d956q                                          1/1     Running   0             6d23h
+metallb-system         speaker-pcszv                                          1/1     Running   0             6d23h
+metallb-system         speaker-xwxtr                                          1/1     Running   0             6d23h
+piraeus-datastore      ha-controller-h2pb6                                    1/1     Running   0             9d
+piraeus-datastore      ha-controller-nqd4t                                    1/1     Running   0             9d
+piraeus-datastore      ha-controller-q2ffz                                    1/1     Running   0             9d
+piraeus-datastore      linstor-affinity-controller-d486bfb9b-4tvkf            1/1     Running   0             9d
+piraeus-datastore      linstor-controller-667c75554d-548hq                    1/1     Running   0             9d
+piraeus-datastore      linstor-csi-controller-5bb65bbbb5-4xd2z                7/7     Running   0             9d
+piraeus-datastore      linstor-csi-nfs-server-bfkzx                           1/1     Running   0             9d
+piraeus-datastore      linstor-csi-nfs-server-kbdtv                           1/1     Running   0             9d
+piraeus-datastore      linstor-csi-nfs-server-kzz5f                           1/1     Running   0             9d
+piraeus-datastore      linstor-csi-node-g76ss                                 3/3     Running   0             9d
+piraeus-datastore      linstor-csi-node-qsqg8                                 3/3     Running   0             9d
+piraeus-datastore      linstor-csi-node-rgsft                                 3/3     Running   0             9d
+piraeus-datastore      linstor-satellite.node-01-vsdpr                        2/2     Running   0             8d
+piraeus-datastore      linstor-satellite.node-02-pxwpc                        2/2     Running   0             8d
+piraeus-datastore      linstor-satellite.node-03-zrggg                        2/2     Running   0             8d
+piraeus-datastore      piraeus-operator-controller-manager-64fdf69b7c-bwkw8   1/1     Running   0             9d
+piraeus-datastore      piraeus-operator-gencert-556cf9cf5f-kwgt8              1/1     Running   0             9d
+--- svc -A ---
+NAMESPACE              NAME                               TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                                            AGE
+default                kubernetes                         ClusterIP   10.96.0.1        <none>        443/TCP                                            17d
+envoy-gateway-system   envoy-gateway                      ClusterIP   10.100.36.97     <none>        18000/TCP,18001/TCP,18002/TCP,19001/TCP,9443/TCP   6d6h
+kube-system            kube-dns                           ClusterIP   10.96.0.10       <none>        53/UDP,53/TCP,9153/TCP                             17d
+metallb-system         metallb-webhook-service            ClusterIP   10.96.249.2      <none>        443/TCP                                            7d17h
+piraeus-datastore      linstor-controller                 ClusterIP   10.106.51.185    <none>        3370/TCP                                           9d
+piraeus-datastore      linstor-csi-nfs                    ClusterIP   10.100.156.113   <none>        999/TCP                                            9d
+piraeus-datastore      piraeus-operator-webhook-service   ClusterIP   10.100.112.197   <none>        443/TCP                                            9d

@@ -1,0 +1,13 @@
+# TASK-P7A — Scope
+
+PROJECT: OTUS Diplom / ПАК «Портал»
+REPOSITORY: dedvmedved-dot/otus-diplom
+STAGE: P7A (PARENT: P6 FINAL ACCEPTED)
+CLASSIFICATION: read-only preflight / compatibility / supply-chain / dependency discovery
+
+Two independent tracks (NOT collapsed):
+  A. OBSERVABILITY_READINESS: Metrics Server 0.8.1 on Kubernetes 1.36.2
+  B. BACKUP_READINESS: Velero 1.18.1 + S3 target + LINSTOR/DRBD CSI model
+
+Infrastructure mode: STRICTLY READ-ONLY (INFRASTRUCTURE_MUTATION=0).
+P7 AUTHORIZED. P8 NOT AUTHORIZED.

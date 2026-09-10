@@ -1,0 +1,19 @@
+# TASK-P7A — Forbidden Command Audit
+
+Audit of p7a-final-readonly-verify.yml and p7a_verifier_negative_tests.py.
+
+kubectl apply/create/delete/patch/edit/replace/label/annotate/taint: 0
+kubectl rollout restart: 0
+helm install/upgrade/uninstall/rollback: 0
+systemctl start/stop/restart: 0
+reboot/shutdown: 0
+nmcli con mod/add/delete: 0
+ip route add/del: 0
+ip addr add/del: 0
+LVM/DRBD/LINSTOR create/delete/modify: 0
+
+Verifier uses only: kubectl get ... -o json (read-only), ip -br addr show, ip route show,
+nmcli connection show (read-only), and reads versions.lock locally.
+Harness uses only synthetic in-memory fixtures (no subprocess to kubectl/helm/nmcli/ip).
+
+RESULT: PASS (zero forbidden commands)

@@ -1,0 +1,5 @@
+S3_ROUTE_PATH=NOT_VERIFIED
+S3_USES_BACKUP_VLAN143=NOT_VERIFIED
+
+Reason: S3 endpoint not specified in Source of Truth (see 29). No factual S3 IP
+available to run `ip route get`. No routes added.

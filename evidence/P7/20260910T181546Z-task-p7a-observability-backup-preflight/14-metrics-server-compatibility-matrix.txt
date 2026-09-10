@@ -1,0 +1,26 @@
+=== Metrics Server v0.8.1 README (compatibility) ===
+# Kubernetes Metrics Server
+Metrics Server is a scalable, efficient source of container resource metrics for Kubernetes
+Metrics Server collects resource metrics from Kubelets and exposes them in Kubernetes apiserver through [Metrics API]
+- Scalable support up to 5,000 node clusters.
+[Metrics API]: https://github.com/kubernetes/metrics
+[Horizontal Pod Autoscaler]: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+[Vertical Pod Autoscaler]: https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/
+- Non-Kubernetes clusters
+For unsupported use cases, check out full monitoring solutions like [Prometheus](https://github.com/prometheus/prometheus).
+[Horizontal Autoscaling]: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+[Vertical Autoscaling]: https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/
+distributions. Please ensure that your cluster distribution supports these requirements before using Metrics Server:
+- Container runtime must implement a [container metrics RPCs] (or have [cAdvisor] support)
+- Network should support following communication:
+  - Control plane to Metrics Server. Control plane node needs to reach Metrics Server's pod IP and port 10250 (or node IP and custom port if `hostNetwork` is enabled). Read more about [control plane to node communication](https://kubernetes.io/docs/concepts/architecture/control-plane-node-communication/#control-plane-to-node).
+[reachable from kube-apiserver]: https://kubernetes.io/docs/concepts/architecture/master-node-communication/#master-to-cluster
+[enable an aggregation layer]: https://kubernetes.io/docs/tasks/access-kubernetes-api/configure-aggregation-layer/
+[authentication and authorization]: https://kubernetes.io/docs/reference/access-authn-authz/kubelet-authn-authz/
+[container metrics RPCs]: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-node/cri-container-stats.md
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+Installation instructions for previous releases can be found in [Metrics Server releases](https://github.com/kubernetes-sigs/metrics-server/releases).
+### Compatibility Matrix
+Metrics Server | Metrics API group/version | Supported Kubernetes version
+0.8.x          | `metrics.k8s.io/v1beta1`  | 1.31+
+*Kubernetes versions lower than v1.16 require passing the `--authorization-always-allow-paths=/livez,/readyz` command line flag

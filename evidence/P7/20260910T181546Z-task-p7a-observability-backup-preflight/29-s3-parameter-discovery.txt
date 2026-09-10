@@ -1,0 +1,17 @@
+# TASK-P7A — S3 Parameter Discovery
+
+Method: repository search for backup contract keys (s3_endpoint, bucket, region,
+object_lock, credentials_secret_ref) in yaml/yml, excluding evidence/.
+
+Result: no factual S3 parameter values found in repository.
+
+S3_ENDPOINT = NOT_SPECIFIED
+S3_BUCKET = NOT_SPECIFIED
+S3_REGION = NOT_SPECIFIED
+OBJECT_LOCK_POLICY = NOT_SPECIFIED
+CREDENTIALS_SECRET_REF = NOT_SPECIFIED
+CA/TRUST_REFERENCE = NOT_SPECIFIED
+
+S3 PARAMETERS: INCOMPLETE (out-of-band dependency values not yet provided in Source of Truth).
+
+No guessing of endpoints/buckets/credentials. Credential material never enters Git.

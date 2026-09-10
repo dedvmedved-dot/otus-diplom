@@ -1,0 +1,14 @@
+# TASK-P7A — Velero Network Flow Plan (proposed, NOT applied)
+
+SOURCE            | DESTINATION       | PROTOCOL | PORT  | PURPOSE                          | REQUIRED_BY
+velero controller | kube-apiserver    | TCP      | 6443  | Kubernetes API backup/restore    | client-go
+velero controller | S3 endpoint       | TCP      | 443   | object store backup/restore      | BackupStorageLocation
+velero controller | kube-dns          | UDP/TCP  | 53    | DNS (S3/API hostname resolution) | coreDNS baseline
+node-agent (opt)  | kube-apiserver    | TCP      | 6443  | API (if FSB/data-mover enabled)  | node-agent
+node-agent (opt)  | S3 endpoint       | TCP      | 443   | file-system backup upload        | data mover
+
+Backup egress to S3 is expected to use VLAN143 (backup network, bond0.143).
+If the factual S3 endpoint is not reachable via VLAN143, route readiness must be
+re-verified at P7C implementation (S3 endpoint currently NOT specified — see 29).
+
+No NetworkPolicy is created in P7A.

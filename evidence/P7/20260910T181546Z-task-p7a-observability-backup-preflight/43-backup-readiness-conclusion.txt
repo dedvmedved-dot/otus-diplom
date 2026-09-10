@@ -1,0 +1,35 @@
+# TASK-P7A — Backup Readiness Conclusion (Track B)
+
+Velero 1.18.1 on Kubernetes 1.36.2.
+
+Compatibility (official velero-io/velero README main):
+  Velero 1.18: expected Kubernetes compatibility "1.18-latest"; tested on 1.33.7, 1.34.1, 1.35.0.
+  => VELERO_EXPECTED_COMPATIBILITY_WITH_K8S_1_36 = TRUE
+  => VELERO_UPSTREAM_TESTED_ON_K8S_1_36 = FALSE
+  => VELERO_K8S_1_36_RISK = EXPECTED_COMPATIBLE_BUT_NOT_UPSTREAM_TESTED
+  (later runtime canary mandatory)
+
+Immutable artifacts:
+  image = velero/velero:v1.18.1
+  linux/amd64 digest = sha256:2752a01188bd8f16572a76b3b2c4331a6a5337a5cbe65715c22ac7f91b31bfa8
+  release = v1.18.1 (2026-05-19)
+
+S3 backup target:
+  S3 PARAMETERS = INCOMPLETE (endpoint/bucket/region/object-lock/secret-ref NOT specified)
+  S3 ROUTE / DNS / TCP / TLS / OBJECT_LOCK = NOT_VERIFIED (no factual endpoint)
+  Backup VLAN143 = PRESENT on all 3 nodes (bond0.143 172.30.143.101/102/103)
+
+Object-store plugin:
+  VELERO_OBJECT_STORE_PLUGIN_REQUIRED = velero-plugin-for-aws (pending factual S3 target)
+  PLUGIN_VERSION_PINNED_IN_SOT = NO
+  ARCHITECT_DECISION_REQUIRED = YES
+
+CSI snapshot:
+  VolumeSnapshot CRDs / snapshot-controller / VolumeSnapshotClass ABSENT.
+  LINSTOR CSI snapshot workflow NOT verified. CSI snapshot backup unavailable today.
+
+BACKUP_READINESS = BLOCKED
+BACKUP_REASON = S3 target parameters are not specified in Source of Truth (endpoint,
+  bucket, region, object-lock, secret ref), the object-store plugin version is not
+  pinned (Architect decision required), and CSI snapshot API is absent on the cluster.
+  Velero 1.18.1 itself is expected-compatible with Kubernetes 1.36.2 (untested upstream).

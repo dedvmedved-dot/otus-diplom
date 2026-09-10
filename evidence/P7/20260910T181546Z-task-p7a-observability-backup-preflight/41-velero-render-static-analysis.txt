@@ -1,0 +1,25 @@
+# TASK-P7A — Velero Static Analysis (RBAC/security, from v1.18.1 release + docs)
+
+Image: velero/velero:v1.18.1 (linux/amd64 digest sha256:2752a01188bd8f16572a76b3b2c4331a6a5337a5cbe65715c22ac7f91b31bfa8)
+
+Components (Velero 1.18):
+  - Deployment velero (controller) in velero namespace
+  - node-agent DaemonSet (for file-system backup / data-mover, only if enabled)
+  - data-mover (if enabled for Kopia-based data mover)
+
+RBAC (broad by design, cluster-wide backup):
+  - ClusterRole velero + cluster-admin-like aggregation to backup/restore arbitrary
+    cluster resources; read/write across namespaces.
+  - Object-store plugin (velero-plugin-for-aws) adds BackupStorageLocation /
+    VolumeSnapshotLocation credentials handling via Secrets.
+
+Security considerations (flag, not decision):
+  - node-agent / data-mover require privileged/hostPath access (higher risk) — only
+    if filesystem/data-mover backup modes are selected (see 40).
+  - CSI snapshot mode uses CSI driver RBAC (no node-agent) — lower risk, but currently
+    unavailable on this cluster (snapshot API absent — see 39).
+  - Velero controller needs Secret access for cloud credentials (credentials_secret_ref).
+
+No Velero deployment is performed in P7A (read-only preflight). Above is a
+documentation-level analysis; exact rendered RBAC requires the install manifest
+which is deferred to P7C implementation (Architect decision).

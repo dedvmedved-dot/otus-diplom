@@ -1,0 +1,64 @@
+# TASK-P7A — Backup Strategy Decision Matrix (options documented, NOT selected)
+
+A. Kubernetes object backup only (Velero, no volume)
+   protected: cluster/namespace objects (Deployments, Services, ConfigMaps, CRDs, etc.)
+   not protected: persistent volume data (LINSTOR/DRBD)
+   dependencies: Velero + object-store plugin + S3 target
+   consistency: object-level (no data)
+   LINSTOR/DRBD: not touched
+   S3: required (object storage only)
+   restore: objects only
+   security: minimal (no node filesystem/CSI access)
+   complexity: low
+
+B. CSI snapshot-based backup (Velero CSI snapshot)
+   protected: PV data via CSI VolumeSnapshot
+   not protected: application-consistent DB state (unless quiesced)
+   dependencies: VolumeSnapshot CRDs + snapshot-controller + VolumeSnapshotClass +
+     LINSTOR CSI snapshot support + S3
+   consistency: crash-consistent (unless pre/post hooks)
+   LINSTOR/DRBD: uses LINSTOR CSI snapshot capability
+   S3: required
+   restore: volume snapshot restore
+   security: CSI driver snapshot RBAC
+   complexity: medium
+   NOTE: currently NOT available (snapshot API + snapshot-controller + VSC absent — see 39)
+
+C. Velero node-agent / file-system backup (Restic/Kopia FSB)
+   protected: PV data via filesystem copy (hostPath-style)
+   not protected: raw block volumes / DB consistency (without quiesce)
+   dependencies: node-agent DaemonSet + S3
+   consistency: file-level
+   LINSTOR/DRBD: reads through mounted volumes (extra I/O load)
+   S3: required
+   restore: file restore
+   security: node-agent privileged/root + hostPath mount (higher risk)
+   complexity: medium-high
+
+D. Velero data-mover backup (Kopia-based data mover)
+   protected: PV data via snapshot + mover
+   not protected: DB consistency (without quiesce)
+   dependencies: node-agent + data-mover + snapshot (or direct) + S3
+   consistency: depends on path
+   LINSTOR/DRBD: depends on snapshot path
+   S3: required
+   restore: data-mover restore
+   security: data-mover pods
+   complexity: high
+
+E. CloudNativePG/Barman application-consistent PostgreSQL backup
+   protected: PostgreSQL WAL/base backups (application-consistent)
+   not protected: non-PG data
+   dependencies: CloudNativePG + Barman + S3 (P8 scope, NOT P7A)
+   consistency: application-consistent
+   LINSTOR/DRBD: decoupled from PV layer
+   S3: required (or Barman target)
+   restore: PITR
+   security: DB-level credentials
+   complexity: high
+
+Separate responsibilities (do NOT conflate):
+  - Kubernetes object recovery -> A
+  - persistent-volume recovery -> B/C/D
+  - application-consistent PostgreSQL recovery -> E
+Velero volume backup does NOT replace PostgreSQL application-consistent backup.

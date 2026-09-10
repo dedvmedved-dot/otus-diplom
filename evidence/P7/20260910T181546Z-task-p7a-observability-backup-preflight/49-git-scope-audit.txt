@@ -1,0 +1,5 @@
+=== 49-git-scope-audit ===
+?? ansible/playbooks/p7a-final-readonly-verify.yml
+?? ansible/tests/p7a_verifier_negative_tests.py
+?? evidence/P7/
+--- allowed only check ---

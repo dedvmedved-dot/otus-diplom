@@ -1,0 +1,6 @@
+--- storageclass ---
+NAME         PROVISIONER              RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+piraeus-r2   linstor.csi.linbit.com   Delete          WaitForFirstConsumer   true                   8d
+--- csidrivers ---
+NAME                     ATTACHREQUIRED   PODINFOONMOUNT   STORAGECAPACITY   TOKENREQUESTS   REQUIRESREPUBLISH   MODES        AGE
+linstor.csi.linbit.com   true             true             true              <unset>         false               Persistent   9d

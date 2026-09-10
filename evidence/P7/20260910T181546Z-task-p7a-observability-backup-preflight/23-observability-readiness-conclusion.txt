@@ -1,0 +1,37 @@
+# TASK-P7A — Observability Readiness Conclusion (Track A)
+
+Metrics Server 0.8.1 on Kubernetes 1.36.2.
+
+Compatibility:
+  Metrics Server 0.8.x -> metrics.k8s.io/v1beta1 -> Kubernetes 1.31+ (official README v0.8.1).
+  Kubernetes 1.36.2 >= 1.31 => COMPATIBLE (no conflict).
+
+Immutable artifacts:
+  image = registry.k8s.io/metrics-server/metrics-server:v0.8.1
+  linux/amd64 digest = sha256:6231fb0a1ffab76c92ab880f51a0d11b290f688373647bcedff85af025dfd8a9
+  manifest components.yaml SHA256 = 4a672c4891902573a3ff753cece5de1bf1f55dd053403dfec39df9d1636b7ff1
+  release = v0.8.1 (2026-01-29)
+
+Metrics API preexisting state: ABSENT (no apiservice v1beta1.metrics.k8s.io).
+
+Kubelet secure endpoint:
+  authn: anonymous=false, webhook=true, x509 (clientCA=/etc/kubernetes/pki/ca.crt)
+  authz: Webhook (mode=Node,RBAC)
+  serving cert: self-signed per-node CA (issuer=CN=node-01-ca), SAN=DNS:node-01 (NO IP)
+  => KUBELET_TLS_READINESS = BLOCKED_SELF_SIGNED_SERVING_CERT_NO_IP_SAN
+     Metrics Server 0.8.1 uses --kubelet-preferred-address-types=InternalIP (secure path);
+     serving cert lacks the node IP SAN and is not signed by the cluster CA, so
+     secure TLS verification would fail. --kubelet-insecure-tls is forbidden.
+
+Aggregation layer:
+  proxy-client-cert/key, requestheader-client-ca-file, requestheader-allowed-names,
+  requestheader-* headers all present (standard kubeadm) => AGGREGATION_LAYER_READINESS=READY.
+
+Static analysis (components.yaml v0.8.1): runAsNonRoot, readOnlyRootFilesystem,
+  no hostNetwork/hostPath/privileged, ClusterRole system:metrics-server + auth-delegator.
+
+OBSERVABILITY_READINESS = BLOCKED
+OBSERVABILITY_REASON = Kubelet serving certificate is self-signed per-node (SAN=DNS:node-01,
+  no IP) and would fail Metrics Server secure TLS; enabling serverTLSBootstrap
+  (cluster-CA-signed serving cert) requires control-plane change -> Architect decision.
+  All other preconditions (compatibility, digest, aggregation, RBAC) are READY.

@@ -1,0 +1,5 @@
+OBJECT_LOCK_ENABLED=NOT_VERIFIED
+OBJECT_LOCK_RETENTION=NOT_VERIFIED
+VERSIONING=NOT_VERIFIED
+
+Reason: S3 endpoint/bucket not specified; object-lock policy not in Source of Truth.

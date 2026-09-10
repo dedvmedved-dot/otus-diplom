@@ -1,0 +1,7 @@
+S3_DNS=NOT_VERIFIED
+S3_TCP=NOT_VERIFIED
+S3_TLS=NOT_VERIFIED
+S3_CA_MODEL=UNKNOWN
+
+Reason: S3 endpoint/hostname not specified. No safe probe possible. No bucket
+enumeration/writes/uploads/deletes performed.

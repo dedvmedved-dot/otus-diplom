@@ -1,0 +1,82 @@
+=== 45-p7a-negative-test-harness ===
+COMMAND: python3 ansible/tests/p7a_verifier_negative_tests.py
+--- TEST 01: wrong Kubernetes version ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       AssertionError: k8s version drift
+  outcome:         OK
+--- TEST 02: node count != 3 ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       AssertionError: node count != 3: 2
+  outcome:         OK
+--- TEST 03: one node NotReady ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       AssertionError: node node-01 not Ready
+  outcome:         OK
+--- TEST 04: P6B marker absent (metallb speaker != 3) ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       AssertionError: P6B preserved check failed
+  outcome:         OK
+--- TEST 05: P6C marker absent (envoy not ready) ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       AssertionError: P6C preserved check failed
+  outcome:         OK
+--- TEST 06: P6D marker absent (route missing) ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       AssertionError: P6D route not persistent
+  outcome:         OK
+--- TEST 07: metrics_server lock != 0.8.1 ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       AssertionError: metrics_server lock != 0.7.2
+  outcome:         OK
+--- TEST 08: velero lock != 1.18.1 ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       AssertionError: velero lock != 1.17.0
+  outcome:         OK
+--- TEST 09: Metrics Server unexpected object present ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       AssertionError: unexpected metrics-server deployment: 1
+  outcome:         OK
+--- TEST 10: Velero unexpected object present ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       AssertionError: unexpected velero deployment: 1
+  outcome:         OK
+--- TEST 11: query non-zero rc ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       AssertionError: query failed rc=1
+  outcome:         OK
+--- TEST 12: malformed JSON ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+  outcome:         OK
+--- TEST 13: missing items list ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       AssertionError: deploy invalid items payload
+  outcome:         OK
+--- TEST 14: bond0.143 missing on one node ---
+  expected result: FAIL
+  actual result:   FAIL
+  assertion:       AssertionError: bond0.143 missing/wrong
+  outcome:         OK
+--- TEST 15: clean fixture ---
+  expected result: PASS
+  actual result:   PASS
+  outcome:         OK
+
+TESTS_TOTAL=15
+TESTS_EXPECTED_RESULT_MATCH=15
+TESTS_FAILED=0
+HARNESS_EXIT=0
+ACTUAL_HARNESS_EXIT=0
