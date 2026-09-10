@@ -1,0 +1,30 @@
+# TASK-P7B1 — Runtime Mutation Audit
+
+Authorized mutations:
+  kubelet_configmap_serverTLSBootstrap_change=1
+  node01_kubelet_config_change=1
+  node02_kubelet_config_change=1
+  node03_kubelet_config_change=1
+  node01_kubelet_restart=1
+  node02_kubelet_restart=1
+  node03_kubelet_restart=1
+  node01_serving_csr_approval=1 (csr-l9rnx)
+  node02_serving_csr_approval=1 (csr-lvshq)
+  node03_serving_csr_approval=1 (csr-gj9lg)
+
+Forbidden mutation counters (must be 0):
+  reboot_ops=0
+  network_mutation_ops=0
+  storage_mutation_ops=0
+  metallb_mutation_ops=0
+  envoy_mutation_ops=0
+  linstor_mutation_ops=0
+  drbd_mutation_ops=0
+  calico_mutation_ops=0
+  kubevip_mutation_ops=0
+  metrics_server_install_ops=0
+  velero_install_ops=0
+  p8_mutation_ops=0
+  blind_csr_approval_ops=0
+
+RESULT: PASS (only authorized rolling TLS remediation performed)

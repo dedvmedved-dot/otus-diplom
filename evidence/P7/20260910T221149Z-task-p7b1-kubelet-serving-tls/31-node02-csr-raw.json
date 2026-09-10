@@ -1,0 +1,30 @@
+{
+    "apiVersion": "certificates.k8s.io/v1",
+    "kind": "CertificateSigningRequest",
+    "metadata": {
+        "creationTimestamp": "2026-09-10T22:21:05Z",
+        "generateName": "csr-",
+        "name": "csr-lvshq",
+        "resourceVersion": "7275230",
+        "uid": "830fb000-acc2-4600-85bc-a864ced160eb"
+    },
+    "spec": {
+        "extra": {
+            "authentication.kubernetes.io/credential-id": [
+                "X509SHA256=ec0961bdf7d1641448c683a9047e84becd787b2e72dd8f4f923f2ee3d7e5e695"
+            ]
+        },
+        "groups": [
+            "system:nodes",
+            "system:authenticated"
+        ],
+        "request": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0KTUlJQkdqQ0J3Z0lCQURBMU1SVXdFd1lEVlFRS0V3eHplWE4wWlcwNmJtOWtaWE14SERBYUJnTlZCQU1URTNONQpjM1JsYlRwdWIyUmxPbTV2WkdVdE1ESXdXVEFUQmdjcWhrak9QUUlCQmdncWhrak9QUU1CQndOQ0FBVHRWQy81CmpqeHdlNnpVVDFtbkpqR0Z0QXNuMGZIWmtram9uMGdtOXNQdE1CTTEvbForMDVjSkVJYkFWL2ZHUWJCWUpmOEEKK294aWNaZVFJRU14eXAwVW9Dc3dLUVlKS29aSWh2Y05BUWtPTVJ3d0dqQVlCZ05WSFJFRUVUQVBnZ2R1YjJSbApMVEF5aHdTc0hveG1NQW9HQ0NxR1NNNDlCQU1DQTBjQU1FUUNJQmVTaWgvTEdYUzZmQzhVVnl3by80MDBQbXlCCk5SVDRlRFJzdEpBd2NraUJBaUExaGcvQkdFQTRqeWgydVV1OEFnUmRsNFVoa0ZqOFBUdFJ5eW9Qa0lFdkFRPT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUgUkVRVUVTVC0tLS0tCg==",
+        "signerName": "kubernetes.io/kubelet-serving",
+        "usages": [
+            "digital signature",
+            "server auth"
+        ],
+        "username": "system:node:node-02"
+    },
+    "status": {}
+}

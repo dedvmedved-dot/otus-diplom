@@ -1,0 +1,25 @@
+=== 58-p7b1-verifier-negative-tests ===
+--- one node NotReady --- expected=FAIL actual=FAIL (AssertionError: node-01 NotReady) => OK
+--- serverTLSBootstrap false --- expected=FAIL actual=FAIL (AssertionError: serverTLSBootstrap not true) => OK
+--- rotateCertificates false --- expected=FAIL actual=FAIL (AssertionError: rotateCertificates not true) => OK
+--- leaf not trusted by cluster CA --- expected=FAIL actual=FAIL (AssertionError: leaf not trusted by cluster CA) => OK
+--- missing InternalIP SAN --- expected=FAIL actual=FAIL (AssertionError: IP SAN missing/wrong) => OK
+--- wrong InternalIP SAN --- expected=FAIL actual=FAIL (AssertionError: IP SAN missing/wrong) => OK
+--- missing node DNS SAN --- expected=FAIL actual=FAIL (AssertionError: DNS SAN missing) => OK
+--- wrong DNS SAN --- expected=FAIL actual=FAIL (AssertionError: DNS SAN missing) => OK
+--- TLS by IP failure --- expected=FAIL actual=FAIL (AssertionError: TLS InternalIP failed) => OK
+--- TLS by hostname failure --- expected=FAIL actual=FAIL (AssertionError: TLS hostname failed) => OK
+--- unexpected pending serving CSR --- expected=FAIL actual=FAIL (AssertionError: unexpected pending serving CSR: 1) => OK
+--- P6B marker missing --- expected=FAIL actual=FAIL (AssertionError: P6B preserved failed) => OK
+--- P6C marker missing --- expected=FAIL actual=FAIL (AssertionError: P6C preserved failed) => OK
+--- P6D marker missing --- expected=FAIL actual=FAIL (AssertionError: P6D preserved failed) => OK
+--- P7A marker missing --- expected=FAIL actual=FAIL (AssertionError: P7A preserved failed) => OK
+--- README still says P0 IN PROGRESS --- expected=FAIL actual=FAIL (AssertionError: stale P0 status) => OK
+--- README falsely says P7B1 FINAL ACCEPTED --- expected=FAIL actual=FAIL (AssertionError: P7B1 IN PROGRESS missing) => OK
+--- malformed Kubernetes JSON --- expected=FAIL actual=FAIL (JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)) => OK
+--- command query failure --- expected=FAIL actual=FAIL (AssertionError: query failed rc=1) => OK
+--- clean fixture --- expected=PASS actual=PASS => OK
+
+TESTS_TOTAL=20
+TESTS_FAILED=0
+HARNESS_EXIT=0

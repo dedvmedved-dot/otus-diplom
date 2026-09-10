@@ -1,0 +1,8 @@
+=== 70-final-tree-audit ===
+ M README.md
+?? ansible/playbooks/p7b1-approve-kubelet-serving-csr.yml
+?? ansible/playbooks/p7b1-final-readonly-verify.yml
+?? ansible/tests/p7b1_csr_policy_tests.py
+?? ansible/tests/p7b1_verifier_negative_tests.py
+?? ansible/tools/
+?? evidence/P7/20260910T221149Z-task-p7b1-kubelet-serving-tls/

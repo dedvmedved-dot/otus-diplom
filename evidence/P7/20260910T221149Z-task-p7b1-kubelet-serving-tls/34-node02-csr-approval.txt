@@ -1,0 +1,3 @@
+certificatesigningrequest.certificates.k8s.io/csr-lvshq approved
+APPROVAL_EXIT=0
+CONDITION=True

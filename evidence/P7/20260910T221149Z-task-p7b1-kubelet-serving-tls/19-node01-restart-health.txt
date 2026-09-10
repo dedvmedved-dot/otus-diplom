@@ -1,0 +1,5 @@
+--- kubelet active ---
+active
+--- node status ---
+NAME      STATUS   ROLES           AGE   VERSION
+node-01   Ready    control-plane   17d   v1.36.2

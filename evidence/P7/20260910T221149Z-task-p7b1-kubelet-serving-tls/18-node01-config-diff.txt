@@ -1,0 +1,3 @@
+--- after ---
+rotateCertificates: true
+serverTLSBootstrap: true

@@ -1,0 +1,11 @@
+POLICY_RESULT=PASS
+NODE=node-02
+IP=172.30.140.102
+SIGNER=kubernetes.io/kubelet-serving
+USERNAME=system:node:node-02
+GROUPS=['system:nodes', 'system:authenticated']
+USAGES=['digital signature', 'server auth']
+CN=system:node:node-02
+O=system:nodes
+DNS_SANS=['node-02']
+IP_SANS=['172.30.140.102']

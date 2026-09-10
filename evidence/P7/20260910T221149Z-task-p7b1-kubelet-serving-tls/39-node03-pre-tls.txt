@@ -1,0 +1,4 @@
+rotateCertificates: true
+--- leaf ---
+subject=CN=node-03@1787618620
+issuer=CN=node-03-ca@1787618620

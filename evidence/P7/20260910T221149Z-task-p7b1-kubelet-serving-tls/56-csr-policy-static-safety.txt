@@ -1,0 +1,8 @@
+=== 56-csr-policy-static-safety ===
+kubectl: 0
+subprocess.run: 1
+approve: 0
+create: 0
+delete: 1
+patch: 0
+CHECKER_RUNTIME_MUTATION=0 (no kubectl mutation; only openssl req/x509 read + subprocess for parsing)

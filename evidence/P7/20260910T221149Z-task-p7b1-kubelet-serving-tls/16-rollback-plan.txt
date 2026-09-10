@@ -1,0 +1,30 @@
+# TASK-P7B1 — Rollback Plan (must exist before first mutation)
+
+Per-node rollback (only if a node fails to return Ready / TLS gate fails):
+
+1. Restore prior kubelet config value on the affected node:
+   - revert /var/lib/kubelet/config.yaml serverTLSBootstrap to previous state
+     (remove `serverTLSBootstrap: true`, or restore prior file).
+   - do NOT change rotateCertificates.
+
+2. If a global rollback becomes necessary, restore the kubelet-config ConfigMap
+   in kube-system to its prior state (kubectl apply the captured before-YAML).
+
+3. Restart ONLY the affected kubelet:
+   systemctl restart kubelet
+
+4. Verify kubelet returns to a valid serving TLS state (old node-local cert or
+   reissued serving cert — either must be a working serving cert path).
+
+5. Verify node returns Ready:
+   kubectl get node <node>
+
+6. Verify API/etcd health:
+   kubectl get --raw=/readyz?verbose ; kubectl -n kube-system get pods -l component=etcd
+
+7. Stop further rollout until Architect reviews the failure.
+
+Do NOT:
+- delete CSRs or issued certs merely to clean evidence;
+- preemptively execute rollback if success gates pass;
+- continue to another node after a rollback without Architect review.

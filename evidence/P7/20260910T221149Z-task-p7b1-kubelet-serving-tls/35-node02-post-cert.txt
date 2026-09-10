@@ -1,0 +1,6 @@
+subject=O=system:nodes, CN=system:node:node-02
+issuer=CN=kubernetes
+X509v3 Subject Alternative Name: 
+    DNS:node-02, IP Address:172.30.140.102
+--- verify vs cluster CA ---
+/var/lib/kubelet/pki/kubelet-server-current.pem: OK

@@ -1,0 +1,10 @@
+# TASK-P7B1 — All-node TLS matrix (post-rollout)
+
+| Node    | serverTLSBootstrap | rotateCertificates | Serving CSR | Cluster-CA Trust | DNS SAN | IP SAN | TLS by IP | TLS by Hostname |
+|---------|--------------------|--------------------|-------------|------------------|---------|--------|-----------|-----------------|
+| node-01 | true               | true               | Approved    | PASS             | PASS    | PASS   | PASS      | PASS            |
+| node-02 | true               | true               | Approved    | PASS             | PASS    | PASS   | PASS      | PASS            |
+| node-03 | true               | true               | Approved    | PASS             | PASS    | PASS   | PASS      | PASS            |
+
+All three nodes serve cluster-CA-trusted kubelet serving certs with correct
+DNS + InternalIP SAN. TLS verify return code 0 on InternalIP and hostname.

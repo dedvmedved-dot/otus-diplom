@@ -1,0 +1,53 @@
+---
+# TASK-P7B1 — Operator-invoked controlled kubelet-serving CSR approval.
+# NOT a daemon. NOT auto-approve-all. Approves ONE named CSR only after the
+# policy checker PASSes (fail-closed). No secret storage.
+#
+# Usage (operator-invoked):
+#   ansible-playbook -i inventory/hosts.yaml \
+#     -e ansible_ssh_pass=<...> \
+#     -e csr_name=<csr> -e node_name=<node> -e node_ip=<InternalIP> \
+#     ansible/playbooks/p7b1-approve-kubelet-serving-csr.yml
+
+- name: "P7B1 approve kubelet serving CSR (controlled)"
+  hosts: node-01
+  gather_facts: false
+  vars:
+    csr_name: "{{ csr_name | mandatory }}"
+    node_name: "{{ node_name | mandatory }}"
+    node_ip: "{{ node_ip | mandatory }}"
+
+  tasks:
+    - name: Fetch exact CSR JSON (read-only)
+      ansible.builtin.shell:
+        cmd: |
+          kubectl --kubeconfig /etc/kubernetes/admin.conf get csr "{{ csr_name }}" -o json > /tmp/p7b1-csr-"{{ csr_name }}".json
+          cat /tmp/p7b1-csr-"{{ csr_name }}".json | python3 -c 'import json,sys; d=json.load(sys.stdin); print("fetched", d["metadata"]["name"])'
+        executable: /bin/bash
+      changed_when: false
+
+    - name: Copy policy checker to node
+      ansible.builtin.copy:
+        src: "../tools/p7b1_validate_kubelet_serving_csr.py"
+        dest: /tmp/p7b1_validate_kubelet_serving_csr.py
+        mode: "0755"
+
+    - name: Validate CSR policy (FAIL-CLOSED)
+      ansible.builtin.shell:
+        cmd: |
+          python3 /tmp/p7b1_validate_kubelet_serving_csr.py \
+            /tmp/p7b1-csr-"{{ csr_name }}".json \
+            --node "{{ node_name }}" --ip "{{ node_ip }}"
+        executable: /bin/bash
+      register: policy
+      changed_when: false
+
+    - name: Approve EXACTLY this CSR (only after policy PASS)
+      ansible.builtin.shell:
+        cmd: |
+          kubectl --kubeconfig /etc/kubernetes/admin.conf certificate approve "{{ csr_name }}"
+          kubectl --kubeconfig /etc/kubernetes/admin.conf get csr "{{ csr_name }}" -o jsonpath='{.status.conditions[?(@.type=="Approved")].status}'
+        executable: /bin/bash
+      register: approval
+      when: policy.rc == 0
+      changed_when: true

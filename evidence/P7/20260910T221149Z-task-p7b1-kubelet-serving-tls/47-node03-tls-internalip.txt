@@ -1,0 +1,3 @@
+Verification: OK
+Verify return code: 0 (ok)
+COMMAND_EXIT=0

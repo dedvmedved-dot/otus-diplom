@@ -1,0 +1,3 @@
+certificatesigningrequest.certificates.k8s.io/csr-l9rnx approved
+APPROVAL_EXIT=0
+CONDITION=True

@@ -1,0 +1,9 @@
+# TASK-P7B1 — Metrics Server TLS readiness (no deployment)
+
+KUBELET_TLS_READINESS=READY
+OBSERVABILITY_TLS_BLOCKER_CLOSED=YES
+METRICS_SERVER_DEPLOYMENT_AUTHORIZED=NO
+
+All three kubelets now serve cluster-CA-trusted serving certs with correct
+DNS + InternalIP SAN. Secure Metrics Server TLS is now technically possible.
+Deployment remains unauthorized until P7B2 is authorized by Chief Architect.

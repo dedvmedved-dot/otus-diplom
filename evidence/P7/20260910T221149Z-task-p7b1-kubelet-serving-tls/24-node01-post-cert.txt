@@ -1,0 +1,12 @@
+lrwxrwxrwx 1 root root 59 сен 11 01:18 /var/lib/kubelet/pki/kubelet-server-current.pem -> /var/lib/kubelet/pki/kubelet-server-2026-09-11-01-18-54.pem
+--- leaf ---
+subject=O=system:nodes, CN=system:node:node-01
+issuer=CN=kubernetes
+serial=D964A2F5415701715BEA21848DC248D8
+notBefore=Sep 10 22:13:54 2026 GMT
+notAfter=Sep 10 22:13:54 2027 GMT
+sha256 Fingerprint=DA:64:CB:B8:BE:B8:64:2E:F7:BE:A7:A2:9D:75:49:D0:2B:B5:B0:29:64:92:4F:B4:51:78:2C:85:C8:DF:8E:DA
+X509v3 Subject Alternative Name: 
+    DNS:node-01, IP Address:172.30.140.101
+--- verify vs cluster CA ---
+/var/lib/kubelet/pki/kubelet-server-current.pem: OK

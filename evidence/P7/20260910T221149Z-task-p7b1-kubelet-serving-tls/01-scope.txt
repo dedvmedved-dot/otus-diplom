@@ -1,0 +1,13 @@
+# TASK-P7B1 — Scope
+
+PROJECT: OTUS Diplom / ПАК «Портал»
+REPOSITORY: dedvmedved-dot/otus-diplom
+STAGE: P7B1 (PARENT: P7A FINAL ACCEPTED)
+CLASSIFICATION: CONTROLLED PRODUCTION MUTATION / ROLLING TLS REMEDIATION /
+  EVIDENCE-FIRST / DOCUMENTATION SYNCHRONIZATION
+
+Approved direction: serverTLSBootstrap=true + controlled operator-invoked
+kubernetes.io/kubelet-serving CSR approval + rolling node-by-node execution +
+strict SAN/requester/usages validation + README status synchronization.
+
+P7B2/P7C/P8 NOT AUTHORIZED.

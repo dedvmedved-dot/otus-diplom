@@ -1,0 +1,3 @@
+NAME      STATUS   ROLES           AGE   VERSION
+node-03   Ready    control-plane   16d   v1.36.2
+ok

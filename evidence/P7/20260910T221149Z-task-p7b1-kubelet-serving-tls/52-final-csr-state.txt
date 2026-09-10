@@ -1,0 +1,4 @@
+NAME        AGE     SIGNERNAME                      REQUESTOR             REQUESTEDDURATION   CONDITION
+csr-gj9lg   84s     kubernetes.io/kubelet-serving   system:node:node-03   <none>              Approved,Issued
+csr-l9rnx   7m16s   kubernetes.io/kubelet-serving   system:node:node-01   <none>              Approved,Issued
+csr-lvshq   3m10s   kubernetes.io/kubelet-serving   system:node:node-02   <none>              Approved,Issued

@@ -1,0 +1,11 @@
+# TASK-P7B1 — Kubelet ConfigMap change plan
+
+Change: add `serverTLSBootstrap: true` to kubelet-config ConfigMap (.data.kubelet),
+preserving all other fields byte-for-byte. rotateCertificates: true already present
+and unchanged.
+
+Before (14-kubelet-configmap-before.txt): no serverTLSBootstrap field present.
+After (50-kubelet-configmap-after.txt): serverTLSBootstrap: true added.
+
+Method: read ConfigMap JSON, append `serverTLSBootstrap: true` to .data.kubelet if
+absent, kubectl apply. No other field touched.

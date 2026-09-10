@@ -1,0 +1,30 @@
+{
+    "apiVersion": "certificates.k8s.io/v1",
+    "kind": "CertificateSigningRequest",
+    "metadata": {
+        "creationTimestamp": "2026-09-10T22:22:51Z",
+        "generateName": "csr-",
+        "name": "csr-gj9lg",
+        "resourceVersion": "7275909",
+        "uid": "c4605f75-3d91-483a-8d2d-d1764c45b578"
+    },
+    "spec": {
+        "extra": {
+            "authentication.kubernetes.io/credential-id": [
+                "X509SHA256=216282fac613617b60c024c64532c1e8f2cc60f5217a6b4afb8e81194384e094"
+            ]
+        },
+        "groups": [
+            "system:nodes",
+            "system:authenticated"
+        ],
+        "request": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0KTUlJQkd6Q0J3Z0lCQURBMU1SVXdFd1lEVlFRS0V3eHplWE4wWlcwNmJtOWtaWE14SERBYUJnTlZCQU1URTNONQpjM1JsYlRwdWIyUmxPbTV2WkdVdE1ETXdXVEFUQmdjcWhrak9QUUlCQmdncWhrak9QUU1CQndOQ0FBU1ZNSFpiCnFBeU5jOWRjeXl0VE1LcGtOVTBaTUVTY1dvcVRtZ1I5QW81WlIwcWplT2ZQZDdVMGNnWDM5bC9acjlWRzh0RUwKQTR6bmt0TndEczB6OThZTW9Dc3dLUVlKS29aSWh2Y05BUWtPTVJ3d0dqQVlCZ05WSFJFRUVUQVBnZ2R1YjJSbApMVEF6aHdTc0hveG5NQW9HQ0NxR1NNNDlCQU1DQTBnQU1FVUNJUUNWekRad3k3MDJPUWJ1NFBudDBvNW03dzJKCjhLVGs0VEtVVHlONUtlTUtZUUlnVTZ3S0lkQnduMVZvQlRrd3Bic1o5eDRVK29ES2ZiNWI4YWI0OHJuV2lHcz0KLS0tLS1FTkQgQ0VSVElGSUNBVEUgUkVRVUVTVC0tLS0tCg==",
+        "signerName": "kubernetes.io/kubelet-serving",
+        "usages": [
+            "digital signature",
+            "server auth"
+        ],
+        "username": "system:node:node-03"
+    },
+    "status": {}
+}

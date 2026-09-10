@@ -1,0 +1,5 @@
+--- active ---
+active
+--- node ---
+NAME      STATUS   ROLES           AGE   VERSION
+node-02   Ready    control-plane   17d   v1.36.2
