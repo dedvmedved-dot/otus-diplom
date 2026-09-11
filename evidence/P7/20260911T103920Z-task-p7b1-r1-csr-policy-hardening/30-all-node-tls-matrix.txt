@@ -1,0 +1,11 @@
+# TASK-P7B1-R1 — All-node kubelet TLS matrix (read-only recheck)
+
+| Node    | serverTLSBootstrap | rotateCertificates | Issuer        | DNS SAN  | IP SAN          | verify cluster CA | TLS IP | TLS Hostname |
+|---------|--------------------|--------------------|---------------|----------|-----------------|-------------------|--------|--------------|
+| node-01 | true               | true               | CN=kubernetes | node-01  | 172.30.140.101  | OK                | PASS   | PASS         |
+| node-02 | true               | true               | CN=kubernetes | node-02  | 172.30.140.102  | OK                | PASS   | PASS         |
+| node-03 | true               | true               | CN=kubernetes | node-03  | 172.30.140.103  | OK                | PASS   | PASS         |
+
+All three kubelets still serve cluster-CA-trusted certs (issuer CN=kubernetes)
+with exact DNS + InternalIP SAN. P7B1 runtime remediation remains intact and was
+NOT repeated in R1.

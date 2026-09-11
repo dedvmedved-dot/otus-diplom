@@ -1,0 +1,4 @@
+# D4 — final cluster health evidence
+
+Historical P7B1 evidence dir immutable (not backfilled). R1 produces a fresh
+38-final-cluster-health.txt in this new directory.

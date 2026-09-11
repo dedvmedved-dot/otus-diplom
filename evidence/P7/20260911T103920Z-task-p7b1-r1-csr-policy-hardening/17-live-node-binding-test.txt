@@ -1,0 +1,6 @@
+# D3/D1 — live Node binding demonstration (live node node-01 / .101)
+
+1. matching CSR: PASS
+2. CSR asks .102: FAIL (IP SAN != [172.30.140.101]: ['172.30.140.102'])
+3. CSR username/CN node-02: FAIL (username != system:node:node-01: system:node:node-02)
+4. expected-node mismatch: FAIL (expected node node-02 != live node node-01)

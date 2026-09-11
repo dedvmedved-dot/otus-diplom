@@ -1,0 +1,7 @@
+# D2 — real PKCS#10 SAN enumeration
+
+valid DNS+IP only: PASS
+valid DNS+IP+URI: FAIL (unexpected SAN types: ['UniformResourceIdentifier'])
+valid DNS+IP+Email: FAIL (unexpected SAN types: ['RFC822Name'])
+valid DNS+IP+extra DNS: FAIL (DNS SAN != [node-01]: ['node-01', 'extra'])
+valid DNS+IP+extra IP: FAIL (IP SAN != [172.30.140.101]: ['172.30.140.101', '172.30.140.102'])

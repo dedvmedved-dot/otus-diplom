@@ -1,0 +1,6 @@
+# D2 — complete GeneralName parsing
+
+Before: parser extracted only DNS:/IP Address: and silently ignored URI/email/other.
+Fix: cryptography x509 parses the whole SAN extension; every GeneralName is classified
+by isinstance(DNSName/IPAddress); anything else (URI, RFC822 email, OtherName,
+DirectoryName, RegisteredID, unknown) is collected as other_sans and FAIL-CLOSED.

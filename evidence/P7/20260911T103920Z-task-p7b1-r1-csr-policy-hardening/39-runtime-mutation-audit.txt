@@ -1,0 +1,21 @@
+# TASK-P7B1-R1 — Runtime Mutation Audit
+
+kubectl_mutation_ops=0
+csr_approve_ops=0
+csr_deny_ops=0
+kubelet_config_mutation_ops=0
+kubelet_restart_ops=0
+certificate_mutation_ops=0
+network_mutation_ops=0
+storage_mutation_ops=0
+systemd_mutation_ops=0
+metrics_server_install_ops=0
+velero_install_ops=0
+p8_mutation_ops=0
+
+INFRASTRUCTURE_MUTATION=0
+
+R1 is STRICT READ-ONLY: only kubectl get/get --raw, openssl verify/x509, and
+read-only Ansible verifiers. No CSR approval, no kubelet change, no restart.
+
+RESULT: PASS

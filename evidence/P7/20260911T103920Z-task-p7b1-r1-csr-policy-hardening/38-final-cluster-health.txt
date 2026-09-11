@@ -1,0 +1,23 @@
+--- nodes ---
+NAME      STATUS   ROLES           AGE   VERSION
+node-01   Ready    control-plane   17d   v1.36.2
+node-02   Ready    control-plane   17d   v1.36.2
+node-03   Ready    control-plane   17d   v1.36.2
+--- readyz/livez ---
+okok--- etcd ---
+3
+--- kube-vip ---
+0
+--- calico ---
+3
+--- coredns ---
+2
+--- linstor ---
+17
+--- metallb ---
+4
+--- envoy ---
+1
+kube-vip-node-01                          1/1     Running   2 (40h ago)   17d
+kube-vip-node-02                          1/1     Running   2 (40h ago)   17d
+kube-vip-node-03                          1/1     Running   1 (16d ago)   17d

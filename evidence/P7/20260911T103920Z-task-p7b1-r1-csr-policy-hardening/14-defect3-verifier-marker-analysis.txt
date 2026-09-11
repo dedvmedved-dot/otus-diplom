@@ -1,0 +1,6 @@
+# D3 — verifier markers now backed by real checks
+
+Before: P7B1_P6D_PRESERVED / P7B1_P7A_PRESERVED printed unconditionally.
+Fix: P7B1 verifier now runs canonical p6d-final-readonly-verify.yml and
+p7a-final-readonly-verify.yml via ansible-playbook; markers emitted only if
+rc==0 AND required PASS marker present. rc!=0 / missing marker / malformed => FAIL.

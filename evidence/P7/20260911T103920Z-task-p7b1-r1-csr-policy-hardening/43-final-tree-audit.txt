@@ -1,0 +1,8 @@
+=== 43-final-tree-audit ===
+ M ansible/playbooks/p7b1-approve-kubelet-serving-csr.yml
+ M ansible/playbooks/p7b1-final-readonly-verify.yml
+ M ansible/tests/p7b1_csr_policy_tests.py
+ M ansible/tests/p7b1_verifier_negative_tests.py
+ M ansible/tools/p7b1_validate_kubelet_serving_csr.py
+?? ansible/tests/p7b1_approval_playbook_safety_tests.py
+?? evidence/P7/20260911T103920Z-task-p7b1-r1-csr-policy-hardening/

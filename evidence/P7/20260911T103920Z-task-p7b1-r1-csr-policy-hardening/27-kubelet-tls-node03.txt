@@ -1,0 +1,9 @@
+--- node-03 config ---
+rotateCertificates: true
+serverTLSBootstrap: true
+--- cert ---
+subject=O=system:nodes, CN=system:node:node-03
+issuer=CN=kubernetes
+    DNS:node-03, IP Address:172.30.140.103
+--- verify ---
+/var/lib/kubelet/pki/kubelet-server-current.pem: OK

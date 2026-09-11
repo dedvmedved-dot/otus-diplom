@@ -1,0 +1,3 @@
+No resources found
+--- pending kubelet-serving count ---
+0

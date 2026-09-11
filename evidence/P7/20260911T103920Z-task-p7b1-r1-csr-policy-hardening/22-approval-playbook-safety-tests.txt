@@ -1,0 +1,13 @@
+=== 22-approval-playbook-safety-tests ===
+--- default approve=false --- PASS
+--- no authoritative operator node_ip --- PASS
+--- live Node JSON is fetched --- PASS
+--- checker receives Node JSON --- PASS
+--- exact CSR name / no wildcard --- PASS
+--- foreign live-node/CSR IP mismatch fails --- PASS
+--- checker failure prevents approval (policy.rc==0 gate) --- PASS
+--- approve=true required (default false) --- PASS
+
+TESTS_TOTAL=8
+TESTS_FAILED=0
+HARNESS_EXIT=0

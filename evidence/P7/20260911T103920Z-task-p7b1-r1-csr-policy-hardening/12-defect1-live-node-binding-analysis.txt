@@ -1,0 +1,6 @@
+# D1 — live Node binding
+
+Before: approval workflow trusted operator-supplied node/IP values.
+Fix: checker now takes --node-json <node.json> (authoritative). Operator may supply
+only csr_name + node_name + approve. InternalIP is derived from Node.status.addresses.
+Fail-closed: kind!=Node, missing name, NotReady, 0/>1 InternalIP, invalid IP all FAIL.

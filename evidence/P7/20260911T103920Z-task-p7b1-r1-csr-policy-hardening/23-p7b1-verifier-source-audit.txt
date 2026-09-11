@@ -100,13 +100,13 @@
           SSHPASS_VAL=$(cat /etc/hermes/pak_root_pass.txt)
           export ANSIBLE_SSH_ARGS="-o ServerAliveInterval=10 -o ServerAliveCountMax=3"
           cd /root/otus-diplom
-          if ansible-playbook -i inventory/hosts.yaml -f 3 -e "ansible_ssh_pass=${SSHPASS_VAL}" -e "ansible_ssh_retries=10" ansible/playbooks/p6d-final-readonly-verify.yml -v > /tmp/p7b1-p6d-check.txt 2>&1; then
+          if ansible-playbook -i inventory/hosts.yaml -f 3 -e "ansible_ssh_pass=${SSHPASS_VAL}" -e "ansible_ssh_retries=10" ansible/playbooks/p6d-final-readonly-verify.yml > /tmp/p7b1-p6d-check.txt 2>&1; then
             grep -q 'P6D_FINAL_READONLY_VERIFIER_PASS' /tmp/p7b1-p6d-check.txt || { echo "P6D marker missing" >&2; exit 1; }
             echo "P7B1_P6D_PRESERVED"
           else
             echo "P6D verifier rc != 0" >&2; tail -20 /tmp/p7b1-p6d-check.txt >&2; exit 1
           fi
-          if ansible-playbook -i inventory/hosts.yaml -f 3 -e "ansible_ssh_pass=${SSHPASS_VAL}" -e "ansible_ssh_retries=10" ansible/playbooks/p7a-final-readonly-verify.yml -v > /tmp/p7b1-p7a-check.txt 2>&1; then
+          if ansible-playbook -i inventory/hosts.yaml -f 3 -e "ansible_ssh_pass=${SSHPASS_VAL}" -e "ansible_ssh_retries=10" ansible/playbooks/p7a-final-readonly-verify.yml > /tmp/p7b1-p7a-check.txt 2>&1; then
             grep -q 'P7A_FINAL_READONLY_VERIFIER_PASS' /tmp/p7b1-p7a-check.txt || { echo "P7A marker missing" >&2; exit 1; }
             echo "P7B1_P7A_PRESERVED"
           else

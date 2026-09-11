@@ -1,0 +1,12 @@
+# TASK-P7B1-R1 — Approval playbook dry-run safety
+
+default approve=false: YES (playbook vars: approve default false)
+live Node fetch: YES (kubectl get node -o json, authoritative InternalIP)
+policy required: YES (checker FAIL-CLOSED, --node-json authoritative)
+CSR approvals executed in R1: 0
+
+R1 is STRICT READ-ONLY. The approval playbook was NOT executed in approval mode
+against production. The `approve=true` path remains gated behind policy PASS and
+explicit operator flag; no CSR was approved in this task.
+
+Approval safety tests (22-approval-playbook-safety-tests.txt): 8/8 PASS.

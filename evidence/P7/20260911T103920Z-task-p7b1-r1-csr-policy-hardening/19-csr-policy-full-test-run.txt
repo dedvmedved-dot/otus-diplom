@@ -1,0 +1,82 @@
+=== 19-csr-policy-full-test-run ===
+POLICY_RESULT=PASS
+NODE=node-01
+INTERNAL_IP=172.30.140.101
+NODE_READY=YES
+SIGNER=kubernetes.io/kubelet-serving
+USERNAME=system:node:node-01
+CN=system:node:node-01
+O=system:nodes
+DNS_SANS=['node-01']
+IP_SANS=['172.30.140.101']
+OTHER_SAN_TYPES=[]
+--- valid node-01 + Node --- expected=PASS actual=PASS => OK
+POLICY_RESULT=PASS
+NODE=node-02
+INTERNAL_IP=172.30.140.102
+NODE_READY=YES
+SIGNER=kubernetes.io/kubelet-serving
+USERNAME=system:node:node-02
+CN=system:node:node-02
+O=system:nodes
+DNS_SANS=['node-02']
+IP_SANS=['172.30.140.102']
+OTHER_SAN_TYPES=[]
+--- valid node-02 + Node --- expected=PASS actual=PASS => OK
+POLICY_RESULT=PASS
+NODE=node-03
+INTERNAL_IP=172.30.140.103
+NODE_READY=YES
+SIGNER=kubernetes.io/kubelet-serving
+USERNAME=system:node:node-03
+CN=system:node:node-03
+O=system:nodes
+DNS_SANS=['node-03']
+IP_SANS=['172.30.140.103']
+OTHER_SAN_TYPES=[]
+--- valid node-03 + Node --- expected=PASS actual=PASS => OK
+--- wrong signer --- expected=FAIL actual=FAIL (AssertionError: signerName != kubernetes.io/kubelet-serving: kubernetes.io/kube-apiserver-client-kubelet) => OK
+--- wrong username --- expected=FAIL actual=FAIL (AssertionError: username != system:node:node-01: system:node:node-02) => OK
+--- missing system:nodes group --- expected=FAIL actual=FAIL (AssertionError: groups missing system:nodes: ['system:authenticated']) => OK
+--- wrong CN --- expected=FAIL actual=FAIL (AssertionError: CN != system:node:node-01: system:node:node-02) => OK
+--- wrong O --- expected=FAIL actual=FAIL (AssertionError: O != system:nodes: evil) => OK
+--- missing server auth --- expected=FAIL actual=FAIL (AssertionError: usages missing 'server auth') => OK
+--- client auth present --- expected=FAIL actual=FAIL (AssertionError: unexpected usages: {'client auth'}) => OK
+--- missing DNS SAN --- expected=FAIL actual=FAIL (AssertionError: DNS SAN != [node-01]: []) => OK
+--- missing IP SAN --- expected=FAIL actual=FAIL (AssertionError: IP SAN != [172.30.140.101]: []) => OK
+--- foreign DNS SAN --- expected=FAIL actual=FAIL (AssertionError: DNS SAN != [node-01]: ['node-02']) => OK
+--- foreign IP SAN --- expected=FAIL actual=FAIL (AssertionError: IP SAN != [172.30.140.101]: ['172.30.140.102']) => OK
+--- wildcard DNS SAN --- expected=FAIL actual=FAIL (AssertionError: DNS SAN != [node-01]: ['*.example.com']) => OK
+--- extra DNS SAN --- expected=FAIL actual=FAIL (AssertionError: DNS SAN != [node-01]: ['node-01', 'extra']) => OK
+--- extra IP SAN --- expected=FAIL actual=FAIL (AssertionError: IP SAN != [172.30.140.101]: ['172.30.140.101', '172.30.140.102']) => OK
+--- real URI SAN --- expected=FAIL actual=FAIL (AssertionError: unexpected SAN types: ['UniformResourceIdentifier']) => OK
+--- real Email SAN --- expected=FAIL actual=FAIL (AssertionError: unexpected SAN types: ['RFC822Name']) => OK
+--- valid DNS/IP + URI --- expected=FAIL actual=FAIL (AssertionError: unexpected SAN types: ['UniformResourceIdentifier']) => OK
+--- valid DNS/IP + Email --- expected=FAIL actual=FAIL (AssertionError: unexpected SAN types: ['RFC822Name']) => OK
+--- malformed PKCS#10 --- expected=FAIL actual=FAIL (AssertionError: cannot parse PKCS#10: Unable to load PEM file. See https://cryptography.io/en/latest/faq/#why-can-t-i-import-my-pem-file for more details. MalformedFraming) => OK
+--- malformed CSR JSON --- expected=FAIL actual=FAIL (AssertionError: CSR must be a JSON object) => OK
+--- malformed Node JSON --- expected=FAIL actual=FAIL (AssertionError: Node JSON must be an object) => OK
+--- Node missing kind --- expected=FAIL actual=FAIL (AssertionError: Node JSON must be an object) => OK
+--- Node NotReady --- expected=FAIL actual=FAIL (AssertionError: Node node-01 not Ready) => OK
+--- Node without InternalIP --- expected=FAIL actual=FAIL (AssertionError: Node node-01 has no InternalIP) => OK
+--- multiple InternalIP --- expected=FAIL actual=FAIL (AssertionError: Node node-01 has ambiguous InternalIPs: ['172.30.140.101', '172.30.140.199']) => OK
+--- expected node mismatch --- expected=FAIL actual=FAIL (AssertionError: expected node node-02 != live node node-01) => OK
+--- CSR IP differs from live Node --- expected=FAIL actual=FAIL (AssertionError: IP SAN != [172.30.140.101]: ['172.30.140.102']) => OK
+--- CSR claims another node --- expected=FAIL actual=FAIL (AssertionError: username != system:node:node-01: system:node:node-02) => OK
+--- unknown SAN type (OtherName) --- expected=FAIL actual=FAIL (AssertionError: unexpected SAN types: ['OtherName']) => OK
+POLICY_RESULT=PASS
+NODE=node-01
+INTERNAL_IP=172.30.140.101
+NODE_READY=YES
+SIGNER=kubernetes.io/kubelet-serving
+USERNAME=system:node:node-01
+CN=system:node:node-01
+O=system:nodes
+DNS_SANS=['node-01']
+IP_SANS=['172.30.140.101']
+OTHER_SAN_TYPES=[]
+--- canonical clean --- expected=PASS actual=PASS => OK
+
+TESTS_TOTAL=33
+TESTS_FAILED=0
+HARNESS_EXIT=0

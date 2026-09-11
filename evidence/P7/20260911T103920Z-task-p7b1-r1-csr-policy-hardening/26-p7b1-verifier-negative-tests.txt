@@ -1,0 +1,27 @@
+=== 26-p7b1-verifier-negative-tests ===
+--- P6D command rc != 0 --- expected=FAIL actual=FAIL (AssertionError: canonical verifier rc != 0: 1) => OK
+--- P6D PASS marker missing --- expected=FAIL actual=FAIL (AssertionError: marker missing: P6D_FINAL_READONLY_VERIFIER_PASS) => OK
+--- P7A command rc != 0 --- expected=FAIL actual=FAIL (AssertionError: canonical verifier rc != 0: 2) => OK
+--- P7A PASS marker missing --- expected=FAIL actual=FAIL (AssertionError: marker missing: P7A_FINAL_READONLY_VERIFIER_PASS) => OK
+--- one node NotReady --- expected=FAIL actual=FAIL (AssertionError: node-01 NotReady) => OK
+--- serverTLSBootstrap false --- expected=FAIL actual=FAIL (AssertionError: serverTLSBootstrap not true) => OK
+--- rotateCertificates false --- expected=FAIL actual=FAIL (AssertionError: rotateCertificates not true) => OK
+--- leaf not cluster-CA trusted --- expected=FAIL actual=FAIL (AssertionError: leaf not cluster-CA trusted) => OK
+--- missing DNS SAN --- expected=FAIL actual=FAIL (AssertionError: DNS SAN missing) => OK
+--- wrong DNS SAN --- expected=FAIL actual=FAIL (AssertionError: DNS SAN missing) => OK
+--- missing InternalIP SAN --- expected=FAIL actual=FAIL (AssertionError: IP SAN missing/wrong) => OK
+--- wrong InternalIP SAN --- expected=FAIL actual=FAIL (AssertionError: IP SAN missing/wrong) => OK
+--- TLS IP failure --- expected=FAIL actual=FAIL (AssertionError: TLS IP failure) => OK
+--- TLS hostname failure --- expected=FAIL actual=FAIL (AssertionError: TLS hostname failure) => OK
+--- unexpected pending serving CSR --- expected=FAIL actual=FAIL (AssertionError: pending serving CSR: 1) => OK
+--- malformed Node JSON --- expected=FAIL actual=FAIL (JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)) => OK
+--- malformed CSR JSON --- expected=FAIL actual=FAIL (JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)) => OK
+--- README stale P0 --- expected=FAIL actual=FAIL (AssertionError: stale P0) => OK
+--- README falsely P7B1 FINAL ACCEPTED --- expected=FAIL actual=FAIL (AssertionError: P7B1 IN PROGRESS missing) => OK
+--- README falsely authorizes P7B2 --- expected=FAIL actual=FAIL (AssertionError: P7B2 NOT AUTHORIZED missing) => OK
+--- query rc != 0 --- expected=FAIL actual=FAIL (AssertionError: canonical verifier rc != 0: 1) => OK
+--- clean fixture --- expected=PASS actual=PASS => OK
+
+TESTS_TOTAL=22
+TESTS_FAILED=0
+HARNESS_EXIT=0
