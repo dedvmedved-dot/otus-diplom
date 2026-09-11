@@ -1,0 +1,7 @@
+TASK=TASK-P7B1-R2
+BASELINE=7466e7c569319f5841acf849e50a695ffce88eb8
+MODE=STRICT_READ_ONLY_RUNTIME
+RUNTIME_MUTATION_AUTHORIZED=NO
+METRICS_SERVER_DEPLOYMENT_AUTHORIZED=NO
+P7B2_AUTHORIZED=NO
+AUTHORIZED_PATHS=ansible/playbooks/p7b1-final-readonly-verify.yml; ansible/tests/p7b1_verifier_negative_tests.py; ansible/tests/p7b1_verifier_portability_tests.py; ansible/tests/p7b1_approval_playbook_safety_tests.py; evidence/P7/<RUN_ID>-task-p7b1-r2-portability-evidence-closure/**

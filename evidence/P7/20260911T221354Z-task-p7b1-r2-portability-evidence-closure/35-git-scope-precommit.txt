@@ -1,0 +1,6 @@
+=== 35-git-scope-precommit ===
+ M ansible/playbooks/p7b1-final-readonly-verify.yml
+ M ansible/tests/p7b1_approval_playbook_safety_tests.py
+?? ansible/tests/p7b1_verifier_portability_tests.py
+?? evidence/P7/20260911T221354Z-task-p7b1-r2-portability-evidence-closure/
+ONLY_AUTHORIZED_PATHS

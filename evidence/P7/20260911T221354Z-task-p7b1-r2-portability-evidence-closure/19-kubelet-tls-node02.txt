@@ -1,0 +1,7 @@
+node-02:
+rotateCertificates: true
+serverTLSBootstrap: true
+subject=O=system:nodes, CN=system:node:node-02
+issuer=CN=kubernetes
+    DNS:node-02, IP Address:172.30.140.102
+/var/lib/kubelet/pki/kubelet-server-current.pem: OK

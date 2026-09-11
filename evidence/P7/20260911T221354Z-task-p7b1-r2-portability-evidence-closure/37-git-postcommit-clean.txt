@@ -1,0 +1,3 @@
+=== 37-git-postcommit-clean ===
+LIMITATION: this file is committed within the same one-commit transaction and therefore cannot truthfully contain post-commit clean-worktree state without self-reference.
+The genuine post-commit clean state is reported externally in the final Hermes execution report and independently verified by Connector (git status --short after push).

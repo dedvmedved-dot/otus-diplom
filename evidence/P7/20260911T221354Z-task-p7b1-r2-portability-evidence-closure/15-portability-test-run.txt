@@ -1,0 +1,16 @@
+=== 15-portability-test-run ===
+--- /etc/hermes path absent --- PASS
+--- pak_root_pass absent --- PASS
+--- ansible_ssh_pass absent --- PASS
+--- SSHPASS absent --- PASS
+--- no password on command line --- PASS
+--- no embedded credential --- PASS
+--- P6D real check required --- PASS
+--- P7A real check required --- PASS
+--- P6D failure propagates --- PASS
+--- P7A failure propagates --- PASS
+--- final PASS requires both real checks --- PASS
+
+TESTS_TOTAL=11
+TESTS_FAILED=0
+HARNESS_EXIT=0

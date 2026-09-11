@@ -1,0 +1,10 @@
+# TASK-P7B1-R2 — All-node kubelet TLS matrix (fresh recheck)
+
+| Node    | serverTLSBootstrap | rotateCertificates | Cluster CA | DNS SAN  | IP SAN          | TLS IP | TLS hostname |
+|---------|--------------------|--------------------|------------|----------|-----------------|--------|--------------|
+| node-01 | true               | true               | PASS       | node-01  | 172.30.140.101  | PASS   | PASS         |
+| node-02 | true               | true               | PASS       | node-02  | 172.30.140.102  | PASS   | PASS         |
+| node-03 | true               | true               | PASS       | node-03  | 172.30.140.103  | PASS   | PASS         |
+
+All three kubelets serve cluster-CA-trusted certs (issuer CN=kubernetes) with
+exact DNS + InternalIP SAN (verified live in 18/19/20).

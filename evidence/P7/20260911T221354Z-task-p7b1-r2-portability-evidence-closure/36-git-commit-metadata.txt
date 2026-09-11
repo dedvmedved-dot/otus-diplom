@@ -1,0 +1,10 @@
+# TASK-P7B1-R2 — Git commit metadata
+
+BASELINE_SHA=7466e7c569319f5841acf849e50a695ffce88eb8
+PARENT_SHA=7466e7c569319f5841acf849e50a695ffce88eb8
+COMMIT_COUNT_FROM_BASELINE=1
+EXPECTED_COMMIT_MESSAGE=TASK-P7B1-R2: close verifier portability and final evidence contract
+
+Note: the exact NEW SHA is intentionally NOT self-referenced here (it does not yet
+exist at write time). The NEW SHA is reported externally in the final Hermes
+execution report and independently verified by Connector.
