@@ -1,0 +1,8 @@
+# TASK-P7B2 — Post-push report note
+
+This file records the deployment is pushed and awaiting Connector audit.
+The exact NEW SHA, post-push worktree cleanliness, and push success are reported
+externally in the final Hermes execution report (not self-referenced here).
+
+AUTHORIZED_P7B2_MUTATION=YES
+UNAUTHORIZED_MUTATIONS=0

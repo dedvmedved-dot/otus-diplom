@@ -1,0 +1,7 @@
+=== 45-recovery-after ===
+poll 1: metrics-server-6d49fbf5b8-trvfj uid=78139ce6-1945-4d90-9f31-262c36cc261f ready=False
+poll 2: metrics-server-6d49fbf5b8-trvfj uid=78139ce6-1945-4d90-9f31-262c36cc261f ready=False
+poll 3: metrics-server-6d49fbf5b8-trvfj uid=78139ce6-1945-4d90-9f31-262c36cc261f ready=False
+poll 4: metrics-server-6d49fbf5b8-trvfj uid=78139ce6-1945-4d90-9f31-262c36cc261f ready=False
+poll 5: metrics-server-6d49fbf5b8-trvfj uid=78139ce6-1945-4d90-9f31-262c36cc261f ready=True
+POD_RECREATED=YES (new uid=78139ce6-1945-4d90-9f31-262c36cc261f != old uid=ed70329d-9ce6-4716-8908-105bd929c1ba)

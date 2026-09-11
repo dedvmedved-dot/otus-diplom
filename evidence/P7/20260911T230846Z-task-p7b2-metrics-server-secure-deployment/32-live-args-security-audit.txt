@@ -1,0 +1,9 @@
+--cert-dir=/tmp
+--secure-port=10250
+--kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+--kubelet-use-node-status-port
+--metric-resolution=15s
+--kubelet-certificate-authority=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+KUBELET_INSECURE_TLS_PRESENT=0
+DEPRECATED_COMPLETELY_INSECURE_PRESENT=0
+KUBELET_CA_FILE_PRESENT=1

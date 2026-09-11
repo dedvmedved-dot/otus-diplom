@@ -1,0 +1,9 @@
+# TASK-P7B2 — Git commit metadata
+
+BASELINE_SHA=a9ef37c2e85cdbc18220f1e2b816e4425ef898dd
+PARENT_SHA=a9ef37c2e85cdbc18220f1e2b816e4425ef898dd
+COMMIT_COUNT_FROM_BASELINE=1
+EXPECTED_COMMIT_MESSAGE=TASK-P7B2: deploy secure Metrics Server 0.8.1 and validate metrics API
+
+Note: exact NEW SHA is intentionally NOT self-referenced here; reported externally
+in the final Hermes execution report and independently verified by Connector.

@@ -1,0 +1,47 @@
+apiVersion: v1
+items:
+- addressType: IPv4
+  apiVersion: discovery.k8s.io/v1
+  endpoints:
+  - addresses:
+    - 10.244.190.24
+    conditions:
+      ready: true
+      serving: true
+      terminating: false
+    nodeName: node-01
+    targetRef:
+      kind: Pod
+      name: metrics-server-6d49fbf5b8-mlsng
+      namespace: kube-system
+      uid: ed70329d-9ce6-4716-8908-105bd929c1ba
+  kind: EndpointSlice
+  metadata:
+    annotations:
+      endpoints.kubernetes.io/last-change-trigger-time: "2026-09-11T23:12:04Z"
+    creationTimestamp: "2026-09-11T23:11:29Z"
+    generateName: metrics-server-
+    generation: 3
+    labels:
+      endpointslice.kubernetes.io/managed-by: endpointslice-controller.k8s.io
+      k8s-app: metrics-server
+      kubernetes.io/service-name: metrics-server
+    name: metrics-server-h5rwx
+    namespace: kube-system
+    ownerReferences:
+    - apiVersion: v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Service
+      name: metrics-server
+      uid: 1f9da47d-136d-48a9-a92f-beb57f0e8c3f
+    resourceVersion: "7837372"
+    uid: 545f2928-64db-4a88-99ff-7881354aec18
+  ports:
+  - appProtocol: https
+    name: https
+    port: 10250
+    protocol: TCP
+kind: List
+metadata:
+  resourceVersion: ""

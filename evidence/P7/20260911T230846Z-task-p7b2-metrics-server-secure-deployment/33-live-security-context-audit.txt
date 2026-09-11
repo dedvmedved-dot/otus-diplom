@@ -1,0 +1,3 @@
+{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"readOnlyRootFilesystem":true,"runAsNonRoot":true,"runAsUser":1000,"seccompProfile":{"type":"RuntimeDefault"}}
+--- hostNS ---
+hostNetwork= hostPID= hostIPC= priority=system-cluster-critical

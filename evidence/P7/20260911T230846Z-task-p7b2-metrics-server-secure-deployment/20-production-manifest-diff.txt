@@ -1,0 +1,10 @@
+141c141,142
+<         image: registry.k8s.io/metrics-server/metrics-server:v0.8.1
+---
+>         - --kubelet-certificate-authority=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+>         image: registry.k8s.io/metrics-server/metrics-server:v0.8.1@sha256:6231fb0a1ffab76c92ab880f51a0d11b290f688373647bcedff85af025dfd8a9
+181a183,186
+>       tolerations:
+>       - key: node-role.kubernetes.io/control-plane
+>         operator: Exists
+>         effect: NoSchedule

@@ -1,0 +1,1 @@
+metrics-server-6d49fbf5b8-mlsng uid=ed70329d-9ce6-4716-8908-105bd929c1ba node=node-01 startTime=2026-09-11T23:11:29Z

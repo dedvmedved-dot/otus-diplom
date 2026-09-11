@@ -1,0 +1,21 @@
+# TASK-P7B2 — P7B1 downstream preservation
+
+Canonical p7b1-final-readonly-verify.yml was run (NOT modified). It fails ONLY on
+the superseded "metrics-server present" assertion. All substantive P7B1 markers
+PASS:
+
+  P7B1_K8S_OK               = PASS (v1.36.2)
+  P7B1_NODES_READY          = PASS (3/3)
+  P7B1_P6B_PRESERVED        = PASS (MetalLB)
+  P7B1_P6C_PRESERVED        = PASS (Envoy + GatewayClass)
+  P7B1_P6D_KUBECTL_OK       = PASS (kube-vip .100, residue=0)
+
+Kubelet TLS (re-verified in P7B2 verifier, all nodes):
+  serverTLSBootstrap=true, rotateCertificates=true, cluster-CA trust=PASS,
+  DNS SAN exact, IP SAN exact, TLS InternalIP=PASS, TLS hostname=PASS,
+  unexpected pending serving CSR=0.
+
+Approval tooling unchanged: approve default(false), live Node authoritative
+binding, no wildcard approval, policy.rc==0 gate.
+
+P7B1_NO_METRICS_SERVER_ASSERTION=SUPERSEDED_BY_P7B2

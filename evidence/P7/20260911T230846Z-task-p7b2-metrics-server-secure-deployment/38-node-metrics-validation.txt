@@ -1,0 +1,6 @@
+=== 38-node-metrics-validation ===
+kind NodeMetricsList
+items 3
+node-01 cpu=869582465n mem=6369340Ki ts=2026-09-11T23:13:00Z window=20.166s
+node-02 cpu=533029838n mem=7384472Ki ts=2026-09-11T23:12:58Z window=20.209s
+node-03 cpu=480730122n mem=7008932Ki ts=2026-09-11T23:12:59Z window=20.161s

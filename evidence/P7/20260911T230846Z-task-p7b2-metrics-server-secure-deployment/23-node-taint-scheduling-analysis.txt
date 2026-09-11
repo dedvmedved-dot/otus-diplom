@@ -1,0 +1,3 @@
+node-01 taints=[{"effect":"NoSchedule","key":"node-role.kubernetes.io/control-plane"}]
+node-02 taints=[{"effect":"NoSchedule","key":"node-role.kubernetes.io/control-plane"}]
+node-03 taints=[{"effect":"NoSchedule","key":"node-role.kubernetes.io/control-plane"}]

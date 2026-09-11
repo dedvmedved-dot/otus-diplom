@@ -1,0 +1,16 @@
+=== 11-pre-kubelet-tls-matrix ===
+node-01:
+rotateCertificates: true
+serverTLSBootstrap: true
+issuer=CN=kubernetes
+/var/lib/kubelet/pki/kubelet-server-current.pem: OK
+node-02:
+rotateCertificates: true
+serverTLSBootstrap: true
+issuer=CN=kubernetes
+/var/lib/kubelet/pki/kubelet-server-current.pem: OK
+node-03:
+rotateCertificates: true
+serverTLSBootstrap: true
+issuer=CN=kubernetes
+/var/lib/kubelet/pki/kubelet-server-current.pem: OK

@@ -1,0 +1,9 @@
+=== 61-git-scope-precommit ===
+ M README.md
+ M images.lock
+?? ansible/playbooks/p7b2-final-readonly-verify.yml
+?? ansible/playbooks/p7b2-metrics-server-deploy.yml
+?? ansible/tests/p7b2_verifier_negative_tests.py
+?? evidence/P7/20260911T230846Z-task-p7b2-metrics-server-secure-deployment/
+?? manifests/metrics-server/
+ONLY_AUTHORIZED_PATHS

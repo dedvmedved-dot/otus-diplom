@@ -1,0 +1,9 @@
+=== 25-rollout-status ===
+poll 1: ready=/1 available=
+poll 2: ready=/1 available=
+poll 3: ready=/1 available=
+poll 4: ready=/1 available=
+poll 5: ready=/1 available=
+poll 6: ready=/1 available=
+poll 7: ready=1/1 available=1
+ROLLOUT_READY

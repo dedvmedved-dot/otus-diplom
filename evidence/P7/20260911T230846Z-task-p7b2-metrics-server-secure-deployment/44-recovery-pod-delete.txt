@@ -1,0 +1,1 @@
+pod "metrics-server-6d49fbf5b8-mlsng" deleted from kube-system namespace

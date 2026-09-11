@@ -1,0 +1,13 @@
+=== 21-production-manifest-policy-audit ===
+digest-pinned image: 1
+kubelet-certificate-authority arg: 1
+control-plane toleration: 1
+kubelet-insecure-tls: 0
+deprecated-completely-insecure: 0
+hostNetwork: 0
+privileged: 0
+hostPath: 0
+readOnlyRootFilesystem: 1
+runAsNonRoot: 1
+allowPrivilegeEscalation false: 1
+capabilities drop ALL: 1

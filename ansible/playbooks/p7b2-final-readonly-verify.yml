@@ -1,0 +1,169 @@
+---
+# TASK-P7B2 — Downstream preservation final read-only verifier (portable).
+# Validates P1-P6 + substantive P7A/P7B1 + P7B2 Metrics Server.
+# Supersedes only the "Metrics Server absent" assertions of P7A/P7B1.
+# any_errors_fatal => final markers print only if all preceding checks passed.
+
+- name: "P7B2 final read-only verifier"
+  hosts: all
+  gather_facts: false
+  any_errors_fatal: true
+
+  tasks:
+    - name: P7B2 cluster + metrics semantic verification (read-only, node-01)
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          python3 << 'PYEOF'
+          import json, subprocess
+          KC = ["kubectl", "--kubeconfig", "/etc/kubernetes/admin.conf"]
+          def runj(c):
+              r = subprocess.run(c, capture_output=True, text=True)
+              if r.returncode != 0:
+                  raise AssertionError(f"query failed: {' '.join(c)} rc={r.returncode}")
+              return json.loads(r.stdout)
+
+          nodes = runj(KC + ["get", "nodes", "-o", "json"])
+          items = nodes.get("items")
+          assert isinstance(items, list), "nodes invalid items"
+          for it in items:
+              assert it["status"]["nodeInfo"]["kubeletVersion"] == "v1.36.2", "k8s drift"
+          print("P7B2_K8S_OK")
+          assert len(items) == 3, f"node count {len(items)}"
+          for it in items:
+              ready = any(c["type"]=="Ready" and c["status"]=="True" for c in it["status"]["conditions"])
+              assert ready, f"{it['metadata']['name']} not Ready"
+          print("P7B2_NODES_READY")
+
+          # P6B preserved
+          mc = runj(KC + ["-n","metallb-system","get","deploy","controller","-o","json"])
+          assert mc["status"].get("availableReplicas",0)==1, "metallb controller"
+          ms = runj(KC + ["-n","metallb-system","get","ds","speaker","-o","json"])
+          assert ms["status"].get("numberReady",0)==3, "metallb speaker"
+          print("P7B2_P6B_PRESERVED")
+
+          # P6C preserved
+          ed = runj(KC + ["-n","envoy-gateway-system","get","deploy","envoy-gateway","-o","json"])
+          assert ed["status"].get("availableReplicas",0)==1, "envoy"
+          gc = runj(KC + ["get","gatewayclass","eg","-o","json"])
+          acc=[c["status"] for c in gc["status"]["conditions"] if c["type"]=="Accepted"]
+          assert acc and acc[0]=="True", "gatewayclass"
+          print("P7B2_P6C_PRESERVED")
+
+          # P6D kubectl invariants
+          kvp = runj(KC + ["-n","kube-system","get","pod","kube-vip-node-01","-o","json"])
+          env = {e["name"]: e.get("value","") for e in kvp["spec"]["containers"][0]["env"]}
+          assert env.get("svc_enable")=="false" and env.get("address")=="172.30.140.100", "kube-vip regression"
+          gw = runj(KC + ["get","gateway","-A","-o","json"])
+          gi = gw.get("items"); assert isinstance(gi, list) and len(gi)==0, "gateway residue"
+          hr = runj(KC + ["get","httproute","-A","-o","json"])
+          hi = hr.get("items"); assert isinstance(hi, list) and len(hi)==0, "httproute residue"
+          print("P7B2_P6D_KUBECTL_OK")
+
+          # P7A substantive: Velero absent (metrics-server absence is superseded)
+          deps = runj(KC + ["get","deploy","-A","-o","json"])
+          ditem = deps.get("items"); assert isinstance(ditem, list), "deploy invalid"
+          vel_found = [d for d in ditem if "velero" in d["metadata"]["name"]]
+          assert len(vel_found)==0, f"velero present: {len(vel_found)}"
+          print("P7B2_VELERO_ABSENT")
+
+          # P7B2 Metrics Server
+          mdep = runj(KC + ["-n","kube-system","get","deploy","metrics-server","-o","json"])
+          assert mdep["status"].get("availableReplicas",0)==1, "metrics-server not 1/1"
+          print("P7B2_METRICS_SERVER_OK")
+
+          imgid = runj(KC + ["-n","kube-system","get","pods","-l","k8s-app=metrics-server","-o","json"])
+          iid = imgid["items"][0]["status"]["containerStatuses"][0]["imageID"]
+          assert "sha256:6231fb0a1ffab76c92ab880f51a0d11b290f688373647bcedff85af025dfd8a9" in iid, "image digest wrong"
+          args = imgid["items"][0]["spec"]["containers"][0].get("args", [])
+          assert not any("kubelet-insecure-tls" in a for a in args), "insecure-tls present"
+          assert not any("deprecated-kubelet-completely-insecure" in a for a in args), "deprecated insecure present"
+          assert any("kubelet-certificate-authority" in a for a in args), "kubelet CA absent"
+          print("P7B2_IMAGE_DIGEST_OK")
+          print("P7B2_INSECURE_FLAGS_ABSENT")
+
+          api = runj(KC + ["get","apiservice","v1beta1.metrics.k8s.io","-o","json"])
+          avail = [c["status"] for c in api["status"]["conditions"] if c["type"]=="Available"]
+          assert avail and avail[0]=="True", "apiservice not Available"
+          print("P7B2_APISERVICE_OK")
+
+          nm = runj(KC + ["get","--raw","/apis/metrics.k8s.io/v1beta1/nodes"])
+          assert nm.get("kind")=="NodeMetricsList", "NodeMetricsList kind"
+          nmitems = nm.get("items"); assert isinstance(nmitems, list), "node metrics invalid"
+          assert len(nmitems)==3, f"node metrics {len(nmitems)}"
+          print("P7B2_NODE_METRICS_OK")
+
+          top = subprocess.run(KC + ["top","nodes"], capture_output=True, text=True)
+          assert top.returncode==0, "top nodes failed"
+          assert "node-01" in top.stdout and "node-02" in top.stdout and "node-03" in top.stdout, "top nodes partial"
+          print("P7B2_TOP_NODES_OK")
+
+          csrs = runj(KC + ["get","csr","-o","json"])
+          csritems = csrs.get("items"); assert isinstance(csritems, list), "csr invalid"
+          pending = [c for c in csritems if c["spec"].get("signerName")=="kubernetes.io/kubelet-serving"
+                     and not any(cond.get("type") in ("Approved","Denied") for cond in c["status"].get("conditions",[]))]
+          assert len(pending)==0, f"pending serving CSR: {len(pending)}"
+          print("P7B2_CSR_STATE_OK")
+          PYEOF
+      changed_when: false
+      delegate_to: node-01
+      run_once: true
+
+    - name: P7B2 node kubelet TLS + P6D route + P7A VLAN143 (read-only, all nodes)
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          python3 << 'PYEOF'
+          import subprocess, socket, os
+          host = socket.gethostname()
+          cfg = open("/var/lib/kubelet/config.yaml").read()
+          assert "serverTLSBootstrap: true" in cfg, "serverTLSBootstrap not true"
+          print("P7B2_SERVER_TLS_BOOTSTRAP_OK")
+          assert "rotateCertificates: true" in cfg, "rotateCertificates not true"
+          print("P7B2_ROTATE_CERTIFICATES_OK")
+          cert = "/var/lib/kubelet/pki/kubelet-server-current.pem"
+          v = subprocess.run(["openssl","verify","-CAfile","/etc/kubernetes/pki/ca.crt",cert],capture_output=True,text=True)
+          assert v.returncode==0, "leaf not cluster-CA trusted"
+          print("P7B2_KUBELET_CLUSTER_CA_TRUST_OK")
+          san = subprocess.run(["openssl","x509","-in",cert,"-noout","-ext","subjectAltName"],capture_output=True,text=True).stdout
+          assert host in san, f"DNS SAN missing {host}"
+          print("P7B2_KUBELET_DNS_SAN_OK")
+          p = subprocess.run(["bash","-c","tr '\\0' '\\n' < /proc/$(pgrep -xo kubelet)/cmdline | grep -oE 'node-ip=[0-9.]+' | cut -d= -f2"],capture_output=True,text=True)
+          ip = p.stdout.strip()
+          assert ip and ip in san, f"IP SAN missing {ip}"
+          print("P7B2_KUBELET_IP_SAN_OK")
+          t = subprocess.run(["openssl","s_client","-connect",f"{ip}:10250","-verify_return_error","-CAfile","/etc/kubernetes/pki/ca.crt","-verify_ip",ip],input="",capture_output=True,text=True)
+          assert t.returncode==0, "InternalIP TLS failed"
+          print("P7B2_KUBELET_TLS_INTERNALIP_OK")
+          h = subprocess.run(["openssl","s_client","-connect",f"{ip}:10250","-servername",host,"-verify_hostname",host,"-verify_return_error","-CAfile","/etc/kubernetes/pki/ca.crt"],input="",capture_output=True,text=True)
+          assert h.returncode==0, "hostname TLS failed"
+          print("P7B2_KUBELET_TLS_HOSTNAME_OK")
+          rr = subprocess.run(["ip","route","show","172.30.20.0/24"],capture_output=True,text=True)
+          assert "172.30.20.0/24 via 172.30.140.1 dev bond0.140" in rr.stdout, "P6D route wrong"
+          print("P7B2_P6D_PRESERVED")
+          b = subprocess.run(["ip","-br","addr","show","bond0.143"],capture_output=True,text=True)
+          assert "bond0.143" in b.stdout and "172.30.143" in b.stdout, "bond0.143 missing"
+          print("P7B2_P7A_PRESERVED")
+          PYEOF
+      changed_when: false
+
+    - name: P7B2 README status + transition + final PASS (read-only, local)
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          data = open("/root/otus-diplom/README.md").read()
+          assert "P7B1" in data and "FINAL ACCEPTED" in data, "P7B1 status"
+          assert "P7B2" in data and "IN PROGRESS" in data, "P7B2 IN PROGRESS"
+          assert "P7C" in data and "NOT AUTHORIZED" in data, "P7C status"
+          assert "P8" in data and "NOT AUTHORIZED" in data, "P8 status"
+          seg = data.split("P7B2",1)[-1].split("P7C",1)[0]
+          assert "FINAL ACCEPTED" not in seg, "P7B2 falsely accepted"
+          print("P7B2_README_STATUS_OK")
+          print("P7A_NO_METRICS_SERVER_ASSERTION=SUPERSEDED_BY_P7B2")
+          print("P7B1_NO_METRICS_SERVER_ASSERTION=SUPERSEDED_BY_P7B2")
+          print("P7B2_FINAL_READONLY_VERIFIER_PASS")
+          PYEOF
+      changed_when: false
+      delegate_to: localhost
+      connection: local
+      run_once: true

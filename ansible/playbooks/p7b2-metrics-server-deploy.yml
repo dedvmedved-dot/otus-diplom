@@ -1,0 +1,48 @@
+---
+# TASK-P7B2 — Metrics Server 0.8.1 durable deployment playbook (portable).
+# Applies only the digest-pinned manifest, waits fail-closed for rollout and
+# APIService availability. No secrets. Idempotent. No curl|apply, no latest.
+
+- name: "P7B2 deploy Metrics Server 0.8.1"
+  hosts: node-01
+  gather_facts: false
+
+  tasks:
+    - name: Copy pinned production manifest
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../../manifests/metrics-server/v0.8.1/components.pinned.yaml"
+        dest: /tmp/components.pinned.yaml
+        mode: 0644
+
+    - name: Apply pinned manifest (server dry-run first)
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          kubectl --kubeconfig /etc/kubernetes/admin.conf apply --dry-run=server -f /tmp/components.pinned.yaml
+          kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /tmp/components.pinned.yaml
+      register: apply_result
+      changed_when: "'configured' in apply_result.stdout or 'created' in apply_result.stdout or 'unchanged' in apply_result.stdout"
+
+    - name: Wait for Metrics Server rollout (bounded, fail-closed)
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          for i in $(seq 1 24); do
+            R=$(kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system get deploy metrics-server -o jsonpath='{.status.readyReplicas}/{.spec.replicas}' 2>/dev/null || echo "0/1")
+            [ "$R" = "1/1" ] && echo "METRICS_SERVER_ROLLOUT_READY" && exit 0
+            sleep 5
+          done
+          echo "rollout timeout" >&2; exit 1
+      changed_when: false
+
+    - name: Wait for APIService availability (bounded, fail-closed)
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          for i in $(seq 1 24); do
+            A=$(kubectl --kubeconfig /etc/kubernetes/admin.conf get apiservice v1beta1.metrics.k8s.io -o jsonpath='{.status.conditions[?(@.type=="Available")].status}' 2>/dev/null || echo "False")
+            [ "$A" = "True" ] && echo "METRICS_APISERVICE_AVAILABLE" && exit 0
+            sleep 5
+          done
+          echo "apiservice timeout" >&2; exit 1
+      changed_when: false

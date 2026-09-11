@@ -1,0 +1,10 @@
+# TASK-P7B2 — Scrape coverage matrix
+
+| Node    | InternalIP      | Kubelet TLS | NodeMetrics | Persistent scrape error |
+|---------|-----------------|-------------|-------------|-------------------------|
+| node-01 | 172.30.140.101  | PASS        | PASS        | NO                      |
+| node-02 | 172.30.140.102  | PASS        | PASS        | NO                      |
+| node-03 | 172.30.140.103  | PASS        | PASS        | NO                      |
+
+All 3 nodes: secure kubelet TLS (cluster CA), NodeMetrics present with non-empty
+cpu/memory, no persistent scrape error in logs.

@@ -1,0 +1,5 @@
+=== 39-metrics-freshness-validation ===
+node-01: ts=2026-09-11T23:13:00Z age=32.0s window=20.166s fresh=True
+node-02: ts=2026-09-11T23:12:58Z age=34.0s window=20.209s fresh=True
+node-03: ts=2026-09-11T23:12:59Z age=33.0s window=20.161s fresh=True
+METRICS_FRESHNESS_3_OF_3=PASS

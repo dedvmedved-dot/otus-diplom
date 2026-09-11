@@ -1,0 +1,29 @@
+=== 55-p7b2-negative-harness ===
+--- kubelet-insecure-tls present --- expected=FAIL actual=FAIL OK
+--- deprecated completely-insecure present --- expected=FAIL actual=FAIL OK
+--- kubelet CA absent --- expected=FAIL actual=FAIL OK
+--- image version wrong --- expected=FAIL actual=FAIL OK
+--- image digest wrong --- expected=FAIL actual=FAIL OK
+--- deployment unavailable --- expected=FAIL actual=FAIL OK
+--- apiservice unavailable --- expected=FAIL actual=FAIL OK
+--- nodemetrics count=2 --- expected=FAIL actual=FAIL OK
+--- node-01 missing --- expected=FAIL actual=FAIL OK
+--- node-02 missing --- expected=FAIL actual=FAIL OK
+--- node-03 missing --- expected=FAIL actual=FAIL OK
+--- stale timestamp --- expected=FAIL actual=FAIL OK
+--- cpu empty --- expected=FAIL actual=FAIL OK
+--- memory empty --- expected=FAIL actual=FAIL OK
+--- pending kubelet-serving CSR --- expected=FAIL actual=FAIL OK
+--- serverTLSBootstrap=false --- expected=FAIL actual=FAIL OK
+--- cluster-CA trust failure --- expected=FAIL actual=FAIL OK
+--- P6D route missing --- expected=FAIL actual=FAIL OK
+--- VLAN143 missing --- expected=FAIL actual=FAIL OK
+--- Velero present --- expected=FAIL actual=FAIL OK
+--- README falsely P7B2 FINAL ACCEPTED --- expected=FAIL actual=FAIL OK
+--- README authorizes P7C --- expected=FAIL actual=FAIL OK
+--- final PASS before gates --- expected=FAIL actual=FAIL OK
+--- clean fixture --- expected=PASS actual=PASS OK
+
+NEGATIVE_TESTS_TOTAL=24
+NEGATIVE_TESTS_FAILED=0
+HARNESS_EXIT=0

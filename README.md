@@ -15,7 +15,7 @@
 - **MetalLB** (L2) — внешние LoadBalancer-адреса;
 - **Envoy Gateway** — внешний ingress (HTTPRoute);
 - **PostgreSQL / CloudNativePG** — целевая СУБД (P8, ещё не развёрнута);
-- **Observability / Backup** — Metrics Server и Velero (P7, в работе).
+- **Observability / Backup** — Metrics Server (P7B2, развёрнут) и Velero (P7C, ещё не начат).
 
 ## Архитектурный baseline
 
@@ -58,8 +58,8 @@ P9  Security / Failure / Performance / Restore / Acceptance
 
 ```text
 P7A   Observability / Backup Preflight                  FINAL ACCEPTED
-P7B1  Kubelet Serving TLS Bootstrap / CSR Approval      IN PROGRESS — PENDING CHATGPT CONNECTOR ACCEPTANCE
-P7B2  Metrics Server 0.8.1                              NOT AUTHORIZED
+P7B1  Kubelet Serving TLS Bootstrap / CSR Approval      FINAL ACCEPTED
+P7B2  Metrics Server 0.8.1                              IN PROGRESS — PENDING CHATGPT CONNECTOR ACCEPTANCE
 P7C   Velero / Backup Foundation                        NOT AUTHORIZED
 ```
 
@@ -80,7 +80,7 @@ LINSTOR:             1.33.2
 LINSTOR CSI:         1.11.0
 MetalLB:             0.16.1 (L2)
 Envoy Gateway:       1.9.1
-Metrics Server (target): 0.8.1
+Metrics Server:      0.8.1 (deployed)
 Velero (target):         1.18.1
 Helm:                4.1.3
 ```
@@ -89,10 +89,10 @@ Helm:                4.1.3
 
 ```text
 Observability:
-  P7A доказала, что требуется remediation kubelet serving TLS (самоподписанные
-  node-local сертификаты не доверялись cluster CA). P7B1 исправляет cluster-CA
-  trust (serverTLSBootstrap + контролируемое одобрение serving CSR) перед
-  развёртыванием Metrics Server.
+  Kubelet serving TLS blocker closed by P7B1 (cluster-CA-trusted serving
+  certificates via serverTLSBootstrap + controlled CSR approval).
+  Metrics Server 0.8.1 deployed under P7B2 (secure kubelet TLS) and awaiting
+  Connector acceptance.
 
 Backup:
   заблокировано до получения параметров S3 (endpoint/bucket/region/object-lock/
@@ -103,10 +103,13 @@ Backup:
 ## Текущий verified baseline
 
 ```text
-Current accepted baseline before P7B1:
-a5a97057cd7d83f93f612aeb1bfa997625b166ae
+Current accepted baseline before P7B2:
+a9ef37c2e85cdbc18220f1e2b816e4425ef898dd
 
-P7B1 implementation:
+P7B1:
+FINAL ACCEPTED
+
+P7B2 (Metrics Server 0.8.1):
 IN PROGRESS — pending Connector Audit
 ```
 

@@ -1,0 +1,11 @@
+authentication:
+  anonymous:
+    enabled: false
+  webhook:
+    cacheTTL: 0s
+    enabled: true
+  x509:
+--- authz ---
+authorization:
+  mode: Webhook
+  webhook:

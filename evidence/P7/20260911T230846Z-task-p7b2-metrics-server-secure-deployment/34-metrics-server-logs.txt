@@ -1,0 +1,14 @@
+I0911 23:11:45.328804       1 serving.go:380] Generated self-signed cert (/tmp/apiserver.crt, /tmp/apiserver.key)
+I0911 23:11:45.865836       1 handler.go:288] Adding GroupVersion metrics.k8s.io v1beta1 to ResourceManager
+I0911 23:11:45.983375       1 requestheader_controller.go:180] Starting RequestHeaderAuthRequestController
+I0911 23:11:45.983414       1 shared_informer.go:350] "Waiting for caches to sync" controller="RequestHeaderAuthRequestController"
+I0911 23:11:45.983414       1 configmap_cafile_content.go:205] "Starting controller" name="client-ca::kube-system::extension-apiserver-authentication::requestheader-client-ca-file"
+I0911 23:11:45.983465       1 shared_informer.go:350] "Waiting for caches to sync" controller="client-ca::kube-system::extension-apiserver-authentication::requestheader-client-ca-file"
+I0911 23:11:45.983424       1 configmap_cafile_content.go:205] "Starting controller" name="client-ca::kube-system::extension-apiserver-authentication::client-ca-file"
+I0911 23:11:45.983507       1 shared_informer.go:350] "Waiting for caches to sync" controller="client-ca::kube-system::extension-apiserver-authentication::client-ca-file"
+I0911 23:11:45.983969       1 dynamic_serving_content.go:135] "Starting controller" name="serving-cert::/tmp/apiserver.crt::/tmp/apiserver.key"
+I0911 23:11:45.984812       1 secure_serving.go:211] Serving securely on [::]:10250
+I0911 23:11:45.984891       1 tlsconfig.go:243] "Starting DynamicServingCertificateController"
+I0911 23:11:46.083497       1 shared_informer.go:357] "Caches are synced" controller="RequestHeaderAuthRequestController"
+I0911 23:11:46.083631       1 shared_informer.go:357] "Caches are synced" controller="client-ca::kube-system::extension-apiserver-authentication::requestheader-client-ca-file"
+I0911 23:11:46.083947       1 shared_informer.go:357] "Caches are synced" controller="client-ca::kube-system::extension-apiserver-authentication::client-ca-file"

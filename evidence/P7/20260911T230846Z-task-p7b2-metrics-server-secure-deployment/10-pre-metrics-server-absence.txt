@@ -1,0 +1,8 @@
+--- deploy ---
+Error from server (NotFound): deployments.apps "metrics-server" not found
+--- svc ---
+Error from server (NotFound): services "metrics-server" not found
+--- apiservice ---
+Error from server (NotFound): apiservices.apiregistration.k8s.io "v1beta1.metrics.k8s.io" not found
+--- velero ---
+0

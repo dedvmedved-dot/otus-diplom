@@ -1,0 +1,27 @@
+=== 17-upstream-components-static-analysis ===
+kind: ServiceAccount	  name: metrics-server	  namespace: kube-system
+kind: ClusterRole	  name: system:aggregated-metrics-reader	kind: ClusterRole
+  name: system:metrics-server	kind: RoleBinding	  name: metrics-server-auth-reader
+  namespace: kube-system	  name: extension-apiserver-authentication-reader	  name: metrics-server
+  namespace: kube-system	kind: ClusterRoleBinding	  name: metrics-server:system:auth-delegator
+  name: system:auth-delegator	  name: metrics-server	  namespace: kube-system
+kind: ClusterRoleBinding	  name: system:metrics-server	  name: system:metrics-server
+  name: metrics-server	  namespace: kube-system	kind: Service
+  name: metrics-server	  namespace: kube-system	kind: Deployment
+  name: metrics-server	  namespace: kube-system	kind: APIService
+  name: v1beta1.metrics.k8s.io		
+--- image ---
+        image: registry.k8s.io/metrics-server/metrics-server:v0.8.1
+--- security ---
+          allowPrivilegeEscalation: false
+          capabilities:
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          seccompProfile:
+--- args ---
+        - --cert-dir=/tmp
+        - --secure-port=10250
+        - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+        - --kubelet-use-node-status-port
+        - --metric-resolution=15s
