@@ -1,0 +1,18 @@
+# TASK-P7B2-R1 — Verifier before analysis (D3/D4)
+
+Historical p7b2-final-readonly-verify.yml did NOT itself verify:
+  - metrics freshness <= 120s          (absent)
+  - non-empty CPU per NodeMetrics item (absent — only len==3 checked)
+  - non-empty memory per item          (absent)
+  - kubectl top pods -A non-empty      (absent)
+  - recovery evidence integrity        (absent)
+  - old UID != new UID                 (absent)
+  - post-recovery APIService/metrics/top-nodes (absent)
+
+It could still emit P7B2_FINAL_READONLY_VERIFIER_PASS.
+
+Negative harness was partly disconnected (separate local check_* functions) from
+the real verifier's inline logic.
+
+R1 fixes both: shared logic (p7b2_verify_logic.py) used by verifier AND harness,
+plus real freshness/top-pods/recovery gates.

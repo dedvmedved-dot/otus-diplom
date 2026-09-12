@@ -1,0 +1,7 @@
+=== 31-p7a-downstream-preservation ===
+Verified by hardened P7B2 verifier (shared logic):
+  Kubernetes 1.36.2 = PASS
+  nodes Ready 3/3 = PASS
+  Velero absent = PASS
+  VLAN143 (bond0.143) = PASS
+P7A_NO_METRICS_SERVER_ASSERTION=SUPERSEDED_BY_P7B2

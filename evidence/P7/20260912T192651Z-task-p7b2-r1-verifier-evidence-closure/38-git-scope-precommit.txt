@@ -1,0 +1,6 @@
+=== 38-git-scope-precommit ===
+ M ansible/playbooks/p7b2-final-readonly-verify.yml
+ M ansible/tests/p7b2_verifier_negative_tests.py
+?? ansible/tools/p7b2_verify_logic.py
+?? evidence/P7/20260912T192651Z-task-p7b2-r1-verifier-evidence-closure/
+ONLY_AUTHORIZED_PATHS

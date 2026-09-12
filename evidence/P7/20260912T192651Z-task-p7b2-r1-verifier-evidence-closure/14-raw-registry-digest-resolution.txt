@@ -1,0 +1,9 @@
+=== 14-raw-registry-digest-resolution ===
+tool: direct OCI registry inspection (curl + registry.k8s.io bearer token, read-only)
+command: curl -s 'https://auth.docker.io/token?service=registry.k8s.io&scope=repository:metrics-server/metrics-server:pull' | python3 -c 'import json,sys;print(json.load(sys.stdin)["token"])'
+mediaType: application/vnd.docker.distribution.manifest.list.v2+json
+manifest: linux amd64 sha256:6231fb0a1ffab76c92ab880f51a0d11b290f688373647bcedff85af025dfd8a9
+manifest: linux arm sha256:1ccc8be50e215abc5696448b1677dcea24af55cffcedfd0bd5e742d8da0dc3be
+manifest: linux arm64 sha256:9ece07f21cfaf3c2398bd4e0de1f127cfad23ec40d29ceffd8323b4f34744eb8
+manifest: linux ppc64le sha256:a58d97b3baf7f2a205bb0b26d519902e31fefc20cf4116aabd38537c9ecba412
+manifest: linux s390x sha256:a00886aa1ea37de55c15c3bc9e3140932e499cbaf5a4ebb02c70fb59721a6171

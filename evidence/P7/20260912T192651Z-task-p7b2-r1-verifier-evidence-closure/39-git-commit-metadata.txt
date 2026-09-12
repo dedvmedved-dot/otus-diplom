@@ -1,0 +1,9 @@
+# TASK-P7B2-R1 — Git commit metadata
+
+BASELINE_SHA=0a47b60b033dcb9cedbeec224a25d53ebedd700d
+PARENT_SHA=0a47b60b033dcb9cedbeec224a25d53ebedd700d
+COMMIT_COUNT_FROM_BASELINE=1
+EXPECTED_COMMIT_MESSAGE=TASK-P7B2-R1: harden final verifier and close evidence sequencing
+
+Note: exact NEW SHA intentionally NOT self-referenced; reported externally in the
+final Hermes execution report and independently verified by Connector.

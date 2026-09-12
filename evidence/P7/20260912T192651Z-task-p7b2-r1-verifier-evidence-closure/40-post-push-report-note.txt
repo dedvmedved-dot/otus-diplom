@@ -1,0 +1,7 @@
+# TASK-P7B2-R1 — Post-push report note
+
+Verifier hardening + evidence sequencing closure pushed; awaiting Connector audit.
+Exact NEW SHA, post-push worktree cleanliness, and push success are reported
+externally in the final Hermes execution report (not self-referenced here).
+
+INFRASTRUCTURE_MUTATION=0

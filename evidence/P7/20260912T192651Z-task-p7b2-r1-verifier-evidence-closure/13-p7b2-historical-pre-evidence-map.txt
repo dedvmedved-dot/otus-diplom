@@ -1,0 +1,20 @@
+# TASK-P7B2-R1 — Historical pre-evidence map (P7B2 package)
+
+TRUE PRE-DEPLOYMENT:
+  03-pre-p1-p5-regression.txt
+  04-pre-p6b-verifier.txt
+  05-pre-p6c-verifier.txt
+  06-pre-p6d-verifier.txt
+  09-pre-cluster-health.txt
+  10-pre-metrics-server-absence.txt
+  11-pre-kubelet-tls-matrix.txt
+  12-pre-kubelet-authn-authz.txt
+  13-pre-aggregation-layer.txt
+  14-cluster-ca-vs-kube-root-ca.txt
+
+NOT VALID AS PRE-DEPLOYMENT:
+  07-pre-p7a-verifier.txt
+  08-pre-p7b1-verifier.txt
+
+Reason:
+  both captured after Metrics Server deployment

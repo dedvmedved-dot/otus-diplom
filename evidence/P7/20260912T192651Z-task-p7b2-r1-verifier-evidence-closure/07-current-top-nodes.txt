@@ -1,0 +1,4 @@
+NAME      CPU(cores)   CPU(%)   MEMORY(bytes)   MEMORY(%)   
+node-01   550m         1%       6222Mi          2%          
+node-02   516m         1%       7248Mi          2%          
+node-03   835m         1%       6892Mi          2%          

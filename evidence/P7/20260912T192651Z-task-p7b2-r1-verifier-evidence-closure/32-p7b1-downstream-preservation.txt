@@ -1,0 +1,8 @@
+=== 32-p7b1-downstream-preservation ===
+Verified by hardened P7B2 verifier (shared logic):
+  serverTLSBootstrap=true (3/3) = PASS
+  rotateCertificates=true (3/3) = PASS
+  cluster-CA trust (3/3) = PASS
+  DNS/IP SAN exact, TLS IP+hostname = PASS 3/3
+  pending kubelet-serving CSR = 0
+P7B1_NO_METRICS_SERVER_ASSERTION=SUPERSEDED_BY_P7B2

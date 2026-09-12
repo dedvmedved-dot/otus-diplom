@@ -1,0 +1,7 @@
+=== 25-recovery-evidence-integrity ===
+recovery evidence dir: evidence/P7/20260911T230846Z-task-p7b2-metrics-server-secure-deployment
+old_uid=ed70329d-9ce6-4716-8908-105bd929c1ba
+new_uid=78139ce6-1945-4d90-9f31-262c36cc261f
+UID_CHANGED=YES
+APISERVICE_RECOVERED=YES METRICS_API_RECOVERED=YES
+RECOVERY_EVIDENCE_INTEGRITY=PASS

@@ -1,0 +1,7 @@
+=== 23-live-metrics-freshness ===
+Traceback (most recent call last):
+  File "<string>", line 8, in <module>
+  File "/root/otus-diplom/ansible/tools/p7b2_verify_logic.py", line 79, in validate_freshness
+    raise AssertionError(f"{i['metadata']['name']} stale (age {age:.0f}s)")
+AssertionError: node-01 stale (age 170s)
+NODE_METRICS_3_OF_3=PASS

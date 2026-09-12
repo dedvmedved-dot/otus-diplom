@@ -1,149 +1,96 @@
 #!/usr/bin/env python3
 """
-TASK-P7B2 — P7B2 verifier negative tests (offline, real logic).
-Mirrors p7b2-final-readonly-verify.yml verification semantics.
+TASK-P7B2-R1 — P7B2 verifier negative tests (offline).
+Uses the SAME shared validation logic as the real verifier
+(ansible/tools/p7b2_verify_logic.py). No parallel implementation.
 """
 
-import json
+import os
 import sys
+from datetime import datetime, timedelta, timezone
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "tools"))
+import p7b2_verify_logic as V
 
-def check_args(args):
-    if any("kubelet-insecure-tls" in a for a in args):
-        raise AssertionError("kubelet-insecure-tls present")
-    if any("deprecated-kubelet-completely-insecure" in a for a in args):
-        raise AssertionError("deprecated insecure present")
-    if not any("kubelet-certificate-authority" in a for a in args):
-        raise AssertionError("kubelet CA absent")
-
-
-def check_image(req_image, iid, expected_digest="sha256:6231fb0a1ffab76c92ab880f51a0d11b290f688373647bcedff85af025dfd8a9"):
-    if "v0.8.1" not in req_image:
-        raise AssertionError("image version wrong")
-    if expected_digest not in iid:
-        raise AssertionError("image digest wrong")
-
-
-def check_deploy(available):
-    if available != 1:
-        raise AssertionError("deployment unavailable")
-
-
-def check_apiservice(available):
-    if available != "True":
-        raise AssertionError("apiservice unavailable")
-
-
-def check_nodemetrics(items):
-    if len(items) != 3:
-        raise AssertionError(f"nodemetrics count {len(items)}")
-    names = {i["metadata"]["name"] for i in items}
-    for n in ("node-01", "node-02", "node-03"):
-        if n not in names:
-            raise AssertionError(f"{n} missing")
-    for i in items:
-        u = i.get("usage", {})
-        if not u.get("cpu"):
-            raise AssertionError("cpu empty")
-        if not u.get("memory"):
-            raise AssertionError("memory empty")
-        if not i.get("timestamp"):
-            raise AssertionError("timestamp missing")
-
-
-def check_freshness(ts, now_ts):
-    # stale if age > 120s (now_ts - ts > 120)
-    if now_ts - ts > 120:
-        raise AssertionError("stale timestamp")
-
-
-def check_csr(pending):
-    if pending > 0:
-        raise AssertionError("pending serving CSR")
-
-
-def check_kubelet_cfg(cfg):
-    if "serverTLSBootstrap: true" not in cfg:
-        raise AssertionError("serverTLSBootstrap=false")
-
-
-def check_ca_trust(verify_rc):
-    if verify_rc != 0:
-        raise AssertionError("cluster-CA trust failure")
-
-
-def check_route(route):
-    if "172.30.20.0/24 via 172.30.140.1 dev bond0.140" not in route:
-        raise AssertionError("P6D route missing")
-
-
-def check_vlan143(out):
-    if "bond0.143" not in out or "172.30.143" not in out:
-        raise AssertionError("VLAN143 missing")
-
-
-def check_velero(deps):
-    if any("velero" in d for d in deps):
-        raise AssertionError("Velero present")
-
-
-def check_readme(data):
-    seg = data.split("P7B2", 1)[-1].split("P7C", 1)[0]
-    if "FINAL ACCEPTED" in seg:
-        raise AssertionError("P7B2 falsely accepted")
-    seg_c = data.split("P7C", 1)[-1].split("P8", 1)[0]
-    if "AUTHORIZED" in seg_c and "NOT AUTHORIZED" not in seg_c:
-        raise AssertionError("P7C authorized")
-
-
-def check_gate_order(markers):
-    # final PASS must not be emitted before all gates
-    order = ["K8S", "NODES", "METRICS_SERVER", "APISERVICE", "NODE_METRICS", "TOP_NODES", "FINAL"]
-    idx = [markers.index(m) for m in order if m in markers]
-    if idx != sorted(idx):
-        raise AssertionError("final PASS emitted before all gates")
-
-
+D = V.EXPECTED_DIGEST
 GOOD_ARGS = ["--cert-dir=/tmp", "--secure-port=10250",
              "--kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname",
              "--kubelet-use-node-status-port", "--metric-resolution=15s",
              "--kubelet-certificate-authority=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"]
-GOOD_IID = "registry.k8s.io/metrics-server/metrics-server@sha256:6231fb0a1ffab76c92ab880f51a0d11b290f688373647bcedff85af025dfd8a9"
-GOOD_REQ_IMAGE = "registry.k8s.io/metrics-server/metrics-server:v0.8.1@sha256:6231fb0a1ffab76c92ab880f51a0d11b290f688373647bcedff85af025dfd8a9"
-GOOD_NM = {"items": [
-    {"metadata": {"name": "node-01"}, "usage": {"cpu": "1n", "memory": "1Ki"}, "timestamp": "2026-09-11T23:00:00Z"},
-    {"metadata": {"name": "node-02"}, "usage": {"cpu": "1n", "memory": "1Ki"}, "timestamp": "2026-09-11T23:00:00Z"},
-    {"metadata": {"name": "node-03"}, "usage": {"cpu": "1n", "memory": "1Ki"}, "timestamp": "2026-09-11T23:00:00Z"},
-]}
+GOOD_REQ = f"registry.k8s.io/metrics-server/metrics-server:v0.8.1@{D}"
+GOOD_IID = f"registry.k8s.io/metrics-server/metrics-server@{D}"
+
+
+def nm(items):
+    return {"kind": "NodeMetricsList", "items": items}
+
+
+def item(name, cpu="1n", mem="1Ki", ts="2026-09-11T23:00:00Z", window="20s"):
+    return {"metadata": {"name": name}, "usage": {"cpu": cpu, "memory": mem},
+            "timestamp": ts, "window": window}
+
+
+GOOD_ITEMS = [item("node-01"), item("node-02"), item("node-03")]
 
 T = []
 def t(name, expect_fail, fn):
     T.append((name, expect_fail, fn))
 
-t("kubelet-insecure-tls present", True, lambda: check_args(["--kubelet-insecure-tls"]))
-t("deprecated completely-insecure present", True, lambda: check_args(["--deprecated-kubelet-completely-insecure"]))
-t("kubelet CA absent", True, lambda: check_args(["--secure-port=10250"]))
-t("image version wrong", True, lambda: check_image("metrics-server@sha256:6231fb0a1ffab76c92ab880f51a0d11b290f688373647bcedff85af025dfd8a9", GOOD_IID))
-t("image digest wrong", True, lambda: check_image(GOOD_REQ_IMAGE, "metrics-server@sha256:deadbeef"))
-t("deployment unavailable", True, lambda: check_deploy(0))
-t("apiservice unavailable", True, lambda: check_apiservice("False"))
-t("nodemetrics count=2", True, lambda: check_nodemetrics(GOOD_NM["items"][:2]))
-t("node-01 missing", True, lambda: check_nodemetrics([i for i in GOOD_NM["items"] if i["metadata"]["name"] != "node-01"]))
-t("node-02 missing", True, lambda: check_nodemetrics([i for i in GOOD_NM["items"] if i["metadata"]["name"] != "node-02"]))
-t("node-03 missing", True, lambda: check_nodemetrics([i for i in GOOD_NM["items"] if i["metadata"]["name"] != "node-03"]))
-t("stale timestamp", True, lambda: check_freshness(1000, 2000))
-t("cpu empty", True, lambda: check_nodemetrics([{"metadata":{"name":"node-01"},"usage":{"memory":"1Ki"},"timestamp":"t"}]))
-t("memory empty", True, lambda: check_nodemetrics([{"metadata":{"name":"node-01"},"usage":{"cpu":"1n"},"timestamp":"t"}]))
-t("pending kubelet-serving CSR", True, lambda: check_csr(1))
-t("serverTLSBootstrap=false", True, lambda: check_kubelet_cfg("rotateCertificates: true"))
-t("cluster-CA trust failure", True, lambda: check_ca_trust(1))
-t("P6D route missing", True, lambda: check_route("default via 192.168.194.1"))
-t("VLAN143 missing", True, lambda: check_vlan143("bond0.140"))
-t("Velero present", True, lambda: check_velero(["velero"]))
-t("README falsely P7B2 FINAL ACCEPTED", True, lambda: check_readme("P7B2 FINAL ACCEPTED\nP7C NOT AUTHORIZED\nP8 NOT AUTHORIZED"))
-t("README authorizes P7C", True, lambda: check_readme("P7B2 IN PROGRESS\nP7C AUTHORIZED\nP8 NOT AUTHORIZED"))
-t("final PASS before gates", True, lambda: check_gate_order(["FINAL", "K8S", "NODES"]))
-t("clean fixture", False, lambda: (check_args(GOOD_ARGS), check_image(GOOD_REQ_IMAGE, GOOD_IID), check_deploy(1), check_apiservice("True"), check_nodemetrics(GOOD_NM["items"]), check_csr(0), check_kubelet_cfg("serverTLSBootstrap: true"), check_ca_trust(0), check_route("172.30.20.0/24 via 172.30.140.1 dev bond0.140"), check_vlan143("bond0.143 172.30.143.1"), check_velero([]), check_readme("P7B2 IN PROGRESS\nP7C NOT AUTHORIZED\nP8 NOT AUTHORIZED"), check_gate_order(["K8S","NODES","METRICS_SERVER","APISERVICE","NODE_METRICS","TOP_NODES","FINAL"])))
+t("insecure kubelet flag", True, lambda: V.validate_args(["--kubelet-insecure-tls"]))
+t("deprecated insecure flag", True, lambda: V.validate_args(["--deprecated-kubelet-completely-insecure"]))
+t("kubelet CA absent", True, lambda: V.validate_args(["--secure-port=10250"]))
+t("wrong image version", True, lambda: V.validate_image(f"registry.k8s.io/metrics-server/metrics-server@{D}", GOOD_IID))
+t("wrong image digest", True, lambda: V.validate_image(GOOD_REQ, "registry.k8s.io/metrics-server/metrics-server@sha256:deadbeef"))
+t("deployment unavailable", True, lambda: V.validate_deploy(0, 1))
+t("apiservice unavailable", True, lambda: V.validate_apiservice("False"))
+t("nodemetrics count=2", True, lambda: V.validate_nodemetrics(nm(GOOD_ITEMS[:2])))
+t("node-01 missing", True, lambda: V.validate_nodemetrics(nm([i for i in GOOD_ITEMS if i["metadata"]["name"] != "node-01"])))
+t("node-02 missing", True, lambda: V.validate_nodemetrics(nm([i for i in GOOD_ITEMS if i["metadata"]["name"] != "node-02"])))
+t("node-03 missing", True, lambda: V.validate_nodemetrics(nm([i for i in GOOD_ITEMS if i["metadata"]["name"] != "node-03"])))
+t("cpu empty", True, lambda: V.validate_nodemetrics(nm([item("node-01", cpu=""), item("node-02"), item("node-03")])))
+t("memory empty", True, lambda: V.validate_nodemetrics(nm([item("node-01", mem=""), item("node-02"), item("node-03")])))
+t("timestamp missing", True, lambda: V.validate_nodemetrics(nm([item("node-01", ts=""), item("node-02"), item("node-03")])))
+t("malformed timestamp", True, lambda: V.validate_freshness(nm([item("node-01", ts="not-a-time"), item("node-02"), item("node-03")])))
+t("stale timestamp >120s", True, lambda: V.validate_freshness(nm([item("node-01", ts="2026-09-11T20:00:00Z"), item("node-02"), item("node-03")]), now=datetime(2026,9,11,20,3,0,tzinfo=timezone.utc)))
+t("timestamp >10s future", True, lambda: V.validate_freshness(nm([item("node-01", ts="2026-09-11T20:00:30Z"), item("node-02"), item("node-03")]), now=datetime(2026,9,11,20,0,0,tzinfo=timezone.utc)))
+t("window missing", True, lambda: V.validate_nodemetrics(nm([item("node-01", window=""), item("node-02"), item("node-03")])))
+t("window zero/invalid", True, lambda: V.validate_freshness(nm([item("node-01", window="0s"), item("node-02"), item("node-03")])))
+t("kubectl top pods empty", True, lambda: V.validate_top_pods("NAMESPACE   NAME   CPU   MEMORY\n"))
+t("kubectl top nodes missing node", True, lambda: V.validate_top_nodes("node-01\nnode-02\n"))
+t("pending serving CSR", True, lambda: V.validate_csr([{"spec":{"signerName":"kubernetes.io/kubelet-serving"},"status":{"conditions":[]}}]))
+t("serverTLSBootstrap false", True, lambda: V.validate_kubelet_cfg("rotateCertificates: true"))
+t("cluster-CA trust failure", True, lambda: V.validate_ca_trust(1))
+t("P6D route missing", True, lambda: V.validate_route("default via 192.168.194.1"))
+t("VLAN143 missing", True, lambda: V.validate_vlan143("bond0.140"))
+t("Velero present", True, lambda: V.validate_velero(["velero"]))
+t("recovery old UID missing", True, lambda: V.validate_recovery("", "uid2", "YES", "YES", "node-01\nnode-02\nnode-03"))
+t("recovery new UID missing", True, lambda: V.validate_recovery("uid1", "", "YES", "YES", "node-01\nnode-02\nnode-03"))
+t("recovery UID unchanged", True, lambda: V.validate_recovery("uid1", "uid1", "YES", "YES", "node-01\nnode-02\nnode-03"))
+t("recovery APIService marker missing", True, lambda: V.validate_recovery("uid1", "uid2", "NO", "YES", "node-01\nnode-02\nnode-03"))
+t("recovery NodeMetrics marker missing", True, lambda: V.validate_recovery("uid1", "uid2", "YES", "NO", "node-01\nnode-02\nnode-03"))
+t("recovery top-nodes partial", True, lambda: V.validate_recovery("uid1", "uid2", "YES", "YES", "node-01\nnode-02\n"))
+t("README falsely P7B2 FINAL ACCEPTED", True, lambda: V.validate_readme("P7B1 FINAL ACCEPTED\nP7B2 FINAL ACCEPTED\nP7C NOT AUTHORIZED\nP8 NOT AUTHORIZED"))
+t("README authorizes P7C", True, lambda: V.validate_readme("P7B1 FINAL ACCEPTED\nP7B2 IN PROGRESS\nP7C AUTHORIZED\nP8 NOT AUTHORIZED"))
+t("final PASS before gates", True, lambda: V.validate_gate_order(["FINAL", "K8S", "NODES"]))
+t("clean fixture", False, lambda: (
+    V.validate_args(GOOD_ARGS),
+    V.validate_image(GOOD_REQ, GOOD_IID),
+    V.validate_deploy(1, 1),
+    V.validate_apiservice("True"),
+    V.validate_nodemetrics(nm(GOOD_ITEMS)),
+    V.validate_freshness(nm(GOOD_ITEMS), now=datetime(2026, 9, 11, 23, 0, 5, tzinfo=timezone.utc)),
+    V.validate_top_nodes("node-01\nnode-02\nnode-03\n"),
+    V.validate_top_pods("NAMESPACE NAME CPU MEMORY\nkube-system metrics-server 5m 32Mi\n"),
+    V.validate_csr([]),
+    V.validate_kubelet_cfg("serverTLSBootstrap: true\nrotateCertificates: true\n"),
+    V.validate_ca_trust(0),
+    V.validate_route("172.30.20.0/24 via 172.30.140.1 dev bond0.140"),
+    V.validate_vlan143("bond0.143 172.30.143.1"),
+    V.validate_velero([]),
+    V.validate_readme("P7B1 FINAL ACCEPTED\nP7B2 IN PROGRESS\nP7C NOT AUTHORIZED\nP8 NOT AUTHORIZED"),
+    V.validate_recovery("uid1", "uid2", "YES", "YES", "node-01\nnode-02\nnode-03"),
+    V.validate_gate_order(["K8S","NODES","METRICS_SERVER","APISERVICE","NODE_METRICS","FRESHNESS","TOP_NODES","TOP_PODS","RECOVERY","FINAL"]),
+))
 
 
 def main():
@@ -154,10 +101,11 @@ def main():
         actual = "PASS"
         try:
             fn()
-        except Exception as e:
+        except Exception:
             actual = "FAIL"
-        ok = (actual == ("FAIL" if expect_fail else "PASS"))
-        print(f"--- {name} --- expected={'FAIL' if expect_fail else 'PASS'} actual={actual} {'OK' if ok else 'MISMATCH'}")
+        expect = "FAIL" if expect_fail else "PASS"
+        ok = actual == expect
+        print(f"--- {name} --- expected={expect} actual={actual} {'OK' if ok else 'MISMATCH'}")
         if not ok:
             failed += 1
     print(f"\nNEGATIVE_TESTS_TOTAL={total}")

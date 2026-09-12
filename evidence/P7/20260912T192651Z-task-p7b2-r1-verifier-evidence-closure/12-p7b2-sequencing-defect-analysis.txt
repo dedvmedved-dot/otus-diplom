@@ -1,0 +1,24 @@
+# TASK-P7B2-R1 — Sequencing defect analysis (D1)
+
+Historical P7B2 files 07/08 were NOT valid pre-deployment verifier evidence.
+
+07-pre-p7a-verifier.txt:
+  executed after Metrics Server appeared
+  substantive P7A markers before absence assertion = PASS
+  failure = expected superseded Metrics Server absence condition
+
+08-pre-p7b1-verifier.txt:
+  executed after Metrics Server appeared
+  substantive P7B1 markers before absence assertion = PASS
+  failure = expected superseded Metrics Server absence condition
+
+Real pre-deployment absence evidence:
+  historical 10-pre-metrics-server-absence.txt (Metrics Server deploy/svc/apiservice
+  all NotFound; captured BEFORE deployment)
+
+Starting accepted architectural baseline:
+  P7B1 FINAL ACCEPTED at
+  a9ef37c2e85cdbc18220f1e2b816e4425ef898dd
+
+R1 does NOT claim a canonical pre-P7A/P7B1 verifier PASS occurred inside P7B2
+when it did not.
