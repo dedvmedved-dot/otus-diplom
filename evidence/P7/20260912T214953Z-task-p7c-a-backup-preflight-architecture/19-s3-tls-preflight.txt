@@ -1,0 +1,8 @@
+# S3 TLS preflight
+
+S3 endpoint is NOT specified.
+
+S3_TLS=BLOCKED_NO_ENDPOINT
+S3_HOSTNAME_VERIFY=BLOCKED_NO_ENDPOINT
+
+No TLS handshake performed. TLS CA mode cannot be determined without a target.

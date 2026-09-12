@@ -1,0 +1,11 @@
+# TASK-P7C-A Git Preflight
+
+branch=main
+HEAD=7630ec38e77a52979605148d8888e67d94f1db6f
+origin/main=7630ec38e77a52979605148d8888e67d94f1db6f
+git status --short=(empty)
+remote=https://github.com/dedvmedved-dot/otus-diplom.git
+
+BASELINE_MATCH=YES
+WORKTREE_INITIAL=clean
+BRANCH=main

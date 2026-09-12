@@ -1,0 +1,11 @@
+# TLS / CA model
+
+TLS_CA_MODE is OWNER_INPUT_REQUIRED (depends on the S3 endpoint).
+
+Options: PUBLIC_CA | PRIVATE_CA | CUSTOM_CA_BUNDLE
+
+For private/custom CA, P7C-B would mount a CA bundle (ConfigMap/Secret) into
+Velero/plugin without disabling TLS verification.
+
+Strictly forbidden future design:
+  insecureSkipTLSVerify, curl -k as production, TLS verification disable

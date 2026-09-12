@@ -1,0 +1,14 @@
+=== 46-git-scope-precommit ===
+ M README.md
+?? docs/architecture/p7c-architecture-decision-matrix.md
+?? docs/architecture/p7c-backup-policy-input-contract.md
+?? docs/architecture/p7c-backup-scope-matrix.md
+?? docs/architecture/p7c-backup-security-model.md
+?? docs/architecture/p7c-csi-snapshot-stack-decision.md
+?? docs/architecture/p7c-decision-register.md
+?? docs/architecture/p7c-object-store-plugin-decision.md
+?? docs/architecture/p7c-postgresql-backup-boundary.md
+?? docs/architecture/p7c-runtime-deployment-plan.md
+?? docs/architecture/p7c-s3-input-contract.md
+?? evidence/P7/20260912T214953Z-task-p7c-a-backup-preflight-architecture/
+ONLY_AUTHORIZED_PATHS

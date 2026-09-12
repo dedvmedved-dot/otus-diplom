@@ -1,0 +1,11 @@
+--- storageclass ---
+NAME         PROVISIONER              RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+piraeus-r2   linstor.csi.linbit.com   Delete          WaitForFirstConsumer   true                   11d
+--- csidriver ---
+NAME                     ATTACHREQUIRED   PODINFOONMOUNT   STORAGECAPACITY   TOKENREQUESTS   REQUIRESREPUBLISH   MODES        AGE
+linstor.csi.linbit.com   true             true             true              <unset>         false               Persistent   11d
+--- sc piraeus-r2 ---
+      {"allowVolumeExpansion":true,"apiVersion":"storage.k8s.io/v1","kind":"StorageClass","metadata":{"annotations":{},"name":"piraeus-r2"},"parameters":{"csi.storage.k8s.io/fstype":"ext4","linstor.csi.linbit.com/disklessOnRemaining":"true","linstor.csi.linbit.com/disklessStoragePool":"DfltDisklessStorPool","linstor.csi.linbit.com/placementCount":"2","linstor.csi.linbit.com/resourceGroup":"piraeus-r2","linstor.csi.linbit.com/storagePool":"piraeus-thin","property.linstor.csi.linbit.com/DrbdOptions/Net/protocol":"C"},"provisioner":"linstor.csi.linbit.com","reclaimPolicy":"Delete","volumeBindingMode":"WaitForFirstConsumer"}
+  name: piraeus-r2
+parameters:
+provisioner: linstor.csi.linbit.com

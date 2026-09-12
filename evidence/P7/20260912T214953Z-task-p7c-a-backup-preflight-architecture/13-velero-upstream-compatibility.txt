@@ -1,0 +1,15 @@
+# Velero 1.18.1 upstream compatibility (re-checked)
+
+VELERO_VERSION=1.18.1
+RELEASE_DATE=2026-05-19
+RELEASE_URL=https://github.com/vmware-tanzu/velero/releases/tag/v1.18.1
+
+EXPECTED_K8S_COMPATIBILITY=1.18-latest (per official support policy)
+UPSTREAM_TESTED_K8S_VERSIONS=~1.33 / 1.34 / 1.35 (not 1.36)
+K8S_1_36_EXPLICITLY_TESTED=NO
+K8S_1_36_EXPECTED_COMPATIBLE=YES
+
+VELERO_K8S_1_36_RUNTIME_CANARY_REQUIRED=YES
+
+Note: "expected compatible" is NOT "certified/fully tested". A P7C-B deployment
+canary is mandatory before relying on Velero 1.18.1 on Kubernetes 1.36.2.

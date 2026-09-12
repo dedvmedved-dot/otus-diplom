@@ -1,0 +1,17 @@
+# LINSTOR CSI snapshot capability research
+
+Driver: linstor.csi.linbit.com (CSI driver linstor.csi.linbit.com)
+LINSTOR CSI: 1.11.0 (Piraeus Operator 2.10.6, LINSTOR 1.33.2)
+
+Distinction:
+  1. LOCAL LINSTOR snapshot       = supported (LINSTOR snapshot, intra-cluster)
+  2. Kubernetes CSI VolumeSnapshot = supported by LINSTOR CSI (local snapshots)
+  3. Velero CSI snapshot metadata  = requires external-snapshotter CRDs/controller
+  4. Velero CSI Snapshot Data Movement = requires node-agent + object storage
+  5. LINSTOR-native S3 backup      = separate LINSTOR S3/remote shipping feature
+
+Kubernetes VolumeSnapshot CRDs and snapshot-controller are ABSENT on the cluster
+(verified live). VolumeSnapshotClass is ABSENT.
+
+LINSTOR_CSI_SNAPSHOT_CAPABLE=YES (local snapshot scope)
+OFFSITE_SHIPPING_VIA_CSI_SNAPSHOT_ONLY=NO (local snapshots are NOT offsite)

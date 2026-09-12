@@ -1,0 +1,6 @@
+--- snapshot.storage.k8s.io api-resources ---
+NAME   SHORTNAMES   APIVERSION   NAMESPACED   KIND
+--- groupsnapshot ---
+NAME   SHORTNAMES   APIVERSION   NAMESPACED   KIND
+--- snapshot crds ---
+NO snapshot CRDs

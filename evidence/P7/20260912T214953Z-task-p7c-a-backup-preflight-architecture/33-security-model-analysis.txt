@@ -1,0 +1,15 @@
+# Backup security model
+
+Principles:
+  no plaintext credentials in Git
+  no secret values in evidence
+  no credentials in command-line argv
+  no credentials in URLs
+  Kubernetes Secret references only
+  least privilege
+  separate backup credentials where possible
+
+Object-store credentials delivered via a pre-created Kubernetes Secret
+(namespace/name only referenced by BackupStorageLocation). S3 least-privilege
+permissions: GetObject/PutObject/DeleteObject/ListBucket on the backup bucket;
+Object Lock adds separate retention/delete permission analysis (P7C-B).

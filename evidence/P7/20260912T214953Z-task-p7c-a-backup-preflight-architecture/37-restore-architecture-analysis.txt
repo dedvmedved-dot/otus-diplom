@@ -1,0 +1,11 @@
+# Restore architecture (validation plan, for P7C-B/C)
+
+Must later prove:
+  Kubernetes object restore
+  namespace restore
+  ConfigMap/Secret restore
+  PVC restore path (CSI snapshot or data movement)
+  restore after source object deletion
+  restore with no dependence on original Velero Pod
+
+PostgreSQL database-consistency acceptance is deferred to P8/CNPG/Barman.

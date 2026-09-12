@@ -1,0 +1,9 @@
+# Velero CSI behavior
+
+CSI support integrated into Velero=YES (since Velero 1.14)
+separate velero-plugin-for-csi required=NO (integrated)
+EnableCSI feature flag required=YES (to enable CSI snapshot/restore)
+Kubernetes VolumeSnapshot API prerequisites=YES (external-snapshotter CRDs + controller)
+CSI driver snapshot capability prerequisite=YES (LINSTOR CSI supports local snapshots)
+
+Conclusion: do NOT install a legacy separate velero-plugin-for-csi for 1.18.x.

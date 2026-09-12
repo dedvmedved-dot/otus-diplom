@@ -1,0 +1,15 @@
+# Failure scenario analysis (13 scenarios)
+
+1 loss of Velero Pod -> Deployment self-heals; S3 data intact
+2 loss of one node -> node-agent reschedule; snapshots remain
+3 loss of all control-plane but S3 remains -> restore objects from S3
+4 loss of LINSTOR volume -> CSI snapshot restore (local only)
+5 loss of entire LINSTOR cluster -> requires offsite (S3) data; local snapshots LOST
+6 unavailable S3 endpoint -> backups fail; detection via Velero status
+7 expired/rotated S3 creds -> backup failure; rotate Secret ref
+8 invalid TLS cert -> backup failure; no insecure fallback
+9 Object Lock prevents deletion -> deliberate immutability; retention policy
+10 snapshot-controller unavailable -> CSI snapshots fail; Velero obj backup still ok
+11 CSI snapshot creation failure -> fallback data movement / FS backup
+12 restore to empty cluster -> Velero + CSI restore path
+13 incompatible plugin upgrade -> pin digests; canary before upgrade

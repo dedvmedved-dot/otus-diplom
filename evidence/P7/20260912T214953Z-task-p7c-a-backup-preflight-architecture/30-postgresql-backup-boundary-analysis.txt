@@ -1,0 +1,10 @@
+# PostgreSQL / CloudNativePG backup boundary
+
+Velero should NOT be treated as the sole database-consistency mechanism for
+PostgreSQL. Application/database-aware backup remains a P8 responsibility.
+
+Boundary:
+  Velero  -> Kubernetes objects around PostgreSQL (Deployments/CRDs/ConfigMaps/Secrets)
+  CNPG/Barman -> PostgreSQL-native physical backup + WAL archiving (P8)
+
+P7C-A does not deploy CNPG or Barman. No contradictory double-backup model.

@@ -1,0 +1,20 @@
+# Non-AWS S3 provider compatibility risk
+
+S3_PROVIDER_TYPE is UNKNOWN (not specified). If the eventual target is a
+non-AWS S3-compatible implementation (MinIO, Ceph RGW, Yandex Object Storage,
+Cloudflare R2, etc.), the following must be evaluated in P7C-B canary:
+
+- AWS SDK path-style vs virtual-host addressing
+- checksum (CRC32/CRC64) behavior
+- x-amz-tagging support
+- Object Lock support
+- versioning requirements
+- custom CA handling
+- region / Signature V4 behavior
+- multipart upload behavior
+
+Known public risk: some velero-plugin-for-aws 1.14.x builds have had
+compatibility issues with certain non-AWS S3 implementations around
+tagging/API support.
+
+S3_COMPAT_PROVIDER_CANARY_REQUIRED=YES (for non-AWS S3 unless proven otherwise)

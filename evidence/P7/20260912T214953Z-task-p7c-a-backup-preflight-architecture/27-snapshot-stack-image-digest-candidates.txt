@@ -1,0 +1,12 @@
+# Snapshot stack image digest candidates (proposed, NOT written to images.lock)
+
+external-snapshotter v8.6.0 images:
+  snapshot-controller: registry.k8s.io/sig-storage/snapshot-controller:v8.6.0
+  (digest to be independently resolved at P7C-B deploy time)
+
+csi-snapshotter (already locked): registry.k8s.io/sig-storage/csi-snapshotter:v8.5.0
+  digest sha256:da081c27e8a6d91f36042c1942362d0515ced8d06e18c11b8f893e58c4d6d797
+
+NOTE: csi-snapshotter sidecar v8.5.0 is already present in images.lock (part of
+the LINSTOR CSI controller). The snapshot-controller (cluster-level) and the
+VolumeSnapshot CRDs are NOT installed.

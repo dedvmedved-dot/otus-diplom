@@ -1,0 +1,3 @@
+=== 48-post-push-report-note ===
+Backup preflight + architecture decision package pushed; awaiting Connector audit.
+P7C runtime deployment NOT authorized. Exact NEW SHA reported externally.

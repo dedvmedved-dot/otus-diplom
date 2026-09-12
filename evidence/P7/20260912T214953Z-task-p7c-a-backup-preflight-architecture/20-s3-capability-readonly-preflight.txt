@@ -1,0 +1,8 @@
+# S3 capability read-only preflight
+
+No endpoint and no credential reference exist in Source of Truth.
+
+S3_WRITE_CAPABILITY=NOT_VERIFIED_READ_ONLY
+
+An actual temporary-object PUT/DELETE would require a separate Architect
+authorization and is NOT performed in P7C-A.

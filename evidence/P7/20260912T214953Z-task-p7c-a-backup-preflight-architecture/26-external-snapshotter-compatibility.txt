@@ -1,0 +1,10 @@
+# external-snapshotter compatibility research
+
+Repo: kubernetes-csi/external-snapshotter
+Latest stable: v8.6.0 (2026-05-28)
+Prior: v8.5.0 (2026-02-12), v8.4.0 (2025-10-23)
+
+v8.x line provides VolumeSnapshot CRDs (snapshot.storage.k8s.io/v1),
+snapshot-controller, and (optional) snapshot-validation-webhook.
+
+Kubernetes 1.36.2: v8.6.0 is the recommended candidate (latest stable v8.x).

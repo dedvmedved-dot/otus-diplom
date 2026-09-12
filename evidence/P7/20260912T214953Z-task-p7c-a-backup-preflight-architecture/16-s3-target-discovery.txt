@@ -1,0 +1,17 @@
+# S3 target discovery (factual search of Source of Truth)
+
+Searched: repository config, docs/, inventory/, versions.lock, images.lock,
+approved runtime env vars, secret reference names (metadata only).
+
+RESULT:
+  provider            = NOT FOUND
+  endpoint            = NOT FOUND
+  bucket              = NOT FOUND
+  region              = NOT FOUND
+  path style          = NOT FOUND
+  TLS CA reference    = NOT FOUND
+  Object Lock         = NOT FOUND
+  credential Secret ref= NOT FOUND
+
+No S3/object-storage target is specified in the current Source of Truth.
+Values are NOT invented.

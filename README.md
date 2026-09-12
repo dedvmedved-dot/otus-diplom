@@ -59,8 +59,8 @@ P9  Security / Failure / Performance / Restore / Acceptance
 ```text
 P7A   Observability / Backup Preflight                  FINAL ACCEPTED
 P7B1  Kubelet Serving TLS Bootstrap / CSR Approval      FINAL ACCEPTED
-P7B2  Metrics Server 0.8.1                              IN PROGRESS — PENDING CHATGPT CONNECTOR ACCEPTANCE
-P7C   Velero / Backup Foundation                        NOT AUTHORIZED
+P7B2  Metrics Server 0.8.1                              FINAL ACCEPTED
+P7C   Velero / Backup Foundation                        IN PROGRESS — PREFLIGHT / ARCHITECTURE CLOSURE
 ```
 
 Переход между стадиями — только после явного решения Chief Architect:
@@ -103,14 +103,14 @@ Backup:
 ## Текущий verified baseline
 
 ```text
-Current accepted baseline before P7B2:
-a9ef37c2e85cdbc18220f1e2b816e4425ef898dd
-
-P7B1:
-FINAL ACCEPTED
+Current accepted baseline before P7C:
+7630ec38e77a52979605148d8888e67d94f1db6f
 
 P7B2 (Metrics Server 0.8.1):
-IN PROGRESS — pending Connector Audit
+FINAL ACCEPTED
+
+P7C (Velero / Backup Foundation):
+IN PROGRESS — PREFLIGHT / ARCHITECTURE CLOSURE (no runtime deployment authorized)
 ```
 
 ## Рабочий процесс с репозиторием

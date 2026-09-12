@@ -1,0 +1,7 @@
+# velero-plugin-for-aws compatibility research
+
+Family: velero/velero-plugin-for-aws (object-store plugin for S3-compatible storage)
+Compatibility mapping for Velero 1.18.x -> plugin 1.14.x line.
+
+Latest stable 1.14.x: v1.14.2 (2026-06-26)
+Prior: v1.14.1 (2026-05-19), v1.14.0 (2026-03-06)

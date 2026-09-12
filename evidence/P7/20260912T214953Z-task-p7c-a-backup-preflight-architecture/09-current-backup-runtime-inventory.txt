@@ -1,0 +1,6 @@
+--- velero? ---
+no velero/snapshot deployments
+--- bsl? ---
+error: the server doesn't have a resource type "backupstoragelocation"
+--- volumesnapshotclass? ---
+error: the server doesn't have a resource type "volumesnapshotclass"

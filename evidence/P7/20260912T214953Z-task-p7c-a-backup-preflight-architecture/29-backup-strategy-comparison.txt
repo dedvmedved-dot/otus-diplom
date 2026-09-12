@@ -1,0 +1,16 @@
+# Backup strategy comparison
+
+A. Velero metadata + CSI snapshots
+   + good K8s integration; - local snapshots stay in LINSTOR failure domain
+B. Velero + CSI Snapshot Data Movement
+   + offsite via object storage (node-agent); - needs S3 target + node-agent
+C. Velero object backup + file-system backup (node-agent)
+   + works without CSI snapshots; - slower, per-file consistency limits for DB
+D. Velero objects + LINSTOR-native S3 data backup
+   + DB/block consistent at storage layer; - restore orchestration more complex
+
+LOCAL_SNAPSHOT_ONLY != OFFSITE_BACKUP  (principle)
+
+Recommendation basis: hybrid — Velero (K8s objects) + CSI snapshots (local) +
+CSI Snapshot Data Movement or LINSTOR-native S3 (offsite), depending on the
+Owner-provided S3 target and RPO/RTO.

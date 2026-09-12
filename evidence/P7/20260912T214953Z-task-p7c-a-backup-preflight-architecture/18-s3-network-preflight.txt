@@ -1,0 +1,9 @@
+# S3 network preflight
+
+S3 endpoint is NOT specified in Source of Truth.
+
+S3_DNS=BLOCKED_NO_ENDPOINT
+S3_ROUTE=BLOCKED_NO_ENDPOINT
+S3_TCP=BLOCKED_NO_ENDPOINT
+
+No read-only network probing performed (no target endpoint exists).

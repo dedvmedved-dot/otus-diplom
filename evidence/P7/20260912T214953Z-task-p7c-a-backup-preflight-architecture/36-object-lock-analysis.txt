@@ -1,0 +1,10 @@
+# Object Lock / immutability model
+
+Immutability requirement = OWNER_INPUT_REQUIRED.
+
+If required: bucket versioning prerequisite, Object Lock prerequisite,
+Governance vs Compliance mode, minimum retention period, delete behavior,
+backup-expiration interaction, Velero deletion behavior, plugin/provider limits.
+
+Not recommended merely because it exists; must align with restore/delete lifecycle.
+ARCHITECT/OWNER DECISION REQUIRED.

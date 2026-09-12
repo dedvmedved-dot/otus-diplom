@@ -1,0 +1,17 @@
+# Velero 1.18.1 image digest (independently re-resolved)
+
+registry: docker.io (registry-1.docker.io)
+repo:     velero/velero
+tag:      v1.18.1
+
+linux/amd64 digest: sha256:2752a01188bd8f16572a76b3b2c4331a6a5337a5cbe65715c22ac7f91b31bfa8
+
+P7A candidate digest MATCH=YES
+VELERO_IMAGE_DIGEST_VERIFIED=YES
+
+Proposed lock entry (for P7C-B only; NOT written to images.lock in P7C-A):
+  component: velero
+  image: docker.io/velero/velero
+  tag: "v1.18.1"
+  digest: "sha256:2752a01188bd8f16572a76b3b2c4331a6a5337a5cbe65715c22ac7f91b31bfa8"
+  platform: linux/amd64

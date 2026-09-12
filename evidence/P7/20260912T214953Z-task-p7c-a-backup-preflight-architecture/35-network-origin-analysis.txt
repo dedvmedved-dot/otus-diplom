@@ -1,0 +1,11 @@
+# Network origin model
+
+Backup traffic originates from:
+  - Velero server Pod (object storage for backups/restores)
+  - node-agent DaemonSet Pod (CSI Snapshot Data Movement)
+  - (LINSTOR satellite if LINSTOR-native S3 selected)
+
+Path: Pod -> cluster/node network -> VLAN143 (backup VLAN) -> S3 endpoint.
+
+Node route presence does NOT automatically prove Pod egress. P7C-B must test
+from the actual backup Pod context.

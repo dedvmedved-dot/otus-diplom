@@ -1,0 +1,7 @@
+# Velero 1.18.1 release artifact
+
+release tag: v1.18.1
+release name: v1.18.1
+published:    2026-05-19T08:45:25Z
+html_url:     https://github.com/vmware-tanzu/velero/releases/tag/v1.18.1
+image name:   docker.io/velero/velero:v1.18.1
