@@ -1,0 +1,4 @@
+=== 24-upstream-manifest-sha-recheck ===
+SHA256=4a672c4891902573a3ff753cece5de1bf1f55dd053403dfec39df9d1636b7ff1
+expected: 4a672c4891902573a3ff753cece5de1bf1f55dd053403dfec39df9d1636b7ff1
+UPSTREAM_COMPONENTS_SHA_MATCH=YES

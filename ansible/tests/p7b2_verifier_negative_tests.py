@@ -72,6 +72,39 @@ t("recovery top-nodes partial", True, lambda: V.validate_recovery("uid1", "uid2"
 t("README falsely P7B2 FINAL ACCEPTED", True, lambda: V.validate_readme("P7B1 FINAL ACCEPTED\nP7B2 FINAL ACCEPTED\nP7C NOT AUTHORIZED\nP8 NOT AUTHORIZED"))
 t("README authorizes P7C", True, lambda: V.validate_readme("P7B1 FINAL ACCEPTED\nP7B2 IN PROGRESS\nP7C AUTHORIZED\nP8 NOT AUTHORIZED"))
 t("final PASS before gates", True, lambda: V.validate_gate_order(["FINAL", "K8S", "NODES"]))
+
+# ── R2 static zero-mutation cases ──────────────────────────────────────────────
+_VERIFIER = os.path.join(os.path.dirname(__file__), "..", "playbooks", "p7b2-final-readonly-verify.yml")
+def _vtext():
+    return open(_VERIFIER).read()
+
+def _no_copy():
+    if "ansible.builtin.copy" in _vtext():
+        raise AssertionError("verifier contains ansible.builtin.copy")
+
+def _no_tmp_dest():
+    if "dest: /tmp/p7b2_verify_logic.py" in _vtext():
+        raise AssertionError("verifier writes /tmp/p7b2_verify_logic.py")
+
+def _no_tmp_import():
+    if "/tmp/p7b2_verify_logic.py" in _vtext():
+        raise AssertionError("verifier imports /tmp/p7b2_verify_logic.py")
+
+def _controller_imports_repo():
+    txt = _vtext()
+    if "sys.path.insert" not in txt or "p7b2_verify_logic" not in txt:
+        raise AssertionError("controller-side validation does not import repo shared logic")
+
+def _changed_when_false():
+    if "changed_when: false" not in _vtext():
+        raise AssertionError("verifier read-only tasks missing changed_when: false")
+
+t("verifier has no ansible.builtin.copy", False, _no_copy)
+t("verifier has no dest /tmp/p7b2_verify_logic.py", False, _no_tmp_dest)
+t("verifier does not import /tmp/p7b2_verify_logic.py", False, _no_tmp_import)
+t("controller-side validation imports repo shared logic", False, _controller_imports_repo)
+t("verifier read-only tasks use changed_when: false", False, _changed_when_false)
+
 t("clean fixture", False, lambda: (
     V.validate_args(GOOD_ARGS),
     V.validate_image(GOOD_REQ, GOOD_IID),

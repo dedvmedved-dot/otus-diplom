@@ -1,0 +1,3 @@
+mediaType: application/vnd.docker.distribution.manifest.list.v2+json
+PLATFORM=linux/amd64
+REGISTRY_RESOLVED_DIGEST=sha256:6231fb0a1ffab76c92ab880f51a0d11b290f688373647bcedff85af025dfd8a9

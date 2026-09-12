@@ -1,0 +1,47 @@
+=== 07-negative-harness ===
+--- insecure kubelet flag --- expected=FAIL actual=FAIL OK
+--- deprecated insecure flag --- expected=FAIL actual=FAIL OK
+--- kubelet CA absent --- expected=FAIL actual=FAIL OK
+--- wrong image version --- expected=FAIL actual=FAIL OK
+--- wrong image digest --- expected=FAIL actual=FAIL OK
+--- deployment unavailable --- expected=FAIL actual=FAIL OK
+--- apiservice unavailable --- expected=FAIL actual=FAIL OK
+--- nodemetrics count=2 --- expected=FAIL actual=FAIL OK
+--- node-01 missing --- expected=FAIL actual=FAIL OK
+--- node-02 missing --- expected=FAIL actual=FAIL OK
+--- node-03 missing --- expected=FAIL actual=FAIL OK
+--- cpu empty --- expected=FAIL actual=FAIL OK
+--- memory empty --- expected=FAIL actual=FAIL OK
+--- timestamp missing --- expected=FAIL actual=FAIL OK
+--- malformed timestamp --- expected=FAIL actual=FAIL OK
+--- stale timestamp >120s --- expected=FAIL actual=FAIL OK
+--- timestamp >10s future --- expected=FAIL actual=FAIL OK
+--- window missing --- expected=FAIL actual=FAIL OK
+--- window zero/invalid --- expected=FAIL actual=FAIL OK
+--- kubectl top pods empty --- expected=FAIL actual=FAIL OK
+--- kubectl top nodes missing node --- expected=FAIL actual=FAIL OK
+--- pending serving CSR --- expected=FAIL actual=FAIL OK
+--- serverTLSBootstrap false --- expected=FAIL actual=FAIL OK
+--- cluster-CA trust failure --- expected=FAIL actual=FAIL OK
+--- P6D route missing --- expected=FAIL actual=FAIL OK
+--- VLAN143 missing --- expected=FAIL actual=FAIL OK
+--- Velero present --- expected=FAIL actual=FAIL OK
+--- recovery old UID missing --- expected=FAIL actual=FAIL OK
+--- recovery new UID missing --- expected=FAIL actual=FAIL OK
+--- recovery UID unchanged --- expected=FAIL actual=FAIL OK
+--- recovery APIService marker missing --- expected=FAIL actual=FAIL OK
+--- recovery NodeMetrics marker missing --- expected=FAIL actual=FAIL OK
+--- recovery top-nodes partial --- expected=FAIL actual=FAIL OK
+--- README falsely P7B2 FINAL ACCEPTED --- expected=FAIL actual=FAIL OK
+--- README authorizes P7C --- expected=FAIL actual=FAIL OK
+--- final PASS before gates --- expected=FAIL actual=FAIL OK
+--- verifier has no ansible.builtin.copy --- expected=PASS actual=PASS OK
+--- verifier has no dest /tmp/p7b2_verify_logic.py --- expected=PASS actual=PASS OK
+--- verifier does not import /tmp/p7b2_verify_logic.py --- expected=PASS actual=PASS OK
+--- controller-side validation imports repo shared logic --- expected=PASS actual=PASS OK
+--- verifier read-only tasks use changed_when: false --- expected=PASS actual=PASS OK
+--- clean fixture --- expected=PASS actual=PASS OK
+
+NEGATIVE_TESTS_TOTAL=42
+NEGATIVE_TESTS_FAILED=0
+HARNESS_EXIT=0

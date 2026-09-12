@@ -1,0 +1,11 @@
+# TASK-P7B2-R2 — R1 /tmp residue read-only audit
+
+node-01 /tmp/p7b2_verify_logic.py present=YES
+node-02 /tmp/p7b2_verify_logic.py present=YES
+node-03 /tmp/p7b2_verify_logic.py present=YES
+
+R2_USED_R1_TMP_RESIDUE=NO
+R2_MODIFIED_R1_TMP_RESIDUE=NO
+R2_DELETED_R1_TMP_RESIDUE=NO
+
+No cleanup performed. Cleanup requires separate Architect authorization.

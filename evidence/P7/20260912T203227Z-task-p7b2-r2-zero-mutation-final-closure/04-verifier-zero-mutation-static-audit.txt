@@ -1,0 +1,13 @@
+# TASK-P7B2-R2 — Verifier zero-mutation static audit
+
+Pattern matches in p7b2-final-readonly-verify.yml:
+  ansible.builtin.copy: 0
+  ansible.builtin.template: 0
+  ansible.builtin.file: 0
+  lineinfile: 0
+  blockinfile: 0
+  dest: /tmp/p7b2_verify_logic.py: 0
+
+EXPLICIT_MUTATING_ANSIBLE_TASKS=0
+EXPLICIT_REMOTE_HELPER_WRITES=0
+STATIC_ZERO_MUTATION_AUDIT=PASS

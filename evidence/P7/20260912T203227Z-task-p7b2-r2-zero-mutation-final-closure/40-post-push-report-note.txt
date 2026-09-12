@@ -1,0 +1,3 @@
+=== 40-post-push-report-note ===
+Zero-mutation verifier + final evidence closure pushed; awaiting Connector audit.
+Exact NEW SHA reported externally; RUNTIME_CONFIG_MUTATION=0.

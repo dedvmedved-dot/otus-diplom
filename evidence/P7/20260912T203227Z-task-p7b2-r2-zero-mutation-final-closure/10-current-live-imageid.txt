@@ -1,0 +1,1 @@
+registry.k8s.io/metrics-server/metrics-server@sha256:6231fb0a1ffab76c92ab880f51a0d11b290f688373647bcedff85af025dfd8a9

@@ -1,0 +1,5 @@
+=== 39-git-commit-metadata ===
+BASELINE_SHA=7968c0f52a3832bc8521ace38cd9852263b3c3ea
+PARENT_SHA=7968c0f52a3832bc8521ace38cd9852263b3c3ea
+COMMIT_COUNT_FROM_BASELINE=1
+EXPECTED_COMMIT_MESSAGE=TASK-P7B2-R2: make verifier zero-mutation and close final evidence

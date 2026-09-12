@@ -1,0 +1,5 @@
+=== 19-raw-oci-request ===
+REQUEST_METHOD=GET
+REQUEST_URL=https://registry.k8s.io/v2/metrics-server/metrics-server/manifests/v0.8.1
+ACCEPT=application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json
+AUTHORIZATION=Bearer <REDACTED>
