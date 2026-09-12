@@ -1,0 +1,5 @@
+# TASK-P7B2-R3 — Final marker uniqueness audit
+
+P7B2_FINAL_READONLY_VERIFIER_PASS occurrences in p7b2-final-readonly-verify.yml = 1
+FINAL_PASS_MARKER_OCCURRENCES=1
+UNIQUENESS_RESULT=PASS

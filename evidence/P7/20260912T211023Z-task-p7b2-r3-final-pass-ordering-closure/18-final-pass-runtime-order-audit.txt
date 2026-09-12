@@ -1,0 +1,12 @@
+=== 18-final-pass-runtime-order-audit ===
+transcript line numbers:
+  host-level task (C): 16
+  final gate task (D): 31
+  final PASS marker:   32
+  PLAY RECAP:          34
+HOST_LEVEL_TASK_SEEN=YES
+FINAL_GATE_TASK_SEEN_AFTER_HOST_LEVEL=YES
+FINAL_PASS_MARKER_SEEN_AFTER_HOST_LEVEL=YES
+PLAY_RECAP_AFTER_FINAL_GATE=YES
+HOST_LEVEL_TASK_COMPLETED=YES
+RUNTIME_ORDERING_RESULT=PASS

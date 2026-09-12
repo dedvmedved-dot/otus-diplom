@@ -1,0 +1,5 @@
+# P7B1 downstream preservation
+serverTLSBootstrap/rotateCertificates 3/3 = PASS
+cluster-CA trust + SAN + TLS 3/3 = PASS
+pending serving CSR = 0
+P7B1_NO_METRICS_SERVER_ASSERTION=SUPERSEDED_BY_P7B2

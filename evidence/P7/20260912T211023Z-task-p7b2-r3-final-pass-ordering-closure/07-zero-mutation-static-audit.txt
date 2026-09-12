@@ -1,0 +1,10 @@
+# TASK-P7B2-R3 — Zero-mutation static audit
+
+ansible.builtin.copy=0
+ansible.builtin.template=0
+ansible.builtin.file=0
+lineinfile=0
+blockinfile=0
+explicit remote helper writes=0
+
+ZERO_MUTATION_STATIC_AUDIT=PASS

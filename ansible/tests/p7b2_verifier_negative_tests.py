@@ -105,6 +105,65 @@ t("verifier does not import /tmp/p7b2_verify_logic.py", False, _no_tmp_import)
 t("controller-side validation imports repo shared logic", False, _controller_imports_repo)
 t("verifier read-only tasks use changed_when: false", False, _changed_when_false)
 
+# ── R3 source ordering / control-flow tests ───────────────────────────────────
+FINAL_MARKER = "P7B2_FINAL_READONLY_VERIFIER_PASS"
+HOST_TASK = "Node kubelet TLS + P6D route + P7A VLAN143"
+FINAL_TASK = "P7B2 final PASS gate after all host-level checks"
+CONTROLLER_TASK = "Controller-side validation via shared logic"
+
+def _positions(text):
+    return {
+        "final": text.find(FINAL_MARKER),
+        "host": text.find(HOST_TASK),
+        "final_task": text.find(FINAL_TASK),
+        "controller": text.find(CONTROLLER_TASK),
+    }
+
+def _order_pass(text):
+    p = _positions(text)
+    assert all(v >= 0 for v in p.values()), f"missing section: {p}"
+    assert text.count(FINAL_MARKER) == 1, f"final marker count != 1: {text.count(FINAL_MARKER)}"
+    assert p["final"] > p["host"], "final marker before host-level task"
+    assert p["final"] > p["final_task"], "final marker before final task"
+    assert p["final_task"] > p["host"], "final task before host-level task"
+    assert p["final"] > p["controller"], "final marker inside/before controller task"
+    assert "any_errors_fatal: true" in text, "any_errors_fatal missing/false"
+
+def _order_uniq(text):
+    assert text.count(FINAL_MARKER) == 1, f"final marker count != 1"
+
+def _order_host_before_final(text):
+    p = _positions(text)
+    assert p["host"] >= 0, "host-level task missing"
+    assert p["final"] > p["host"], "final marker before host-level task"
+
+def _order_not_in_controller(text):
+    p = _positions(text)
+    assert p["final"] > p["controller"], "final marker in controller task"
+
+def _order_final_task_after_host(text):
+    p = _positions(text)
+    assert p["final_task"] > p["host"], "final task before host-level task"
+
+def _order_any_errors_fatal(text):
+    assert "any_errors_fatal: true" in text, "any_errors_fatal missing/false"
+
+def _order_zero_mutation(text):
+    if "ansible.builtin.copy" in text or "ansible.builtin.template" in text:
+        raise AssertionError("mutating ansible file task present")
+
+t("ordering: final marker unique (==1)", False, lambda: _order_uniq(_vtext()))
+t("ordering: final marker after host-level task", False, lambda: _order_host_before_final(_vtext()))
+t("ordering: final marker not in controller task", False, lambda: _order_not_in_controller(_vtext()))
+t("ordering: final task after host-level task", False, lambda: _order_final_task_after_host(_vtext()))
+t("ordering: any_errors_fatal true", False, lambda: _order_any_errors_fatal(_vtext()))
+t("ordering: no mutating ansible file tasks", False, lambda: _order_zero_mutation(_vtext()))
+
+# broken-order fixture tests (synthetic source)
+t("fixture: final marker before host-level -> FAIL", True, lambda: _order_host_before_final("P7B2_FINAL_READONLY_VERIFIER_PASS\n" + HOST_TASK))
+t("fixture: duplicate final markers -> FAIL", True, lambda: _order_uniq(FINAL_MARKER + "\n" + FINAL_MARKER))
+t("fixture: host-level task missing -> FAIL", True, lambda: _order_host_before_final("x\n" + FINAL_MARKER))
+
 t("clean fixture", False, lambda: (
     V.validate_args(GOOD_ARGS),
     V.validate_image(GOOD_REQ, GOOD_IID),

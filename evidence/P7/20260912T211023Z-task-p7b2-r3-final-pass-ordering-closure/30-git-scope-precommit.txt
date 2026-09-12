@@ -1,0 +1,5 @@
+=== 30-git-scope-precommit ===
+ M ansible/playbooks/p7b2-final-readonly-verify.yml
+ M ansible/tests/p7b2_verifier_negative_tests.py
+?? evidence/P7/20260912T211023Z-task-p7b2-r3-final-pass-ordering-closure/
+ONLY_AUTHORIZED_PATHS

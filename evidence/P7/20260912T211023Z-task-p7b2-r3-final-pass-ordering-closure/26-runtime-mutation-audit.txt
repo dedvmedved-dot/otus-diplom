@@ -1,0 +1,13 @@
+=== 26-runtime-mutation-audit ===
+R2_metrics_server_apply_ops=0
+R3_metrics_server_apply_ops=0
+R3_metrics_server_pod_delete_ops=0
+R3_apiservice_mutation_ops=0
+R3_kubelet_config_mutation_ops=0
+R3_kubelet_restart_ops=0
+R3_csr_approve_ops=0 R3_csr_deny_ops=0 R3_certificate_mutation_ops=0
+R3_network/route/firewall/storage/systemd_mutation_ops=0
+R3_explicit_remote_file_write_ops=0
+R3_velero_install_ops=0 R3_snapshot_install_ops=0 R3_p8_mutation_ops=0
+RUNTIME_MUTATION=0
+RESULT=PASS

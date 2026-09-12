@@ -1,0 +1,2 @@
+=== 32-post-push-report-note ===
+Final PASS ordering fix pushed; awaiting Connector audit. Exact NEW SHA reported externally.

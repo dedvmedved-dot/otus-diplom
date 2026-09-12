@@ -143,9 +143,6 @@
           print("P7B2_RECOVERY_APISERVICE_OK")
           print("P7B2_RECOVERY_METRICS_OK")
           print("P7B2_RECOVERY_TOP_NODES_OK")
-          print("P7A_NO_METRICS_SERVER_ASSERTION=SUPERSEDED_BY_P7B2")
-          print("P7B1_NO_METRICS_SERVER_ASSERTION=SUPERSEDED_BY_P7B2")
-          print("P7B2_FINAL_READONLY_VERIFIER_PASS")
           PYEOF
       changed_when: false
       delegate_to: localhost
@@ -188,3 +185,17 @@
           print("P7B2_P7A_PRESERVED")
           PYEOF
       changed_when: false
+
+    - name: P7B2 final PASS gate after all host-level checks
+      ansible.builtin.shell:
+        cmd: |
+          python3 << 'PYEOF'
+          print("P7A_NO_METRICS_SERVER_ASSERTION=SUPERSEDED_BY_P7B2")
+          print("P7B1_NO_METRICS_SERVER_ASSERTION=SUPERSEDED_BY_P7B2")
+          print("P7B2_ALL_HOST_LEVEL_GATES_COMPLETED=YES")
+          print("P7B2_FINAL_READONLY_VERIFIER_PASS")
+          PYEOF
+      changed_when: false
+      delegate_to: localhost
+      connection: local
+      run_once: true

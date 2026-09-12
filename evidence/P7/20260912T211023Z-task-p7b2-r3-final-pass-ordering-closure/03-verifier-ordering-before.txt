@@ -1,0 +1,12 @@
+# TASK-P7B2-R3 — Verifier ordering audit (BEFORE, R2 defect)
+
+R2_FINAL_PASS_BEFORE_HOST_LEVEL_TASK=YES
+R2_FINAL_PASS_ORDERING=INVALID
+
+In R2 (commit 71753ca), P7B2_FINAL_READONLY_VERIFIER_PASS was emitted inside the
+controller-side validation task (Task B), structurally BEFORE the host-level
+node checks (Task C: serverTLSBootstrap, rotateCertificates, cluster-CA trust,
+DNS/IP SAN, TLS InternalIP/hostname, P6D route, VLAN143). Therefore the final
+PASS marker could appear in logs before all mandatory gates had executed.
+
+Historical R2 evidence remains unchanged.
