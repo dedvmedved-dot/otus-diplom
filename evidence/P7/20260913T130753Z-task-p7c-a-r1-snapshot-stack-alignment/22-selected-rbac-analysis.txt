@@ -1,0 +1,31 @@
+=== snapshot-controller RBAC (v8.5.0) ===
+--- rbac-snapshot-controller ---
+kind: ServiceAccount
+  name: snapshot-controller
+  namespace: kube-system
+kind: ClusterRole
+  name: snapshot-controller-runner
+kind: ClusterRoleBinding
+  name: snapshot-controller-role
+  - kind: ServiceAccount
+    name: snapshot-controller
+    namespace: kube-system
+  kind: ClusterRole
+  name: snapshot-controller-runner
+kind: Role
+  name: snapshot-controller-leaderelection
+  namespace: kube-system
+kind: RoleBinding
+  name: snapshot-controller-leaderelection
+  namespace: kube-system
+  - kind: ServiceAccount
+    name: snapshot-controller
+--- setup-snapshot-controller ---
+kind: Deployment
+  name: snapshot-controller
+  namespace: kube-system
+  replicas: 2
+      app.kubernetes.io/name: snapshot-controller
+        app.kubernetes.io/name: snapshot-controller
+        - name: snapshot-controller
+          image: registry.k8s.io/sig-storage/snapshot-controller:v8.4.0

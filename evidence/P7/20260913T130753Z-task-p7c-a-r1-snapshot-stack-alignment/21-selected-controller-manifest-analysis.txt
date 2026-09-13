@@ -1,0 +1,11 @@
+# Selected snapshot-controller manifest analysis (v8.5.0)
+
+namespace=kube-system
+replicas=1 (single-controller default; leader-election enabled)
+service account=snapshot-controller
+ClusterRole/ClusterRoleBinding=snapshot-controller + snapshot-controller-runner
+image digest pin=sha256:c6ed5c488dc72a01e7d69caf4d6efe44cb5fecd08fac1a037626171bf90482d1
+
+All 3 nodes carry control-plane NoSchedule taint; future P7C-B1 manifest must add
+the exact minimal control-plane toleration (key node-role.kubernetes.io/control-plane,
+operator Exists, effect NoSchedule). No blanket operator-Exists-with-empty-key.

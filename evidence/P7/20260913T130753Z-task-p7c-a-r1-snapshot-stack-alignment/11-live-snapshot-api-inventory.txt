@@ -1,0 +1,8 @@
+--- snapshot api-resources ---
+NAME   SHORTNAMES   APIVERSION   NAMESPACED   KIND
+--- groupsnapshot ---
+NAME   SHORTNAMES   APIVERSION   NAMESPACED   KIND
+--- snapshot-controller deploy ---
+NO snapshot-controller
+--- volumesnapshotclass ---
+error: the server doesn't have a resource type "volumesnapshotclass"

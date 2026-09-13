@@ -91,8 +91,7 @@ Helm:                4.1.3
 Observability:
   Kubelet serving TLS blocker closed by P7B1 (cluster-CA-trusted serving
   certificates via serverTLSBootstrap + controlled CSR approval).
-  Metrics Server 0.8.1 deployed under P7B2 (secure kubelet TLS) and awaiting
-  Connector acceptance.
+  Metrics Server 0.8.1 deployed under P7B2 (secure kubelet TLS) and FINAL ACCEPTED.
 
 Backup:
   заблокировано до получения параметров S3 (endpoint/bucket/region/object-lock/

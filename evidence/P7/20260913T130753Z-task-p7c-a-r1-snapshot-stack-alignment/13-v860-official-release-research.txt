@@ -1,0 +1,11 @@
+# external-snapshotter v8.6.0 official research
+
+release tag: v8.6.0
+release date: 2026-05-28
+repo: kubernetes-csi/external-snapshotter
+
+snapshot-controller: registry.k8s.io/sig-storage/snapshot-controller:v8.6.0
+  linux/amd64 digest sha256:d1ab1b095eb81ce689abc8b8094badc4c4ea657051749014a631f8cca876a620 (re-resolved)
+
+v8.6.0 is newer but would introduce version skew vs the accepted LINSTOR
+csi-snapshotter sidecar v8.5.0.

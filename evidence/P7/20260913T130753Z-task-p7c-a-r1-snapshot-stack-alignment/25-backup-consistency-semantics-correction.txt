@@ -1,0 +1,14 @@
+# Backup consistency semantics correction (F4/F5)
+
+BLOCK_LEVEL_SNAPSHOT != DATABASE_AWARE_BACKUP
+CRASH_CONSISTENT != APPLICATION_CONSISTENT
+
+Velero/CSI/LINSTOR snapshots are crash/storage-consistent, NOT a substitute for
+WAL-aware/database-native PostgreSQL backup.
+
+LOCAL_CSI_SNAPSHOT != OFFSITE_BACKUP
+
+Primary P7C data path = CSI Snapshot Data Movement to object storage.
+Local LINSTOR CSI snapshot = transient source / local recovery tier (not offsite).
+
+PostgreSQL application consistency owner = CNPG/Barman (P8).

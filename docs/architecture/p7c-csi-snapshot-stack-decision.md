@@ -1,14 +1,12 @@
-# P7C CSI Snapshot Stack Decision
+# P7C CSI Snapshot Stack Decision (R1-aligned)
 
-LINSTOR CSI 1.11.0 supports Kubernetes CSI VolumeSnapshot (local LINSTOR snapshots).
-Kubernetes snapshot API is NOT yet present on the cluster (CRDs + controller ABSENT).
-
-Proposed stack:
-- external-snapshotter v8.6.0 (latest stable, 2026-05-28): VolumeSnapshot CRDs
-  (snapshot.storage.k8s.io/v1) + snapshot-controller (+ optional validation webhook)
-- LINSTOR VolumeSnapshotClass (design in P7C-B, points to linstor.csi.linbit.com)
+existing csi-snapshotter sidecar: v8.5.0 (digest sha256:da081c27... live==lock)
+selected snapshot-controller: v8.5.0 (digest sha256:c6ed5c48...)
+CRD tag/source: external-snapshotter v8.5.0 client/config/crd
+version skew: NONE (sidecar==controller minor)
+Kubernetes 1.36 compatibility: YES (v8.x line)
+VolumeGroupSnapshot CRDs: NOT SELECTED (not required for P7C-B1)
+future VolumeSnapshotClass name: piraeus-r2-snapclass (driver linstor.csi.linbit.com, deletionPolicy Delete)
+P7C-B1 canary: local snapshot/restore + data integrity + cleanup
 
 CSI_SNAPSHOT_STACK_DECISION=READY_FOR_ARCHITECT_APPROVAL
-
-Local CSI snapshots alone do NOT satisfy offsite backup; offsite requires
-CSI Snapshot Data Movement (node-agent -> S3) or LINSTOR-native S3 shipping.

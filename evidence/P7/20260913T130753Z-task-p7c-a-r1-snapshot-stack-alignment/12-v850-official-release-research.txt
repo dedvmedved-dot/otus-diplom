@@ -1,0 +1,13 @@
+# external-snapshotter v8.5.0 official research
+
+release tag: v8.5.0
+release date: 2026-02-12
+repo: kubernetes-csi/external-snapshotter
+
+csi-snapshotter sidecar: registry.k8s.io/sig-storage/csi-snapshotter:v8.5.0
+  digest sha256:da081c27e8a6d91f36042c1942362d0515ced8d06e18c11b8f893e58c4d6d797 (already in images.lock, live-verified)
+snapshot-controller: registry.k8s.io/sig-storage/snapshot-controller:v8.5.0
+  linux/amd64 digest sha256:c6ed5c488dc72a01e7d69caf4d6efe44cb5fecd08fac1a037626171bf90482d1 (re-resolved)
+
+VolumeSnapshot CRDs apiVersion: snapshot.storage.k8s.io/v1 (GA)
+VolumeGroupSnapshot: v1beta1 in v8.x line (NOT required for P7C-B1)

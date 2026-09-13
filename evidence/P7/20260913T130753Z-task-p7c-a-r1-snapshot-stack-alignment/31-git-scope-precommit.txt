@@ -1,0 +1,9 @@
+=== 31-git-scope-precommit ===
+ M README.md
+ M docs/architecture/p7c-architecture-decision-matrix.md
+ M docs/architecture/p7c-csi-snapshot-stack-decision.md
+ M docs/architecture/p7c-decision-register.md
+?? docs/architecture/p7c-snapshot-stack-version-alignment.md
+?? docs/architecture/p7c-stage-split.md
+?? evidence/P7/20260913T130753Z-task-p7c-a-r1-snapshot-stack-alignment/
+ONLY_AUTHORIZED_PATHS

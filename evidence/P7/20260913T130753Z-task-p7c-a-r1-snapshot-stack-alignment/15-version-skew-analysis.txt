@@ -1,0 +1,14 @@
+# Version skew analysis
+
+Accepted LINSTOR CSI controller runs csi-snapshotter sidecar v8.5.0
+(live imageID sha256:da081c27... == images.lock).
+
+snapshot-controller is a separate cluster-level deployment, but it shares the
+VolumeSnapshot API contract with the sidecar.
+
+Option S1 (v8.5.0 controller): MATCH_EXISTING_CSI_SNAPSHOTTER_MINOR=YES, skew=NONE.
+Option S2 (v8.6.0 controller): minor skew 0.1; no official evidence of material
+benefit for P7C-B1's single-volume snapshot requirement; VolumeGroupSnapshot GA
+is NOT required.
+
+Selection follows Architect default: prefer MATCH_EXISTING_CSI_SNAPSHOTTER_MINOR.

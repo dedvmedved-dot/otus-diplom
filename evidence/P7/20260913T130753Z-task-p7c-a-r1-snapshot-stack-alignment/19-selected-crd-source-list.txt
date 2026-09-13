@@ -1,0 +1,8 @@
+=== 19-selected-crd-source-list + 20-sha256 ===
+external-snapshotter v8.5.0 CRD sources (client/config/crd):
+https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/v8.5.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
+  volumesnapshotclasses: sha256=75e6565aac2c0f2949ed13ea884bbaa388cb7be576b558b709cf1168e011828d
+https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/v8.5.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
+  volumesnapshotcontents: sha256=895a3c1e73b60f06a0deb566dd123d01bdf1b2efc5d5ff5231ff8bbcf42dafc7
+https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/v8.5.0/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
+  volumesnapshots: sha256=b032116e987fb1d7d93cec7d942833adeb9d95c9bdc7e00c10b280c2fe4a6c33

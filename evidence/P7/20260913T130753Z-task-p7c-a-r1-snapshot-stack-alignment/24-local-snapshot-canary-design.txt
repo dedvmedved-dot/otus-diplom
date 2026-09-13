@@ -1,0 +1,15 @@
+# Local snapshot/restore canary design (NOT executed in R1)
+
+1 temp namespace
+2 temp small PVC (accepted LINSTOR StorageClass piraeus-r2)
+3 temp pod writes deterministic test data
+4 VolumeSnapshot (class piraeus-r2-snapclass)
+5 wait readyToUse=true
+6 restore new PVC from VolumeSnapshot
+7 read deterministic data; compare checksum
+8 delete canary resources
+9 prove no snapshot/LINSTOR residue
+
+Future P7C-B1 must prove:
+  CSI_SNAPSHOT_CREATE=PASS, CSI_SNAPSHOT_READY=PASS,
+  PVC_RESTORE_FROM_SNAPSHOT=PASS, DATA_INTEGRITY=PASS, CLEANUP=PASS

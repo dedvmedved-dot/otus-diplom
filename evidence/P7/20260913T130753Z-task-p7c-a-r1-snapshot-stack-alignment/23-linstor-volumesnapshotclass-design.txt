@@ -1,0 +1,11 @@
+# LINSTOR VolumeSnapshotClass design (future P7C-B1)
+
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: piraeus-r2-snapclass
+driver: linstor.csi.linbit.com
+deletionPolicy: Delete
+
+deletionPolicy=Delete for the P7C-B1 canary (avoid orphaned local snapshots);
+production policy reviewed separately by Architect/Owner.

@@ -1,25 +1,23 @@
-# P7C Architecture Decision Matrix
+# P7C Architecture Decision Matrix (R1-aligned)
 
-| Criterion | A CSI snap | B CSI data movement | C FS backup | D LINSTOR S3 |
+Consistency semantics: BLOCK_LEVEL_SNAPSHOT != DATABASE_AWARE_BACKUP;
+CRASH_CONSISTENT != APPLICATION_CONSISTENT. Velero/CSI/LINSTOR snapshots are
+crash/storage-consistent, NOT a substitute for WAL-aware PostgreSQL backup.
+
+| Criterion | A CSI snap (local) | B CSI data movement | C FS backup | D LINSTOR S3 |
 |---|---|---|---|---|
 | offsite durability | Low | High | High | High |
 | restore complexity | Low | Medium | Medium | High |
-| database consistency | Low | Low | Low | High (block) |
+| database consistency (application-aware) | NOT SUFFICIENT | NOT SUFFICIENT | NOT SUFFICIENT | crash-consistent only |
 | Kubernetes integration | High | High | Medium | Medium |
 | LINSTOR compatibility | High | High | Medium | High |
 | operational complexity | Low | Medium | Medium | High |
 | security | High | High | High | High |
-| RPO capability | Good | Good | Good | Good |
-| RTO capability | Good | Medium | Medium | Medium |
-| vendor lock-in | Low | Low | Low | Medium |
+| RPO/RTO capability | Good | Good | Good | Good |
 | failure-domain independence | Low | High | High | High |
 
-RECOMMENDED_OPTION=HYBRID (A + B): Velero (K8s objects) + CSI snapshots (local)
-+ CSI Snapshot Data Movement (offsite via S3), with CNPG/Barman owning PostgreSQL
-data in P8. Final offsite selection depends on Owner S3 target.
-
-RATIONALE: Velero object backup provides cluster-resource DR; LINSTOR CSI snapshots
-provide block-level restore; Snapshot Data Movement provides offsite durability.
-PostgreSQL database consistency is explicitly delegated to P8.
+RECOMMENDED_P7C_DATA_PATH = CSI_SNAPSHOT_DATA_MOVEMENT_TO_OBJECT_STORAGE
+LOCAL_CSI_SNAPSHOT_ROLE = TRANSIENT_SOURCE / LOCAL_RECOVERY_TIER, NOT OFFSITE_BACKUP
+POSTGRESQL_APPLICATION_CONSISTENCY_OWNER = CNPG/BARMAN (P8)
 
 ARCHITECT_APPROVAL_REQUIRED=YES

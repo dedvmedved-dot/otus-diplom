@@ -1,0 +1,6 @@
+# Selected snapshot-controller digest
+
+SNAPSHOT_STACK_SELECTED=v8.5.0
+snapshot-controller image: registry.k8s.io/sig-storage/snapshot-controller:v8.5.0
+linux/amd64 digest: sha256:c6ed5c488dc72a01e7d69caf4d6efe44cb5fecd08fac1a037626171bf90482d1
+SNAPSHOT_CONTROLLER_DIGEST_VERIFIED=YES

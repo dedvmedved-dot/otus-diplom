@@ -1,0 +1,20 @@
+# Runtime mutation audit
+
+snapshot_crd_install_ops=0
+snapshot_controller_install_ops=0
+volumesnapshotclass_create_ops=0
+volumesnapshot_create_ops=0
+test_pvc_create_ops=0
+velero_install_ops=0
+velero_plugin_install_ops=0
+backupstoragelocation_create_ops=0
+secret_create_ops=0
+node_agent_install_ops=0
+kubelet_mutation_ops=0
+network_mutation_ops=0
+storage_mutation_ops=0
+systemd_mutation_ops=0
+p8_mutation_ops=0
+
+RUNTIME_MUTATION=0
+RESULT: PASS

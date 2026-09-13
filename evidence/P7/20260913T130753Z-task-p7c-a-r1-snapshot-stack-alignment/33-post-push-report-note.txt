@@ -1,0 +1,1 @@
+Snapshot stack alignment + architecture correction pushed; awaiting Connector audit. P7C runtime NOT authorized.
