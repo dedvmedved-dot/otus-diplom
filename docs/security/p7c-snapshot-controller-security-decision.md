@@ -1,18 +1,19 @@
-# P7C Snapshot Controller Security Decision
+# P7C Snapshot Controller Security Decision (final)
 
-Neither v8.5.0 nor v8.6.0 fully clears the security gate (CVE-2026-42505 Go
-crypto/tls remains applicable in both).
+Call-path correction removed false positives:
+- CVE-2026-42505 (crypto/tls ECH): ECH is NOT configured by client-go/controller
+  => PRESENT_BUT_AFFECTED_FEATURE_UNUSED (not applicable).
+- gRPC advisory: no gRPC server => NOT_APPLICABLE.
+- OTel advisory: platform-specific (Darwin/BSD), Linux runtime => NOT_APPLICABLE.
+- x509/pem/url stdlib: no untrusted input path => PRESENT_BUT_NOT_REACHABLE.
 
-- v8.5.0: go 1.25.5 -> CVE-2026-42505 applicable; x/net 0.49.0 -> CVE-2026-33814 applicable (2 high).
-- v8.6.0: go 1.26.0 -> CVE-2026-42505 applicable; x/net 0.54.0 -> CVE-2026-33814 fixed (1 high).
-
-Comparison: v8.6.0 reduces applicable CVEs but introduces version skew vs LINSTOR
-csi-snapshotter v8.5.0 and does not fix CVE-2026-42505.
+Only material residual: CVE-2026-33814 (x/net/http2) PRESENT_AND_REACHABLE_LOW_EXPOSURE
+in v8.5.0 (HTTP/2 client to a trusted kube-apiserver); FIXED in v8.6.0.
 
 SECURITY_GATE=GO_WITH_DOCUMENTED_ACCEPTED_RISK
-SELECTED_CONTROLLER_VERSION=v8.5.0 (aligned; skew NONE)
+SELECTED_CONTROLLER_VERSION=v8.5.0 (aligned with LINSTOR csi-snapshotter v8.5.0)
 ARCHITECT_RISK_ACCEPTANCE_REQUIRED=YES
-RISK_ITEMS=CVE-2026-42505 (crypto/tls High), CVE-2026-33814 (x/net High, fixed only in v8.6)
+RESIDUAL_RISK=CVE-2026-33814 (x/net/http2) low exposure in v8.5.0 (fixed in v8.6.0)
+VERSION_SKEW_ACCEPTANCE_REQUIRED=NO (v8.5.0 selected; skew NONE)
 
-Hermes does NOT self-approve risk. Runtime exposure is reduced (in-cluster
-controller, no network-exposed server surface), but acceptance belongs to Architect.
+Hermes does NOT self-approve risk. Architect decision required.
