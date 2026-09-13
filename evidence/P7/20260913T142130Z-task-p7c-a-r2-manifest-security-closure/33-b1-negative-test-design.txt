@@ -1,0 +1,6 @@
+# P7C-B1 negative test design (NOT executed)
+
+missing CRD; wrong CRD API version; wrong controller digest; replicas below 2;
+leader election disabled; blanket toleration; RBAC expanded; wrong VolumeSnapshotClass
+driver; wrong deletionPolicy; snapshot never readyToUse; restored PVC data mismatch;
+cleanup residue; P1-P7B2 regression; unexpected Velero object; unexpected S3 mutation.

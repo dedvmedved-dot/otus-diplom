@@ -1,0 +1,7 @@
+# securityContext analysis
+
+Upstream v8.5.0 snapshot-controller runs as non-root (runAsNonRoot) by default in
+recent images, but readOnlyRootFilesystem/capabilities.drop=ALL/seccompProfile are
+NOT confirmed in upstream manifest without runtime canary.
+
+SECURITY_CONTEXT_RUNTIME_CANARY_REQUIRED=YES (do not claim compatibility until proven at P7C-B1 deploy time)

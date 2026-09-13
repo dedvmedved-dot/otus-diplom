@@ -1,0 +1,9 @@
+# v8.5.0 vs v8.6.0 security comparison
+
+version alignment: v8.5.0 aligns with LINSTOR csi-snapshotter v8.5.0 (skew NONE);
+  v8.6.0 introduces 0.1 minor skew.
+CVEs: v8.5.0 has 2 high applicable (tls + x/net); v8.6.0 has 1 high applicable (tls),
+  x/net fixed.
+K8s compatibility: both v8.x (K8s 1.36 expected, not explicit test matrix).
+manifest correctness: both lag one minor in deployment YAML image string.
+operational: v8.5.0 simpler (exact alignment).

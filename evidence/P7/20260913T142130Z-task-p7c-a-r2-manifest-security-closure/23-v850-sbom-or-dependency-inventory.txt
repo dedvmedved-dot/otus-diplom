@@ -1,0 +1,11 @@
+# v8.5.0 dependency inventory (source-based, NOT binary SBOM)
+
+go 1.25.5
+k8s.io/* v0.35.0 (api, apimachinery, client-go, apiserver, component-base)
+google.golang.org/grpc v1.78.0
+golang.org/x/net v0.49.0
+golang.org/x/crypto v0.47.0
+go.opentelemetry.io/otel v1.40.0
+
+V850_SBOM_STATUS=SOURCE_DEPENDENCY_INVENTORY (no binary SBOM; source go.mod used)
+SOURCE_DEPENDENCY_INVENTORY != BINARY_SBOM

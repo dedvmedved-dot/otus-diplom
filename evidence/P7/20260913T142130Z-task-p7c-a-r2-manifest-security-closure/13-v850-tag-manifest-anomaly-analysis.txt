@@ -1,0 +1,13 @@
+# v8.5.0 tag manifest anomaly analysis
+
+v8.5.0 deployment manifest: image=snapshot-controller:v8.4.0, replicas=2
+v8.6.0 deployment manifest: image=snapshot-controller:v8.5.0, replicas=2
+
+Pattern: upstream deploy/kubernetes/snapshot-controller/setup-snapshot-controller.yaml
+lags exactly one minor behind the released image tag. The released image tag is
+normative; the deployment YAML image string is a lagging example.
+
+V850_MANIFEST_IMAGE_MISMATCH_CLASS=EXAMPLE_MANIFEST_LAG
+
+Canonical B1 manifest MUST explicitly pin image v8.5.0@digest; it MUST NOT copy
+the upstream v8.5.0 tag deployment YAML verbatim (that would deploy v8.4.0).

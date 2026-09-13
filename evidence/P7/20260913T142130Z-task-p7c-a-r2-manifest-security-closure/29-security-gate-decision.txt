@@ -1,0 +1,14 @@
+# Security gate decision
+
+Neither release fully clears the security gate: CVE-2026-42505 (Go crypto/tls)
+remains APPLICABLE in BOTH v8.5.0 (go 1.25.5) and v8.6.0 (go 1.26.0).
+
+v8.6.0 reduces applicable CVEs (fixes CVE-2026-33814 via x/net 0.54.0) but
+introduces version skew and does NOT fix CVE-2026-42505.
+
+SECURITY_GATE=GO_WITH_DOCUMENTED_ACCEPTED_RISK
+SELECTED_CONTROLLER_VERSION=v8.5.0 (aligned; skew NONE)
+ARCHITECT_RISK_ACCEPTANCE_REQUIRED=YES
+RISK_ITEMS=CVE-2026-42505 (crypto/tls, High), CVE-2026-33814 (x/net, High, fixed only in v8.6)
+Exposure is reduced (in-cluster controller, no network-exposed server surface),
+but Hermes does NOT self-approve the risk.

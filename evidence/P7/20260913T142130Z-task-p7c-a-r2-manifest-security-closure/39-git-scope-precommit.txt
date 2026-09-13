@@ -1,0 +1,10 @@
+=== 39-git-scope-precommit ===
+ M docs/architecture/p7c-decision-register.md
+ M docs/architecture/p7c-stage-split.md
+?? docs/architecture/p7c-b1-canonical-design.md
+?? docs/architecture/p7c-snapshot-controller-canonical-manifest.md
+?? docs/architecture/p7c-snapshot-controller-rbac.md
+?? docs/security/p7c-snapshot-controller-cve-matrix.md
+?? docs/security/p7c-snapshot-controller-security-decision.md
+?? evidence/P7/20260913T142130Z-task-p7c-a-r2-manifest-security-closure/
+ONLY_AUTHORIZED_PATHS

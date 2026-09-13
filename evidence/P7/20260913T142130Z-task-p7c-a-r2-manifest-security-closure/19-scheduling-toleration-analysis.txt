@@ -1,0 +1,10 @@
+# Scheduling toleration analysis
+
+All 3 nodes carry node-role.kubernetes.io/control-plane:NoSchedule.
+
+Exact minimal toleration:
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+
+Blanket empty-key operator=Exists is forbidden. No extra nodeSelector required.

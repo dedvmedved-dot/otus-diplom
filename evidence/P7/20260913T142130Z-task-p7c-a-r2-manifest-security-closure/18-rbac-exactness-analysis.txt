@@ -1,0 +1,9 @@
+# RBAC exactness analysis
+
+From rbac-snapshot-controller.yaml (v8.5.0):
+  ClusterRole snapshot-controller-runner: get/list/watch on volumesnapshotclasses,
+    volumesnapshotcontents, volumesnapshots (snapshot.storage.k8s.io); get/list/watch
+    on persistentvolumeclaims, persistentvolumes (core); etc.
+  Role snapshot-controller-leaderelection (kube-system): coordination.k8s.io leases.
+
+RBAC_EXPANSION_OVER_UPSTREAM=NO (preserve upstream exactly, no wildcard/cluster-admin).

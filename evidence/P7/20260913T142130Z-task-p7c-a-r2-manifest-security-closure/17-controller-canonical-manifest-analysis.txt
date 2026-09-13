@@ -1,0 +1,13 @@
+# Controller canonical manifest analysis
+
+namespace=kube-system
+replicas=2
+image=registry.k8s.io/sig-storage/snapshot-controller:v8.5.0@sha256:c6ed5c488dc72a01e7d69caf4d6efe44cb5fecd08fac1a037626171bf90482d1
+--v=5
+--leader-election=true
+imagePullPolicy=IfNotPresent
+
+Change classification:
+  image digest pin          = PROJECT_HARDENING (upstream YAML lags image tag)
+  control-plane toleration  = PROJECT_SCHEDULING_ADAPTATION
+  everything else           = UPSTREAM_PRESERVED

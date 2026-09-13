@@ -1,0 +1,13 @@
+# Security issue #1401 analysis (CVE-by-CVE)
+
+crypto/tls   GO-2026-4337  : Go stdlib TLS — go 1.25.5 (v8.5) / 1.26.0 (v8.6) => PRESENT
+crypto/x509  GO-2025-4155/4013/4007 : Go stdlib x509 — PRESENT (both)
+net/url      GO-2026-4341  : Go stdlib — PRESENT (both)
+encoding/pem GO-2025-4009  : Go stdlib — PRESENT (both)
+grpc-go      GHSA-p77j-4mvh-x3m3 : grpc v1.78.0 (v8.5) / v1.81.1 (v8.6) => present (version-dependent)
+otel sdk     GHSA-9h8m-3fm2-qjrq : otel v1.40.0 (v8.5) / v1.43.0 (v8.6) => present (version-dependent)
+
+Reachability: snapshot-controller is an in-cluster controller (TLS client to API
+server via client-go; no network-exposed server surface). Stdlib crypto/tls & x509
+are compiled in; precise reachability of each stdlib CVE is UNKNOWN without a
+runtime SBOM + exploitability analysis.

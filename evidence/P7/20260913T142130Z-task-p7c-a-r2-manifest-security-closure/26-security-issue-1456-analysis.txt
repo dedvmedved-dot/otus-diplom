@@ -1,0 +1,10 @@
+# Security issue #1456 analysis
+
+CVE-2026-42505  crypto/tls to >= 1.25.12 / 1.26.5 / 1.27.0-rc.2
+  v8.5.0 = go 1.25.5  -> APPLICABLE (below fix)
+  v8.6.0 = go 1.26.0  -> APPLICABLE (below 1.26.5)
+  => NOT FIXED in v8.6.0
+
+CVE-2026-33814  golang.org/x/net/http2 to >= 0.53.0
+  v8.5.0 = x/net v0.49.0 -> APPLICABLE (below 0.53.0)
+  v8.6.0 = x/net v0.54.0 -> FIXED_IN_V860

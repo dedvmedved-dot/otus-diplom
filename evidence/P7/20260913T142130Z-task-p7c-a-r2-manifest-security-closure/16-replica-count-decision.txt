@@ -1,0 +1,10 @@
+# Replica count decision
+
+Upstream default: replicas=2 (with --leader-election=true)
+
+3-node HA control-plane, all control-plane tainted, snapshot-controller runs
+with leader election; replicas=2 gives availability across single-node loss.
+
+SNAPSHOT_CONTROLLER_REPLICAS_SELECTED=2
+RATIONALE: upstream default; leader-election enabled; HA control-plane tolerance
+to a single node failure. (replicas=1 noted in R1 was a misreading; upstream is 2.)

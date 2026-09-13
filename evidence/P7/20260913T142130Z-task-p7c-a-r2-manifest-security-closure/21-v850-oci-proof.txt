@@ -1,0 +1,4 @@
+GET https://registry.k8s.io/v2/sig-storage/snapshot-controller/manifests/v8.5.0
+Authorization: Bearer <REDACTED>
+linux/amd64 child digest: sha256:c6ed5c488dc72a01e7d69caf4d6efe44cb5fecd08fac1a037626171bf90482d1
+image config digest: sha256:1725e17bd63917a5bb81f3ca6cd552f77bef007188dad9faaeccd73f4062b450

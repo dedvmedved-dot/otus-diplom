@@ -1,0 +1,7 @@
+# Kubernetes 1.36 compatibility wording (evidence-first)
+
+K8S_1_36_NOT_BELOW_UPSTREAM_MINIMUM=YES (external-snapshotter v8.x requires K8s 1.25+)
+K8S_1_36_EXPLICIT_UPSTREAM_TEST_MATRIX=NOT_PROVEN
+P7C_B1_RUNTIME_CANARY_REQUIRED=YES
+
+Do not state blanket compatibility=YES without explicit test evidence.

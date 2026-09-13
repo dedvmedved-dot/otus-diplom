@@ -1,0 +1,5 @@
+# v8.6.0 released image
+
+registry.k8s.io/sig-storage/snapshot-controller:v8.6.0
+linux/amd64 digest: sha256:d1ab1b095eb81ce689abc8b8094badc4c4ea657051749014a631f8cca876a620
+config digest: sha256:149a5f3d040f22e80ef968b5442d2c7a20cc74f4d7ff75d32010ef7e66b9486c
