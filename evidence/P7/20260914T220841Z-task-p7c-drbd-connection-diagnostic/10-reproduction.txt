@@ -1,0 +1,15 @@
+=== 10-reproduction ===
+namespace/p7c-drbd-diag-220841 created
+persistentvolumeclaim/test-pvc created
+pod/writer created
+ssh: connect to host 192.168.194.38 port 22: Network is unreachable
+--- PVC/PV ---
+STATUS=Bound PV=pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000
+--- LINSTOR resource list ---
++-----------------------------------------------------------------------------------------------------------------------------------------------+
+| ResourceName                             | Node    | Layers       | Usage  | Conns                       |        State | CreatedOn           |
+|===============================================================================================================================================|
+| pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000 | node-01 | DRBD,STORAGE | Unused | [1;31mConnecting(node-02)        [0m | [1;31m    UpToDate[0m | 2026-09-14 22:10:11 |
+| pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000 | node-02 | DRBD,STORAGE | Unused | [1;31mConnecting(node-03,node-01)[0m | [1;31mInconsistent[0m | 2026-09-14 22:10:12 |
+| pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000 | node-03 | DRBD,STORAGE | Unused | [1;31mConnecting(node-02)        [0m | [1;31m  TieBreaker[0m | 2026-09-14 22:10:12 |
++-----------------------------------------------------------------------------------------------------------------------------------------------+

@@ -1,0 +1,46 @@
+=== DRBD listener comparison ===
+--- node-01 satellite: listeners on 172.30.141.x + 7000 ---
+658C1EAC:1B58 0A
+658C1EAC:1B58 01
+--- node-02 satellite: listeners on 172.30.141.x + 7000 ---
+668D1EAC:1B58 0A
+--- node-02 satellite: full listening (LISTEN) ports ---
+0100007F:B641
+00000000:0016
+00000000:00B3
+668D1EAC:1B58
+0100007F:238B
+0100007F:2808
+0100007F:2809
+0100007F:2811
+0100007F:2813
+0100007F:0277
+0100007F:094B
+0100007F:094D
+0100007F:4440
+668C1EAC:094B
+668C1EAC:094C
+668C1EAC:1F0A
+=== firewall node-02 (nftables DRBD/141) ===
+		ip saddr != 127.0.0.0/8 ip daddr 127.0.0.0/8  ct status dnat counter packets 0 bytes 0 drop
+		meta l4proto tcp ip daddr 10.100.156.113  tcp dport 999 counter packets 0 bytes 0 reject
+		ct state invalid xt match nfacct counter packets 0 bytes 0 drop
+		  counter packets 0 bytes 0 drop
+		ip protocol ipencap   counter packets 0 bytes 0 drop
+		 counter packets 872546101 bytes 141599334303 meta mark set mark and 0xffe4ffff
+		 counter packets 872546101 bytes 141599334303 jump cali-from-host-endpoint
+		  counter packets 0 bytes 0 drop
+		 ct state invalid counter packets 0 bytes 0 drop
+		ip protocol udp   udp dport 4789 counter packets 0 bytes 0 drop
+		ip protocol ipencap   counter packets 0 bytes 0 drop
+		  counter packets 0 bytes 0 drop
+		 ct state invalid counter packets 0 bytes 0 drop
+		  counter packets 0 bytes 0 drop
+		 ct state invalid counter packets 0 bytes 0 drop
+--- rp_filter ---
+net.ipv4.conf.all.rp_filter = 1
+sysctl: cannot stat /proc/sys/net/ipv4/conf/bond1/141/rp_filter: Нет такого файла или каталога
+=== node-03 DRBD listener ===
+678C1EAC:1B58 0A
+678C1EAC:1B58 01
+=== decode note: 658C1EAC=172.30.140.101(VLAN140), 668D1EAC=172.30.141.102(VLAN141) ===

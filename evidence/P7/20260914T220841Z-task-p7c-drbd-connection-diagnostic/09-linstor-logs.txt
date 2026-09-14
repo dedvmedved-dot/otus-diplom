@@ -1,0 +1,7 @@
+=== 09-linstor-logs (node-02 satellite) ===
+2026-09-14 22:10:12.640 [DeviceManager] INFO  LINSTOR/Satellite/c6fe08 SYSTEM - DRBD regenerated resource file: /var/lib/linstor.d/pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000.res
+2026-09-14 22:10:12.664 [DeviceManager] INFO  LINSTOR/Satellite/c6fe08 SYSTEM - DRBD meta data created for pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000/0
+2026-09-14 22:10:12.890 [DeviceManager] INFO  LINSTOR/Satellite/c6fe08 SYSTEM - DRBD skipping initial sync for pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000/0
+2026-09-14 22:10:12.942 [DeviceManager] INFO  LINSTOR/Satellite/c6fe08 SYSTEM - Resource 'pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000' [DRBD] adjusted.
+2026-09-14 22:10:28.570 [DeviceManager] INFO  LINSTOR/Satellite/45f95d SYSTEM - Resource 'pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000' [DRBD] adjusted.
+2026-09-14 22:10:44.102 [DeviceManager] INFO  LINSTOR/Satellite/5ad626 SYSTEM - Resource 'pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000' [DRBD] adjusted.

@@ -1,0 +1,14 @@
+# P5C2 reference vs current
+
+P5C2 accepted: DRBD data path VLAN141 ONLY, endpoints 172.30.141.101/102/103,
+satellites hostNetwork=true, DRBD port 7000, 2/2 diskful UpToDate.
+
+Current (this diagnostic):
+  - VLAN141 host interfaces: all 3 UP, IP 172.30.141.x correct, MTU 1500 => MATCH
+  - satellites hostNetwork=true 3/3, dnsPolicy ClusterFirstWithHostNet => MATCH
+  - LINSTOR node interface drbd141 = 172.30.141.x (config correct) => MATCH
+  - ACTUAL DRBD listener binding (from /proc/net/tcp in each satellite):
+      node-01 = 172.30.140.101:7000  (VLAN140)  <- DRIFT from drbd141
+      node-02 = 172.30.141.102:7000  (VLAN141)  <- correct
+      node-03 = 172.30.140.103:7000  (VLAN140)  <- DRIFT from drbd141
+  => DRIFT on node-01 and node-03.

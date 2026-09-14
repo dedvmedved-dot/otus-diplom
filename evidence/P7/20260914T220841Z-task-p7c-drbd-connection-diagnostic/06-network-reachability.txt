@@ -1,0 +1,17 @@
+=== 06-network-reachability (VLAN141, source-pinned) ===
+--- node-01 -> node-02 (141) ---
+--- 172.30.141.102 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1009ms
+rtt min/avg/max/mdev = 0.182/0.244/0.307/0.062 ms
+--- node-01 -> node-03 (141) ---
+--- 172.30.141.103 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1020ms
+rtt min/avg/max/mdev = 0.163/0.240/0.317/0.077 ms
+--- node-02 -> node-01 (141) ---
+--- 172.30.141.101 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1015ms
+rtt min/avg/max/mdev = 0.165/0.190/0.215/0.025 ms
+--- node-02 -> node-03 (141) ---
+--- 172.30.141.103 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1020ms
+rtt min/avg/max/mdev = 0.183/0.196/0.210/0.013 ms

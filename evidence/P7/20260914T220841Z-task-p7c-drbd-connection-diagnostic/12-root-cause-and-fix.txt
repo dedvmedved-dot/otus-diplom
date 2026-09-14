@@ -1,0 +1,33 @@
+# Root cause and fix
+
+ROOT CAUSE CLASSIFICATION: C. LINSTOR_ENDPOINT_SELECTION_ERROR
+  (supporting: B. VLAN141_INTERFACE_OR_ADDRESS_DRIFT on node-01/node-03 satellites)
+
+STATEMENT:
+  LINSTOR node-interface config lists drbd141=172.30.141.x for all three nodes,
+  but the running satellites bind the DRBD transport listener to the default-ipv4
+  (VLAN140, 172.30.140.x) on node-01 and node-03, while node-02 correctly binds
+  VLAN141 (172.30.141.x). The result is an asymmetric DRBD endpoint set:
+    - node-01 (VLAN140) <-> node-03 (VLAN140) = Established
+    - node-02 (VLAN141) -> node-01/node-03 (VLAN140) = Connecting (stuck)
+  so node-02's diskful peer never reaches UpToDate (Inconsistent).
+
+  Evidence: /proc/net/tcp LISTEN 0x1B58(7000):
+    node-01 658C1EAC = 172.30.140.101 (VLAN140)
+    node-02 668D1EAC = 172.30.141.102 (VLAN141)
+    node-03 678C1EAC = 172.30.140.103 (VLAN140)
+  L3 ping on VLAN141 is PASS, so this is NOT an L3/routing failure; it is a
+  DRBD endpoint/interface binding asymmetry.
+
+RECOMMENDED FIX (do not apply in this task):
+  Reconcile the DRBD transport on node-01 and node-03 satellites to bind to the
+  drbd141 interface (172.30.141.x) instead of default-ipv4 (VLAN140), so all three
+  satellites share VLAN141 as the DRBD data path (as P5C2 accepted). This is a
+  LINSTOR/satellite endpoint reconciliation, not a network/routing change.
+
+BLAST_RADIUS: LINSTOR satellite DRBD interface binding (node-01, node-03)
+ROLLBACK: re-point DRBD interface back (config-only, reversible)
+P5C2_ARCHITECTURE_PRESERVED: YES (restores VLAN141-only DRBD path)
+
+DRBD_REMEDIATION_READY: YES (root cause proven, fix narrowly scoped)
+RETRY_B1_READY: NO (remediation not yet executed/verified)

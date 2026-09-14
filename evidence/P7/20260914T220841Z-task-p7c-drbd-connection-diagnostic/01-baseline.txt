@@ -1,0 +1,5 @@
+# Baseline
+branch=main
+HEAD=abefd66c574d9e7e62d07faab8aa43f6d2680a25
+origin/main=abefd66c574d9e7e62d07faab8aa43f6d2680a25
+worktree=clean

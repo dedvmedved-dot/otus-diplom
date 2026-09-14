@@ -1,0 +1,4 @@
+=== 04-satellite-hostnetwork ===
+linstor-satellite.node-01-vsdpr node=node-01 hostNetwork=true dnsPolicy=ClusterFirstWithHostNet podIP=172.30.140.101
+linstor-satellite.node-02-pxwpc node=node-02 hostNetwork=true dnsPolicy=ClusterFirstWithHostNet podIP=172.30.140.102
+linstor-satellite.node-03-zrggg node=node-03 hostNetwork=true dnsPolicy=ClusterFirstWithHostNet podIP=172.30.140.103

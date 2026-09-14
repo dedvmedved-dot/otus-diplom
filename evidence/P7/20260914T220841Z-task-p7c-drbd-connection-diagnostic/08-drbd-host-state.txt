@@ -1,0 +1,122 @@
+=== 08-drbd-host-state (drbdsetup on hosts) ===
+===== host 192.168.194.38 =====
+NO drbdsetup on host
+version: 9.3.2 (api:2/proto:118-124)
+GIT-hash: 0605140bf521251f4f362b5bad2eeaf33dba1e9f build by @linstor-satellite.node-01-w9zbx, 2026-09-01 00:22:57
+Transports (api:22): tcp (9.3.2) lb-tcp (9.3.2) rdma (9.3.2)
+drbd_transport_rdma    65536  0
+drbd_transport_lb_tcp    36864  0
+drbd_transport_tcp     36864  0
+handshake              32768  1 drbd_transport_tcp
+drbd                  847872  3 drbd_transport_lb_tcp,drbd_transport_rdma,drbd_transport_tcp
+rdma_cm               118784  3 drbd_transport_rdma,nvme_rdma,nvmet_rdma
+ib_core               409600  6 rdma_cm,drbd_transport_rdma,nvme_rdma,nvmet_rdma,iw_cm,ib_cm
+lru_cache              16384  1 drbd
+libcrc32c              16384  5 nf_conntrack,nf_nat,dm_persistent_data,nf_tables,drbd
+===== host 192.168.194.40 =====
+NO drbdsetup on host
+version: 9.3.2 (api:2/proto:118-124)
+GIT-hash: 0605140bf521251f4f362b5bad2eeaf33dba1e9f build by @linstor-satellite.node-02-pk7gv, 2026-09-01 00:22:54
+Transports (api:22): tcp (9.3.2) lb-tcp (9.3.2) rdma (9.3.2)
+drbd_transport_rdma    65536  0
+drbd_transport_lb_tcp    36864  0
+drbd_transport_tcp     36864  0
+handshake              32768  1 drbd_transport_tcp
+drbd                  847872  3 drbd_transport_lb_tcp,drbd_transport_rdma,drbd_transport_tcp
+rdma_cm               118784  3 drbd_transport_rdma,nvme_rdma,nvmet_rdma
+ib_core               409600  6 rdma_cm,drbd_transport_rdma,nvme_rdma,nvmet_rdma,iw_cm,ib_cm
+lru_cache              16384  1 drbd
+libcrc32c              16384  5 nf_conntrack,nf_nat,dm_persistent_data,nf_tables,drbd
+===== host 192.168.194.39 =====
+NO drbdsetup on host
+version: 9.3.2 (api:2/proto:118-124)
+GIT-hash: 0605140bf521251f4f362b5bad2eeaf33dba1e9f build by @linstor-satellite.node-03-bbzts, 2026-09-01 00:22:55
+Transports (api:22): tcp (9.3.2) lb-tcp (9.3.2) rdma (9.3.2)
+drbd_transport_rdma    65536  0
+drbd_transport_lb_tcp    36864  0
+drbd_transport_tcp     36864  0
+handshake              32768  1 drbd_transport_tcp
+drbd                  847872  3 drbd_transport_lb_tcp,drbd_transport_rdma,drbd_transport_tcp
+rdma_cm               118784  3 drbd_transport_rdma,nvme_rdma,nvmet_rdma
+ib_core               409600  6 rdma_cm,drbd_transport_rdma,nvme_rdma,nvmet_rdma,iw_cm,ib_cm
+lru_cache              16384  1 drbd
+libcrc32c              16384  5 nf_conntrack,nf_nat,dm_persistent_data,nf_tables,drbd
+=== 08-drbd-host-state (satellite container) ===
+--- node-02 satellite drbdsetup status ---
+pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000 role:Secondary suspended:quorum
+  disk:Inconsistent quorum:no open:no blocked:upper
+  node-01 connection:Connecting
+  node-03 connection:Connecting
+
+--- node-02 satellite ss -tlnp (DRBD listener) ---
+   0: 0100007F:B641 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 573613 2 00000000a4c9d008 100 0 0 10 0                    
+   1: 00000000:0016 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 65604 1 0000000017f57aa1 100 0 0 10 0                     
+   2: 00000000:00B3 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 3184289 1 00000000f7b7252e 100 0 0 10 0                   
+   3: 668D1EAC:1B58 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 76231732 1 00000000615f1237 100 0 0 10 0                  
+   4: 0100007F:238B 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 3177143 2 0000000013e14d16 100 0 0 10 0                   
+   5: 0100007F:2808 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 59507514 2 00000000027ea5cd 100 0 0 10 0                  
+   6: 0100007F:2809 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 613492 2 0000000023c51123 100 0 0 10 0                    
+   7: 0100007F:2811 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 1962808 2 00000000e9dd9b3a 100 0 0 10 0                   
+   8: 0100007F:2813 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 1997892 2 00000000c6eb3b95 100 0 0 10 0                   
+   9: 0100007F:0277 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 75932229 1 00000000a6377180 100 0 0 10 0                  
+--- node-02 satellite DRBD port (grep 7000/7788/7789) ---
+00000000:0016
+00000000:00B3
+0100007F:0277
+0100007F:094B
+0100007F:094D
+0100007F:238B
+0100007F:2808
+0100007F:2809
+0100007F:2811
+0100007F:2813
+0100007F:4440
+0100007F:800E
+0100007F:801E
+0100007F:8048
+0100007F:8058
+0100007F:806C
+0100007F:8082
+0100007F:808E
+0100007F:80A6
+0100007F:80B8
+0100007F:81CE
+0100007F:81D0
+0100007F:81E4
+0100007F:81F8
+0100007F:8218
+0100007F:8224
+0100007F:8240
+0100007F:824C
+0100007F:825C
+0100007F:8272
+--- node-02 satellite drbdsetup status (json, brief) ---
+pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000 | conn: ['Connecting', 'Connecting'] | peer-disk: [None, None] | disk: None
+--- linstor resource connection list ---
+usage: linstor resource-connection list [-h] [-p]
+                                        [-g {source,target,properties,port} [{source,target,properties,port} ...]]
+                                        [-s SHOW_PROPS [SHOW_PROPS ...]]
+                                        resource_name
+linstor resource-connection list: error: too few arguments
+command terminated with exit code 2
+=== dmesg DRBD (node-02 host) ===
+[2383373.525706] drbd pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000 node-01: Starting sender thread (peer-node-id 0)
+[2383373.528549] drbd pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000 node-03: Starting sender thread (peer-node-id 2)
+[2383373.551676] drbd pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000/0 drbd1000: meta-data IO uses: blk-bio
+[2383373.551898] drbd pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000: susp-io( no -> quorum ) [attach]
+[2383373.551909] drbd pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000/0 drbd1000: disk( Diskless -> Attaching ) [attach]
+[2383373.551937] drbd pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000/0 drbd1000: Maximum number of peer devices = 7
+[2383373.552301] drbd pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000: Method to ensure write ordering: flush
+[2383373.552314] drbd pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000/0 drbd1000: day0 volume (all bitmap and history UUIDs zero), new region assumed zeroed
+[2383373.552322] drbd pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000/0 drbd1000: Allocating 228 KiB for new bitmap
+[2383373.552343] drbd pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000/0 drbd1000: resync bitmap: bits=263102 bits_4k=263102 words=28777 pages=57
+[2383373.552350] drbd1000: detected capacity change from 0 to 2104816
+[2383373.552355] drbd pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000/0 drbd1000: size = 1028 MB (1052408 KB)
+[2383373.552369] drbd pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000/0 drbd1000: disk( Attaching -> Inconsistent ) [attach]
+[2383373.552375] drbd pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000/0 drbd1000: attached to current UUID: FEEB73061A8CD4BA
+[2383373.556023] drbd pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000 node-01: conn( StandAlone -> Unconnected ) [connect]
+[2383373.556361] drbd pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000 node-01: Starting receiver thread (peer-node-id 0)
+[2383373.556483] drbd pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000 node-01: conn( Unconnected -> Connecting ) [connecting]
+[2383373.558698] drbd pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000 node-03: conn( StandAlone -> Unconnected ) [connect]
+[2383373.558755] drbd pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000 node-03: Starting receiver thread (peer-node-id 2)
+[2383373.558848] drbd pvc-308c4a62-fa57-4f35-9cc3-1ab4fcc83000 node-03: conn( Unconnected -> Connecting ) [connecting]

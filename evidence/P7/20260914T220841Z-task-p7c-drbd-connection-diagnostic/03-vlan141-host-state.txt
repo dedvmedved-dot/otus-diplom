@@ -1,0 +1,70 @@
+=== 03-vlan141-host-state (3 nodes) ===
+===== node-01 (192.168.194.38) =====
+--- bond1 / bond1.141 ---
+bond1            UP             6c:b3:11:61:d4:94 <BROADCAST,MULTICAST,MASTER,UP,LOWER_UP> 
+bond1.141@bond1  UP             6c:b3:11:61:d4:94 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+--- addr (141) ---
+bond1            UP             
+bond1.141@bond1  UP             172.30.141.101/24 fe80::ac4f:1274:315a:d25a/64 
+--- VLAN141 IP ---
+16: bond1.141@bond1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000
+    inet 172.30.141.101/24 brd 172.30.141.255 scope global noprefixroute bond1.141
+--- bond1 slave state ---
+MII Status: up
+Slave Interface: ens2f2
+MII Status: up
+Speed: 10000 Mbps
+Duplex: full
+Slave Interface: ens2f3
+MII Status: up
+Speed: 10000 Mbps
+Duplex: full
+--- link errors ---
+    RX:  bytes packets errors dropped  missed   mcast           
+    TX:  bytes packets errors dropped carrier collsns           
+===== node-02 (192.168.194.40) =====
+--- bond1 / bond1.141 ---
+bond1            UP             6c:b3:11:61:d3:24 <BROADCAST,MULTICAST,MASTER,UP,LOWER_UP> 
+bond1.141@bond1  UP             6c:b3:11:61:d3:24 <BROADCAST,MULTICAST,UP,LOWER_UP> 
+--- addr (141) ---
+bond1            UP             
+bond1.141@bond1  UP             172.30.141.102/24 fe80::7626:7340:9569:1e88/64 
+--- VLAN141 IP ---
+25: bond1.141@bond1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000
+    inet 172.30.141.102/24 brd 172.30.141.255 scope global noprefixroute bond1.141
+--- bond1 slave state ---
+MII Status: up
+Slave Interface: ens2f2
+MII Status: up
+Speed: 10000 Mbps
+Duplex: full
+Slave Interface: ens2f3
+MII Status: up
+Speed: 10000 Mbps
+Duplex: full
+--- link errors ---
+    RX:  bytes packets errors dropped  missed   mcast           
+    TX:  bytes packets errors dropped carrier collsns           
+===== node-03 (192.168.194.39) =====
+--- bond1 / bond1.141 ---
+bond1            UP             6c:b3:11:61:ca:7c <BROADCAST,MULTICAST,MASTER,UP,LOWER_UP> 
+bond1.141@bond1  UP             6c:b3:11:61:ca:7c <BROADCAST,MULTICAST,UP,LOWER_UP> 
+--- addr (141) ---
+bond1            UP             
+bond1.141@bond1  UP             172.30.141.103/24 fe80::9a38:61dc:5c63:dfcb/64 
+--- VLAN141 IP ---
+1095: bond1.141@bond1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000
+    inet 172.30.141.103/24 brd 172.30.141.255 scope global noprefixroute bond1.141
+--- bond1 slave state ---
+MII Status: up
+Slave Interface: ens2f2
+MII Status: up
+Speed: 10000 Mbps
+Duplex: full
+Slave Interface: ens2f3
+MII Status: up
+Speed: 10000 Mbps
+Duplex: full
+--- link errors ---
+    RX:  bytes packets errors dropped  missed   mcast           
+    TX:  bytes packets errors dropped carrier collsns           
