@@ -1,0 +1,14 @@
+# Final security gate
+
+After exhaustive 17-CVE classification:
+- No CRITICAL applicable in either version.
+- v8.5.0: 2 High runtime-relevant (CVE-2026-32283 tls KeyUpdate, CVE-2026-33814 http2),
+  both client-side low exposure.
+- v8.6.0: 1 High runtime-relevant (CVE-2026-32283 tls KeyUpdate); CVE-2026-33814 fixed via x/net 0.54.
+
+SECURITY_GATE=GO_WITH_DOCUMENTED_ACCEPTED_RISK
+SELECTED_CONTROLLER_VERSION=v8.6.0
+ARCHITECT_RISK_ACCEPTANCE_REQUIRED=YES
+VERSION_SKEW_ACCEPTANCE_REQUIRED=YES (v8.6 controller + v8.5 sidecar)
+
+Residual risk: CVE-2026-32283 (crypto/tls TLS 1.3 KeyUpdate) client-side low exposure.

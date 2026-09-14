@@ -1,0 +1,8 @@
+# Canonical field provenance correction (F2)
+
+minReadySeconds=35            = UPSTREAM_PRESERVED (R3 incorrectly marked PROJECT_HARDENING)
+strategy.type=RollingUpdate   = UPSTREAM_PRESERVED
+rollingUpdate.maxSurge=0      = UPSTREAM_PRESERVED
+rollingUpdate.maxUnavailable=1= UPSTREAM_PRESERVED
+image digest pin              = PROJECT_HARDENING (upstream YAML lags image tag)
+control-plane toleration      = PROJECT_SCHEDULING_ADAPTATION

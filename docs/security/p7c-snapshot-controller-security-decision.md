@@ -1,19 +1,12 @@
-# P7C Snapshot Controller Security Decision (final)
+# P7C Snapshot Controller Security Decision (R4-final)
 
-Call-path correction removed false positives:
-- CVE-2026-42505 (crypto/tls ECH): ECH is NOT configured by client-go/controller
-  => PRESENT_BUT_AFFECTED_FEATURE_UNUSED (not applicable).
-- gRPC advisory: no gRPC server => NOT_APPLICABLE.
-- OTel advisory: platform-specific (Darwin/BSD), Linux runtime => NOT_APPLICABLE.
-- x509/pem/url stdlib: no untrusted input path => PRESENT_BUT_NOT_REACHABLE.
+Exhaustive 17-CVE ledger complete. No CRITICAL applicable.
 
-Only material residual: CVE-2026-33814 (x/net/http2) PRESENT_AND_REACHABLE_LOW_EXPOSURE
-in v8.5.0 (HTTP/2 client to a trusted kube-apiserver); FIXED in v8.6.0.
+v8.5.0: 2 High runtime-relevant (CVE-2026-32283 tls KeyUpdate, CVE-2026-33814 http2).
+v8.6.0: 1 High runtime-relevant (CVE-2026-32283); CVE-2026-33814 fixed (x/net 0.54).
+v8.6.0 also uses k8s.io/client-go v0.36.1 (K8s 1.36 exact match) vs v8.5.0 v0.35.0.
 
 SECURITY_GATE=GO_WITH_DOCUMENTED_ACCEPTED_RISK
-SELECTED_CONTROLLER_VERSION=v8.5.0 (aligned with LINSTOR csi-snapshotter v8.5.0)
-ARCHITECT_RISK_ACCEPTANCE_REQUIRED=YES
-RESIDUAL_RISK=CVE-2026-33814 (x/net/http2) low exposure in v8.5.0 (fixed in v8.6.0)
-VERSION_SKEW_ACCEPTANCE_REQUIRED=NO (v8.5.0 selected; skew NONE)
-
-Hermes does NOT self-approve risk. Architect decision required.
+SELECTED_CONTROLLER_VERSION=v8.6.0
+ARCHITECT_RISK_ACCEPTANCE_REQUIRED=YES (CVE-2026-32283)
+VERSION_SKEW_ACCEPTANCE_REQUIRED=YES (v8.6 controller + v8.5 sidecar)

@@ -1,0 +1,7 @@
+# Risk acceptance candidate summary (PROPOSED, NOT APPROVED)
+
+Risk: CVE-2026-32283 (Go crypto/tls TLS 1.3 KeyUpdate) present in both v8.5 (go 1.25.5)
+and v8.6 (go 1.26.0). Client-side TLS 1.3 to trusted kube-apiserver.
+Precondition: an unauthenticated TLS 1.3 KeyUpdate record causing connection retention.
+Mitigation: reduced exposure (in-cluster controller, trusted API server); fixed in a
+future Go patch release. See docs/security/p7c-b1-risk-acceptance-candidate.md.

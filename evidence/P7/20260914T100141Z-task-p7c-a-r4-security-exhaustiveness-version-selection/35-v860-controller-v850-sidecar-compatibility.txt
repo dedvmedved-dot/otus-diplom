@@ -1,0 +1,14 @@
+# v8.6 controller + v8.5 sidecar compatibility
+
+snapshot-controller (cluster-level) and csi-snapshotter (LINSTOR CSI sidecar)
+interact INDIRECTLY through Kubernetes objects (VolumeSnapshot/VolumeSnapshotContent/
+VolumeSnapshotClass) and the CSI workflow. No direct RPC/protocol coupling.
+
+- VolumeSnapshot v1 API: stable, shared by both.
+- CRDs: v8.5.0 == v8.6.0 (identical single-volume CRDs, same SHA256).
+- CSI spec: stable (v1).
+- VolumeGroupSnapshot: NOT selected.
+
+MIXED_860_CONTROLLER_850_SIDECAR=COMPATIBLE_WITH_CANARY_REQUIRED
+MIXED_VERSION_SECURITY_BENEFIT=YES (x/net 0.54 fixes CVE-2026-33814)
+MIXED_VERSION_OPERATIONAL_RISK=LOW (indirect interaction; canary verifies)

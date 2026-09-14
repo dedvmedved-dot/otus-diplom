@@ -1,0 +1,18 @@
+# Upstream v8.5.0 field map (provenance)
+
+namespace = EXPLICIT_UPSTREAM
+replicas = EXPLICIT_UPSTREAM (2)
+selector = EXPLICIT_UPSTREAM
+minReadySeconds = EXPLICIT_UPSTREAM (35)
+strategy.type = EXPLICIT_UPSTREAM (RollingUpdate)
+maxSurge = EXPLICIT_UPSTREAM (0)
+maxUnavailable = EXPLICIT_UPSTREAM (1)
+pod labels = EXPLICIT_UPSTREAM
+serviceAccountName = EXPLICIT_UPSTREAM
+container name = EXPLICIT_UPSTREAM
+image ref = EXPLICIT_UPSTREAM (but LAGS: v8.4.0)
+args = EXPLICIT_UPSTREAM (--v=5 --leader-election=true)
+imagePullPolicy = EXPLICIT_UPSTREAM (IfNotPresent)
+restartPolicy/dnsPolicy/terminationGracePeriodSeconds = KUBERNETES_DEFAULT (not in YAML)
+securityContext = (not explicit upstream)
+nodeSelector/affinity/tolerations = (not explicit upstream)

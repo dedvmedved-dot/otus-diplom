@@ -1,0 +1,13 @@
+# Upstream v8.5.0 deployment YAML (key fields, re-fetched)
+
+namespace=kube-system
+replicas=2
+selector: matchLabels app.kubernetes.io/name=snapshot-controller
+minReadySeconds=35            (EXPLICIT_UPSTREAM)
+strategy.type=RollingUpdate   (EXPLICIT_UPSTREAM)
+strategy.rollingUpdate.maxSurge=0        (EXPLICIT_UPSTREAM)
+strategy.rollingUpdate.maxUnavailable=1  (EXPLICIT_UPSTREAM)
+serviceAccountName=snapshot-controller
+image=snapshot-controller:v8.4.0 (LAG)
+args: --v=5 --leader-election=true
+imagePullPolicy=IfNotPresent

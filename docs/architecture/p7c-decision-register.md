@@ -1,4 +1,4 @@
-# P7C Decision Register (R3-final)
+# P7C Decision Register (R4-final)
 
 | ID | Decision | Status | Evidence | Next action |
 |---|---|---|---|---|
@@ -8,7 +8,7 @@
 | D4 | S3 endpoint/bucket/region | OWNER_INPUT_REQUIRED | not found | Owner input |
 | D5 | credential secret ref | OWNER_INPUT_REQUIRED | not found | Owner input |
 | D6 | Object Lock policy | OWNER_INPUT_REQUIRED | not specified | Owner input |
-| D7 | external-snapshotter version | PROPOSED | v8.5.0 digest c6ed5c48; gate=GO_WITH_DOCUMENTED_ACCEPTED_RISK (CVE-2026-33814 low exposure) | Architect risk acceptance |
+| D7 | external-snapshotter version | PROPOSED | snapshot-controller v8.6.0 digest d1ab1b09 (k8s.io 0.36.1 exact) | Architect approval + skew acceptance |
 | D8 | CSI snapshot API enablement | PROPOSED | P7C-B1 (NOT AUTHORIZED) | Architect authorization |
 | D9 | VolumeSnapshotClass | PROPOSED | piraeus-r2-snapclass / linstor.csi.linbit.com / Delete | Architect approval |
 | D10 | data movement | PROPOSED | WAITING FOR S3 OWNER INPUT | Owner input |

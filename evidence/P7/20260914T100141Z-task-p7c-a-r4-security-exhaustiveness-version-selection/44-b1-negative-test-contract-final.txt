@@ -1,0 +1,7 @@
+# P7C-B1 negative test contract (final)
+wrong controller version => FAIL; wrong digest => FAIL; replicas != 2 => FAIL;
+leader election false => FAIL; minReadySeconds missing/wrong => FAIL; maxSurge != 0 => FAIL;
+maxUnavailable != 1 => FAIL; blanket toleration => FAIL; RBAC expansion => FAIL; group
+snapshot CRDs => FAIL; wrong VSC driver => FAIL; wrong deletionPolicy => FAIL; snapshot
+not ready => FAIL; checksum mismatch => FAIL; cleanup residue => FAIL; Velero resource
+=> FAIL; S3 mutation => FAIL.

@@ -1,0 +1,1 @@
+Security ledger + version selection pushed; awaiting Connector audit. P7C-B1 runtime NOT authorized.

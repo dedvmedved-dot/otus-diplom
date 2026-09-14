@@ -1,0 +1,7 @@
+# Selected controller OCI proof (v8.6.0)
+
+GET https://registry.k8s.io/v2/sig-storage/snapshot-controller/manifests/v8.6.0
+Accept: application/vnd.oci.image.index.v1+json
+Authorization: Bearer <REDACTED>
+linux/amd64 child digest: sha256:d1ab1b095eb81ce689abc8b8094badc4c4ea657051749014a631f8cca876a620
+config digest: sha256:149a5f3d040f22e80ef968b5442d2c7a20cc74f4d7ff75d32010ef7e66b9486c

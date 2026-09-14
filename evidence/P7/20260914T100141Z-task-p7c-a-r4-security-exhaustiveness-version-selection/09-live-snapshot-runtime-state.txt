@@ -1,0 +1,3 @@
+NAME   SHORTNAMES   APIVERSION   NAMESPACED   KIND
+--- snapshot-controller? ---
+NO snapshot-controller

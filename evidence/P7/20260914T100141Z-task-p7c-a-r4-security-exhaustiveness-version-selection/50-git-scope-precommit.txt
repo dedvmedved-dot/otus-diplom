@@ -1,0 +1,10 @@
+=== 50-git-scope-precommit ===
+ M docs/architecture/p7c-b1-canonical-design.md
+ M docs/architecture/p7c-decision-register.md
+ M docs/architecture/p7c-snapshot-controller-canonical-manifest.md
+ M docs/security/p7c-snapshot-controller-cve-matrix.md
+ M docs/security/p7c-snapshot-controller-security-decision.md
+?? docs/security/p7c-b1-risk-acceptance-candidate.md
+?? docs/security/p7c-snapshot-controller-security-ledger.md
+?? evidence/P7/20260914T100141Z-task-p7c-a-r4-security-exhaustiveness-version-selection/
+ONLY_AUTHORIZED_PATHS

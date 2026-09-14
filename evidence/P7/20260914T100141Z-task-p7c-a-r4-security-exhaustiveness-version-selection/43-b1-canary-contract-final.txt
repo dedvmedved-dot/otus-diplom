@@ -1,0 +1,5 @@
+# P7C-B1 canary contract (final, NOT executed)
+CRDs established; controller 2/2 Ready; correct digest live 2/2; leader election active;
+no RBAC expansion; exact toleration; snapshot API discovery PASS; VolumeSnapshotClass
+correct; snapshot create/readyToUse/restore/checksum PASS; cleanup PASS; no LINSTOR
+residue; P1-P7B2 regression PASS.

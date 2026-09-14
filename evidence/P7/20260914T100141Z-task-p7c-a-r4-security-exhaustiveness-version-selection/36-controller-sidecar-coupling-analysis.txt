@@ -1,0 +1,6 @@
+# controller/sidecar coupling analysis
+
+snapshot-controller watches VolumeSnapshot/Content/Class objects and creates
+snapshots via the CSI driver (csi-snapshotter sidecar calls LINSTOR CSI).
+Communication is via K8s API objects, not direct gRPC between controller and
+sidecar. No strict same-minor requirement is documented upstream.
