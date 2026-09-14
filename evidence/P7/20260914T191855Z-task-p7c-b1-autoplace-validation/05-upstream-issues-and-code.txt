@@ -1,0 +1,14 @@
+# Upstream issues and code
+
+linstor-csi #160 (closed): 'may fail to restore from snapshot with advanced
+  scheduling constraints' (replicasOnDifferent/replicasOnSame). Fixed by #161
+  ('order snapshot restore based on preferred nodes'). NOT our issue (no
+  replicasOnDifferent on piraeus-r2 SC).
+
+Architect-confirmed: linstor-csi v1.13.1 STILL contains single-node restore
+  ("restoring snapshot on one node", SnapshotRestore Nodes:[selectedNode]).
+  => CSI upgrade does NOT fix this.
+
+PlaceCount semantics and restore single-node seed are source-proven (v1.11.0 CSI
++ v1.33.2 server). The autoplace 'constraint replicas' failure is observed but the
+exact server-side constraint reason is NOT exhaustively proven without a runtime test.

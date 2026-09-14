@@ -1,0 +1,16 @@
+# Final root cause
+
+DECISION=C. LINSTOR_CSI_MUST_CHANGE_SEQUENCE
+
+Statement:
+  LINSTOR CSI 1.11.0 VolFromSnap restores a CSI snapshot onto a SINGLE node
+  (reconcileSnapshotResources -> SnapshotRestore Nodes:[selectedNode]). LINSTOR
+  server autoplace PlaceCount=2 then needs 1 additional diskful, but before that
+  2nd diskful becomes UpToDate, the auto tie-breaker + AutoQuorum switch quorum to
+  'majority'. With only 1 UpToDate diskful (< majority 2), DRBD primary promotion
+  fails: 'Need access to UpToDate data' (exitcode 17).
+
+  The safe sequence requires the snapshot to be restored onto 2 diskful nodes (or
+  a 2nd diskful to be placed and synced) BEFORE quorum/primary promotion. The CSI
+  single-node seed ordering makes this impossible with placementCount=2 +
+  auto-add-quorum-tiebreaker=True.

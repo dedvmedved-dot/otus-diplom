@@ -1,0 +1,10 @@
+# LINSTOR server restore path (v1.33.2)
+
+CtrlSnapshotRestoreApiCallHandler.java (LINBIT/linstor-server v1.33.2):
+  - RestoreSnapshot creates resources on the nodes passed by the caller
+    (LINSTOR CSI passes Nodes:[selectedNode] => single node).
+  - InitialUpToDateOn logic (lines ~432-449): sets InitialUpToDateOn so the first
+    diskful resource wins the UpToDate race and later pulls other peers UpToDate.
+
+=> RESTORE_SEED_STATE = 1 diskful resource, RESTORE_SEED_ROLE = diskful,
+   RESTORE_SEED_UPTODATE = YES (winner via InitialUpToDateOn).

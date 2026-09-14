@@ -1,0 +1,18 @@
+# AutoPlace PlaceCount semantics (v1.33.2, source-proven)
+
+SelectFilter.PlaceCount (from linstor-csi volume.Parameters.PlacementCount) is
+'number of replicas of the volume in total' (pkg/volume/parameter.go:85).
+
+SelectionManager.getReplicaCount (autoplacer/SelectionManager.java:341):
+  if selectFilter.replicaCount > alreadyExistingCount:
+      ret = replicaCount - alreadyExistingCount
+  => PlaceCount is TOTAL diskful replicas; existing diskful are counted;
+     autoplace selects PlaceCount - existing additional replicas.
+
+AUTOPLACE_PLACECOUNT_SEMANTICS=total desired diskful (existing counted)
+EXISTING_RESOURCE_COUNTED=YES
+SECOND_DISKFUL_REQUESTED=YES (2 - 1 = 1 additional)
+SECOND_DISKFUL_CREATED=NO (observed: 'failed to autoplace constraint replicas',
+  'autoplaced on 1 nodes' + TieBreaker + diskless)
+IF_NO_WHY=autoplace constraint did not complete the additional diskful; instead a
+  TieBreaker was auto-added and quorum switched to majority (see 04).

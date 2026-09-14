@@ -1,0 +1,19 @@
+# Recommended fix
+
+RECOMMENDED_FIX=NONE_PRODUCTION_SAFE_WITHOUT_CSI_CHANGE
+
+Candidate minimal fixes, all rejected by policy:
+  - placementCount=1 for restore: REJECTED (weakens 2-replica HA).
+  - disable auto-add-quorum-tiebreaker globally: REJECTED (weakens quorum globally).
+  - force primary without UpToDate: REJECTED (unsafe).
+  - permanent manual post-restore autoplace for every restore: REJECTED (manual step).
+  - CSI patch to restore onto 2 nodes before quorum: correct, but NOT upstream
+    (v1.13.1 unchanged); a fork/patch is out of scope for this project.
+
+SUPPORTED_BY_UPSTREAM=NO
+BLAST_RADIUS=n/a (no safe fix)
+ROLLBACK=n/a
+
+=> The only architecturally safe direction is a CSI-level sequence change
+   (multi-node snapshot restore before quorum) or an upstream fix, neither of
+   which is available without a fork/patch.

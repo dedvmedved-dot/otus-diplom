@@ -1,0 +1,8 @@
+NOT_USED — SOURCE/API ANALYSIS SUFFICIENT
+
+A throwaway LINSTOR experiment was not required; source analysis proved:
+  - PlaceCount=2 is total diskful (existing counted);
+  - restore seeds exactly one node;
+  - AutoQuorum(majority) + TieBreaker apply before a 2nd diskful is UpToDate.
+The residual unknown (exact autoplace constraint) does not change the safe-sequence
+conclusion: the CSI single-node restore sequence must change.

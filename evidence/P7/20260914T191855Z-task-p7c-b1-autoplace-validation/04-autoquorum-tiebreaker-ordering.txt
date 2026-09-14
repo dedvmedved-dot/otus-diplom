@@ -1,0 +1,16 @@
+# AutoQuorum / TieBreaker ordering (v1.33.2)
+
+CtrlRscAutoQuorumHelper: auto-quorum activates 'majority' when quorum is feasible,
+  else deactivates ("not enough resources for quorum").
+CtrlRscAutoTieBreakerHelper: auto tie-breaker is added (auto-add-quorum-tiebreaker=True)
+  when a tie-breaker is required by quorum (odd diskful count).
+
+Observed order in the failure:
+  1 autoplace -> 1 diskful (restore seed) + diskless(OnRemaining)
+  2 auto tie-breaker added (node-03)
+  3 AutoQuorum quorum off -> majority
+  4 primary promotion attempt -> 'Need access to UpToDate data' (1 UpToDate < majority 2)
+
+AUTOQUORUM_APPLIED_BEFORE_SECOND_REPLICA_UPTODATE=YES
+AUTO_ADD_QUORUM_TIEBREAKER_TRIGGER=auto-add-quorum-tiebreaker=True + odd diskful count
+PRIMARY_PROMOTION_TRIGGER=DRBD primary --force during resource bring-up
