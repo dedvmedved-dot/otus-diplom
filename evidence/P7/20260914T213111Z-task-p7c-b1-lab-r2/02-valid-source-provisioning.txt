@@ -1,0 +1,8 @@
+namespace/p7c-b1-lab-r2-213111 created
+persistentvolumeclaim/source-pvc created
+Error from server (NotFound): error when creating "/tmp/r2-writer.yaml": namespaces "p7c-b1-lab-r2-20260914T213111Z" not found
+pod/writer created
+fbc86de4c134dffd139d626ae3c2e233813053ffc0d5c0483a4390d6efbf033c  /data/meta.txt
+b346a1b73bd115ff379b6dfcab55a9c25e13f7f8c244be7a4e93fd5c00cd8457  /data/payload.bin
+--- pvc ---
+STATUS=Bound PV=pvc-557e8bba-5adf-4448-bfb3-c49f060b1251

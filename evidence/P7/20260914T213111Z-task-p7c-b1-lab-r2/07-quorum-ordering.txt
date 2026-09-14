@@ -1,0 +1,9 @@
+Partial observation (source health check):
+
+source volume pvc-557e8bba (PVC piraeus-r2, placementCount=2):
+  node-01: UpToDate, DRBD Established(1)
+  node-02: Inconsistent (8.02 MiB, NOT progressing over 180s), connection "Connecting"
+  node-03: TieBreaker
+
+node-02 stayed Inconsistent with DRBD connection state "Connecting" (not Established)
+for the whole window. The second diskful replica never reached UpToDate.

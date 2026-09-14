@@ -1,0 +1,33 @@
+--- LINSTOR resource (source PV pvc-557e8bba) ---
+| pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-01 | DRBD,STORAGE | Unused | [1;31mConnecting(node-02)        [0m | [1;31m    UpToDate[0m | 2026-09-14 21:35:22 |
+| pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-02 | DRBD,STORAGE | Unused | [1;31mConnecting(node-03,node-01)[0m | [1;31mInconsistent[0m | 2026-09-14 21:35:23 |
+| pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-03 | DRBD,STORAGE | Unused | [1;31mConnecting(node-02)        [0m | [1;31m  TieBreaker[0m | 2026-09-14 21:35:23 |
+--- volume list (diskful/UpToDate) ---
+| pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-01 | piraeus-thin         |     0 |    1000 | /dev/drbd1000 | 79.98 MiB | Unused | [1;31m    UpToDate[0m | [1;32mEstablished(1)[0m |
+| pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-02 | piraeus-thin         |     0 |    1000 | /dev/drbd1000 |  8.02 MiB | Unused | [1;31mInconsistent[0m |                |
+| pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-03 | DfltDisklessStorPool |     0 |    1000 | /dev/drbd1000 |           | Unused | [1;31m  TieBreaker[0m | [1;32mEstablished(1)[0m |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+t=10s | pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-02 | piraeus-thin         |     0 |    1000 | /dev/drbd1000 |  8.02 MiB | Unused | [1;31mInconsistent[0m |                |
+t=20s | pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-02 | piraeus-thin         |     0 |    1000 | /dev/drbd1000 |  8.02 MiB | Unused | [1;31mInconsistent[0m |                |
+t=30s ssh: connect to host 192.168.194.38 port 22: Network is unreachable
+t=40s ssh: connect to host 192.168.194.38 port 22: Network is unreachable
+t=50s | pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-02 | piraeus-thin         |     0 |    1000 | /dev/drbd1000 |  8.02 MiB | Unused | [1;31mInconsistent[0m |                |
+t=60s | pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-02 | piraeus-thin         |     0 |    1000 | /dev/drbd1000 |  8.02 MiB | Unused | [1;31mInconsistent[0m |                |
+t=70s | pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-02 | piraeus-thin         |     0 |    1000 | /dev/drbd1000 |  8.02 MiB | Unused | [1;31mInconsistent[0m |                |
+t=80s | pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-02 | piraeus-thin         |     0 |    1000 | /dev/drbd1000 |  8.02 MiB | Unused | [1;31mInconsistent[0m |                |
+t=90s | pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-02 | piraeus-thin         |     0 |    1000 | /dev/drbd1000 |  8.02 MiB | Unused | [1;31mInconsistent[0m |                |
+t=100s | pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-02 | piraeus-thin         |     0 |    1000 | /dev/drbd1000 |  8.02 MiB | Unused | [1;31mInconsistent[0m |                |
+t=110s | pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-02 | piraeus-thin         |     0 |    1000 | /dev/drbd1000 |  8.02 MiB | Unused | [1;31mInconsistent[0m |                |
+t=120s | pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-02 | piraeus-thin         |     0 |    1000 | /dev/drbd1000 |  8.02 MiB | Unused | [1;31mInconsistent[0m |                |
+t=130s | pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-02 | piraeus-thin         |     0 |    1000 | /dev/drbd1000 |  8.02 MiB | Unused | [1;31mInconsistent[0m |                |
+t=140s | pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-02 | piraeus-thin         |     0 |    1000 | /dev/drbd1000 |  8.02 MiB | Unused | [1;31mInconsistent[0m |                |
+t=150s | pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-02 | piraeus-thin         |     0 |    1000 | /dev/drbd1000 |  8.02 MiB | Unused | [1;31mInconsistent[0m |                |
+t=160s | pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-02 | piraeus-thin         |     0 |    1000 | /dev/drbd1000 |  8.02 MiB | Unused | [1;31mInconsistent[0m |                |
+t=170s | pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-02 | piraeus-thin         |     0 |    1000 | /dev/drbd1000 |  8.02 MiB | Unused | [1;31mInconsistent[0m |                |
+t=180s | pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-02 | piraeus-thin         |     0 |    1000 | /dev/drbd1000 |  8.02 MiB | Unused | [1;31mInconsistent[0m |                |
+| pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-01 | DRBD,STORAGE | Unused | [1;31mConnecting(node-02)        [0m | [1;31m    UpToDate[0m | 2026-09-14 21:35:22 |
+| pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-02 | DRBD,STORAGE | Unused | [1;31mConnecting(node-03,node-01)[0m | [1;31mInconsistent[0m | 2026-09-14 21:35:23 |
+| pvc-557e8bba-5adf-4448-bfb3-c49f060b1251 | node-03 | DRBD,STORAGE | Unused | [1;31mConnecting(node-02)        [0m | [1;31m  TieBreaker[0m | 2026-09-14 21:35:23 |
+bash: строка 1: drbdsetup: команда не найдена
+--- drbdsetup events2 (brief) ---
+timeout: не удалось выполнить команду «drbdsetup»: Нет такого файла или каталога

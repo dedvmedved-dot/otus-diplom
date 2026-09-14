@@ -1,0 +1,6 @@
+# Baseline
+branch=main
+HEAD=2b0c32596b76cd50b8cb76cd33061ac77e36f069
+origin/main=2b0c32596b76cd50b8cb76cd33061ac77e36f069
+worktree=clean
+Runtime: snapshot CRDs absent, snapshot-controller absent, Velero absent, StorageClass piraeus-r2 unchanged.

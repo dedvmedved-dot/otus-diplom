@@ -1,0 +1,5 @@
+NOT_REACHED — STOP at Phase B.
+
+Task rule 9: "Do NOT create a snapshot from an Inconsistent source."
+The valid source was NOT 2x UpToDate (node-02 Inconsistent, sync stuck), so the
+backend snapshot was not created.

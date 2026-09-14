@@ -1,0 +1,1 @@
+NOT_REACHED — blocked before snapshot (Phase B STOP).

@@ -1,0 +1,19 @@
+# Final analysis
+
+A valid PVC-backed source was provisioned through the normal Kubernetes path
+(StorageClass piraeus-r2, placementCount=2), writer wrote 16 MiB and exited.
+
+The source LINSTOR resource did NOT reach 2 diskful UpToDate:
+  node-01 UpToDate + node-02 Inconsistent (8.02 MiB, not progressing, DRBD
+  connection "Connecting") + node-03 TieBreaker.
+
+Per task rule 9 this is VALID_SOURCE_NOT_2X_UPTODATE -> STOP before snapshot.
+
+Implication: on this cluster a fresh 2-replica LINSTOR volume does not reliably
+reach a 2x UpToDate state; the second diskful peer stays Inconsistent with a
+non-established DRBD connection. This is a DRBD sync/connection issue that is
+INDEPENDENT of snapshot restore and precedes the CSI snapshot/restore path.
+
+CLASSIFICATION (task options): not directly A-E; experiment halted at the
+  VALID_SOURCE gate. The observed blocker is a DRBD second-peer sync/connection
+  failure, not an autoplace/restore constraint.
