@@ -1,0 +1,17 @@
+# Restore failure (OBSERVED FAILURE MECHANISM)
+
+restored-pvc (dataSource=source-snapshot) provisioning FAILED.
+
+kubectl describe pvc restored-pvc -> Events:
+  Warning ProvisioningFailed:
+  rpc error: code = Internal desc = CreateVolume failed for pvc-1fc30c55...:
+  failed to autoplace constraint replicas:
+    'Resource successfully autoplaced on 1 nodes' (node-02 piraeus-thin)
+    'Tie breaker resource created on node-03'
+    'DrbdOptions/Resource/quorum updated from off to majority by AutoQuorum'
+    '(node-03) Failed to set resource to primary'
+    Command 'drbdadm -vvv primary --force' returned exitcode 17
+    Error: 'State change failed: (-2) Need access to UpToDate data'
+
+Reproduced across multiple CreateVolume retries.
+NOT proven to be a mixed snapshot-controller v8.6 / csi-snapshotter v8.5 issue.

@@ -1,0 +1,11 @@
+# B1 success before restore failure
+
+Pre-regressions P1-P7B2: PASS (exit 0)
+3 VolumeSnapshot CRDs: deployed, Established=True, NamesAccepted=True
+snapshot-controller v8.6.0 x2: Ready 2/2, digest sha256:d1ab1b095eb81ce689abc8b8094badc4c4ea657051749014a631f8cca876a620
+leader election: holderIdentity present
+VolumeSnapshotClass piraeus-r2-snapclass: driver linstor.csi.linbit.com, Delete
+source PVC: Bound (pvc-b5a414fd-744b-43bd-b684-f03ee713954c)
+16 MiB deterministic payload: written (meta.txt sha256 02c64ab1..., payload.bin 9c2c0b9a...)
+VolumeSnapshot source-snapshot: readyToUse=true, boundVSC snapcontent-60e058dd...
+LINSTOR snapshot snapshot-60e058dd: State=Successful (node-01, node-03)

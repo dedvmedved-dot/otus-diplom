@@ -1,0 +1,14 @@
+# Git and runtime entry state (rollback task)
+
+branch=main
+HEAD=515df2f179a4d0c5d2fd047fa9184de965f2089a (baseline)
+origin/main=515df2f179a4d0c5d2fd047fa9184de965f2089a
+
+git status --short (pre-cleanup):
+  ?? evidence/P7/20260914T104948Z-task-p7c-b1-csi-snapshot-foundation/
+  ?? manifests/snapshot/
+
+git diff --name-only (tracked): (empty)
+git diff --cached --name-only: (empty)
+
+No tracked files changed. Only untracked B1-attempt artifacts present.

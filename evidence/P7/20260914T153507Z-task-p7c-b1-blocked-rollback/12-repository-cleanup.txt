@@ -1,0 +1,10 @@
+# Repository cleanup
+
+Pre-cleanup untracked B1 artifacts removed from worktree:
+  manifests/snapshot/** (B1 deployment manifests, never committed)
+  evidence/P7/20260914T104948Z-task-p7c-b1-csi-snapshot-foundation/** (B1 attempt evidence)
+
+Key failure/manifest content preserved in this bundle (01-04, 03).
+
+Final intended diff: evidence/P7/<RUN_ID>-task-p7c-b1-blocked-rollback/** only.
+No versions.lock / images.lock / README / docs changes were made by B1.

@@ -1,0 +1,6 @@
+--- snapshot.storage.k8s.io api (must be empty) ---
+NAME   SHORTNAMES   APIVERSION   NAMESPACED   KIND
+--- groupsnapshot (must be empty) ---
+NAME   SHORTNAMES   APIVERSION   NAMESPACED   KIND
+--- velero (must be absent) ---
+ABSENT

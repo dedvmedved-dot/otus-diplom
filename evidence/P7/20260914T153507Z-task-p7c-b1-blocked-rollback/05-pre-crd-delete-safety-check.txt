@@ -1,0 +1,10 @@
+--- VolumeSnapshot objects (must be 0) ---
+No resources found
+--- VolumeSnapshotContent objects (must be 0) ---
+No resources found
+--- VolumeSnapshotClass objects (must be 0) ---
+No resources found
+--- snapshot-controller (must be absent) ---
+Error from server (NotFound): deployments.apps "snapshot-controller" not found
+--- canary ns (must be absent) ---
+Error from server (NotFound): namespaces "p7c-b1-snapshot-canary" not found

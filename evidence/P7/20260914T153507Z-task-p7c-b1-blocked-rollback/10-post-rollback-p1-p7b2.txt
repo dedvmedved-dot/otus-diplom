@@ -1,0 +1,190 @@
+
+PLAY [P5C2 final read-only regression + verifier contract (TASK-018-R5)] *******
+
+TASK [P1 — bond slaves + VLAN addresses + default route] ***********************
+[WARNING]: Platform linux on host node-01 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-01]
+[WARNING]: Platform linux on host node-02 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-02]
+[WARNING]: Platform linux on host node-03 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-03]
+
+TASK [P2 — containerd 2.3.3 + kubelet v1.36.2 + swap 0] ************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [P3 — etcd members/health + kube-vip + VIP owner + readyz/livez] **********
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [P3 — VIP owner local check] **********************************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [P3 — VIP owner aggregate exactly 1] **************************************
+ok: [node-01]
+
+TASK [P4A — calico + coredns + ippool + bgp] ***********************************
+ok: [node-01]
+
+TASK [P4B — validation ns NotFound + canonical fingerprint + TASK-018 fp] ******
+ok: [node-01]
+
+TASK [P4B semantic source validation — parse canonical NetworkPolicy manifests] ***
+ok: [node-01 -> localhost]
+
+TASK [P5B — composite 6/6 + immutable IDs] *************************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [P5B — immutable ID compare vs TASK-018 PRE] ******************************
+ok: [node-01 -> localhost]
+
+TASK [DRBD runtime — 9.3.2 + transport tcp + kernel] ***************************
+ok: [node-01]
+ok: [node-02]
+ok: [node-03]
+
+TASK [LINSTOR — 3/3 nodes Online + drbd141 + pools] ****************************
+ok: [node-01]
+
+TASK [Satellite hostNetwork — 3/3 true + dnsPolicy + VLAN141 inside + LB_MAKEOPTS] ***
+ok: [node-01]
+
+TASK [NodeConnection + StorageClass exact] *************************************
+ok: [node-01]
+
+TASK [Validation cleanup — residue 0 + production objects present] *************
+ok: [node-01]
+
+PLAY RECAP *********************************************************************
+node-01                    : ok=15   changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-02                    : ok=6    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-03                    : ok=6    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+P1P5_EXIT=0
+
+PLAY [P6B final read-only verifier (TASK-P6B-R4)] ******************************
+
+TASK [P6B final semantic verification (read-only)] *****************************
+[WARNING]: Platform linux on host node-01 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-01]
+
+TASK [P6B source manifest semantic exactness (read-only)] **********************
+ok: [node-01 -> localhost]
+
+TASK [P6B images.lock exactness (read-only)] ***********************************
+ok: [node-01 -> localhost]
+
+PLAY RECAP *********************************************************************
+node-01                    : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+P6B_EXIT=0
+
+PLAY [P6C final read-only verifier (TASK-P6C-R1)] ******************************
+
+TASK [P6C final semantic verification (read-only)] *****************************
+[WARNING]: Platform linux on host node-01 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-01]
+
+TASK [P6C images.lock + versions.lock exactness (read-only)] *******************
+ok: [node-01 -> localhost]
+
+PLAY RECAP *********************************************************************
+node-01                    : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+P6C_EXIT=0
+
+PLAY [P6D final read-only verifier (TASK-P6D-R1)] ******************************
+
+TASK [P6D final semantic verification (read-only)] *****************************
+[WARNING]: Platform linux on host node-01 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-01]
+
+TASK [P6D external return route + persistence check (read-only)] ***************
+ok: [node-01]
+[WARNING]: Platform linux on host node-02 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-02]
+[WARNING]: Platform linux on host node-03 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-03]
+
+PLAY RECAP *********************************************************************
+node-01                    : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-02                    : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-03                    : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+P6D_EXIT=0
+
+PLAY [P7B2 final read-only verifier (zero-mutation)] ***************************
+
+TASK [Collect compact cluster facts (read-only, node-01)] **********************
+[WARNING]: Platform linux on host node-01 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-01]
+
+TASK [Controller-side validation via shared logic (read-only, localhost)] ******
+ok: [node-01 -> localhost]
+
+TASK [Node kubelet TLS + P6D route + P7A VLAN143 (read-only, inline, all nodes)] ***
+ok: [node-01]
+[WARNING]: Platform linux on host node-02 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-02]
+[WARNING]: Platform linux on host node-03 is using the discovered Python
+interpreter at /usr/bin/python3.11, but future installation of another Python
+interpreter could change the meaning of that path. See
+https://docs.ansible.com/ansible-
+core/2.16/reference_appendices/interpreter_discovery.html for more information.
+ok: [node-03]
+
+TASK [P7B2 final PASS gate after all host-level checks] ************************
+ok: [node-01 -> localhost]
+
+PLAY RECAP *********************************************************************
+node-01                    : ok=4    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-02                    : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+node-03                    : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+P7B2_EXIT=0

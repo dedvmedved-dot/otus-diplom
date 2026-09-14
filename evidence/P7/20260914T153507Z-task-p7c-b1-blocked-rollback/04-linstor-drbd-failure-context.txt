@@ -1,0 +1,17 @@
+# LINSTOR / DRBD failure context
+
+StorageClass piraeus-r2:
+  provisioner=linstor.csi.linbit.com
+  placementCount=2
+  storagePool=piraeus-thin
+  disklessOnRemaining=true
+  resourceGroup=piraeus-r2
+
+LINSTOR storage pools: piraeus-thin (LVM_THIN) on node-01/02/03, ~6.29 TiB free each, CanSnapshots=True.
+source volume pvc-b5a414fd: node-01 UpToDate + node-03 UpToDate, node-02 TieBreaker.
+
+Observed: restore CreateVolume autoplaces a single diskful replica (node-02), then DRBD
+AutoQuorum=majority requires 2 primaries -> node-03 primary promotion fails
+"Need access to UpToDate data" (exitcode 17).
+
+This is OBSERVED FAILURE MECHANISM, not FINAL ROOT CAUSE.
