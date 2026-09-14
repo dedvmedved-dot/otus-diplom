@@ -1,0 +1,26 @@
+--- nodes Ready ---
+NAME      STATUS   ROLES           AGE   VERSION
+node-01   Ready    control-plane   21d   v1.36.2
+node-02   Ready    control-plane   21d   v1.36.2
+node-03   Ready    control-plane   20d   v1.36.2
+--- LINSTOR nodes Online ---
+|============================================================|
+| node-01 | SATELLITE | 172.30.140.101:3366 (PLAIN) | [1;32mOnline[0m |
+| node-02 | SATELLITE | 172.30.140.102:3366 (PLAIN) | [1;32mOnline[0m |
+| node-03 | SATELLITE | 172.30.140.103:3366 (PLAIN) | [1;32mOnline[0m |
++------------------------------------------------------------+
+--- satellites hostNetwork ---
+node-01 hn=true
+node-02 hn=true
+node-03 hn=true
+--- LINSTOR resource defs (safety gate) ---
++-----------------------------------------------+
+| ResourceName | ResourceGroup | Layers | State |
+|===============================================|
++-----------------------------------------------+
+--- LINSTOR snapshots ---
++-----------------------------------------------------------------------+
+| ResourceName | SnapshotName | NodeNames | Volumes | CreatedOn | State |
+|=======================================================================|
++-----------------------------------------------------------------------+
+--- K8s PVC using linstor CSI ---

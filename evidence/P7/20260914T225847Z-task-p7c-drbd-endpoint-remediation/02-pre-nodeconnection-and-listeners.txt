@@ -1,0 +1,21 @@
+--- LinstorNodeConnection p5c2-drbd-vlan141 ---
+      {"apiVersion":"piraeus.io/v1","kind":"LinstorNodeConnection","metadata":{"annotations":{},"name":"p5c2-drbd-vlan141"},"spec":{"paths":[{"interface":"drbd141","name":"drbd141"}],"properties":[{"name":"DrbdOptions/Net/protocol","value":"C"}]}}
+  name: p5c2-drbd-vlan141
+  - interface: drbd141
+    name: drbd141
+  - name: DrbdOptions/Net/protocol
+    value: C
+    message: Configured
+    status: "True"
+    type: Configured
+--- node interface list (drbd141) ---
+| [1;32m+        [0m | drbd141      | 172.30.141.101 |      |                |
+| [1;32m+        [0m | drbd141      | 172.30.141.102 |      |                |
+| [1;32m+        [0m | drbd141      | 172.30.141.103 |      |                |
+=== current DRBD listeners (pre) ===
+command terminated with exit code 1
+  node-01: (captured above)
+command terminated with exit code 1
+  node-02: (captured above)
+command terminated with exit code 1
+  node-03: (captured above)

@@ -1,0 +1,14 @@
+# Replication health (fresh validation volume)
+
+Fresh PVC pvc-b8bb9816 (piraeus-r2):
+  node-01 = diskful UpToDate
+  node-02 = TieBreaker (NOT diskful)
+  node-03 = diskful UpToDate
+
+Two diskful replicas are UpToDate, but they are node-01 + node-03 — the pair that
+shares the (still-VLAN140) DRBD binding. node-02 (VLAN141) is only a TieBreaker,
+so the DRBD mesh asymmetry persists; the volume did NOT get a VLAN141 replication
+path across all three nodes.
+
+VALID_SOURCE_2_DISKFUL_UPTODATE: partial (2 diskful UpToDate on VLAN140 pair only)
+NODE02_CONNECTING_STUCK: still present (node-02 binds VLAN141, peers on VLAN140)

@@ -1,0 +1,4 @@
+linstornodeconnection.piraeus.io/p5c2-drbd-vlan141 unchanged
+linstornodeconnection.piraeus.io/p5c2-drbd-vlan141 annotated
+=== Configured + fresh PVC ===
+Configured=True

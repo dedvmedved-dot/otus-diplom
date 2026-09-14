@@ -1,0 +1,10 @@
+# Post-reconcile node-connection state
+
+kubectl apply -> 'unchanged' (spec already canonical).
+annotation otus-diplom/reconcile-run=<RUN_ID> applied.
+LinstorNodeConnection Configured=True (condition True).
+
+Per-pair node-connection paths: drbd141 / drbd141 / protocol C (canonical).
+
+However: Configured=True is declarative status only. The runtime DRBD transport
+binding did NOT change (see 06).
