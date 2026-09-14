@@ -1,0 +1,6 @@
+# Baseline
+branch=main
+HEAD=4e02f7b948519b2f87e9c7fe2dd57c2952488a70
+origin/main=4e02f7b948519b2f87e9c7fe2dd57c2952488a70
+worktree=clean
+Runtime: snapshot CRDs absent, snapshot-controller absent, VolumeSnapshotClass absent, Velero absent.

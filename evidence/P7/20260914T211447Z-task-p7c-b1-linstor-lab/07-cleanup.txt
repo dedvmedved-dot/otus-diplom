@@ -1,0 +1,26 @@
+--- delete snapshot ---
+[1;33mWARNING:
+[0mDescription:
+    Snapshot definition p7cb1lab211447-snap of resource p7cb1lab211447-source not found.
+Details:
+    Resource: p7cb1lab211447-source, Snapshot: p7cb1lab211447-snap
+--- delete restore RD ---
+[1;32mSUCCESS:
+[0mDescription:
+    Resource definition 'p7cb1lab211447-restore' deleted.
+Details:
+    Resource definition 'p7cb1lab211447-restore' UUID was: 23ac06c3-5b6d-4011-b7aa-9cd7041a5e0d
+--- delete source RD (cascade resources) ---
+[1;32mSUCCESS:
+[0m    Resource definition 'p7cb1lab211447-source' marked for deletion.
+[1;32mSUCCESS:
+[0m    (node-03) Resource 'p7cb1lab211447-source' [DRBD] deleted.
+[1;32mSUCCESS:
+[0m    Resource 'p7cb1lab211447-source' on 'node-03' marked for deletion
+[1;32mSUCCESS:
+[0m    (node-01) Resource 'p7cb1lab211447-source' [DRBD] adjusted.
+[1;32mSUCCESS:
+[0m    Resource 'p7cb1lab211447-source' on 'node-01' marked for deletion
+--- verify no throwaway residue ---
+NO_THROWAWAY_RD
+NO_THROWAWAY_SNAPSHOT

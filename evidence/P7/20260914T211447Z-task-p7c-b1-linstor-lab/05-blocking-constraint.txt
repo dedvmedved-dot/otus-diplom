@@ -1,0 +1,5 @@
+BLOCKING_CONSTRAINT=NOT_EXPOSED_BY_SERVER
+
+The autoplace blocking constraint could not be measured: the experiment was
+blocked earlier at the snapshot-create stage (snapshot suspend IO + node-02
+DRBD 'Inconsistent' -> snapshot never deployed), not at autoplace.

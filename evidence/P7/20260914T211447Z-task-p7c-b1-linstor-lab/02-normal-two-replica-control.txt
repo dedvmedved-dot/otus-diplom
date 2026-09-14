@@ -1,0 +1,54 @@
+--- create RD ---
+[1;32mSUCCESS:
+[0mDescription:
+    New resource definition 'p7cb1lab211447-source' created.
+Details:
+    Resource definition 'p7cb1lab211447-source' UUID is: db05b347-4a67-4eac-abed-efaaf6629dd6
+--- auto-place 2 ---
+[1;32mSUCCESS:
+[0m    Successfully set property key(s): StorPoolName
+[1;32mSUCCESS:
+[0m    Successfully set property key(s): StorPoolName
+[1;32mSUCCESS:
+[0mDescription:
+    Resource 'p7cb1lab211447-source' successfully autoplaced on 2 nodes
+Details:
+    Used nodes (storage pool name): 'node-01 (piraeus-thin)', 'node-02 (piraeus-thin)'
+[1;34mINFO:
+[0m    Updated p7cb1lab211447-source DRBD auto verify algorithm to 'crct10dif'
+[1;32mSUCCESS:
+[0m    Successfully set property key(s): StorPoolName
+[1;34mINFO:
+[0m    Tie breaker resource 'p7cb1lab211447-source' created on node-03
+[1;34mINFO:
+[0m    Resource-definition property 'DrbdOptions/Resource/quorum' updated from undefined to 'majority' by AutoQuorum
+[1;32mSUCCESS:
+[0m    (node-03) Resource 'p7cb1lab211447-source' [DRBD] adjusted.
+[1;32mSUCCESS:
+[0m    (node-01) Resource 'p7cb1lab211447-source' [DRBD] adjusted.
+[1;32mSUCCESS:
+[0m    Created resource 'p7cb1lab211447-source' on 'node-01'
+[1;32mSUCCESS:
+[0m    (node-02) Resource 'p7cb1lab211447-source' [DRBD] adjusted.
+[1;32mSUCCESS:
+[0m    Created resource 'p7cb1lab211447-source' on 'node-02'
+[1;32mSUCCESS:
+[0m    Added peer(s) 'node-02', 'node-01' to resource 'p7cb1lab211447-source' on 'node-03'
+[1;33mWARNING:
+[0m    No volumes have been defined for resource 'p7cb1lab211447-source'
+[1;32mSUCCESS:
+[0m    (node-03) Resource 'p7cb1lab211447-source' [DRBD] adjusted.
+[1;32mSUCCESS:
+[0m    Created resource 'p7cb1lab211447-source' on 'node-03'
+[1;32mSUCCESS:
+[0m    (node-01) Resource 'p7cb1lab211447-source' [DRBD] adjusted.
+[1;32mSUCCESS:
+[0m    (node-02) Resource 'p7cb1lab211447-source' [DRBD] adjusted.
+[1;32mSUCCESS:
+[0m    Added peer(s) 'node-03' to resource 'p7cb1lab211447-source' on 'node-02'
+[1;32mSUCCESS:
+[0m    Added peer(s) 'node-03' to resource 'p7cb1lab211447-source' on 'node-01'
+[1;33mWARNING:
+[0m    No volumes have been defined for resource 'p7cb1lab211447-source'
+--- wait sync ---
+--- resource list ---

@@ -1,0 +1,33 @@
+--- resource list (source, 2 diskful?) ---
+--- create volume-definition 1MiB ---
+[1;32mSUCCESS:
+[0m    New volume definition with number '0' of resource definition 'p7cb1lab211447-source' created.
+[1;32mSUCCESS:
+[0m    (node-03) Resource 'p7cb1lab211447-source' [DRBD] adjusted.
+[1;32mSUCCESS:
+--- snapshot create ---
+[1;32mSUCCESS:
+[0mDescription:
+    New snapshot 'p7cb1lab211447-snap' of resource 'p7cb1lab211447-source' registered.
+Details:
+    Snapshot 'p7cb1lab211447-snap' of resource 'p7cb1lab211447-source' UUID is: 73b8a255-4c6b-432d-9383-daf200b6f52e
+[1;32mSUCCESS:
+[0m    (node-01) Resource 'p7cb1lab211447-source' [DRBD] adjusted.
+[1;32mSUCCESS:
+[0m    Suspended IO of '[p7cb1lab211447-source]' on 'node-01' for snapshot
+[1;32mSUCCESS:
+--- wait snapshot ---
+--- snapshot list ---
++-----------------------------------------------------------------------+
+| ResourceName | SnapshotName | NodeNames | Volumes | CreatedOn | State |
+|=======================================================================|
++-----------------------------------------------------------------------+
+--- create restore target RD ---
+[1;32mSUCCESS:
+[0mDescription:
+    New resource definition 'p7cb1lab211447-restore' created.
+Details:
+    Resource definition 'p7cb1lab211447-restore' UUID is: 23ac06c3-5b6d-4011-b7aa-9cd7041a5e0d
+--- create volume-definition on restore target (must match snapshot) ---
+[1;32mSUCCESS:
+[0m    New volume definition with number '0' of resource definition 'p7cb1lab211447-restore' created.

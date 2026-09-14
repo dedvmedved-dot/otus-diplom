@@ -1,0 +1,22 @@
+# Final analysis
+
+The experiment was blocked BEFORE the restore/autoplace stage:
+
+1. CONTROL (Phase A) reproduced: 'linstor resource create ... --auto-place 2'
+   -> 'successfully autoplaced on 2 nodes' (node-01, node-02) + TieBreaker
+   (node-03) + AutoQuorum majority. BUT node-02 stayed 'Inconsistent'
+   (initial DRBD sync did not reach UpToDate) for the entire observation window.
+
+2. SNAPSHOT (Phase B): snapshot registered (UUID assigned), then 'Suspended IO
+   ... for snapshot', but snapshot list stayed EMPTY and the snapshot definition
+   was 'not found' on delete. The snapshot never became deployed.
+
+Interpretation: snapshot creation suspended IO while the source had an
+Inconsistent diskful replica (node-02), and DRBD quorum=majority (2 UpToDate
+required) blocked that replica from reaching UpToDate -> a snapshot/initial-sync
+deadlock. The single-node restore seed could not be reproduced with this CLI-only
+workflow, so the autoplace constraint question remains unanswered.
+
+CLASSIFICATION=E. SERVER_DOES_NOT_EXPOSE_ENOUGH_DETAIL
+  (experiment blocked earlier than the target question; an additional snapshot
+   vs initial-sync + quorum deadlock was observed but not exhaustively proven)

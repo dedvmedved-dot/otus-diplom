@@ -1,0 +1,5 @@
+NOT_REACHED — snapshot did not deploy (see 03 / 08).
+
+Phase C AutoPlace could not be invoked because the throwaway snapshot never
+reached a deployed state (snapshot list empty; snapshot definition 'not found'
+on delete). The single-node restore seed could therefore not be produced.

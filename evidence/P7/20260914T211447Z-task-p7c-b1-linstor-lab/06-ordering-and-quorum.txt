@@ -1,0 +1,6 @@
+NOT_REACHED — restore seed / autoplace / quorum ordering could not be captured
+because the snapshot never deployed.
+
+Observed (control only): normal auto-place 2 produced node-01 UpToDate +
+node-02 Inconsistent + node-03 TieBreaker + quorum majority. node-02 stayed
+'Inconsistent' across the whole window (initial sync not reaching UpToDate).
