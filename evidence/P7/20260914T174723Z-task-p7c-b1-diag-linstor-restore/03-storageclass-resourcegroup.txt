@@ -1,0 +1,17 @@
+# StorageClass / ResourceGroup configuration (live, read-only)
+
+StorageClass piraeus-r2 parameters:
+  placementCount=2
+  resourceGroup=piraeus-r2
+  storagePool=piraeus-thin
+  disklessOnRemaining=true
+  disklessStoragePool=DfltDisklessStorPool
+  fstype=ext4
+  property DrbdOptions/Net/protocol=C
+
+LINSTOR resource-group list: only DfltRscGrp (SelectFilter PlaceCount: 2).
+  resource group 'piraeus-r2' has no property map (created/used via reconcileResourceGroup).
+
+Controller properties:
+  DrbdOptions/auto-add-quorum-tiebreaker=True
+  DrbdOptions/Resource/on-no-quorum=suspend-io

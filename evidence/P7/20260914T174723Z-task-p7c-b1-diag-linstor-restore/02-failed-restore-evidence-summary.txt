@@ -1,0 +1,13 @@
+# Failed restore evidence summary (from accepted blocker evidence 1c3e26e)
+
+CreateVolume-from-snapshot (restored-pvc, dataSource=source-snapshot) failed:
+  'failed to autoplace constraint replicas'
+  'Resource successfully autoplaced on 1 nodes' (node-02 piraeus-thin)
+  'Tie breaker resource created on node-03'
+  'DrbdOptions/Resource/quorum updated from off to majority by AutoQuorum'
+  '(node-01) Resource adjusted; Added peer(s) node-02 to resource on node-01'
+  '(node-03) Failed to set resource to primary'
+  drbdadm primary --force -> exitcode 17
+  'State change failed: (-2) Need access to UpToDate data'
+
+Reproduced across multiple CreateVolume retries.

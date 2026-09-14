@@ -1,0 +1,12 @@
+# Upstream behavior comparison
+
+NORMAL_CREATE_PLACEMENT: CreateVolume without content source -> autoplace places
+  2 diskful replicas (placementCount=2) + diskless/tie-breaker as configured. WORKS.
+
+SNAPSHOT_RESTORE_PLACEMENT: VolFromSnap restores snapshot onto ONE node first
+  (reconcileSnapshotResources), then reconcileResourcePlacement autoplace. In the
+  observed failure autoplace resulted in 1 diskful + tie-breaker, not 2 diskful.
+
+DIFFERENCE_CAUSE: restore path seeds a single-node resource before autoplace; the
+  subsequent autoplace does not reconcile to 2 UpToDate diskful replicas before DRBD
+  AutoQuorum(majority) primary promotion.

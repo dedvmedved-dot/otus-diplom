@@ -1,0 +1,10 @@
+# Source vs restore placement
+
+Normal CreateVolume (source-pvc): placementCount=2 works.
+  LINSTOR resource pvc-b5a414fd: node-01 UpToDate + node-03 UpToDate, node-02 TieBreaker.
+  (2 diskful replicas + tie-breaker)
+
+Restore CreateVolume (restored-pvc from snapshot): FAILS.
+  autoplace '1 nodes' (node-02) + tie-breaker node-03 -> primary fail 'Need access to UpToDate data'.
+
+=> Normal create places 2 diskful; snapshot-restore places 1 diskful.

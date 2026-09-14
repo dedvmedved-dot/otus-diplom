@@ -1,0 +1,15 @@
+# AutoQuorum / TieBreaker analysis
+
+Controller prop auto-add-quorum-tiebreaker=True.
+When a DRBD resource has diskless/odd replica count, LINSTOR auto-adds a tie-breaker
+and AutoQuorum switches DrbdOptions/Resource/quorum off -> majority.
+
+In the failed restore:
+  1 diskful replica (node-02) + tie-breaker (node-03) => majority quorum requires 2
+  UpToDate primaries, but only 1 diskful replica is UpToDate -> primary promotion fails.
+
+AUTOQUORUM_TRIGGER=auto-add-quorum-tiebreaker=True on a 1-diskful restore resource
+TIEBREAKER_ROLE=added to make odd replica count quorate
+UPTODATE_REPLICA_COUNT_AT_PROMOTION=1
+QUORUM_REQUIRED=2 (majority)
+PROMOTION_FAILURE_REASON=only 1 UpToDate diskful replica, majority needs 2

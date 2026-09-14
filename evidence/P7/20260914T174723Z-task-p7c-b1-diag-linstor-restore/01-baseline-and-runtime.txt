@@ -1,0 +1,6 @@
+--- snapshot api (must be empty) ---
+NAME   SHORTNAMES   APIVERSION   NAMESPACED   KIND
+--- snapshot-controller (absent) ---
+ABSENT
+--- velero (absent) ---
+ABSENT

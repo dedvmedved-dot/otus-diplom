@@ -1,0 +1,24 @@
+# LINSTOR CSI 1.11.0 restore codepath (source trace)
+
+repo: github.com/piraeusdatastore/linstor-csi, tag v1.11.0
+
+pkg/client/linstor.go VolFromSnap (line 1229):
+  1 reconcileResourceGroup(ctx, params)         # RG from StorageClass (placementCount=2)
+  2 reconcileResourceDefinition(...)
+  3 reconcileSnapshot(...)
+  4 reconcileSnapshotVolumeDefinitions(...)
+  5 reconcileSnapshotResources(ctx, snap, rDef.Name, preferredNodes)  # <-- single-node restore
+  6 reconcileVolumeDefinition(...)
+  7 reconcileResourcePlacement(ctx, vol, params, topologies)          # autoplace
+
+reconcileSnapshotResources (line ~1462):
+  selects ONE node (preferred or first available snapshot node)
+  logger 'restoring snapshot on one node'
+  restoreConf := lapi.SnapshotRestore{ToResource: targetRD, Nodes: []string{selectedNode}}
+  Resources.RestoreSnapshot(...)  # restores snapshot data onto ONE node only
+
+reconcileResourcePlacement (line 1677):
+  volumeScheduler = schedulerByPlacementPolicy(params.PlacementPolicy)
+  volumeScheduler.Create(...)  # autoplace (AutoPlace) with placementCount=2
+
+=> The CSI driver restores the snapshot onto a single node, then runs autoplace.

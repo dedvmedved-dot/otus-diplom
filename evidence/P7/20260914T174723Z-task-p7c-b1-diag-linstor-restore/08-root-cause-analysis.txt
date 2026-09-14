@@ -1,0 +1,18 @@
+# Root-cause analysis
+
+PRIMARY CLASSIFICATION: INTERACTION_BETWEEN_PLACEMENT_AND_AUTOQUORUM
+CONTRIBUTING: LINSTOR_CSI_BUG (single-node restore path does not reconcile to
+  placementCount before quorum promotion)
+
+Statement:
+  LINSTOR CSI 1.11.0 VolFromSnap restores the snapshot onto a single node
+  (reconcileSnapshotResources: Nodes=[selectedNode], 'restoring snapshot on one node').
+  The subsequent autoplace (placementCount=2) does not produce a 2nd UpToDate diskful
+  replica before DRBD AutoQuorum (auto-add-quorum-tiebreaker=True) switches quorum to
+  'majority'. With only 1 UpToDate diskful replica, majority quorum primary promotion
+  fails: 'Need access to UpToDate data' (drbdadm exitcode 17).
+
+RESTORE_REPLICA_COUNT_SOURCE=LINSTOR CSI reconcileSnapshotResources single-node seed
+EXPECTED_REPLICAS=2 (placementCount)
+ACTUAL_DISKFUL_REPLICAS=1
+WHY_DIFFERENT=restore seeds 1 node; autoplace does not add 2nd UpToDate replica before quorum

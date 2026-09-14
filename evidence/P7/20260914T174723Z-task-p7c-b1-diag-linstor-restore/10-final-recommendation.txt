@@ -1,0 +1,16 @@
+# Final recommendation
+
+RECOMMENDED_MINIMAL_FIX=NONE_PROVEN_SAFE_YET
+
+The CSI-level root cause is proven (single-node restore seed). However, the LINSTOR
+server autoplace behavior (why it does not reconcile to 2 UpToDate diskful replicas
+before quorum promotion) is NOT_PROVEN at the CSI-source level and requires a
+LINSTOR server / autoplace-level analysis before a safe minimal fix can be selected.
+
+RETRY_B1_READY=NO
+
+Rationale: option C (post-restore autoplace to 2 replicas) is the only fix that
+preserves placementCount=2 + HA + quorum safety, but its upstream support and
+LINSTOR autoplace semantics are NOT_PROVEN. Options A/B are rejected as weakening
+HA or quorum. Do not apply a fix without proving option C against LINSTOR server
+autoplace behavior.

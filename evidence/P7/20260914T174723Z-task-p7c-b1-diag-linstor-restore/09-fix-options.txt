@@ -1,0 +1,25 @@
+# Fix options (at most 3, rejected unsafe listed separately)
+
+A. Restore-specific StorageClass with placementCount=1 (single-replica canary)
+   effect: restore works (no majority quorum), but restored volume is single-replica.
+   preserves placementCount=2: NO (for restored volumes)
+   HA: reduced for restored volumes; quorum safety: unchanged
+   upstream-supported: YES (placementCount is a SC parameter)
+   blast radius: low (only canary SC); rollback: delete SC
+   => REJECTED as default (weakens HA), acceptable only as explicit canary-only choice.
+
+B. Disable auto-add-quorum-tiebreaker (controller property) globally
+   effect: removes tie-breaker; may avoid majority quorum on 1-diskful restore.
+   preserves placementCount=2: YES; HA: unchanged (2-diskful unaffected)
+   quorum safety: WEAKENED (affects all resources)
+   upstream-supported: YES (property exists)
+   blast radius: GLOBAL (all DRBD resources); rollback: restore property
+   => REJECTED (global DRBD behavior change for one restore path).
+
+C. Manual post-restore autoplace to 2 diskful replicas BEFORE primary promotion
+   effect: after VolFromSnap seeds 1 node, explicitly autoplace/deploy a 2nd diskful
+   replica and wait UpToDate before quorum promotion.
+   preserves placementCount=2: YES; HA: preserved; quorum safety: preserved
+   upstream-supported: NOT_PROVEN (requires LINSTOR server autoplace semantics validation)
+   blast radius: per-restore remediation script; rollback: delete restored resource
+   => candidate, but requires LINSTOR server autoplace behavior to be proven first.
