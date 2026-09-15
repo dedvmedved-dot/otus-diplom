@@ -1,0 +1,2 @@
+=== 01-resource ===
+RESOURCE=pvc-b0ff2974-1419-43e4-b7cd-eee9cfcf5cb8

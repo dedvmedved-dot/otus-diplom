@@ -1,0 +1,5 @@
+===== node-03 drbdsetup show =====
+            _this_host ipv4 172.30.140.103:7000;
+            _remote_host ipv4 172.30.140.101:7000;
+            _this_host ipv4 172.30.140.103:7000;
+            _remote_host ipv4 172.30.140.102:7000;
