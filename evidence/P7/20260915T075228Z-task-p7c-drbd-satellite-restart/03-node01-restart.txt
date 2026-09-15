@@ -1,0 +1,14 @@
+--- deleting node-01 satellite ---
+pod "linstor-satellite.node-01-vsdpr" deleted from piraeus-datastore namespace
+linstor-satellite.node-01-svmj6 node=node-01 uid=8c13f6d1-a2a1-4478-ad28-39aee6ce19e2 ready=True hn=true dns=ClusterFirstWithHostNet
+linstor-satellite.node-02-pxwpc node=node-02 uid=4f03206a-fdd8-42f0-9461-ba0d24b7c4ba ready=True hn=true dns=ClusterFirstWithHostNet
+linstor-satellite.node-03-zrggg node=node-03 uid=008e08bc-740d-4fca-a88b-442e5f5f583a ready=True hn=true dns=ClusterFirstWithHostNet
+--- LINSTOR node list ---
+|============================================================|
+| node-01 | SATELLITE | 172.30.140.101:3366 (PLAIN) | [1;32mOnline[0m |
+| node-02 | SATELLITE | 172.30.140.102:3366 (PLAIN) | [1;32mOnline[0m |
+| node-03 | SATELLITE | 172.30.140.103:3366 (PLAIN) | [1;32mOnline[0m |
++------------------------------------------------------------+
+=== node-01 drbd141 visibility ===
+bond1            UP             
+bond1.141@bond1  UP             172.30.141.101/24 fe80::ac4f:1274:315a:d25a/64 

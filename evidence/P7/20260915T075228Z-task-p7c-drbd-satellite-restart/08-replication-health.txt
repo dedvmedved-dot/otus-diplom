@@ -1,0 +1,11 @@
+| ResourceName                             | Node    | Layers       | Usage  | Conns                       |        State | CreatedOn           |
+|===============================================================================================================================================|
+| pvc-90418306-cee8-47d8-a4c3-f56bf2af26b2 | node-01 | DRBD,STORAGE | Unused | [1;31mConnecting(node-02)        [0m | [1;31m    UpToDate[0m | 2026-09-15 07:55:57 |
+| pvc-90418306-cee8-47d8-a4c3-f56bf2af26b2 | node-02 | DRBD,STORAGE | Unused | [1;31mConnecting(node-03,node-01)[0m | [1;31mInconsistent[0m | 2026-09-15 07:55:59 |
+| pvc-90418306-cee8-47d8-a4c3-f56bf2af26b2 | node-03 | DRBD,STORAGE | Unused | [1;31mConnecting(node-02)        [0m | [1;31m  TieBreaker[0m | 2026-09-15 07:55:58 |
++-----------------------------------------------------------------------------------------------------------------------------------------------+
+--- volume list (diskful/UpToDate) ---
+| pvc-90418306-cee8-47d8-a4c3-f56bf2af26b2 | node-01 | piraeus-thin         |     0 |    1000 | /dev/drbd1000 | 75.97 MiB | Unused | [1;31m    UpToDate[0m | [1;32mEstablished(1)[0m |
+| pvc-90418306-cee8-47d8-a4c3-f56bf2af26b2 | node-02 | piraeus-thin         |     0 |    1000 | /dev/drbd1000 |  8.02 MiB | Unused | [1;31mInconsistent[0m |                |
+| pvc-90418306-cee8-47d8-a4c3-f56bf2af26b2 | node-03 | DfltDisklessStorPool |     0 |    1000 | /dev/drbd1000 |           | Unused | [1;31m  TieBreaker[0m | [1;32mEstablished(1)[0m |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------+

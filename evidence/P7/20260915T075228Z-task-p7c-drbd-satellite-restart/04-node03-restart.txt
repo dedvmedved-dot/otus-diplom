@@ -1,0 +1,10 @@
+pod "linstor-satellite.node-03-zrggg" deleted from piraeus-datastore namespace
+linstor-satellite.node-01-svmj6 node=node-01 uid=8c13f6d1-a2a1-4478-ad28-39aee6ce19e2 ready=True hn=true dns=ClusterFirstWithHostNet
+linstor-satellite.node-02-pxwpc node=node-02 uid=4f03206a-fdd8-42f0-9461-ba0d24b7c4ba ready=True hn=true dns=ClusterFirstWithHostNet
+linstor-satellite.node-03-x5l8z node=node-03 uid=b52a207c-e664-472e-81c5-a0db6faa6da4 ready=True hn=true dns=ClusterFirstWithHostNet
+--- LINSTOR node list ---
+|============================================================|
+| node-01 | SATELLITE | 172.30.140.101:3366 (PLAIN) | [1;32mOnline[0m |
+| node-02 | SATELLITE | 172.30.140.102:3366 (PLAIN) | [1;32mOnline[0m |
+| node-03 | SATELLITE | 172.30.140.103:3366 (PLAIN) | [1;32mOnline[0m |
++------------------------------------------------------------+

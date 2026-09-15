@@ -1,0 +1,13 @@
+--- node-03 drbd141 visibility ---
+bond1            UP             
+bond1.141@bond1  UP             172.30.141.103/24 fe80::9a38:61dc:5c63:dfcb/64 
+--- satellites ---
+linstor-satellite.node-01-svmj6 node=node-01 uid=8c13f6d1-a2a1-4478-ad28-39aee6ce19e2 ready=True
+linstor-satellite.node-02-pxwpc node=node-02 uid=4f03206a-fdd8-42f0-9461-ba0d24b7c4ba ready=True
+linstor-satellite.node-03-x5l8z node=node-03 uid=b52a207c-e664-472e-81c5-a0db6faa6da4 ready=True
+--- LinstorNodeConnection ---
+Configured=True
+--- node interface (drbd141) ---
+| [1;32m+        [0m | drbd141      | 172.30.141.101 |      |                |
+| [1;32m+        [0m | drbd141      | 172.30.141.102 |      |                |
+| [1;32m+        [0m | drbd141      | 172.30.141.103 |      |                |

@@ -1,0 +1,14 @@
+namespace/p7c-drbd-restart-075228 created
+persistentvolumeclaim/test-pvc created
+pod/writer created
+STATUS=Pending PV=
+t=5s Bound/pvc-90418306-cee8-47d8-a4c3-f56bf2af26b2
+--- writer log ---
+b0072176ab2f9a25edc8e2bfcbfb6e915ad32372d1eb778c30a5e5729547724d  /data/marker
+--- LINSTOR resource ---
+| ResourceName                             | Node    | Layers       | Usage  | Conns                       |        State | CreatedOn           |
+|===============================================================================================================================================|
+| pvc-90418306-cee8-47d8-a4c3-f56bf2af26b2 | node-01 | DRBD,STORAGE | Unused | [1;31mConnecting(node-02)        [0m | [1;31m    UpToDate[0m | 2026-09-15 07:55:57 |
+| pvc-90418306-cee8-47d8-a4c3-f56bf2af26b2 | node-02 | DRBD,STORAGE | Unused | [1;31mConnecting(node-03,node-01)[0m | [1;31mInconsistent[0m | 2026-09-15 07:55:59 |
+| pvc-90418306-cee8-47d8-a4c3-f56bf2af26b2 | node-03 | DRBD,STORAGE | Unused | [1;31mConnecting(node-02)        [0m | [1;31m  TieBreaker[0m | 2026-09-15 07:55:58 |
++-----------------------------------------------------------------------------------------------------------------------------------------------+

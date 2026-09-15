@@ -1,0 +1,28 @@
+--- nodes Ready ---
+NAME      STATUS   ROLES           AGE   VERSION
+node-01   Ready    control-plane   21d   v1.36.2
+node-02   Ready    control-plane   21d   v1.36.2
+node-03   Ready    control-plane   21d   v1.36.2
+--- LINSTOR Online ---
+|============================================================|
+| node-01 | SATELLITE | 172.30.140.101:3366 (PLAIN) | [1;32mOnline[0m |
+| node-02 | SATELLITE | 172.30.140.102:3366 (PLAIN) | [1;32mOnline[0m |
+| node-03 | SATELLITE | 172.30.140.103:3366 (PLAIN) | [1;32mOnline[0m |
++------------------------------------------------------------+
+--- satellite pods ---
+linstor-satellite.node-01-vsdpr node=node-01 uid=b7926963-50de-4b3c-8b2b-5a13ee5cb34e ready=True hn=true
+linstor-satellite.node-02-pxwpc node=node-02 uid=4f03206a-fdd8-42f0-9461-ba0d24b7c4ba ready=True hn=true
+linstor-satellite.node-03-zrggg node=node-03 uid=008e08bc-740d-4fca-a88b-442e5f5f583a ready=True hn=true
+--- LinstorNodeConnection Configured ---
+Configured=True
+--- safety: LINSTOR resources ---
++-----------------------------------------------+
+| ResourceName | ResourceGroup | Layers | State |
+|===============================================|
++-----------------------------------------------+
+--- safety: LINSTOR snapshots ---
++-----------------------------------------------------------------------+
+| ResourceName | SnapshotName | NodeNames | Volumes | CreatedOn | State |
+|=======================================================================|
++-----------------------------------------------------------------------+
+--- safety: K8s PVC (linstor) ---

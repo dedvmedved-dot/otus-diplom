@@ -1,0 +1,141 @@
+=== 07-vlan141-binding ===
+--- node-01 ---
+658C1EAC:1B58 0A
+658C1EAC:1B58 01
+--- node-02 ---
+668D1EAC:1B58 0A
+--- node-03 ---
+678C1EAC:1B58 0A
+678C1EAC:1B58 01
+decode: 658C1EAC=172.30.140.101, 668D1EAC=172.30.141.102, 678C1EAC=172.30.140.103, 668D1EAC=172.30.141.101?
+=== node-connection actual state ===
+--- linstor node-connection list ---
++-------------------------------------------------------+
+| Node A  | Node B  | Properties                        |
+|=======================================================|
+| node-01 | node-02 | last-applied=["DrbdOptions/Net... |
+| node-01 | node-03 | last-applied=["DrbdOptions/Net... |
+| node-02 | node-03 | last-applied=["DrbdOptions/Net... |
++-------------------------------------------------------+
+--- DRBD connection state (node-01 satellite) ---
+pvc-90418306-cee8-47d8-a4c3-f56bf2af26b2 conn: ['Connecting', 'Connected'] peer-disk: [None, None]
+--- node-connection list -p (paths) ---
++-------------------------------------------------------+
+| Node A  | Node B  | Properties                        |
+|=======================================================|
+| node-01 | node-02 | last-applied=["DrbdOptions/Net... |
+| node-01 | node-03 | last-applied=["DrbdOptions/Net... |
+| node-02 | node-03 | last-applied=["DrbdOptions/Net... |
++-------------------------------------------------------+
+--- LinstorNodeConnection full status ---
+apiVersion: piraeus.io/v1
+kind: LinstorNodeConnection
+metadata:
+  annotations:
+      {"apiVersion":"piraeus.io/v1","kind":"LinstorNodeConnection","metadata":{"annotations":{},"name":"p5c2-drbd-vlan141"},"spec":{"paths":[{"interface":"drbd141","name":"drbd141"}],"properties":[{"name":"DrbdOptions/Net/protocol","value":"C"}]}}
+    otus-diplom/reconcile-run: 20260914T225847Z
+  name: p5c2-drbd-vlan141
+spec:
+  paths:
+  - interface: drbd141
+    name: drbd141
+  properties:
+  - name: DrbdOptions/Net/protocol
+    value: C
+status:
+  conditions:
+  - lastTransitionTime: "2026-09-01T21:36:00Z"
+    message: Configured
+    observedGeneration: 1
+    reason: AsExpected
+    status: "True"
+    type: Configured
+--- node-connection list --help ---
+usage: linstor node-connection list [-h] [-p]
+                                    [-g {node a,node b,properties} [{node a,node b,properties} ...]]
+                                    [-s SHOW_PROPS [SHOW_PROPS ...]]
+                                    [node_name_a] [node_name_b]
+
+Prints a list of all non-empty node connections. By default, the list is
+printed as a human readable table.
+
+positional arguments:
+  node_name_a           Node name
+  node_name_b           Node name
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -p, --pastable        Generate pastable output
+  -g {node a,node b,properties} [{node a,node b,properties} ...], --groupby {node a,node b,properties} [{node a,node b,properties} ...]
+  -s SHOW_PROPS [SHOW_PROPS ...], --show-props SHOW_PROPS [SHOW_PROPS ...]
+                        Show these props in the list. Can be key=value pairs
+                        where key is the property name and value column header
+--- node-connection list (paths via -p Paths) ---
+[1;31mERROR:
+[0mDescription:
+    Node 'Paths' not found.
+Cause:
+    The specified node 'Paths' could not be found in the database
+Correction:
+    Create a node with the name 'Paths' first.
+command terminated with exit code 10
+--- node-connection list node-01 node-02 (full props) ---
++-------------------------------------------------------+
+| Node A  | Node B  | Properties                        |
+|=======================================================|
+| node-01 | node-02 | last-applied=["DrbdOptions/Net... |
++-------------------------------------------------------+
+--- node-connection list-properties node-01 node-02 ---
++------------------------------------------------------------------------------------------------------------+
+| Key                         | Value                                                                        |
+|============================================================================================================|
+| Aux/piraeus.io/last-applied | ["DrbdOptions/Net/protocol","Paths/drbd141/node-01","Paths/drbd141/node-02"] |
+| DrbdOptions/Net/protocol    | C                                                                            |
+| Paths/drbd141/node-01       | drbd141                                                                      |
+| Paths/drbd141/node-02       | drbd141                                                                      |
++------------------------------------------------------------------------------------------------------------+
+--- node-01 node properties (transport/interface/drbd) ---
+| Aux/piraeus.io/configured-interfaces | ["default-ipv4"]                                                                                                  |
+| Aux/piraeus.io/last-applied          | ["Aux/piraeus.io/configured-interfaces","Aux/topology/kubernetes.io/hostname","Aux/topology/linbit.com/hostname"] |
+| CurStltConnName                      | default-ipv4                                                                                                      |
+--- node-02 node properties (transport/interface/drbd) ---
+| Aux/piraeus.io/configured-interfaces | ["default-ipv4"]                                                                                                  |
+| Aux/piraeus.io/last-applied          | ["Aux/piraeus.io/configured-interfaces","Aux/topology/kubernetes.io/hostname","Aux/topology/linbit.com/hostname"] |
+| CurStltConnName                      | default-ipv4                                                                                                      |
+--- node-03 node properties (transport/interface/drbd) ---
+| Aux/piraeus.io/configured-interfaces | ["default-ipv4"]                                                                                                  |
+| Aux/piraeus.io/last-applied          | ["Aux/piraeus.io/configured-interfaces","Aux/topology/kubernetes.io/hostname","Aux/topology/linbit.com/hostname"] |
+| CurStltConnName                      | default-ipv4                                                                                                      |
+--- piraeus CRs ---
+error: the server doesn't have a resource type "linstornode"
+--- LinstorSatelliteConfiguration yaml (interfaces) ---
+  kind: LinstorSatelliteConfiguration
+        {"apiVersion":"piraeus.io/v1","kind":"LinstorSatelliteConfiguration","metadata":{"annotations":{},"name":"astra-drbd-loader"},"spec":{"podTemplate":{"spec":{"initContainers":[{"env":[{"name":"LB_MAKEOPTS","value":"CONFIG_GCC_PLUGINS=n CONFIG_GCC_PLUGIN_STACKLEAK=n"}],"name":"drbd-module-loader"}]}}}}
+    name: astra-drbd-loader
+          - name: LB_MAKEOPTS
+          name: drbd-module-loader
+  kind: LinstorSatelliteConfiguration
+        {"apiVersion":"piraeus.io/v1","kind":"LinstorSatelliteConfiguration","metadata":{"annotations":{},"name":"p5c2-satellite-hostnetwork"},"spec":{"podTemplate":{"spec":{"dnsPolicy":"ClusterFirstWithHostNet","hostNetwork":true}}}}
+    name: p5c2-satellite-hostnetwork
+  kind: LinstorSatelliteConfiguration
+        {"apiVersion":"piraeus.io/v1","kind":"LinstorSatelliteConfiguration","metadata":{"annotations":{},"name":"p5c2-storage-pool"},"spec":{"storagePools":[{"lvmThinPool":{"thinPool":"thin_piraeus","volumeGroup":"vg_piraeus"},"name":"piraeus-thin"}]}}
+    name: p5c2-storage-pool
+      name: piraeus-thin
+
+CONCLUSION:
+  DRBD listener endpoints AFTER satellite restart (unchanged):
+    node-01 = 172.30.140.101:7000 (VLAN140)  -> FAIL
+    node-02 = 172.30.141.102:7000 (VLAN141)  -> OK
+    node-03 = 172.30.140.103:7000 (VLAN140)  -> FAIL
+  DRBD_VLAN141_BINDING_3_OF_3 = FAIL
+
+  node-connection path is correctly set in LINSTOR:
+    Paths/drbd141/node-01 = drbd141
+    Paths/drbd141/node-02 = drbd141
+    (and symmetric for the other pairs)
+  yet node-01/node-03 DRBD transport still binds default-ipv4 (VLAN140).
+
+  Root-cause hint: node property Aux/piraeus.io/configured-interfaces =
+  ["default-ipv4"] on ALL THREE nodes — the drbd141 net interface exists in
+  LINSTOR (172.30.141.x) but is NOT part of the operator-managed interfaces.
+  Satellite restart does NOT rebind the DRBD transport.

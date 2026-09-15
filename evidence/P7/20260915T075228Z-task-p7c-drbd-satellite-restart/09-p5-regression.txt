@@ -1,0 +1,12 @@
+# P5 storage regression (post-restart)
+
+satellites hostNetwork=true 3/3: YES
+drbd141 node interfaces present 3/3: YES (config layer)
+LinstorNodeConnection Configured=True: YES
+protocol C: YES
+piraeus-thin 3/3 Ok: YES (unchanged)
+StorageClass piraeus-r2 unchanged: YES
+LINSTOR nodes Online 3/3: YES
+
+Config/declarative layer PASS, but runtime DRBD endpoint binding remains
+asymmetric (node-01/03 VLAN140 vs node-02 VLAN141) — see 07/08.
