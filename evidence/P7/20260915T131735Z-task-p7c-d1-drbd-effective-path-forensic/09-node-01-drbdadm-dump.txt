@@ -1,0 +1,5 @@
+===== node-01 drbdadm dump =====
+        host node-01         address         ipv4 172.30.140.101:7000;
+        host node-02         address         ipv4 172.30.140.102:7000;
+        host node-01         address         ipv4 172.30.140.101:7000;
+        host node-03         address         ipv4 172.30.140.103:7000;

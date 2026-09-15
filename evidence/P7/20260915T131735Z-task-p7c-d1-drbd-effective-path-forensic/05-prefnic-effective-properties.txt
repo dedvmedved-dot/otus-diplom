@@ -1,0 +1,13 @@
+--- PrefNic on nodes ---
+  node-01:
+    (no PrefNic)
+  node-02:
+    (no PrefNic)
+  node-03:
+    (no PrefNic)
+--- PrefNic on resource def / resource ---
+    (no PrefNic/Paths on RD)
+    (no PrefNic/Paths on resource node-01)
+--- PrefNic on resource group / controller ---
+    (no PrefNic on RG piraeus-r2)
+    (no PrefNic on controller)

@@ -1,0 +1,17 @@
+# Safety gate (post-capture, read-only)
+
+Kubernetes nodes Ready: 3/3 (node-01, node-02, node-03)
+LINSTOR satellites Online: 3/3
+LINSTOR nodes Ready: 3/3
+production resources changed: NO
+storage pools changed: NO
+quorum topology changed: NO
+network config changed: NO
+remediation performed: NO
+
+Only temporary validation PVC + writer (namespace p7c-d1-131735) created for
+forensic capture; to be removed before commit.
+=== cleanup validation PVC ===
+namespace "p7c-d1-131735" deleted
+NO_PV
+NO_LINSTOR_RESIDUE

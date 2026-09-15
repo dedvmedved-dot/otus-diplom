@@ -1,0 +1,15 @@
+--- LINSTOR resources (existing?) ---
++------------------------------------------------------------------+
+| ResourceName | Node | Layers | Usage | Conns | State | CreatedOn |
+|==================================================================|
++------------------------------------------------------------------+
+--- PVC linstor (existing?) ---
+namespace/p7c-d1-131735 created
+persistentvolumeclaim/test-pvc created
+pod/writer created
+STATUS=Pending PV=
+|===============================================================================================================================================|
+| pvc-1be27f5d-8011-4680-81b8-3fe0e56cd4e9 | node-01 | DRBD,STORAGE | Unused | [1;31mConnecting(node-02)        [0m | [1;31m    UpToDate[0m | 2026-09-15 13:18:08 |
+| pvc-1be27f5d-8011-4680-81b8-3fe0e56cd4e9 | node-02 | DRBD,STORAGE | Unused | [1;31mConnecting(node-03,node-01)[0m | [1;31mInconsistent[0m | 2026-09-15 13:18:10 |
+| pvc-1be27f5d-8011-4680-81b8-3fe0e56cd4e9 | node-03 | DRBD,STORAGE | Unused | [1;31mConnecting(node-02)        [0m | [1;31m  TieBreaker[0m | 2026-09-15 13:18:09 |
++-----------------------------------------------------------------------------------------------------------------------------------------------+

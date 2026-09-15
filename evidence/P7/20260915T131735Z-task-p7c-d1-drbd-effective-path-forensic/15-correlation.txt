@@ -1,0 +1,35 @@
+# Correlation — DRBD effective path (resource pvc-1be27f5d-8011-4680-81b8-3fe0e56cd4e9)
+
+Controller-side (all three pairs):
+  NodeConnection Paths/drbd141/<node> = drbd141, protocol C  (correct, symmetric)
+  ResourceConnection Paths/ = (empty)  -> inherits NodeConnection
+  PrefNic = ABSENT on nodes / resource / RD / RG / controller
+
+Per-node generated config vs runtime (authoritative):
+
+| Node    | .res local endpoint        | drbdadm dump             | drbdsetup show (runtime)  | Verdict |
+|---------|----------------------------|--------------------------|---------------------------|---------|
+| node-01 | 172.30.140.101 (VLAN140)   | 172.30.140.101 (VLAN140) | 172.30.140.101 (VLAN140)  | WRONG   |
+| node-02 | 172.30.141.102 (VLAN141)   | 172.30.141.102 (VLAN141) | 172.30.141.102 (VLAN141)  | CORRECT |
+| node-03 | 172.30.140.103 (VLAN140)   | 172.30.140.103 (VLAN140) | 172.30.140.103 (VLAN140)  | WRONG   |
+
+Pair-level:
+
+| Pair          | ResourceConn path | NodeConn path | .res path      | Runtime path   | Match |
+|---------------|-------------------|---------------|----------------|----------------|-------|
+| node-01<->02  | (empty)           | drbd141       | VLAN140 (01) / VLAN141 (02) | VLAN140 / VLAN141 | NO (asymmetric) |
+| node-01<->03  | (empty)           | drbd141       | VLAN140 / VLAN140           | VLAN140 / VLAN140 | YES (both wrong) |
+| node-02<->03  | (empty)           | drbd141       | VLAN141 (02) / VLAN140 (03) | VLAN141 / VLAN140 | NO (asymmetric) |
+
+CONCLUSION:
+  On each node the generated .res, drbdadm dump, and kernel runtime are
+  MUTUALLY CONSISTENT. There is NO divergence between generated config and
+  applied runtime. Therefore the defect is NOT at the DRBD apply/runtime layer
+  (Variant B is ruled out).
+
+  The defect is in the satellite effective NodeConnection state / config
+  generation input: node-01 and node-03 satellites fall back to default-ipv4
+  (VLAN140), while node-02 correctly uses drbd141 (VLAN141).
+
+  CLASSIFICATION = PASS-A (LINSTOR satellite effective NodeConnection
+  propagation / config generation input).
