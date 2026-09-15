@@ -1,0 +1,73 @@
+=== 05-drbdsetup-resource-paths ===
+===== node-01 =====
+    _this_host {
+        node-id			0;
+    connection {
+            _this_host ipv4 172.30.140.101:7000;
+            _remote_host ipv4 172.30.140.102:7000;
+        _cstate Connecting;
+    connection {
+            _this_host ipv4 172.30.140.101:7000;
+            _remote_host ipv4 172.30.140.103:7000;
+        _cstate Connected;
+--- status ---
+pvc-8dea8e63-50b7-42e6-91f8-2380d42906c4 node-id:0 role:Secondary suspended:no
+    force-io-failures:no
+  volume:0 minor:1000 disk:UpToDate
+      backing_dev:/dev/vg_piraeus/pvc-8dea8e63-50b7-42e6-91f8-2380d42906c4_00000
+      quorum:yes open:no blocked:no
+  node-02 node-id:1 connection:Connecting role:Unknown tls:no congested:no
+      ap-in-flight:0 rs-in-flight:0
+    volume:0 replication:Off peer-disk:DUnknown resync-suspended:no
+  node-03 node-id:2 connection:Connected role:Secondary tls:no congested:no
+      ap-in-flight:0 rs-in-flight:0
+    volume:0 replication:Established peer-disk:Diskless peer-client:yes
+        resync-suspended:no
+
+===== node-02 =====
+    _this_host {
+        node-id			1;
+    connection {
+            _this_host ipv4 172.30.141.102:7000;
+            _remote_host ipv4 172.30.141.101:7000;
+        _cstate Connecting;
+    connection {
+            _this_host ipv4 172.30.141.102:7000;
+            _remote_host ipv4 172.30.141.103:7000;
+        _cstate Connecting;
+--- status ---
+pvc-8dea8e63-50b7-42e6-91f8-2380d42906c4 node-id:1 role:Secondary
+    suspended:quorum force-io-failures:no
+  volume:0 minor:1000 disk:Inconsistent
+      backing_dev:/dev/vg_piraeus/pvc-8dea8e63-50b7-42e6-91f8-2380d42906c4_00000
+      quorum:no open:no blocked:upper
+  node-01 node-id:0 connection:Connecting role:Unknown tls:no congested:no
+      ap-in-flight:0 rs-in-flight:0
+    volume:0 replication:Off peer-disk:DUnknown resync-suspended:no
+  node-03 node-id:2 connection:Connecting role:Unknown tls:no congested:no
+      ap-in-flight:0 rs-in-flight:0
+    volume:0 replication:Off peer-disk:DUnknown resync-suspended:no
+
+===== node-03 =====
+    _this_host {
+        node-id			2;
+    connection {
+            _this_host ipv4 172.30.140.103:7000;
+            _remote_host ipv4 172.30.140.101:7000;
+        _cstate Connected;
+    connection {
+            _this_host ipv4 172.30.140.103:7000;
+            _remote_host ipv4 172.30.140.102:7000;
+        _cstate Connecting;
+--- status ---
+pvc-8dea8e63-50b7-42e6-91f8-2380d42906c4 node-id:2 role:Secondary suspended:no
+    force-io-failures:no
+  volume:0 minor:1000 disk:Diskless client:yes backing_dev:none quorum:yes open:no
+      blocked:no
+  node-01 node-id:0 connection:Connected role:Secondary tls:no congested:no
+      ap-in-flight:0 rs-in-flight:0
+    volume:0 replication:Established peer-disk:UpToDate resync-suspended:no
+  node-02 node-id:1 connection:Connecting role:Unknown tls:no congested:no
+      ap-in-flight:0 rs-in-flight:0
+    volume:0 replication:Off peer-disk:DUnknown resync-suspended:no
+

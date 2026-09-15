@@ -1,0 +1,6 @@
+# Fresh validation resource
+PVC: test-pvc (namespace p7c-drbd-path-112652)
+PV: pvc-8dea8e63-50b7-42e6-91f8-2380d42906c4
+LINSTOR resource: pvc-8dea8e63-50b7-42e6-91f8-2380d42906c4
+Placement: node-01 diskful UpToDate, node-02 diskful Inconsistent, node-03 TieBreaker
+(StorageClass piraeus-r2 has volumeBindingMode WaitForFirstConsumer; writer pod triggered bind)

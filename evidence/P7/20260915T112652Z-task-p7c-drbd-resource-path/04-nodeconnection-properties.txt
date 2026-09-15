@@ -1,0 +1,22 @@
+--- node-01 <-> node-02 ---
+| Aux/piraeus.io/last-applied | ["DrbdOptions/Net/protocol","Paths/drbd141/node-01","Paths/drbd141/node-02"] |
+| DrbdOptions/Net/protocol    | C                                                                            |
+| Paths/drbd141/node-01       | drbd141                                                                      |
+| Paths/drbd141/node-02       | drbd141                                                                      |
+--- node-01 <-> node-03 ---
+| Aux/piraeus.io/last-applied | ["DrbdOptions/Net/protocol","Paths/drbd141/node-01","Paths/drbd141/node-03"] |
+| DrbdOptions/Net/protocol    | C                                                                            |
+| Paths/drbd141/node-01       | drbd141                                                                      |
+| Paths/drbd141/node-03       | drbd141                                                                      |
+--- node-02 <-> node-03 ---
+| Aux/piraeus.io/last-applied | ["DrbdOptions/Net/protocol","Paths/drbd141/node-02","Paths/drbd141/node-03"] |
+| DrbdOptions/Net/protocol    | C                                                                            |
+| Paths/drbd141/node-02       | drbd141                                                                      |
+| Paths/drbd141/node-03       | drbd141                                                                      |
+--- node interface list-properties (node-01 vs node-02) ---
+usage: linstor node interface [-h] {create, delete, list, modify} ...
+linstor node interface: error: argument {create, delete, list, modify}: invalid choice: 'list-properties' (choose from 'create', 'c', 'modify', 'm', 'delete', 'd', 'list', 'l')
+command terminated with exit code 2
+usage: linstor node interface [-h] {create, delete, list, modify} ...
+linstor node interface: error: argument {create, delete, list, modify}: invalid choice: 'list-properties' (choose from 'create', 'c', 'modify', 'm', 'delete', 'd', 'list', 'l')
+command terminated with exit code 2

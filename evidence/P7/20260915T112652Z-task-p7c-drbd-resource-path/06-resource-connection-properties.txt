@@ -1,0 +1,41 @@
+--- resource-connection list ---
++---------------------------------------+
+| Source  | Target  | Properties | Port |
+|=======================================|
+| node-01 | node-02 |            |      |
+| node-01 | node-03 |            |      |
+| node-02 | node-03 |            |      |
++---------------------------------------+
+--- resource-connection list-properties node-01 node-02 ---
+[1;31mERROR:
+[0m    Resource definition 'node-02' not found.
+command terminated with exit code 10
+--- resource-connection list-properties node-01 node-03 ---
+[1;31mERROR:
+[0m    Resource definition 'node-03' not found.
+command terminated with exit code 10
+--- resource-connection list-properties help ---
+usage: linstor resource-connection list-properties [-h] [-p]
+                                                   node_name_a node_name_b
+                                                   resource_name
+
+Prints all properties of the given resource connection.
+
+positional arguments:
+  node_name_a     Node name source of the connection.
+  node_name_b     Node name target of the connection.
+  resource_name   Resource name
+
+optional arguments:
+--- resource-connection list-properties (rsc node-01 node-02) ---
+[1;31mERROR:
+[0m    Resource definition 'node-02' not found.
+command terminated with exit code 10
+--- resource-connection list -s Paths ---
++-----------------------------------------------+
+| Source  | Target  | Properties | Port | Paths |
+|===============================================|
+| node-01 | node-02 |            |      |       |
+| node-01 | node-03 |            |      |       |
+| node-02 | node-03 |            |      |       |
++-----------------------------------------------+

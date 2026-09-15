@@ -1,0 +1,37 @@
+# Layer comparison and root cause
+
+LAYER A — LINSTOR node interfaces (03-node-interfaces.txt):
+  node-01 drbd141 = 172.30.141.101  (present, correct)
+  node-02 drbd141 = 172.30.141.102  (present, correct)
+  node-03 drbd141 = 172.30.141.103  (present, correct)
+  => symmetric, CORRECT
+
+LAYER B — LINSTOR NodeConnection (04-nodeconnection-properties.txt):
+  node-01<->node-02: Paths/drbd141/node-01=drbd141, Paths/drbd141/node-02=drbd141, protocol C
+  node-01<->node-03: Paths/drbd141/node-01=drbd141, Paths/drbd141/node-03=drbd141, protocol C
+  node-02<->node-03: Paths/drbd141/node-02=drbd141, Paths/drbd141/node-03=drbd141, protocol C
+  => symmetric, CORRECT
+
+LAYER C — LINSTOR resource-connection (06-resource-connection-properties.txt):
+  Properties empty, Port empty, Paths empty for all 3 pairs
+  => no override; inherits node-connection path drbd141. EFFECTIVELY CORRECT.
+
+LAYER D — materialized DRBD path (05-drbdsetup-resource-paths.txt, authoritative):
+  node-01: _this_host ipv4 172.30.140.101:7000 (default-ipv4), remotes 172.30.140.102/103
+  node-02: _this_host ipv4 172.30.141.102:7000 (drbd141),     remotes 172.30.141.101/103
+  node-03: _this_host ipv4 172.30.140.103:7000 (default-ipv4), remotes 172.30.140.101/102
+  => INCONSISTENT: node-02 materializes drbd141 (VLAN141); node-01/node-03 materialize
+     default-ipv4 (VLAN140).
+
+WHERE THE PATH IS LOST: between Layer B/C (correct) and Layer D (generated DRBD config).
+  node-01 and node-03 DRBD transport is generated with default-ipv4 instead of drbd141,
+  despite identical correct node-connection path on all pairs.
+
+RESULTING FAILURE:
+  node-01 (VLAN140) <-> node-03 (VLAN140) = Connected
+  node-02 (VLAN141) -> node-01/node-03 (VLAN140) = Connecting stuck
+  => split DRBD mesh; node-02 diskful peer never reaches UpToDate.
+
+ROOT CAUSE CLASSIFICATION: D. LINSTOR_RESOURCE_PATH_GENERATION_ERROR
+  (the resource-connection inherits drbd141 correctly, but the DRBD config generation
+   produces default-ipv4 for node-01/node-03 — a per-node inconsistency).

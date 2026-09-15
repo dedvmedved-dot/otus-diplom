@@ -1,0 +1,68 @@
+--- nodes ---
+NAME      STATUS   ROLES           AGE   VERSION
+node-01   Ready    control-plane   21d   v1.36.2
+node-02   Ready    control-plane   21d   v1.36.2
+node-03   Ready    control-plane   21d   v1.36.2
+--- satellites ---
+linstor-satellite.node-01-svmj6 node=node-01 ready=True
+linstor-satellite.node-02-pxwpc node=node-02 ready=True
+linstor-satellite.node-03-x5l8z node=node-03 ready=True
+--- LINSTOR Online ---
+| node-01 | SATELLITE | 172.30.140.101:3366 (PLAIN) | [1;32mOnline[0m |
+| node-02 | SATELLITE | 172.30.140.102:3366 (PLAIN) | [1;32mOnline[0m |
+| node-03 | SATELLITE | 172.30.140.103:3366 (PLAIN) | [1;32mOnline[0m |
++------------------------------------------------------------+
+--- Configured ---
+Configured=True
+--- create namespace + PVC ---
+namespace/p7c-drbd-path-112652 created
+persistentvolumeclaim/test-pvc created
+STATUS=Pending PV=
++------------------------------------------------------------------+
+| ResourceName | Node | Layers | Usage | Conns | State | CreatedOn |
+|==================================================================|
++------------------------------------------------------------------+
++------------------------------------------------------------------+
+| ResourceName | Node | Layers | Usage | Conns | State | CreatedOn |
+|==================================================================|
++------------------------------------------------------------------+
+--- PVC describe (events) ---
+Name:          test-pvc
+Namespace:     p7c-drbd-path-112652
+StorageClass:  piraeus-r2
+Status:        Pending
+Volume:        
+Labels:        <none>
+Annotations:   <none>
+Finalizers:    [kubernetes.io/pvc-protection]
+Capacity:      
+Access Modes:  
+VolumeMode:    Filesystem
+Used By:       <none>
+Events:
+  Type    Reason                Age                 From                         Message
+  ----    ------                ----                ----                         -------
+  Normal  WaitForFirstConsumer  5s (x10 over 2m6s)  persistentvolume-controller  waiting for first consumer to be created before binding
+--- csi-provisioner logs (tail) ---
+time="2026-09-14T23:01:24Z" level=info msg="reconcile resource definition for volume" linstorCSIComponent=client volume=pvc-b8bb9816-aa57-4802-b61c-451c0a276e88
+time="2026-09-14T23:01:24Z" level=info msg="reconcile volume definition for volume" linstorCSIComponent=client volume=pvc-b8bb9816-aa57-4802-b61c-451c0a276e88
+time="2026-09-14T23:01:25Z" level=info msg="reconcile resource placement for volume" linstorCSIComponent=client volume=pvc-b8bb9816-aa57-4802-b61c-451c0a276e88
+time="2026-09-14T23:01:44Z" level=info msg="attaching volume" linstorCSIComponent=client targetNode=node-03 volume=pvc-b8bb9816-aa57-4802-b61c-451c0a276e88
+time="2026-09-14T23:01:57Z" level=info msg="resource not temporary (not created by Attach) not deleting" linstorCSIComponent=client targetNode=node-03 volume=pvc-b8bb9816-aa57-4802-b61c-451c0a276e88
+time="2026-09-14T23:02:51Z" level=info msg="deleting volume" linstorCSIComponent=client volume=pvc-b8bb9816-aa57-4802-b61c-451c0a276e88
+time="2026-09-14T23:02:54Z" level=info msg="checking RG for removal" linstorCSIComponent=client rd=pvc-b8bb9816-aa57-4802-b61c-451c0a276e88
+time="2026-09-15T07:55:56Z" level=info msg="determined volume id for volume named 'pvc-90418306-cee8-47d8-a4c3-f56bf2af26b2'" linstorCSIComponent=driver nodeID= provisioner=linstor.csi.linbit.com version=v1.11.0 volume=pvc-90418306-cee8-47d8-a4c3-f56bf2af26b2
+time="2026-09-15T07:55:56Z" level=info msg="reconcile resource definition for volume" linstorCSIComponent=client volume=pvc-90418306-cee8-47d8-a4c3-f56bf2af26b2
+time="2026-09-15T07:55:56Z" level=info msg="reconcile volume definition for volume" linstorCSIComponent=client volume=pvc-90418306-cee8-47d8-a4c3-f56bf2af26b2
+time="2026-09-15T07:55:56Z" level=info msg="reconcile resource placement for volume" linstorCSIComponent=client volume=pvc-90418306-cee8-47d8-a4c3-f56bf2af26b2
+time="2026-09-15T07:56:31Z" level=info msg="attaching volume" linstorCSIComponent=client targetNode=node-01 volume=pvc-90418306-cee8-47d8-a4c3-f56bf2af26b2
+time="2026-09-15T07:56:43Z" level=info msg="resource not temporary (not created by Attach) not deleting" linstorCSIComponent=client targetNode=node-01 volume=pvc-90418306-cee8-47d8-a4c3-f56bf2af26b2
+time="2026-09-15T08:04:49Z" level=info msg="deleting volume" linstorCSIComponent=client volume=pvc-90418306-cee8-47d8-a4c3-f56bf2af26b2
+time="2026-09-15T08:04:52Z" level=info msg="checking RG for removal" linstorCSIComponent=client rd=pvc-90418306-cee8-47d8-a4c3-f56bf2af26b2
+pod/writer created
+STATUS=Pending PV=
+|===============================================================================================================================================|
+| pvc-8dea8e63-50b7-42e6-91f8-2380d42906c4 | node-01 | DRBD,STORAGE | Unused | [1;31mConnecting(node-02)        [0m | [1;31m    UpToDate[0m | 2026-09-15 11:30:09 |
+| pvc-8dea8e63-50b7-42e6-91f8-2380d42906c4 | node-02 | DRBD,STORAGE | Unused | [1;31mConnecting(node-03,node-01)[0m | [1;31mInconsistent[0m | 2026-09-15 11:30:10 |
+| pvc-8dea8e63-50b7-42e6-91f8-2380d42906c4 | node-03 | DRBD,STORAGE | Unused | [1;31mConnecting(node-02)        [0m | [1;31m  TieBreaker[0m | 2026-09-15 11:30:10 |
++-----------------------------------------------------------------------------------------------------------------------------------------------+
