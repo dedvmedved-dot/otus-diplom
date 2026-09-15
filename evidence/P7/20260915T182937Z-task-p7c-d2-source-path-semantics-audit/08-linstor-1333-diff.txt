@@ -1,0 +1,102 @@
+=== 08-linstor-1333-diff ===
+# Changelog
+
+All notable changes to Linstor will be documented in this file starting from version 1.19.0,
+for older version see github releases.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [1.33.3] - 2026-05-11
+
+### Added
+
+- SOS report now includes drbd-reactor config files, logs, and status
+
+### Changed
+
+- AutoUnplacer now prefers non-UpToDate resources after AP-settings-violating resources before choosing any.
+- Improved error message for shrink operations
+- Disabled DRBD shrink support (It didn't work correctly anyway)
+- DRBD: Thin volumes are now set again as UpToDate
+
+### Fixed
+
+- Fixed the clone status check if no DRBD connection states have been received yet
+- Fixed volume set size (shrinking) never trigger the actual shrink operation
+- Only call "secondary" after an "mkfs" command if LINSTOR was the one that set the DRBD resource primary
+- Fixed only reset auto-verify-algo, if at least two nodes reported their crypto entries
+- Fixed set-plain-port, set-plain-listen in linstor-config tool using wrong property instances
+- Fixed unconditional 2-4s wait time between CRD migrations
+- Fixed node properties not properly applied after LINSTOR's FullSync
+- Fixed deletion of inactive shared storagepool resources
+- Fixed cloning of shared storagepool resource definitions
+- Fixed resource create if no .resource object was given
+- Prevent NPE if make-available is tried on a resource-definition with no active resources
+- Properly reencrypt user-passphrase in VlmDfn during "backup ship"
+- Better handle "null" value inputs for json body rest requests with working defaults (nodes/{restore, evacuate), ...)
+
+## [1.33.2] - 2026-04-08
+
+### Changed
+
+- Changed the mechanism how LINSTOR sets DRBD volumes as UptoDate
+
+### Removed
+
+- WinDRBD specific patches regarding missing sha1 and hmac crypto algorithms
+
+### Fixed
+
+- Fixed resource definition delete setting DELETE flag when resources are still in use
+- Fixed retry deletion of already deleting resource (no longer fails if it is the second to last diskful resource)
+- Satellite now properly merges remote nodes + their data (props, netIfs)
+- Fixed potential ConcurrentModificationException when serializing properties
+- Fixed race condition in updateController() that leads to uncompleted ChangedController answers (client timeout)
+- Fixed bug that could lead to NPE when multiple cache layers are processed in one DevMgr cycle
+- Fixed possible bug that could have caused orphaned DRBD resources being left on the satellite
+- Fixed autounplacer not prioritizing autoplacer-settings violations over free space properly
+- Fixed EventStreamClosed exception if toggle-disk a single diskful resource
+- Fixed some issues with ReconnectorTask when multiple peers representing the same nodes try to reconnect
+- Fixed property "Linstor/Drbd/auto-block-size": Now works properly on controller level
+- Fixed that additional volumes now also run mkfs if configured
+
+## [1.33.1] - 2025-12-22
+
+### Fixed
+
+- Fixed missing transaction-commits during evacuate's copy-snap
+- Make sure updateDiscGranularity is not called if only DRBD_DELETE is set
+- Also delete error-report text files on error delete api call
+- Properly exit on a CriticalError instead of running into a deadlock
+
+## [1.33.0] - 2025-12-11
+
+### Changed
+
+- Added checks if existing resources have enough peerSlots for a new peer
+
+### Fixed
+=== grep FullSync / node prop in changelog ===
+- Fixed set-plain-port, set-plain-listen in linstor-config tool using wrong property instances
+- Fixed node properties not properly applied after LINSTOR's FullSync
+- Fixed property "Linstor/Drbd/auto-block-size": Now works properly on controller level
+- DrbdProxy: Fixed ignored DrbdProxy/AutoEnable property when set on controller level
+- AutoSnapshot: Fixed "Keep" property (regression introduced in 1.32.0)
+- Run autohelper.manage tasks after node fullsync (before only on node rc, c, d)
+- Autotiebreaker: do not delete tiebereaker if node is not online/fullsynced
+- Fixed possible NPE when a satellite updates a storage pool (capacity, supports snapshots, etc)
+- mkfs: also use nodiscard for thick volumes, as a fullsync is done anyway
+- Added property "StorDriver/Zfs/RollbackStrategy" to allow for old "zfs rollback" behavior
+- Added property "StorDriver/Zfs/DeleteStrategy" to fail instead of rename ZVOLs if dependent snapshots exist
+- Improve output of property changes messages
+- Fixed AutoplaceTarget property being ignored on controller level
+- Fixed AutoplaceTarget property that controller has higher priority than node
+- Fixed reading wrong property for cache's blocksize
+- Fixed resource-group modify not deleting tiebreaker if quorum property changed
+- Fixed auto-quorum/tiebreaker if quorum property was explicitly set to majority
+- Auto-quorum: Reworked auto-quorum property behaviour, property was removed and auto-quorum is now managed through
+- volume-definition resize: if current size is set, no satellite/data updates will be triggered
+- Backup,L2L: Add property to only wait with shipping until snapshot is created

@@ -1,0 +1,4 @@
+=== LinstorNodeConnection types (paths field) ===
+=== node-connection controller: key funcs + Configured + paths ===
+=== reconcileAll (112-170) ===
+=== NamespcConnectionPaths constant ===

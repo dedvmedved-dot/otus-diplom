@@ -1,0 +1,5 @@
+=== LINSTOR 1.33.2: find DRBD config generation / path selection files ===
+=== ConfFileBuilder: address/path/NetInterface/PrefNic selection ===
+=== ConfFileBuilder fallback (433-575) ===
+=== getPreferredNetIf + appendConnectionHost ===
+=== getPreferredNetIf body ===

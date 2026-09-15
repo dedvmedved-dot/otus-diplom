@@ -1,0 +1,19 @@
+# LINSTOR node-connection propagation (controller -> satellite)
+
+Source: linstor-server v1.33.2 / v1.33.3 (LINBIT/linstor-server)
+
+Key changelog facts:
+- v1.33.2 (2026-04-08) Fixed: "Satellite now properly merges remote nodes + their
+  data (props, netIfs)" — satellite-side merge of remote node props/netIfs.
+- v1.33.3 (2026-05-11) Fixed: "node properties not properly applied after LINSTOR's
+  FullSync" — node properties re-applied after FullSync.
+
+ConfFileBuilder (satellite) consumes, per resource connection:
+  - nodeConn.getProps(accCtx).getNamespace(NAMESPC_CONNECTION_PATHS)  (NodeConnection Paths)
+  - node.getNetInterface(accCtx, NetInterfaceName)                    (node net interfaces)
+
+Both come from the satellite's local data model, populated by the controller
+(FullSync / node update / node-connection update). The observed asymmetry
+(node-02 has drbd141, node-01/node-03 fall back to default-ipv4) means the
+NodeConnection Paths namespace and/or drbd141 NetInterface were NOT present in
+the effective state of node-01/node-03 satellites at .res generation time.

@@ -1,0 +1,13 @@
+# DRBD 9.3.2 path application semantics
+
+- DRBD reads configured paths from the generated .res file (via drbdadm).
+- drbdsetup show / drbdadm dump reflect the parsed .res; kernel runtime reflects
+  the applied config.
+- P7C-D1 proved: .res == drbdadm dump == drbdsetup show on every node (consistent).
+  Therefore the defect is "wrong generated config", NOT "correct config + stale
+  kernel path". No drbdsetup del-path/new-path/adjust is the right fix; the fix
+  is to correct the generated .res (upstream of DRBD kernel).
+
+Distinction required by task:
+  wrong generated config   = YES (confirmed)
+  correct config + stale kernel = NO (ruled out)

@@ -1,0 +1,17 @@
+# LINSTOR FullSync / satellite effective state
+
+Evidence (P7C-D1 forensic): generated .res on node-01/node-03 = VLAN140,
+node-02 = VLAN141, while controller NodeConnection = drbd141 on all pairs.
+
+ConfFileBuilder fallback path proves: node-01/node-03 satellites had
+NodeConnection Paths == null (or nodeConn == null) -> fell back to
+getPreferredNetIf -> PrefNic null -> default-ipv4 (VLAN140). node-02 satellite
+had Paths present -> drbd141 (VLAN141).
+
+Conclusion: controller-side NodeConnection state is correct, but the
+node-connection Paths are not consistently propagated to all satellites
+(FullSync/update does not guarantee node-connection property application on
+every satellite). This is consistent with the v1.33.3 fix direction
+("node properties not properly applied after FullSync"), though that changelog
+entry names node properties (not explicitly NodeConnection properties) ->
+PARTIAL relevance.
