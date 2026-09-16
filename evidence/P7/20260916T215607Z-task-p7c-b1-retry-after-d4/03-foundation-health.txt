@@ -1,0 +1,20 @@
+=== 03-foundation-health ===
+--- snapshot-controller deploy ---
+NAME                  READY   UP-TO-DATE   AVAILABLE   AGE
+snapshot-controller   2/2     2            2           76s
+--- pods ---
+NAME                                  READY   STATUS    RESTARTS   AGE   IP              NODE      NOMINATED NODE   READINESS GATES
+snapshot-controller-f74978f89-dth45   1/1     Running   0          78s   10.244.190.33   node-01   <none>           <none>
+snapshot-controller-f74978f89-mt2xq   1/1     Running   0          78s   10.244.254.89   node-03   <none>           <none>
+--- image (verify digest) ---
+registry.k8s.io/sig-storage/snapshot-controller:v8.6.0@sha256:d1ab1b095eb81ce689abc8b8094badc4c4ea657051749014a631f8cca876a620
+--- leader election lease ---
+snapshot-controller-f74978f89-mt2xq
+--- CRDs Established ---
+NAME                                                       CREATED AT
+volumesnapshotclasses.snapshot.storage.k8s.io              2026-09-16T21:56:43Z
+volumesnapshotcontents.snapshot.storage.k8s.io             2026-09-16T21:56:43Z
+volumesnapshots.snapshot.storage.k8s.io                    2026-09-16T21:56:43Z
+--- VolumeSnapshotClass ---
+NAME                   DRIVER                   DELETIONPOLICY   AGE
+piraeus-r2-snapclass   linstor.csi.linbit.com   Delete           81s

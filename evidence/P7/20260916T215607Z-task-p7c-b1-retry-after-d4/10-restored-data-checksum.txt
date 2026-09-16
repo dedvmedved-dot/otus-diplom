@@ -1,0 +1,20 @@
+=== 10-restored-data-checksum ===
+=== meta.txt ===
+P7C-B1-canary-source-v1
+=== checksums ===
+3874653570e22975553942760bf74e835096182db65c8bd6d5814db7f9242a30  /data/meta.txt
+d49c34cb28ecfb06e22b7f7843959373a34ba0159ba6d5390a79c3a43d500c26  /data/payload.bin
+RESTORE_READ_DONE
+
+=== 09-restore-linstor-drbd ===
+--- LINSTOR resource (restore PV) ---
+| ResourceName                             | Node    | Layers       | Usage  | Conns |      State | CreatedOn           |
+| pvc-1be23aa3-e952-4532-8f87-e7412c77f45b | node-01 | DRBD,STORAGE | Unused | [0;32mOk   [0m | [0;32m  UpToDate[0m | 2026-09-16 22:01:52 |
+| pvc-1be23aa3-e952-4532-8f87-e7412c77f45b | node-02 | DRBD,STORAGE | Unused | [0;32mOk   [0m | [0;32mTieBreaker[0m | 2026-09-16 22:01:53 |
+| pvc-1be23aa3-e952-4532-8f87-e7412c77f45b | node-03 | DRBD,STORAGE | Unused | [0;32mOk   [0m | [0;32m  UpToDate[0m | 2026-09-16 22:01:53 |
+--- DRBD connections (restore, node-01) ---
+  volume:0 minor:1001 disk:UpToDate
+  node-02 node-id:2 connection:Connected role:Secondary tls:no congested:no
+    volume:0 replication:Established peer-disk:Diskless peer-client:yes
+  node-03 node-id:1 connection:Connected role:Secondary tls:no congested:no
+    volume:0 replication:Established peer-disk:UpToDate resync-suspended:no

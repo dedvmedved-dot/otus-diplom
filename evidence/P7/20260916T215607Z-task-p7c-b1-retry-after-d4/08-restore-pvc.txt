@@ -1,0 +1,5 @@
+=== 08-restore-pvc ===
+restore PVC: p7c-b1-restore (dataSource VolumeSnapshot p7c-b1-source-snapshot)
+RESULT: Bound
+PV: pvc-1be23aa3-e952-4532-8f87-e7412c77f45b
+reader pod: p7c-b1-restore-reader = Completed (0/1)

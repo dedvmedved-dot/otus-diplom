@@ -1,0 +1,13 @@
+=== 06-snapshot ===
+      {"apiVersion":"snapshot.storage.k8s.io/v1","kind":"VolumeSnapshot","metadata":{"annotations":{},"name":"p7c-b1-source-snapshot","namespace":"p7c-b1-canary"},"spec":{"source":{"persistentVolumeClaimName":"p7c-b1-source"},"volumeSnapshotClassName":"piraeus-r2-snapclass"}}
+  name: p7c-b1-source-snapshot
+    persistentVolumeClaimName: p7c-b1-source
+  volumeSnapshotClassName: piraeus-r2-snapclass
+  readyToUse: true
+  restoreSize: 1Gi
+=== 07-backend-snapshot (LINSTOR) ===
++-----------------------------------------------------------------------------------------------------------------------------------------------------------+
+| ResourceName                             | SnapshotName                                  | NodeNames        | Volumes  | CreatedOn           | State      |
+|===========================================================================================================================================================|
+| pvc-e5d76c8c-f5db-44fc-b5d4-1c98cbdae0a9 | snapshot-1f59c578-8e84-4ee1-9973-f80e75faa4c7 | node-01, node-02 | 0: 1 GiB | 2026-09-16 22:00:01 | [0;32mSuccessful[0m |
++-----------------------------------------------------------------------------------------------------------------------------------------------------------+

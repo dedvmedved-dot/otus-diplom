@@ -1,0 +1,13 @@
+=== 13-cleanup ===
+--- delete VolumeSnapshot (triggers backend snapshot cleanup) ---
+volumesnapshot.snapshot.storage.k8s.io "p7c-b1-source-snapshot" deleted from p7c-b1-canary namespace
+--- delete canary namespace ---
+namespace "p7c-b1-canary" deleted
+--- verify canary residue ---
+NO_PV_RESIDUE
+NO_LINSTOR_RESOURCE_RESIDUE
+NO_LINSTOR_SNAPSHOT_RESIDUE
+--- verify foundation still deployed ---
+snapshot-controller   2/2     2            2           7m29s
+piraeus-r2-snapclass   linstor.csi.linbit.com   Delete           7m28s
+3

@@ -1,0 +1,23 @@
+=== 01-precheck ===
+--- nodes Ready ---
+NAME      STATUS   ROLES           AGE   VERSION
+node-01   Ready    control-plane   23d   v1.36.2
+node-02   Ready    control-plane   23d   v1.36.2
+node-03   Ready    control-plane   22d   v1.36.2
+--- satellites Online ---
++------------------------------------------------------------+
+| Node    | NodeType  | Addresses                   | State  |
+|============================================================|
+| node-01 | SATELLITE | 172.30.140.101:3366 (PLAIN) | [1;32mOnline[0m |
+| node-02 | SATELLITE | 172.30.140.102:3366 (PLAIN) | [1;32mOnline[0m |
+| node-03 | SATELLITE | 172.30.140.103:3366 (PLAIN) | [1;32mOnline[0m |
++------------------------------------------------------------+
+--- DRBD resource states (no Connecting/Inconsistent) ---
++------------------------------------------------------------------+
+| ResourceName | Node | Layers | Usage | Conns | State | CreatedOn |
+|==================================================================|
++------------------------------------------------------------------+
+--- snapshot CRDs/controller/VSC absent ---
+NO_SNAPSHOT_CRD
+Error from server (NotFound): deployments.apps "snapshot-controller" not found
+error: the server doesn't have a resource type "volumesnapshotclass"

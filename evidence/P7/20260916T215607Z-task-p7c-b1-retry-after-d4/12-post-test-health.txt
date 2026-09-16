@@ -1,0 +1,18 @@
+=== restore .res endpoints (VLAN141 proof) ===
+--- node-01 ---
+            host "node-01" address ipv4 172.30.141.101:7001;
+            host "node-02" address ipv4 172.30.141.102:7001;
+            host "node-01" address ipv4 172.30.141.101:7001;
+            host "node-03" address ipv4 172.30.141.103:7001;
+--- node-02 ---
+            host "node-01" address ipv4 172.30.141.101:7001;
+            host "node-02" address ipv4 172.30.141.102:7001;
+            host "node-02" address ipv4 172.30.141.102:7001;
+            host "node-03" address ipv4 172.30.141.103:7001;
+--- node-03 ---
+            host "node-01" address ipv4 172.30.141.101:7001;
+            host "node-03" address ipv4 172.30.141.103:7001;
+            host "node-02" address ipv4 172.30.141.102:7001;
+            host "node-03" address ipv4 172.30.141.103:7001;
+=== quorum (restore, node-01) ===
+      quorum:yes open:no blocked:no

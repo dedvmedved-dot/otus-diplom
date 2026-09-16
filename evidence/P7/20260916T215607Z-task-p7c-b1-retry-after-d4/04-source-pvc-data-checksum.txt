@@ -1,0 +1,5 @@
+=== 04-source-pvc-data-checksum ===
+--- writer logs (checksums) ---
+3874653570e22975553942760bf74e835096182db65c8bd6d5814db7f9242a30  /data/meta.txt
+d49c34cb28ecfb06e22b7f7843959373a34ba0159ba6d5390a79c3a43d500c26  /data/payload.bin
+WRITER_DONE

@@ -1,0 +1,12 @@
+=== 05-source-linstor-drbd ===
+--- LINSTOR resource ---
+| ResourceName                             | Node    | Layers       | Usage  | Conns |      State | CreatedOn           |
+| pvc-e5d76c8c-f5db-44fc-b5d4-1c98cbdae0a9 | node-01 | DRBD,STORAGE | Unused | [0;32mOk   [0m | [0;32m  UpToDate[0m | 2026-09-16 21:58:45 |
+| pvc-e5d76c8c-f5db-44fc-b5d4-1c98cbdae0a9 | node-02 | DRBD,STORAGE | Unused | [0;32mOk   [0m | [0;32m  UpToDate[0m | 2026-09-16 21:58:46 |
+| pvc-e5d76c8c-f5db-44fc-b5d4-1c98cbdae0a9 | node-03 | DRBD,STORAGE | Unused | [0;32mOk   [0m | [0;32mTieBreaker[0m | 2026-09-16 21:58:46 |
+--- DRBD connections (node-01) ---
+  volume:0 minor:1000 disk:UpToDate
+  node-02 node-id:1 connection:Connected role:Secondary tls:no congested:no
+    volume:0 replication:Established peer-disk:UpToDate resync-suspended:no
+  node-03 node-id:2 connection:Connected role:Secondary tls:no congested:no
+    volume:0 replication:Established peer-disk:Diskless peer-client:yes

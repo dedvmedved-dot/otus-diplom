@@ -1,0 +1,14 @@
+=== 02-foundation-deploy ===
+customresourcedefinition.apiextensions.k8s.io/volumesnapshotclasses.snapshot.storage.k8s.io created
+customresourcedefinition.apiextensions.k8s.io/volumesnapshotcontents.snapshot.storage.k8s.io created
+customresourcedefinition.apiextensions.k8s.io/volumesnapshots.snapshot.storage.k8s.io created
+=== RBAC ===
+serviceaccount/snapshot-controller created
+clusterrole.rbac.authorization.k8s.io/snapshot-controller-runner created
+clusterrolebinding.rbac.authorization.k8s.io/snapshot-controller-role created
+role.rbac.authorization.k8s.io/snapshot-controller-leaderelection created
+rolebinding.rbac.authorization.k8s.io/snapshot-controller-leaderelection created
+=== Deployment ===
+deployment.apps/snapshot-controller created
+=== VolumeSnapshotClass ===
+volumesnapshotclass.snapshot.storage.k8s.io/piraeus-r2-snapclass created
