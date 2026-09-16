@@ -1,0 +1,41 @@
+=== drbdsetup status --verbose (connection states) ===
+----- node-01 -----
+pvc-2fe14d57-5d28-4969-a9ba-69fd69229359 node-id:0 role:Secondary suspended:no
+    force-io-failures:no
+  volume:0 minor:1000 disk:UpToDate
+      backing_dev:/dev/vg_piraeus/pvc-2fe14d57-5d28-4969-a9ba-69fd69229359_00000
+      quorum:yes open:no blocked:no
+  node-02 node-id:1 connection:Connected role:Secondary tls:no congested:no
+      ap-in-flight:0 rs-in-flight:0
+    volume:0 replication:Established peer-disk:UpToDate resync-suspended:no
+  node-03 node-id:2 connection:Connected role:Secondary tls:no congested:no
+      ap-in-flight:0 rs-in-flight:0
+    volume:0 replication:Established peer-disk:Diskless peer-client:yes
+        resync-suspended:no
+
+----- node-02 -----
+pvc-2fe14d57-5d28-4969-a9ba-69fd69229359 node-id:1 role:Secondary suspended:no
+    force-io-failures:no
+  volume:0 minor:1000 disk:UpToDate
+      backing_dev:/dev/vg_piraeus/pvc-2fe14d57-5d28-4969-a9ba-69fd69229359_00000
+      quorum:yes open:no blocked:no
+  node-01 node-id:0 connection:Connected role:Secondary tls:no congested:no
+      ap-in-flight:0 rs-in-flight:0
+    volume:0 replication:Established peer-disk:UpToDate resync-suspended:no
+  node-03 node-id:2 connection:Connected role:Secondary tls:no congested:no
+      ap-in-flight:0 rs-in-flight:0
+    volume:0 replication:Established peer-disk:Diskless peer-client:yes
+        resync-suspended:no
+
+----- node-03 -----
+pvc-2fe14d57-5d28-4969-a9ba-69fd69229359 node-id:2 role:Secondary suspended:no
+    force-io-failures:no
+  volume:0 minor:1000 disk:Diskless client:yes backing_dev:none quorum:yes open:no
+      blocked:no
+  node-01 node-id:0 connection:Connected role:Secondary tls:no congested:no
+      ap-in-flight:0 rs-in-flight:0
+    volume:0 replication:Established peer-disk:UpToDate resync-suspended:no
+  node-02 node-id:1 connection:Connected role:Secondary tls:no congested:no
+      ap-in-flight:0 rs-in-flight:0
+    volume:0 replication:Established peer-disk:UpToDate resync-suspended:no
+

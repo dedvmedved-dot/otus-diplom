@@ -1,0 +1,4 @@
+namespace "p7c-d4-205800" deleted
+--- post-cleanup verify ---
+NO_PV
+NO_LINSTOR_RESIDUE

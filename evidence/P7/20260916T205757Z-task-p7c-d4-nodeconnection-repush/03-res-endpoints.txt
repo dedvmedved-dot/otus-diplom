@@ -1,0 +1,16 @@
+=== .res endpoints (per node) ===
+----- node-01 .res -----
+            host "node-01" address ipv4 172.30.141.101:7000;
+            host "node-02" address ipv4 172.30.141.102:7000;
+            host "node-01" address ipv4 172.30.141.101:7000;
+            host "node-03" address ipv4 172.30.141.103:7000;
+----- node-02 .res -----
+            host "node-01" address ipv4 172.30.141.101:7000;
+            host "node-02" address ipv4 172.30.141.102:7000;
+            host "node-02" address ipv4 172.30.141.102:7000;
+            host "node-03" address ipv4 172.30.141.103:7000;
+----- node-03 .res -----
+            host "node-01" address ipv4 172.30.141.101:7000;
+            host "node-03" address ipv4 172.30.141.103:7000;
+            host "node-02" address ipv4 172.30.141.102:7000;
+            host "node-03" address ipv4 172.30.141.103:7000;

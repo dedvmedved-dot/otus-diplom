@@ -1,0 +1,73 @@
+=== same-value re-push (6 Paths properties) ===
+--- set-property node-01 node-02 Paths/drbd141/node-01 drbd141 ---
+[1;32mSUCCESS:
+[0m    Successfully set property key(s): Paths/drbd141/node-01
+[1;32mSUCCESS:
+[0mDescription:
+    Node connection between nodes 'node-01' and 'node-02' modified.
+Details:
+    Node connection between nodes 'node-01' and 'node-02' UUID is: e2fa2fb4-1c29-4524-aa8a-90cf6a305d74
+[1;32mSUCCESS:
+[0m    (node-02) Node changes applied.
+[1;32mSUCCESS:
+[0m    (node-01) Node changes applied.
+--- set-property node-01 node-02 Paths/drbd141/node-02 drbd141 ---
+[1;32mSUCCESS:
+[0m    Successfully set property key(s): Paths/drbd141/node-02
+[1;32mSUCCESS:
+[0mDescription:
+    Node connection between nodes 'node-01' and 'node-02' modified.
+Details:
+    Node connection between nodes 'node-01' and 'node-02' UUID is: e2fa2fb4-1c29-4524-aa8a-90cf6a305d74
+[1;32mSUCCESS:
+[0m    (node-02) Node changes applied.
+[1;32mSUCCESS:
+[0m    (node-01) Node changes applied.
+--- set-property node-01 node-03 Paths/drbd141/node-01 drbd141 ---
+[1;32mSUCCESS:
+[0m    Successfully set property key(s): Paths/drbd141/node-01
+[1;32mSUCCESS:
+[0mDescription:
+    Node connection between nodes 'node-01' and 'node-03' modified.
+Details:
+    Node connection between nodes 'node-01' and 'node-03' UUID is: d99f4375-cb52-48c3-a223-bba107e27062
+[1;32mSUCCESS:
+[0m    (node-03) Node changes applied.
+[1;32mSUCCESS:
+[0m    (node-01) Node changes applied.
+--- set-property node-01 node-03 Paths/drbd141/node-03 drbd141 ---
+[1;32mSUCCESS:
+[0m    Successfully set property key(s): Paths/drbd141/node-03
+[1;32mSUCCESS:
+[0mDescription:
+    Node connection between nodes 'node-01' and 'node-03' modified.
+Details:
+    Node connection between nodes 'node-01' and 'node-03' UUID is: d99f4375-cb52-48c3-a223-bba107e27062
+[1;32mSUCCESS:
+[0m    (node-03) Node changes applied.
+[1;32mSUCCESS:
+[0m    (node-01) Node changes applied.
+--- set-property node-02 node-03 Paths/drbd141/node-02 drbd141 ---
+[1;32mSUCCESS:
+[0m    Successfully set property key(s): Paths/drbd141/node-02
+[1;32mSUCCESS:
+[0mDescription:
+    Node connection between nodes 'node-02' and 'node-03' modified.
+Details:
+    Node connection between nodes 'node-02' and 'node-03' UUID is: c3b016bb-3ca3-42ed-9955-66cd91fe8ac7
+[1;32mSUCCESS:
+[0m    (node-03) Node changes applied.
+[1;32mSUCCESS:
+[0m    (node-02) Node changes applied.
+--- set-property node-02 node-03 Paths/drbd141/node-03 drbd141 ---
+[1;32mSUCCESS:
+[0m    Successfully set property key(s): Paths/drbd141/node-03
+[1;32mSUCCESS:
+[0mDescription:
+    Node connection between nodes 'node-02' and 'node-03' modified.
+Details:
+    Node connection between nodes 'node-02' and 'node-03' UUID is: c3b016bb-3ca3-42ed-9955-66cd91fe8ac7
+[1;32mSUCCESS:
+[0m    (node-03) Node changes applied.
+[1;32mSUCCESS:
+[0m    (node-02) Node changes applied.

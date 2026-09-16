@@ -1,0 +1,54 @@
+===== node-01 drbdadm dump =====
+            host node-01             address         ipv4 172.30.141.101:7000;
+            host node-02             address         ipv4 172.30.141.102:7000;
+            host node-01             address         ipv4 172.30.141.101:7000;
+            host node-03             address         ipv4 172.30.141.103:7000;
+===== node-01 drbdsetup show (paths) =====
+            _this_host ipv4 172.30.141.101:7000;
+            _remote_host ipv4 172.30.141.102:7000;
+            _this_host ipv4 172.30.141.101:7000;
+            _remote_host ipv4 172.30.141.103:7000;
+===== node-01 drbdsetup status =====
+pvc-2fe14d57-5d28-4969-a9ba-69fd69229359 role:Secondary
+  disk:UpToDate open:no
+  node-02 role:Secondary
+    peer-disk:UpToDate
+  node-03 role:Secondary
+    peer-disk:Diskless peer-client:yes
+
+===== node-02 drbdadm dump =====
+            host node-01             address         ipv4 172.30.141.101:7000;
+            host node-02             address         ipv4 172.30.141.102:7000;
+            host node-02             address         ipv4 172.30.141.102:7000;
+            host node-03             address         ipv4 172.30.141.103:7000;
+===== node-02 drbdsetup show (paths) =====
+            _this_host ipv4 172.30.141.102:7000;
+            _remote_host ipv4 172.30.141.101:7000;
+            _this_host ipv4 172.30.141.102:7000;
+            _remote_host ipv4 172.30.141.103:7000;
+===== node-02 drbdsetup status =====
+pvc-2fe14d57-5d28-4969-a9ba-69fd69229359 role:Secondary
+  disk:UpToDate open:no
+  node-01 role:Secondary
+    peer-disk:UpToDate
+  node-03 role:Secondary
+    peer-disk:Diskless peer-client:yes
+
+===== node-03 drbdadm dump =====
+            host node-01             address         ipv4 172.30.141.101:7000;
+            host node-03             address         ipv4 172.30.141.103:7000;
+            host node-02             address         ipv4 172.30.141.102:7000;
+            host node-03             address         ipv4 172.30.141.103:7000;
+===== node-03 drbdsetup show (paths) =====
+            _this_host ipv4 172.30.141.103:7000;
+            _remote_host ipv4 172.30.141.101:7000;
+            _this_host ipv4 172.30.141.103:7000;
+            _remote_host ipv4 172.30.141.102:7000;
+===== node-03 drbdsetup status =====
+pvc-2fe14d57-5d28-4969-a9ba-69fd69229359 role:Secondary
+  disk:Diskless client:yes open:no
+  node-01 role:Secondary
+    peer-disk:UpToDate
+  node-02 role:Secondary
+    peer-disk:UpToDate
+
