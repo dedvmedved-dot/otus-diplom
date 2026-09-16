@@ -1,0 +1,41 @@
+===== node-01 checks for 172.30.143.10 =====
+--- ARP/neigh ---
+NO_ARP_ENTRY
+--- ping ---
+2 packets transmitted, 0 received, 100% packet loss, time 1003ms
+
+--- route get ---
+172.30.143.10 dev bond0.143 src 172.30.143.101 uid 0 
+    cache 
+--- TCP 9000 ---
+bash: connect: Нет маршрута до узла
+bash: строка 1: /dev/tcp/172.30.143.10/9000: Нет маршрута до узла
+TCP9000_CLOSED/UNREACHABLE
+===== node-02 checks for 172.30.143.10 =====
+--- ARP/neigh ---
+172.30.143.103 dev bond0.143 lladdr 6c:b3:11:61:ca:78 STALE 
+172.30.143.101 dev bond0.143 lladdr b6:6e:06:00:71:07 STALE 
+--- ping ---
+2 packets transmitted, 0 received, 100% packet loss, time 1010ms
+
+--- route get ---
+172.30.143.10 dev bond0.143 src 172.30.143.102 uid 0 
+    cache 
+--- TCP 9000 ---
+bash: connect: Нет маршрута до узла
+bash: строка 1: /dev/tcp/172.30.143.10/9000: Нет маршрута до узла
+TCP9000_CLOSED/UNREACHABLE
+===== node-03 checks for 172.30.143.10 =====
+--- ARP/neigh ---
+172.30.143.102 dev bond0.143 lladdr 6c:b3:11:61:d3:22 STALE 
+172.30.143.101 dev bond0.143 lladdr b6:6e:06:00:71:07 STALE 
+--- ping ---
+2 packets transmitted, 0 received, 100% packet loss, time 1018ms
+
+--- route get ---
+172.30.143.10 dev bond0.143 src 172.30.143.103 uid 0 
+    cache 
+--- TCP 9000 ---
+bash: connect: Нет маршрута до узла
+bash: строка 1: /dev/tcp/172.30.143.10/9000: Нет маршрута до узла
+TCP9000_CLOSED/UNREACHABLE
