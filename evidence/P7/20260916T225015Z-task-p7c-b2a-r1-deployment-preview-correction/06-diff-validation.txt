@@ -1,0 +1,121 @@
+=== diff-validation (only intended scope changed) ===
+--- modified (tracked) files ---
+ .../04-pod-egress-analysis.md                      | 12 +++++++
+ .../11-velero-minio-preview.md                     | 42 +++++++++++++++-------
+ .../result.md                                      |  7 ++--
+ 3 files changed, 46 insertions(+), 15 deletions(-)
+--- full diff ---
+diff --git a/evidence/P7/20260916T223742Z-task-p7c-b2a-minio-infrastructure-preflight/04-pod-egress-analysis.md b/evidence/P7/20260916T223742Z-task-p7c-b2a-minio-infrastructure-preflight/04-pod-egress-analysis.md
+index b5448e8..a3ef57b 100644
+--- a/evidence/P7/20260916T223742Z-task-p7c-b2a-minio-infrastructure-preflight/04-pod-egress-analysis.md
++++ b/evidence/P7/20260916T223742Z-task-p7c-b2a-minio-infrastructure-preflight/04-pod-egress-analysis.md
+@@ -22,3 +22,15 @@ blackhole 10.244.190.0/26 proto bird
+ 0:	from all lookup local
+ 32766:	from all lookup main
+ 32767:	from all lookup default
++
++--- R1 CORRECTION (summary/interpretation, raw output above unchanged) ---
++The raw observations prove only the NODE-level VLAN143 route (bond0.143 UP,
++172.30.143.0/24 kernel route on all three nodes) and the absence of NetworkPolicies.
++
++They do NOT prove actual Velero/node-agent/data-mover Pod egress to MinIO, because
++MinIO and Velero/node-agent are not deployed and no Pod-origin TCP/TLS/S3
++connectivity has been executed.
++
++VLAN143_NODE_PATH = PASS (node-level, proven)
++POD_TO_MINIO_PATH = NOT_PROVEN (application-Pod S3 reachability requires the
++deployed-context P7C-B2 Network Gate, not node routing alone).
+diff --git a/evidence/P7/20260916T223742Z-task-p7c-b2a-minio-infrastructure-preflight/11-velero-minio-preview.md b/evidence/P7/20260916T223742Z-task-p7c-b2a-minio-infrastructure-preflight/11-velero-minio-preview.md
+index 0a02d1a..d4b2eaa 100644
+--- a/evidence/P7/20260916T223742Z-task-p7c-b2a-minio-infrastructure-preflight/11-velero-minio-preview.md
++++ b/evidence/P7/20260916T223742Z-task-p7c-b2a-minio-infrastructure-preflight/11-velero-minio-preview.md
+@@ -1,9 +1,31 @@
+-# P7C-B2A — Velero / MinIO Config Preview (NO APPLY)
++# P7C-B2A — Velero / MinIO Config Preview (NO APPLY) — R1-corrected
+ 
+ Velero: v1.18.1 @ sha256:2752a01188bd8f16572a76b3b2c4331a6a5337a5cbe65715c22ac7f91b31bfa8
+ AWS plugin: v1.14.2 @ sha256:abe29a7b360231e359f7aaee79668141bd619ab6989c7cc78d041110987f6ca2
+ 
+-BackupStorageLocation (intended):
++## Corrected CSI Snapshot Data Movement model
++
++StorageClass -> LINSTOR CSI -> VolumeSnapshotClass piraeus-r2-snapclass -> VolumeSnapshot
++-> Velero CSI Snapshot Data Movement -> node-agent / Kopia -> MinIO
++
++- VolumeSnapshotClass `piraeus-r2-snapclass` is the already-deployed Kubernetes object
++  (part of P7C-B1 foundation). Do not modify or recreate it.
++- CSI snapshot handling remains through the Kubernetes snapshot API.
++- Velero VolumeSnapshotLocation for LINSTOR CSI = NOT REQUIRED.
++
++## Velero deployment (intended)
++
++  features: EnableCSI
++  uploader: Kopia
++
++## node-agent (intended)
++
++  enabled: true
++  DaemonSet, normal Pod networking, Kopia data mover
++  hostNetwork: not explicitly enabled
++
++## BackupStorageLocation (intended)
++
+   provider: aws
+   objectStorage:
+     bucket: portal-velero-backup
+@@ -13,19 +35,15 @@ BackupStorageLocation (intended):
+     region: ru-west-1
+     s3Url: https://172.30.143.10:9000
+     s3ForcePathStyle: "true"
+-    checksumAlgorithm: "" (auto)
+   credential:
+     name: velero-minio-credentials
+     key: cloud
++  TLS: verify ENABLED (insecureSkipTLSVerify=false); CA via ConfigMap velero/minio-ca
+ 
+-VolumeSnapshotLocation:
+-  provider: linstor.csi.linbit.com   (-> VolumeSnapshotClass piraeus-r2-snapclass)
+-
+-Data movement:
+-  Velero CSI Snapshot Data Movement (EnableCSI) + node-agent (DaemonSet, kopia
+-  uploader, hostNetwork=true) + MinIO target.
++## MinIO (intended, external to K8s)
+ 
+-TLS:
+-  verify ENABLED (insecureSkipTLSVerify=false); CA via ConfigMap velero/minio-ca.
++  versioning: enabled
++  Object Lock: enabled, GOVERNANCE, 7 days
++  lifecycle retention: 30 days
+ 
+-No manifests applied.
++No manifests applied. No runtime objects created.
+diff --git a/evidence/P7/20260916T223742Z-task-p7c-b2a-minio-infrastructure-preflight/result.md b/evidence/P7/20260916T223742Z-task-p7c-b2a-minio-infrastructure-preflight/result.md
+index 44c494c..75abc1e 100644
+--- a/evidence/P7/20260916T223742Z-task-p7c-b2a-minio-infrastructure-preflight/result.md
++++ b/evidence/P7/20260916T223742Z-task-p7c-b2a-minio-infrastructure-preflight/result.md
+@@ -8,13 +8,14 @@ BASELINE: PASS (nodes Ready 3/3, snapshot-controller 2/2, 3 CRDs, VSC, satellite
+ MINIO_PROVIDER: MinIO
+ 
+ MINIO_IP: 172.30.143.10
+-MINIO_IP_STATUS: FREE_CONFIRMED (no ARP/ping/TCP9000/DNS/infra reference on VLAN143 L2 across 3 nodes; confirm in IPAM)
++MINIO_IP_STATUS: FREE_OBSERVED (no ARP/ping/TCP9000/DNS/infra reference; no observed active owner)
++IPAM_CONFIRMATION: REQUIRED (network-owner confirmation before allocation)
+ 
+ MINIO_HOST: NOT_AVAILABLE (no external VM/hypervisor in inventory)
+ MINIO_HOST_EXTERNAL_TO_K8S: YES (required; not on node-01/02/03)
+ 
+ VLAN143_NODE_PATH: PASS (bond0.143 UP on 3 nodes: 101/102/103; route to 172.30.143.0/24 present)
+-POD_TO_MINIO_PATH: PASS (Calico natOutgoing=true, no NetworkPolicy, VLAN143 directly connected; node-agent hostNetwork)
++POD_TO_MINIO_PATH: NOT_PROVEN (node-level VLAN143 route proven, but actual Velero/node-agent Pod S3 egress not executed)
+ 
+ MINIO_VM_SIZING: 2vCPU/4GiB/40GiB OS + 100GiB XFS data (MINIMUM); 4vCPU/8GiB + 500GiB (RECOMMENDED)
+ 
+@@ -44,7 +45,7 @@ OWNER_ACTIONS:
+ 6. Issue TLS cert (PRIVATE_CA) SAN IP=172.30.143.10 + publish CA bundle
+ 7. Create bucket portal-velero-backup (versioning + Object Lock GOVERNANCE 7d at creation)
+ 8. Provide Secret velero/velero-minio-credentials + ConfigMap velero/minio-ca (out-of-band)
+-9. Authorize P7C-B2 runtime deployment (Velero + BSL + VSL + node-agent)
++9. Authorize P7C-B2 runtime deployment (Velero + BSL + node-agent; Velero VSL for LINSTOR NOT required)
+ 
+ HERMES RESULT: PASS
+ P7C-B2: NOT AUTHORIZED

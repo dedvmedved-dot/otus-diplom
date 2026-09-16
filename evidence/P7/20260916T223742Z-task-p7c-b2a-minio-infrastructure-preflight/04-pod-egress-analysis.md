@@ -22,3 +22,15 @@ blackhole 10.244.190.0/26 proto bird
 0:	from all lookup local
 32766:	from all lookup main
 32767:	from all lookup default
+
+--- R1 CORRECTION (summary/interpretation, raw output above unchanged) ---
+The raw observations prove only the NODE-level VLAN143 route (bond0.143 UP,
+172.30.143.0/24 kernel route on all three nodes) and the absence of NetworkPolicies.
+
+They do NOT prove actual Velero/node-agent/data-mover Pod egress to MinIO, because
+MinIO and Velero/node-agent are not deployed and no Pod-origin TCP/TLS/S3
+connectivity has been executed.
+
+VLAN143_NODE_PATH = PASS (node-level, proven)
+POD_TO_MINIO_PATH = NOT_PROVEN (application-Pod S3 reachability requires the
+deployed-context P7C-B2 Network Gate, not node routing alone).
