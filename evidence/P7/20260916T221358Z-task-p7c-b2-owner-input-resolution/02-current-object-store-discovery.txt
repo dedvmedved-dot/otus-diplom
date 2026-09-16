@@ -1,0 +1,16 @@
+=== 02-current-object-store-discovery ===
+--- namespaces (S3/minio/velero/rook/ceph related) ---
+NO_MATCHING_NS
+--- all namespaces ---
+NAME                   STATUS   AGE
+default                Active   23d
+envoy-gateway-system   Active   12d
+kube-node-lease        Active   23d
+kube-public            Active   23d
+kube-system            Active   23d
+metallb-system         Active   13d
+piraeus-datastore      Active   15d
+--- services exposing S3/object ports (9000/7480/8080/443 S3) ---
+NO_MATCHING_SVC
+--- secrets (names only, no values) ---
+piraeus-datastore      linstor-backup-for-linstor-controller-667c75554d-548hq   piraeus.io/linstor-backup   1      15d
