@@ -1,6 +1,11 @@
 # ADR-004 — Archived MinIO Community for isolated demonstration S3 target
 
-STATUS: PROPOSED
+STATUS: ACCEPTED
+ACCEPTED_BY: Chief Architect / Technical Authority
+ACCEPTED_DATE: 2026-10-13
+ACCEPTED_DIRECTION: A-R1
+SCOPE: DEMO / NON-PRODUCTION ONLY
+PRODUCTION_USE: NOT APPROVED
 SOURCE TASK: P7C-B2B-SC1
 
 ## Decision
