@@ -1,0 +1,10 @@
+evidence/P7/20261013T121815Z-task-p7c-b2b-sc2-minio-build-deploy/01-start-state.txt
+evidence/P7/20261013T121815Z-task-p7c-b2b-sc2-minio-build-deploy/02-adr-004-acceptance-sync.md
+evidence/P7/20261013T121815Z-task-p7c-b2b-sc2-minio-build-deploy/03-cluster-baseline.txt
+evidence/P7/20261013T121815Z-task-p7c-b2b-sc2-minio-build-deploy/04-credential-rotation-status.md
+evidence/P7/20261013T121815Z-task-p7c-b2b-sc2-minio-build-deploy/05-minio-host-inventory.txt
+evidence/P7/20261013T121815Z-task-p7c-b2b-sc2-minio-build-deploy/06-data-disk-safety.txt
+evidence/P7/20261013T121815Z-task-p7c-b2b-sc2-minio-build-deploy/07-ipam-confirmation.md
+evidence/P7/20261013T121815Z-task-p7c-b2b-sc2-minio-build-deploy/08-dns-validation.txt
+evidence/P7/20261013T121815Z-task-p7c-b2b-sc2-minio-build-deploy/30-runtime-delta.md
+evidence/P7/20261013T121815Z-task-p7c-b2b-sc2-minio-build-deploy/result.md

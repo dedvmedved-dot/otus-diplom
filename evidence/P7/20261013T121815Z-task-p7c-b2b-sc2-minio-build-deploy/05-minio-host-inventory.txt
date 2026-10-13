@@ -1,0 +1,15 @@
+MINIO_HOSTNAME = minIO
+MINIO_HOST_EXTERNAL_TO_PROTECTED_K8S = YES (separate VM, not node-01/02/03)
+HOSTING_PLATFORM = KVM/libvirt guest (virtio disks) — external to protected cluster
+OS = Astra Linux
+OS_VERSION = (PRETTY_NAME "Astra Linux")
+KERNEL = 6.1.158-1-generic
+ARCH = x86_64 (amd64)
+VCPU = 4
+RAM = 7.7 GiB
+OS_DISK = vda 50G (vda1 ext4 /, vda5 swap)
+DATA_DISK = vdb 500G (unformatted)
+NETWORK_INTERFACES = ens8 UP 172.30.143.10/16 (note: /16 netmask observed; subnet per
+  design is 172.30.143.0/24 — flagged for network-owner verification)
+
+HOST_MINIMUM_CAPACITY = PASS (4 vCPU >= 2, 7.7GiB >= 4GiB, 50G >= 40G, 500G >= 100G)

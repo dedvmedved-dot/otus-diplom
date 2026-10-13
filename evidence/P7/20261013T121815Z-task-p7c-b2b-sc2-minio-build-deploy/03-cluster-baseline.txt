@@ -1,0 +1,9 @@
+CLUSTER_BASELINE = PASS
+- Kubernetes nodes: 3/3 Ready (node-01/02/03, v1.36.2)
+- snapshot-controller: 2/2 Running
+- CSI snapshot CRDs: 3 present
+- VolumeSnapshotClass: piraeus-r2-snapclass (linstor.csi.linbit.com, Delete)
+- LINSTOR satellites: 3/3 Online (node-01/02/03 @ 172.30.140.10X:3366)
+- DRBD: no resources (no Connecting / Inconsistent / active resync)
+- P7C-B1 canary residue: 0
+- VLAN141: intact (no DRBD resources present; node-connection state preserved from P7C-D4)

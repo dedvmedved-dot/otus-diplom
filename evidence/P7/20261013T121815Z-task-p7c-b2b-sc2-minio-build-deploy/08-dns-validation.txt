@@ -1,0 +1,19 @@
+# DNS Gate
+
+S3_FQDN = s3-backup.demo-pak.local
+Required mapping: s3-backup.demo-pak.local -> 172.30.143.10
+
+DNS_CONFIRMATION = BLOCKED
+
+Observations (read-only):
+- node-01 /etc/resolv.conf: nameserver 8.8.8.8, 8.8.4.4 (public DNS only)
+- MinIO VM /etc/resolv.conf: nameserver 77.88.8.8 (public DNS only)
+- getent hosts s3-backup.demo-pak.local on node-01: no result (not resolvable)
+- No internal DNS server identified in the PAK (no authoritative resolver for
+  the demo-pak.local zone).
+
+Required: provision an internal DNS record (or resolver) for
+s3-backup.demo-pak.local -> 172.30.143.10 resolvable from node-01/02/03 and the
+MinIO context. /etc/hosts is NOT acceptable as final DNS proof.
+
+STOP — ARCHITECT / INFRASTRUCTURE ACTION REQUIRED.

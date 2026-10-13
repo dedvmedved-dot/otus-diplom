@@ -1,0 +1,14 @@
+DATA_DEVICE = /dev/vdb
+DATA_DEVICE_BY_ID = /dev/disk/by-path/pci-0000:00:07.0 -> ../../vdb
+  (also virtio-pci-0000:00:07.0 -> ../../vdb; no /dev/disk/by-id entries present)
+DATA_DISK_SIZE = 500G
+FILESYSTEM = (none — unformatted)
+MOUNTPOINT = (not mounted)
+DISK_IDENTITY = PROVEN
+  - vdb is NOT the OS disk (OS = vda)
+  - vdb has no filesystem (lsblk -f shows no FSTYPE/UUID for vdb)
+  - vdb is not mounted anywhere
+  - stable identity known via /dev/disk/by-path/pci-0000:00:07.0
+
+NOTE: wipefs -n probe not completed (requires sudo); lsblk -f already proves no
+filesystem is present.
