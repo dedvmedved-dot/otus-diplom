@@ -1,0 +1,6 @@
+=== 15-diff-validation ===
+Files changed (this SC1 task only):
+  DOC: docs/architecture/ADR-004-archived-minio-community-demo-s3.md
+  EVIDENCE files: 15
+
+=== secret scan (no passwords/tokens/keys) ===

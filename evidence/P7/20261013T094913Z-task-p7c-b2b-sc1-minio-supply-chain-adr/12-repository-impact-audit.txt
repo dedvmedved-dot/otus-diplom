@@ -1,0 +1,13 @@
+Repository impact audit — forward-looking statement search (docs/):
+
+- dl.min.io references: none
+- RELEASE.2025-09-07 / RELEASE.2025-09 references: none
+- 'latest' MinIO / floating version: none
+- MinIO docker/quay/image version pinning: none
+- MinIO 'maintained'/'supported'/'production' claims: none
+- Only MinIO hit: docs/architecture/p7c-s3-input-contract.md lists "MINIO" as
+  one enumerated S3 provider option (AWS_NATIVE | MINIO | CEPH_RGW | YANDEX...)
+  — not a forward-looking version/source statement.
+
+NO_FORWARD_DOCUMENT_CHANGE_REQUIRED
+Historical raw evidence is not rewritten.

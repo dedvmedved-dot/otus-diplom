@@ -1,0 +1,25 @@
+# P7C-B2B-SC1 — Compensating Controls (mandatory if A-R1 accepted)
+
+- DEMO / NON-PRODUCTION ONLY
+- No public Internet exposure
+- MinIO external to the protected Kubernetes cluster
+- Access only through explicitly authorized network paths
+- External S3 API: HTTPS/TCP443 (canonical PAK-facing endpoint)
+- TLS certificate verification mandatory
+- Private/corporate CA
+- No insecureSkipTLSVerify
+- Separate MinIO administration path where practical
+- Dedicated Velero identity
+- Dedicated CloudNativePG/Barman identity where required later
+- No root/admin credentials for workloads
+- No MinIO admin API privilege for Velero
+- No BypassGovernanceRetention for ordinary backup identity
+- Versioning enabled
+- Object Lock according to accepted policy (GOVERNANCE / 7 days)
+- Secrets outside Git
+- Exact binary provenance (pinned tag, commit, toolchain)
+- Binary SHA-256
+- SBOM
+- Vulnerability scan before deployment
+- No silent auto-upgrade
+- Periodic security reassessment before formal demonstrations/acceptance
