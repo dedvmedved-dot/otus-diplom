@@ -1,0 +1,15 @@
+DATA_DISK = /dev/vdb
+DATA_DISK_SIZE = 500G
+lsblk: vdb 500G disk, NO FSTYPE, NO UUID, NO MOUNTPOINTS (vda = OS)
+blkid /dev/vdb: (empty -> no filesystem signature)
+wipefs -n /dev/vdb: (empty -> no signatures)
+findmnt: only /dev/vda1 mounted at /
+LVM: pvs/vgs/lvs not installed -> vdb not an LVM member
+OS_DISK = NO
+MOUNTED = NO
+SWAP = NO
+FILESYSTEM_SIGNATURE = NONE
+WIPEFS_SIGNATURES = NONE
+LVM_MEMBER = NO
+RAID_SIGNATURE = NONE
+SAFE_TO_FORMAT_LATER = YES

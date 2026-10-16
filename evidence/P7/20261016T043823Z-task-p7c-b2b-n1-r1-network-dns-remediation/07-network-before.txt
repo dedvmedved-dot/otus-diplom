@@ -1,0 +1,12 @@
+MINIO_HOSTNAME = minIO
+MINIO_INTERFACE = ens8 (only non-loopback interface)
+CURRENT_IP = 172.30.143.10
+CURRENT_PREFIX = 16
+TR_IP = 172.30.143.10
+TR_PREFIX = 24
+PREFIX_MATCH = NO
+GATEWAY = 172.30.143.1 (default via 172.30.143.1 dev ens8 onlink)
+NETWORK_MANAGER = ifupdown (/etc/network/interfaces; NetworkManager inactive,
+  systemd-networkd inactive, nmcli absent)
+RESOLV_CONF = nameserver 77.88.8.8
+MAC = 52:54:00:01:24:e9

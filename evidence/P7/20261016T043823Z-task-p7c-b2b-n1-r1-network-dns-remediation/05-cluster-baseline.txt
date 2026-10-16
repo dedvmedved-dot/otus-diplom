@@ -1,0 +1,8 @@
+CLUSTER_BASELINE = PASS (re-verified read-only)
+- Kubernetes nodes: 3/3 Ready
+- snapshot-controller: 2/2 Running
+- CSI snapshot CRDs: 3 present
+- VolumeSnapshotClass: piraeus-r2-snapclass
+- LINSTOR satellites: 3/3 Online
+- DRBD: no resources (no Connecting/Inconsistent/resync)
+- P7C-B1 canary residue: 0

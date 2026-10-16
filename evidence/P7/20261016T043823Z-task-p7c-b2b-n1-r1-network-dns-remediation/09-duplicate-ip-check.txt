@@ -1,0 +1,5 @@
+DUPLICATE_IP_CHECK = PASS
+ARP/neighbour for 172.30.143.10 from node-01/02/03:
+  -> 52:54:00:01:24:e9 (single, consistent MAC = the MinIO VM ens8)
+No conflicting MAC/device responded. arping not present on nodes (ARP table
+used as authoritative L2 evidence).

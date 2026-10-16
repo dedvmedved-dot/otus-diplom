@@ -1,0 +1,5 @@
+LOCAL_N1_CARRYOVER = NO
+No uncommitted N1 changes were present at task start (worktree clean).
+Prior N1 results (credential rotation, network inventory, disk precheck,
+duplicate-IP check, DNS discovery) were re-verified against actual host state
+rather than re-derived from chat.
