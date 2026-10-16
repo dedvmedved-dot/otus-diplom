@@ -1,0 +1,5 @@
+BIND9_PACKAGE_SOURCE = PASS (trusted Astra repository)
+PACKAGE_NAMES = bind9, bind9-utils
+PACKAGE_VERSIONS = 1:9.18.41-1~deb12u1.astra1
+PACKAGE_SOURCE = https://dl.astralinux.ru/astra/frozen/1.8_x86-64/1.8.5/repository-main
+  (official Astra Linux frozen repository, already configured on the VM)

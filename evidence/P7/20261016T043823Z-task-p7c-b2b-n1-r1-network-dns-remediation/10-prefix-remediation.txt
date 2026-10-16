@@ -1,0 +1,10 @@
+PREFIX_REMEDIATION = PASS
+Root cause: /etc/network/interfaces contained 'network 255.255.255.0' (typo for
+'netmask'), so ifupdown applied no netmask and ens8 fell back to class-B /16.
+Fix: sed 'network 255.255.255.0' -> 'netmask 255.255.255.0'.
+Applied via reboot. Verified:
+  ens8 = 172.30.143.10/24
+  route: 172.30.143.0/24 dev ens8 proto kernel scope link src 172.30.143.10
+  default via 172.30.143.1 dev ens8 onlink
+  route get 172.30.143.101/102/103 -> dev ens8 src 172.30.143.10
+CONFIG_BACKUP = /etc/network/interfaces.n1r1.bak

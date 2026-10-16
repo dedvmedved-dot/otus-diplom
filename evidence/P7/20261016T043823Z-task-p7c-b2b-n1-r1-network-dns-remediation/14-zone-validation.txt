@@ -1,0 +1,2 @@
+NAMED_CHECKCONF = PASS (exit 0)
+NAMED_CHECKZONE = PASS ('zone demo-pak.test/IN: loaded serial 2026101601')

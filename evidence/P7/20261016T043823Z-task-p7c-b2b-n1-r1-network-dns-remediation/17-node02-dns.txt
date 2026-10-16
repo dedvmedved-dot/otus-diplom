@@ -1,0 +1,1 @@
+NODE02_DNS = PASS (host s3-backup.demo-pak.test 172.30.143.10 -> has address 172.30.143.10)

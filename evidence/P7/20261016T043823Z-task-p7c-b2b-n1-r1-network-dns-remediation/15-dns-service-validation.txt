@@ -1,0 +1,5 @@
+BIND_SERVICE = RUNNING (named, enabled + active)
+Listeners (ss): 53/tcp + 53/udp on 127.0.0.1 and 172.30.143.10 only.
+dig @127.0.0.1 s3-backup.demo-pak.test A +short = 172.30.143.10  (PASS)
+dig @172.30.143.10 s3-backup.demo-pak.test A +short = 172.30.143.10  (PASS)
+dig @127.0.0.1 example.com A +short = 8.47.69.0 ... (forwarding works, PASS)

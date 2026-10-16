@@ -1,0 +1,1 @@
+MINIO_DNS = PASS (dig @127.0.0.1 s3-backup.demo-pak.test A +short = 172.30.143.10)
