@@ -1,0 +1,6 @@
+MINIO_BINARY_SHA256 = 7a01223fa47ae8215dc68aff707593993dfc65bbe7b630db53ca5f805346d3b1
+BINARY_TYPE = ELF 64-bit LSB executable x86-64, statically linked, stripped
+minio --version = RELEASE.2025-10-15T17-29-55Z (commit-id=9e49d5e7a648f00e26f2246f4dc28e6b07f8c84a)
+Runtime = go1.24.8 linux/amd64, License = AGPLv3
+go version -m: path github.com/minio/minio, go1.24.8
+BINARY_IDENTITY_MISMATCH = NO

@@ -1,0 +1,8 @@
+BUILD_COMMAND = MINIO_RELEASE=RELEASE make build (upstream Makefile)
+BUILD_START_UTC = 2026-10-17T05:28:30Z
+BUILD_END_UTC = 2026-10-17T05:33:00Z
+BUILD_EXIT_CODE = 0
+GO_VERSION = go1.24.8
+CGO_ENABLED = 0 (no gcc required)
+build target: CGO_ENABLED=0 go build -tags kqueue -trimpath --ldflags (gen-ldflags.go)
+source tree after build = clean (no mutation)

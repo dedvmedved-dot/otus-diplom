@@ -1,0 +1,6 @@
+MC_TOOL_GATE = PASS
+MC_VERSION = RELEASE.2025-08-13T08-35-41Z
+MC_COMMIT = 7394ce0dd2a80935aded936b09fa12cbb3cb8096
+MC_BINARY_SHA256 = 01f866e9c5f9b87c2b09116fa5d7c06695b106242d829a8bb32990c00312e891 (matched)
+source = github.com/minio/mc/releases/download/RELEASE.2025-08-13T08-35-41Z/mc.linux-amd64.RELEASE.2025-08-13T08-35-41Z
+Not installed on Kubernetes nodes.

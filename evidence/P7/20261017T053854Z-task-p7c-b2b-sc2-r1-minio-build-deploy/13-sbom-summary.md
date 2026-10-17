@@ -1,0 +1,5 @@
+SBOM_FORMAT = CycloneDX JSON
+SBOM_FILE = /tmp/minio-sbom.json (on MinIO VM)
+SBOM_SHA256 = 6e7580aa34663057347db7827da30c42f3b8875c43589a4d6961eca509831cbf
+PACKAGE_COUNT = 244 components
+secrets in SBOM = NO

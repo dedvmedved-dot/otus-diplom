@@ -1,0 +1,11 @@
+CLUSTER_BASELINE = PASS
+nodes: 3/3 Ready (node-01/02/03)
+snapshot-controller: 2/2 Running
+VolumeSnapshot CRDs: 3
+VolumeSnapshotClass: piraeus-r2-snapclass
+LINSTOR satellites (piraeus-datastore ns): 3/3 Running
+  node-01 2/2, node-02 2/2, node-03 2/2
+linstor controller nodes: 3/3 Online (172.30.140.101/102/103)
+storage pools: piraeus-thin LVM_THIN 3x (6.29 TiB each, Ok)
+DRBD: /proc/drbd clean (no resources, no Connecting/Inconsistent/resync)
+canary residue: none

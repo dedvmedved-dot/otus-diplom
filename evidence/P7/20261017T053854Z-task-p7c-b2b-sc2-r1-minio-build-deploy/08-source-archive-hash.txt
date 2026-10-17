@@ -1,0 +1,2 @@
+SOURCE_ARCHIVE_SHA256 = a7f4b1fa2be13de80f23afed9b41cc2e6cb387fe30cb2f8b60e09d89b13036cb
+(git archive --format=tar HEAD | sha256sum)

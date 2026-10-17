@@ -1,0 +1,8 @@
+NETWORK_BASELINE = PASS
+ens8 = 172.30.143.10/24
+route = 172.30.143.0/24 dev ens8 (directly connected)
+gateway = 172.30.143.1 (default via ens8 onlink)
+DNS_BASELINE = PASS
+BIND9 = active
+listeners = 53 tcp+udp on 127.0.0.1 + 172.30.143.10 (no other)
+s3-backup.demo-pak.test -> 172.30.143.10 from VM + node-01/02/03 (getent)

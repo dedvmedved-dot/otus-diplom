@@ -1,0 +1,7 @@
+SOURCE_REPOSITORY = https://github.com/minio/minio.git
+SOURCE_TAG = RELEASE.2025-10-15T17-29-55Z
+SOURCE_COMMIT = 9e49d5e7a648f00e26f2246f4dc28e6b07f8c84a
+SOURCE_TREE_SHA = e4064317998bf2a12b0c74db0bf0de06f96ccb71
+git describe --tags --exact-match = RELEASE.2025-10-15T17-29-55Z
+worktree = clean
+clone = --depth 1 --branch RELEASE.2025-10-15T17-29-55Z

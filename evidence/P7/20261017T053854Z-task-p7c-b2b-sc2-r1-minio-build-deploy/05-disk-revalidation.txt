@@ -1,0 +1,8 @@
+DATA_DISK_FINAL_REVALIDATION = PASS
+DATA_DEVICE = /dev/vdb (500G disk, no FSTYPE, no mountpoints)
+blkid /dev/vdb = (empty, no signature)
+wipefs -n /dev/vdb = (no signatures)
+findmnt = vdb not mounted
+swapon = /dev/vda5 (OS swap, not vdb)
+pvs/vgs/lvs = lvm2 tools not installed; blkid/wipefs show no LVM2_member signature
+OS_DISK=NO, MOUNTED=NO, SWAP=NO, FS_SIGNATURE=NONE, WIPEFS=NONE, LVM=NO, RAID=NONE
