@@ -1,7 +1,9 @@
 # ADR-004 — Archived MinIO Community for isolated demonstration S3 target
 
-STATUS: ACCEPTED
+STATUS: SUPERSEDED FOR RUNTIME DEPLOYMENT
 ACCEPTED_BY: Chief Architect / Technical Authority
+SUPERSEDED_BY: ADR-006
+NOTE: MinIO Community source-build/provenance decision remains historical evidence. Runtime deployment is rejected following P7C-B2B-SC2-R1 security assessment.
 ACCEPTED_DATE: 2026-10-13
 ACCEPTED_DIRECTION: A-R1
 SCOPE: DEMO / NON-PRODUCTION ONLY
