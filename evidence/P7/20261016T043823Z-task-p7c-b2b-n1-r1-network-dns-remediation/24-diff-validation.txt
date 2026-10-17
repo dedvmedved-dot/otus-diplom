@@ -1,0 +1,3 @@
+HEAD = origin/main (fast-forward, linear history preserved)
+WORKTREE = CLEAN
+No force-push, rebase, merge, or amend performed.

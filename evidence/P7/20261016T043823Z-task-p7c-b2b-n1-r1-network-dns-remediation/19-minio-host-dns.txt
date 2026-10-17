@@ -1,1 +1,2 @@
 MINIO_DNS = PASS (dig @127.0.0.1 s3-backup.demo-pak.test A +short = 172.30.143.10)
+MINIO_DNS = PASS (getent hosts s3-backup.demo-pak.test -> 172.30.143.10 via system resolver 127.0.0.1)
