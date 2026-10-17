@@ -1,0 +1,1 @@
+AIStor Free sources: min.io/pricing, min.io/download, www.min.io/legal/aistor-free-agreement, docs.min.io/aistor/operations/licenses/, docs.min.io/aistor/installation/linux/server-side-encryption/, docs.min.io/aistor/administration/object-locking-and-immutability/, dl.min.io/api/releases/aistor/latest. Retrieval 2026-10-17.

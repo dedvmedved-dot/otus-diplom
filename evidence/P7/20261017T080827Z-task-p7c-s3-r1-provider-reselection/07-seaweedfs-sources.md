@@ -1,0 +1,1 @@
+SeaweedFS sources: github.com/seaweedfs/seaweedfs (tag 4.48, issues #8350/#11333/#11450/#8757/#9884/#11594/#11647/#11688/#11183, PRs #11335/#11361/#11362/#11475/#11476/#11492/#11769, security advisories); local clone @4.48 (weed/s3api/*). Retrieval 2026-10-17.
