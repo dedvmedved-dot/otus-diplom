@@ -1,0 +1,1 @@
+CURRENT_VM_RESOURCE_FIT=PASS (weed RSS 195MB, CPU ~2%, RAM 7.3GB free, disk 497GB free on 4vCPU/7.7GB).

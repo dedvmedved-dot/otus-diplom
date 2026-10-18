@@ -1,0 +1,1 @@
+cryptsetup 2.6.1 (astra repo); xfsprogs (mkfs.xfs 6.1.0, astra repo). No external repo.

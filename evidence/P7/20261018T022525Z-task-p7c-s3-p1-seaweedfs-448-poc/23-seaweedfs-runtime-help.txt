@@ -1,0 +1,1 @@
+Key flags (4.48): -filer, -s3 (opt-in, default false), -master.telemetry=false, -s3.allowDeleteBucketNotEmpty, -s3.autoCreateBucket, -s3.port.https, -s3.port.iceberg=0, -s3.port.lance=0, -s3.iam.config, -s3.cert.file, -s3.key.file, -volume.max. JWT via jwt.filer_signing.key = WEED_JWT_FILER_SIGNING_KEY env.

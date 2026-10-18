@@ -1,0 +1,1 @@
+LIFECYCLE_RECLAIM=PASS_WITH_COMPACTION. #8757 gap reproduced (no auto immediate reclaim); official vacuum mechanism (/vol/vacuum, auto every 840s, garbageThreshold 0.3) reclaims space. Live objects intact.

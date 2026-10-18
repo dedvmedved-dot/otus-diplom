@@ -1,0 +1,1 @@
+LUKS2; cipher aes-xts-plain64; keysize 512; device /dev/vdb; UUID 8ec7ad46-d245-4c32-95cd-5f5c3992c2ca; key file /etc/cryptsetup-keys.d/seaweedfs.key (mode 400). KEY_VALUE_NOT_RECORDED.

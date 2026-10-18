@@ -1,0 +1,1 @@
+DISK_AFTER_UPLOAD=7.44 GB; DISK_AFTER_DELETE=7.44 GB (#8757 gap reproduced: no immediate reclaim).

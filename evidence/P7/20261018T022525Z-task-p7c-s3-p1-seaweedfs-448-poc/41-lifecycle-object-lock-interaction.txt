@@ -1,0 +1,1 @@
+LIFECYCLE_RESPECTS_OBJECT_LOCK=PASS (SOURCE/UNIT: 4.48 lifecycle engine emits SKIPPED_OBJECT_LOCK for locked versions; go test s3lifecycle ok).

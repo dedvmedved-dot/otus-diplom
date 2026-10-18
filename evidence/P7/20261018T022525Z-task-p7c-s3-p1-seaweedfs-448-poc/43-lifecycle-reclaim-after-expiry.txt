@@ -1,0 +1,1 @@
+After delete, disk remained 7.44 GB (metadata removed, physical space NOT reclaimed) — reproduces #8757.

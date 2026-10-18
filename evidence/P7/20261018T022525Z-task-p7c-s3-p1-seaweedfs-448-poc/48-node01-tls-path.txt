@@ -1,0 +1,1 @@
+NODE01_TLS=PASS (s3-backup.demo-pak.test -> 172.30.143.10, TCP 443, cert SAN CN=s3-backup.demo-pak.test, Verify return code 0).

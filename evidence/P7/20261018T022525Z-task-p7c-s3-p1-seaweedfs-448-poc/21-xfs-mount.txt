@@ -1,0 +1,1 @@
+XFS UUID c35d4a80-7a71-4574-97a1-29f7057571a0; mounted /srv/seaweedfs (500G); RAW_VDB_DIRECTLY_MOUNTED=NO; remount via mount -a verified.

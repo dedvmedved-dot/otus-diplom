@@ -1,0 +1,1 @@
+BUCKET_CREATE=PASS portal-velero-backup (ObjectLockEnabledForBucket=True).

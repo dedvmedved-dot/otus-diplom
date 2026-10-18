@@ -1,0 +1,4 @@
+SBOM_TOOL = Syft; SBOM_TOOL_VERSION = 1.54.1; SBOM_FORMAT = CycloneDX JSON
+source SBOM: sha256 996b53fe995137e833adb3673625a60aec10069edc59a7c2bc3e7d1b9bad9065, 2253 components
+binary SBOM: sha256 4bbce608450a128bdaa3804bb9fa84e605683a7e4befd9e55d12937dc072e714, 255 components
+secrets in SBOM = NO

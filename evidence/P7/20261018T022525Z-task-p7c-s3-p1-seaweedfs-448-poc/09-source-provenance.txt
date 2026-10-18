@@ -1,0 +1,2 @@
+SOURCE_TREE_SHA = 568e7bb3f36c2fbeba22e15200b47478cee759b2
+clone /var/tmp/seaweedfs @4.48; git describe --tags --exact-match = 4.48; worktree clean

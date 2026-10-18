@@ -1,0 +1,1 @@
+VM_REBOOT_PERSISTENCE=PASS (LUKS auto-unlock, XFS mount, seaweedfs+named auto-start, non-root process, HTTPS 443, bucket/ObjectLock/locked-object persist).

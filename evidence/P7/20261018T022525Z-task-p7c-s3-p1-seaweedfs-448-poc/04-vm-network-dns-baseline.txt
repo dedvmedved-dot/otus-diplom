@@ -1,0 +1,2 @@
+NETWORK_BASELINE = PASS (ens8 = 172.30.143.10/24, VLAN143)
+DNS_BASELINE = PASS (s3-backup.demo-pak.test -> 172.30.143.10 from VM + node-01/02/03; BIND9 active)

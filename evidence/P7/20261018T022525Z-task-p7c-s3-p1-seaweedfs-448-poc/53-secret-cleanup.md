@@ -1,0 +1,1 @@
+Runtime secrets (LUKS key, JWT, IAM, TLS keys, velero creds) remain protected locally (400/440/600/640). TEMP_AUTOMATION_PASSWORD_FILE (/etc/hermes/minio_astraadm_pass.txt) is the ongoing VM-access credential (mode 600), still required for future P7C-B2 VM access -> NOT removed; LOCAL_SECRET_PERSISTENCE_REQUIRES_ARCHITECT_DECISION.

@@ -1,0 +1,1 @@
+COMPLIANCE_RUNTIME_TEST=PASS (COMPLIANCE retention: normal delete DENIED, bypass delete DENIED even for admin).

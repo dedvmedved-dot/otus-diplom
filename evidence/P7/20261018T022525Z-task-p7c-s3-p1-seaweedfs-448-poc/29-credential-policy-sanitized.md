@@ -1,0 +1,1 @@
+IAM (iam.json mode 640): admin=Admin+Read+Write+List+Tagging; velero=Read+Write+List+Tagging (NO Admin, NO BypassGovernanceRetention). velero creds saved to /etc/seaweedfs/velero-credentials.env (mode 600). VELERO_BYPASS_GOVERNANCE=NO.

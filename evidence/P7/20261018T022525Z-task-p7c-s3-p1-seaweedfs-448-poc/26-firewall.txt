@@ -1,0 +1,1 @@
+nftables (inet seaweedfs): policy accept; iif lo accept; tcp dport {8333,18333} drop. Persisted via /etc/nftables.conf + systemctl enable nftables.

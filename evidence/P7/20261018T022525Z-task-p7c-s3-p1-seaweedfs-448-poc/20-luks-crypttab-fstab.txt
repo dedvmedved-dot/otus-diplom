@@ -1,0 +1,2 @@
+crypttab: seaweedfs-data UUID=8ec7ad46-d245-4c32-95cd-5f5c3992c2ca /etc/cryptsetup-keys.d/seaweedfs.key luks
+fstab: UUID=c35d4a80-7a71-4574-97a1-29f7057571a0 /srv/seaweedfs xfs defaults,nofail 0 2

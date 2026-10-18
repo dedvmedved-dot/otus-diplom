@@ -1,0 +1,1 @@
+VERSIONING=ENABLED (read back via GetBucketVersioning).

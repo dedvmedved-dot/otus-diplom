@@ -1,0 +1,1 @@
+HEAD=origin/main (fast-forward, linear). WORKTREE=CLEAN. No force-push/rebase/merge/amend.

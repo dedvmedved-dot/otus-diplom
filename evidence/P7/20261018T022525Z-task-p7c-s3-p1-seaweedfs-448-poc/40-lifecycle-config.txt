@@ -1,0 +1,1 @@
+LIFECYCLE_CONFIG=PASS (1 rule, expire-30d, Days=30, read back).

@@ -1,0 +1,1 @@
+BYPASS_HEADER_WITHOUT_PERMISSION=DENIED(AccessDenied) [velero has no BypassGovernanceRetention].

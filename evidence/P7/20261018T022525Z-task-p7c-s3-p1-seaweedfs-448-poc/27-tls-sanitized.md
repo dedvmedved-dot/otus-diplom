@@ -1,0 +1,1 @@
+DEMO CA (CN=SeaweedFS PoC Demo CA, ca.key mode 400). Server cert CN=s3-backup.demo-pak.test, SAN DNS:s3-backup.demo-pak.test + IP:172.30.143.10, server.key mode 440 root:seaweedfs. TLS verify ENABLED (no insecure).

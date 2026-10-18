@@ -1,0 +1,1 @@
+LOCKED_VERSION_DELETE=DENIED(AccessDenied) [DeleteObjectVersion with VersionId on GOVERNANCE-locked version].

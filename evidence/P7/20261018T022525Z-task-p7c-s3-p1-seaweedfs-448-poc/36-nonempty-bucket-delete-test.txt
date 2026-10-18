@@ -1,0 +1,1 @@
+NONEMPTY_BUCKET_DELETE=DENIED(AccessDenied) [allowDeleteBucketNotEmpty=false].

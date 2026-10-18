@@ -1,0 +1,3 @@
+DATA_DISK_REVALIDATION = PASS
+/dev/vdb 500G disk, no FSTYPE, no mountpoints; blkid empty; wipefs -n empty;
+not mounted; swap on vda5; no LVM/RAID. OS_DISK=NO, SAFE_TO_ENCRYPT=YES.
