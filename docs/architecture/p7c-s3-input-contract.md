@@ -3,8 +3,10 @@
 NO SECRET VALUES ARE TO BE COMMITTED TO GIT. Only references/names allowed.
 
 ```text
-S3_PROVIDER_DECISION_STATE=RESELECTION_PENDING
-S3_PROVIDER_TYPE=TBD
+S3_PROVIDER_DECISION_STATE=POC_AUTHORIZED
+S3_PROVIDER_TYPE=SEAWEEDFS
+S3_PROVIDER_VERSION=4.48
+S3_PROVIDER_COMMIT=530be3e37337488ecc34d58441e0bc476e121c93
 S3_ENDPOINT=https://s3-backup.demo-pak.test
 S3_IP=172.30.143.10
 S3_EXTERNAL_PORT=443
@@ -13,19 +15,18 @@ S3_REGION=ru-west-1
 S3_FORCE_PATH_STYLE=true
 S3_TLS_CA_MODE=PRIVATE_CA
 S3_OBJECT_LOCK_REQUIRED=true
-S3_OBJECT_LOCK_ENABLED=NOT_DEPLOYED
-S3_VERSIONING_ENABLED=NOT_DEPLOYED
+S3_OBJECT_LOCK_ENABLED=NOT_DEPLOYED (until PoC runtime validation)
+S3_VERSIONING_ENABLED=NOT_DEPLOYED (until PoC runtime validation)
 S3_RETENTION_MODE=GOVERNANCE
-S3_RETENTION_PERIOD=7 days (object lock) / 30 days (lifecycle)
-S3_SERVER_SIDE_ENCRYPTION=UNKNOWN (candidate-dependent; see S3_IMPLEMENTATION_QUALIFICATION_R1.md)
-S3_KMS_REF=
-BACKUP_NETWORK_PATH=VLAN143; pod-level path NOT_PROVEN
+S3_RETENTION_PERIOD=7 days Object Lock / 30 days lifecycle
+S3_AT_REST_ENCRYPTION=LUKS2 (planned; storage-layer, per P7C-S3-P1 §18)
+S3_SERVER_SIDE_ENCRYPTION=NOT_REQUIRED_FOR_THIS_POC
+BACKUP_NETWORK_PATH=VLAN143; pod path NOT_PROVEN
 BACKUP_SOURCE_CIDRS=172.30.143.0/24 (VLAN143)
 CANONICAL_DNS_NAMESPACE=demo-pak.test
 OLD_DNS_NAMESPACE=demo-pak.local RETIRED BY ADR-005
 ```
 
-Current status: provider decision reopened (RESELECTION_PENDING after ADR-006).
-Provider-independent values above remain accepted. Runtime state (versioning,
-object lock, encryption, credential objects) remains NOT_DEPLOYED until the
-reselect candidate PoC and runtime validation.
+Current status: PoC authorized (ADR-007). SeaweedFS 4.48 is the PoC candidate,
+NOT the final runtime provider. Runtime fields remain NOT_DEPLOYED until the PoC
+actually validates them.
