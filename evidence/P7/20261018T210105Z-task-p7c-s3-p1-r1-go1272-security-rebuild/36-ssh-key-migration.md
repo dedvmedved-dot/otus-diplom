@@ -1,0 +1,1 @@
+Dedicated Ed25519 automation key pair on Hermes control host (private mode 600, not in git/evidence). Public key installed into ~astraadm/.ssh/authorized_keys (owner astraadm, mode 600). No root SSH enabled; no NOPASSWD:ALL created; sshd not weakened.

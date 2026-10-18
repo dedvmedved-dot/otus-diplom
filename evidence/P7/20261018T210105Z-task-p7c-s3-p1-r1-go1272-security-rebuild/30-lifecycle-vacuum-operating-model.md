@@ -1,0 +1,1 @@
+LIFECYCLE_RECLAIM=PASS_WITH_COMPACTION (preserved from P1). Vacuum: automatic every 840s (master.vacuumIntervalSeconds), garbageThreshold 0.3; manual /vol/vacuum. Live objects intact. Operating model: monitor df /srv/seaweedfs; if garbage>=30% vacuum reclaims automatically; manual recovery: GET http://127.0.0.1:9333/vol/vacuum.

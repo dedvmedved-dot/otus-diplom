@@ -1,0 +1,1 @@
+VM_REBOOT_PERSISTENCE=PASS (LUKS auto-unlock, XFS mount, service auto-start, new binary sha unchanged f3cd51ef..., embedded go1.27.2, TLS/443, bucket/versioning/ObjectLock/lifecycle/data checksums persist).

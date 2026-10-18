@@ -1,0 +1,1 @@
+ROLLBACK_BINARY_PRESERVED=YES. /usr/local/libexec/seaweedfs/rollback/weed-4.48-official-go1.27.1 (mode 0555, root:root). ROLLBACK_BINARY_SHA256=8c07a1ccc4ec058cd90989ac0533c30436832e41c63de2b26f37253d9f744c4d.

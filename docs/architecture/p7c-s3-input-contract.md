@@ -3,10 +3,12 @@
 NO SECRET VALUES ARE TO BE COMMITTED TO GIT. Only references/names allowed.
 
 ```text
-S3_PROVIDER_DECISION_STATE=POC_VALIDATED_PENDING_FINAL_ARCHITECT_ACCEPTANCE
+S3_PROVIDER_DECISION_STATE=POC_VALIDATED_SECURITY_REMEDIATED_PENDING_FINAL_ARCHITECT_ACCEPTANCE
 S3_PROVIDER_TYPE=SEAWEEDFS
 S3_PROVIDER_VERSION=4.48
 S3_PROVIDER_COMMIT=530be3e37337488ecc34d58441e0bc476e121c93
+S3_RUNTIME_BUILD=SOURCE_REBUILD_GO1.27.2
+S3_RUNTIME_BINARY_SHA256=f3cd51efeb90f86e8fa82febfb007c56798ea687752af4d527c478b45d8a6dc9
 S3_ENDPOINT=https://s3-backup.demo-pak.test
 S3_IP=172.30.143.10
 S3_EXTERNAL_PORT=443
@@ -14,7 +16,6 @@ S3_BUCKET=portal-velero-backup
 S3_REGION=ru-west-1
 S3_FORCE_PATH_STYLE=true
 S3_TLS_CA_MODE=PRIVATE_CA
-S3_RUNTIME_DEPLOYED=POC
 S3_AT_REST_ENCRYPTION=LUKS2
 S3_VERSIONING_ENABLED=true
 S3_OBJECT_LOCK_ENABLED=true
@@ -29,6 +30,6 @@ BACKUP_SOURCE_CIDRS=172.30.143.0/24
 CANONICAL_DNS_NAMESPACE=demo-pak.test
 ```
 
-Status: SeaweedFS 4.48 PoC VALIDATED (runtime deployed on the external S3 VM as PoC).
-Final runtime provider NOT yet accepted (Chief Architect decision pending). Velero/P7C-B2
-NOT authorized. Runtime fields reflect actual PoC validation, not production approval.
+Status: SeaweedFS 4.48 PoC VALIDATED + SECURITY REMEDIATED (source rebuild on Go 1.27.2,
+0 CRITICAL). Final runtime provider NOT yet accepted (Chief Architect decision pending).
+Velero/P7C-B2 NOT authorized.

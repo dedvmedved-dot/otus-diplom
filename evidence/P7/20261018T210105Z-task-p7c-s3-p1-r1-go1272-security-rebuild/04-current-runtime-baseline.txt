@@ -1,0 +1,2 @@
+CURRENT_RUNTIME_BASELINE=PASS
+service active; user seaweedfs; binary sha 8c07a1ccc4ec058cd90989ac0533c30436832e41c63de2b26f37253d9f744c4d; embedded Go go1.27.1; endpoint https://s3-backup.demo-pak.test:443; bucket portal-velero-backup; versioning Enabled; Object Lock GOVERNANCE 7d; lifecycle 30d; LUKS UUID 8ec7ad46-d245-4c32-95cd-5f5c3992c2ca; XFS UUID c35d4a80-7a71-4574-97a1-29f7057571a0.

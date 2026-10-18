@@ -1,0 +1,1 @@
+From .github/workflows/binaries_release1.yml: CGO_ENABLED=0; GODEBUG=http2client=0; ldflags '-s -w -extldflags -static -X github.com/seaweedfs/seaweedfs/weed/util/version.COMMIT=<commit>'. Build target weed. Equivalent deterministic command used (adds -buildvcs=false to disable redundant VCS stamping).

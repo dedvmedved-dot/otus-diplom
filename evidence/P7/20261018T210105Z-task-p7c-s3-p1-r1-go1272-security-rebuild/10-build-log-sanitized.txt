@@ -1,0 +1,4 @@
+BUILD_HOST=172.30.143.10; GO_VERSION=go1.27.2; GOOS=linux; GOARCH=amd64; CGO_ENABLED=0; GODEBUG=http2client=0
+BUILD_COMMAND=go build -buildvcs=false -ldflags '-s -w -extldflags -static -X github.com/seaweedfs/seaweedfs/weed/util/version.COMMIT=530be3e37337488ecc34d58441e0bc476e121c93' -o /var/tmp/seaweedfs-448-go1272-build/weed ./weed
+BUILD_START=21:00:55Z; BUILD_END=21:04:50Z; BUILD_EXIT_CODE=0
+(first attempt failed: VCS status (git dubious ownership) -> added -buildvcs=false; documented)

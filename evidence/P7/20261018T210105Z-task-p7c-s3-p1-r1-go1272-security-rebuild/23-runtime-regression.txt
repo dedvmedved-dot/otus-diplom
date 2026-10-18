@@ -1,0 +1,1 @@
+RUNTIME_REGRESSION=PASS (process user seaweedfs; HTTPS 443; TLS verify; bucket portal-velero-backup; versioning Enabled; Object Lock GOVERNANCE 7d; lifecycle 30d; identities exist; no unexpected listeners; all state encrypted).

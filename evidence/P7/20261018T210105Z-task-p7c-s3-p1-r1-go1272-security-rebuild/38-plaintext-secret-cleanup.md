@@ -1,0 +1,1 @@
+PLAINTEXT_AUTOMATION_PASSWORD_FILE=REMOVED (/etc/hermes/minio_astraadm_pass.txt deleted, verified absent). SECRET_VALUE_EXPOSED=NO. Runtime secrets (LUKS key, JWT, IAM, TLS keys) remain protected locally.

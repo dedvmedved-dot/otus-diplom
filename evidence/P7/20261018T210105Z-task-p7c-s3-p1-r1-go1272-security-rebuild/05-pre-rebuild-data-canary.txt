@@ -1,0 +1,4 @@
+PRE_REBUILD_DATA_CANARY=PASS
+CANARY_LOCKED=locked.dat vid=67204c3b sha=1c6718c9860160ad
+CANARY_NORMAL=small.txt vid=67204c3e sha=04d83db04c1fe184
+bucket config: versioning Enabled, OL GOVERNANCE 7d, lifecycle 1 rule.

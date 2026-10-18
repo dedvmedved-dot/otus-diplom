@@ -1,0 +1,1 @@
+SERVICE_RESTART=PASS (new binary f3cd51ef... go1.27.2 persists).

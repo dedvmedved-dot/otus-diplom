@@ -1,0 +1,3 @@
+ADR_008=ACCEPTED_FOR_SECURITY_REMEDIATION
+Go 1.27.1 -> Go 1.27.2; source unchanged (tag 4.48, commit 530be3e37337488ecc34d58441e0bc476e121c93); no patches/deps/go.mod changes.
+ADR008_COMMIT_SHA=9a53fa1489a21d10d5166d19a60e5575579b5eb4

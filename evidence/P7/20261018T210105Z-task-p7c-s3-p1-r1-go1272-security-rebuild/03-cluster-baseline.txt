@@ -1,0 +1,1 @@
+CLUSTER_BASELINE=PASS (nodes 3/3 Ready, snapshot-controller 2/2, satellites 3/3, DRBD resync 0).

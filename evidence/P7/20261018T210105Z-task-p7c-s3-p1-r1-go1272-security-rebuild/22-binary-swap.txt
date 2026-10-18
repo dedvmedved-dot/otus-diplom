@@ -1,0 +1,1 @@
+BUILD_SHA256=f3cd51efeb90f86e8fa82febfb007c56798ea687752af4d527c478b45d8a6dc9; INSTALLED_SHA256=f3cd51efeb90f86e8fa82febfb007c56798ea687752af4d527c478b45d8a6dc9; BUILD_INSTALL_HASH_MATCH=YES. Procedure: stop -> install (root:root 755) -> verify -> start. Process user seaweedfs (non-root).

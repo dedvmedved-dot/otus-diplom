@@ -1,0 +1,2 @@
+GOVULNCHECK_VERSION=v1.9.0 (go1.27.2). GOVULNCHECK_REACHABLE_CRITICAL=0. GOVULNCHECK_REACHABLE_HIGH=5 (all golang.org/x/net@v0.58.0, all DoS HTTP/2, fixed in v0.60.0).
+Reachable traces are through INTERNAL/unused paths: master proxyToLeader (httputil.ReverseProxy->http2.Transport.RoundTrip, client-side, 127.0.0.1), grpc.Server (FUSE mount, unused), KMS OpenBao (unused), Azure remote storage (unused), admin dash s3tables (unused). NOT the exposed S3 HTTPS path (stdlib net/http+ServeTLS, fixed go1.27.2).

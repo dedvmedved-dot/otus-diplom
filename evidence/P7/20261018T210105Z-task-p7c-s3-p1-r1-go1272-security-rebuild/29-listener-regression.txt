@@ -1,0 +1,1 @@
+NON_S3_EXTERNAL_EXPOSURE=NO (nftables drop {8333,18333} active; external only 443 + 53 DNS).
