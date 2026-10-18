@@ -1,0 +1,1 @@
+CLUSTER_BASELINE=PASS (k8s 1.36.2, 3/3 Ready, snapshot-controller 2/2, VolumeSnapshot CRDs 3, piraeus-r2-snapclass driver linstor.csi.linbit.com, LINSTOR satellites 3/3, DRBD resync 0, velero absent).

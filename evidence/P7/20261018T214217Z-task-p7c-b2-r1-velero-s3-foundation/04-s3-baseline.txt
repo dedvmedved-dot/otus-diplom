@@ -1,0 +1,1 @@
+S3_BASELINE=PASS (runtime: service active, binary f3cd51efeb90f86e8fa82febfb007c56798ea687752af4d527c478b45d8a6dc9 go1.27.2; TLS/443 verified P1-R1; listeners on 172.30.143.10 with nftables drop {8333,18333}). Bucket/versioning/ObjectLock/lifecycle re-validation requires S3 credentials (see credential-bridge).
