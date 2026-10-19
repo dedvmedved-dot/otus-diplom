@@ -1,0 +1,1 @@
+DATA_MOVER_SCHEDULE_RESULT=PASS (pod scheduled on node-01 under PreferNoSchedule; no manual toleration).

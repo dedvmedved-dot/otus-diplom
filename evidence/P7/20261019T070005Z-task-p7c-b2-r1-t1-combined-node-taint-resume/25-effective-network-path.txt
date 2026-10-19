@@ -1,0 +1,1 @@
+EFFECTIVE_S3_NETWORK_PATH=VLAN143 (node-01 ip route get 172.30.143.10 = bond0.143 src 172.30.143.101; calico natOutgoing=true).

@@ -1,0 +1,1 @@
+CONTROL_PLANE_TAINT_POLICY=3/3 PreferNoSchedule (key node-role.kubernetes.io/control-plane, labels preserved).

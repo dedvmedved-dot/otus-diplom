@@ -1,0 +1,1 @@
+S3_POSTCHECK=PASS (SeaweedFS active, versioning Enabled, Object Lock GOVERNANCE 7d unchanged from P1, prefix velero/, historical root data unchanged).

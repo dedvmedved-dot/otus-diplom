@@ -1,0 +1,1 @@
+RESTORED_PVC=Bound (piraeus-r2 1Gi); RESTORED_STORAGE=PASS (LINSTOR healthy, DRBD clean).

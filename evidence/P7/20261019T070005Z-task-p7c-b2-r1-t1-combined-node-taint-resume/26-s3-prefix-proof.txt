@@ -1,0 +1,1 @@
+NEW_VELERO_OBJECTS_UNDER_PREFIX=YES (velero/ prefix, 39 objects); NEW_VELERO_OBJECTS_AT_BUCKET_ROOT=NO; historical _p7c-* unchanged.

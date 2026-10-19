@@ -1,0 +1,1 @@
+CSI_SNAPSHOT=PASS (driver linstor.csi.linbit.com, snapshotClass piraeus-r2-snapclass, srcPVC p7c-b2-source).

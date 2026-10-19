@@ -8,3 +8,5 @@
 - Secret renamed cloud-credentials -> velero-s3-credentials (per task §16).
 
 NOTE: deployment is BLOCKED at BSL validation — pod DNS cannot resolve s3-backup.demo-pak.test (BIND9 ACL 172.30.143.0/24 vs pod egress IP). See evidence result.md.
+
+NOTE (P7C-B2-R1-T1): node-agent DaemonSet needs `--node-agent-configmap=node-agent-config` + the node-agent-config ConfigMap (restorePVC.ignoreDelayBinding=true) to avoid a restore deadlock with the WaitForFirstConsumer StorageClass (piraeus-r2).

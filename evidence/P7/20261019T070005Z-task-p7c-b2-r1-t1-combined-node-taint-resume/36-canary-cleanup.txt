@@ -1,0 +1,1 @@
+Verifier pod + namespace p7c-b2-canary deleted. LOCKED_S3_BACKUP_RESIDUE=EXPECTED (S3 backup kept, Object Lock).

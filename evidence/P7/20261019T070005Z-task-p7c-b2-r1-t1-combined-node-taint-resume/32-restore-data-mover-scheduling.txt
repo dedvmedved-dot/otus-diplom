@@ -1,0 +1,1 @@
+RESTORE_DATA_MOVER_SCHEDULE=PASS (data mover pod scheduled under PreferNoSchedule; no manual patch).

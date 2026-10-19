@@ -1,0 +1,1 @@
+Retry data mover pod scheduled on node-01 (PreferNoSchedule). DATA_MOVER_SCHEDULE_RESULT=PASS.

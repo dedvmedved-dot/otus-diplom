@@ -1,0 +1,1 @@
+NODE_AGENT_S3_UPLOAD=PASS (kopia snapshot ID 493addef... uploaded to SeaweedFS; TLS/DNS/auth OK).

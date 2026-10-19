@@ -1,0 +1,1 @@
+VELERO_SOURCE_PATCH=NO; VELERO_UPGRADE=NO; EXISTING_COMPONENT_TOLERATIONS_MASS_REMOVED=NO. ADDITIONAL: node-agent-config ConfigMap (restorePVC.ignoreDelayBinding=true) + --node-agent-configmap flag added to node-agent DaemonSet — required to fix Velero 1.18.1 restore deadlock with WaitForFirstConsumer StorageClass (piraeus-r2). Documented as P7C-B2-R1-T1 finding.

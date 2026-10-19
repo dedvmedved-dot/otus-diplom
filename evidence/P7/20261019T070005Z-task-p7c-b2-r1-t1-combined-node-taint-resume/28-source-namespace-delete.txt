@@ -1,0 +1,1 @@
+Source namespace p7c-b2-canary deleted after backup checkpoint.

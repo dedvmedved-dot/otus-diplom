@@ -31,3 +31,10 @@ VELERO PATCH: NO
 VELERO UPGRADE: NO
 
 Future dedicated worker nodes: REASSESS POLICY.
+
+## Implementation result (P7C-B2-R1-T1)
+
+IMPLEMENTATION_RESULT: PASS
+CURRENT_POLICY: PreferNoSchedule on node-01/node-02/node-03
+P7C_B2_DATA_MOVER_SCHEDULING: PASS
+COMBINED_NODE_TAINT_POLICY: PreferNoSchedule

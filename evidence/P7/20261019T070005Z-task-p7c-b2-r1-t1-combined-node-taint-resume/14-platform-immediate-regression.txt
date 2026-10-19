@@ -1,0 +1,1 @@
+POST_TAINT_IMMEDIATE_REGRESSION=PASS (nodes Ready, etcd 3/3, API, calico, coredns, linstor, drbd clean, velero, node-agent, BSL Available).

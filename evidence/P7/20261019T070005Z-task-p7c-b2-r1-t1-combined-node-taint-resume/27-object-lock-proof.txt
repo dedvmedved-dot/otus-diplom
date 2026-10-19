@@ -1,0 +1,1 @@
+OBJECT_LOCK_ON_BACKUP_OBJECT=PASS (bucket default GOVERNANCE 7d, inherited by new objects; velero identity BypassGovernanceRetention=NO; direct retention read AccessDenied = least-privilege).

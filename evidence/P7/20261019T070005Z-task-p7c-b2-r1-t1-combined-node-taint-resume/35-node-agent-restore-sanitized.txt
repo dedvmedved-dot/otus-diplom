@@ -1,0 +1,1 @@
+NODE_AGENT_S3_RESTORE=PASS; POD_DNS_TO_S3=PASS; POD_TO_S3_PATH=PASS (real node-agent/Kopia download).
