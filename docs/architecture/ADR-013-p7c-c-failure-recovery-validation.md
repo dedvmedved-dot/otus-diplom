@@ -55,3 +55,17 @@ PreferNoSchedule 3/3.
 
 Historical ADR-009 authorization statement is retained as historical record.
 This ADR supersedes that authorization boundary for P7C-C.
+
+## FC-06 remediation decision
+
+ORIGINAL_FC06_SELECTOR = role=node-agent
+ORIGINAL_RESULT = BLOCK_NOT_INDUCED
+ROOT_CAUSE = S3 transfer is performed by CSI Snapshot Data Movement hosting/data-mover pod, not by the node-agent Pod itself
+VELERO_1_18_1_DATA_DOWNLOAD_LABEL_KEY = velero.io/data-download
+VELERO_1_18_1_DATA_UPLOAD_LABEL_KEY = velero.io/data-upload
+CORRECTED_FC06_SELECTOR = velero.io/data-download Exists
+FAILURE_TYPE = CLIENT_S3_PATH_OUTAGE
+ARCHITECT_DECISION = AUTHORIZED
+
+This section supersedes ONLY the FC-06 selector wording in the original ADR-013
+test plan. All other P7C-C boundaries remain unchanged.
