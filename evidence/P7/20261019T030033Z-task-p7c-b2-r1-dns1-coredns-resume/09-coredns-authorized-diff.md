@@ -1,0 +1,1 @@
+CHANGED_SEMANTICS=ONLY demo-pak.test conditional forward. Added zone block: demo-pak.test:53 { errors; cache 30; forward . 172.30.143.10 }. No fallthrough/hosts/rewrite/template/static A. cluster.local + public + reverse + health/ready/prometheus/cache/loop/reload/loadbalance preserved.

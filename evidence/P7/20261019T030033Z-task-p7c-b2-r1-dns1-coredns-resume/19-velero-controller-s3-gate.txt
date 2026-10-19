@@ -1,0 +1,1 @@
+VELERO_CONTROLLER_S3=FAIL (bucket state, not DNS/TLS). POD_DNS_TO_S3_CONTROLLER=PASS (DNS resolved). TLS/auth not yet reachable because Velero rejects bucket top-level directories first.

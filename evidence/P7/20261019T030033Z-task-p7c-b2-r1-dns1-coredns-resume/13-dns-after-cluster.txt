@@ -1,0 +1,1 @@
+CLUSTER_DNS_AFTER=PASS (kubernetes.default.svc.cluster.local -> 10.96.0.1).

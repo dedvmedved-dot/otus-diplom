@@ -1,0 +1,1 @@
+BSL_BEFORE=Unavailable (DNS NXDOMAIN). BSL_AFTER=Unavailable (NEW reason: 'Backup store contains invalid top-level directories: [_p7c-s3-p1-r1-validation _p7c-s3-p1-validation]'). DNS resolution now works; bucket state blocks Velero validation.

@@ -1,0 +1,1 @@
+Reload via CoreDNS reload plugin (no rollout restart needed). Log: 'Reloading' -> 'Reloading complete', new config SHA512=0ed71cdc... CoreDNS 2/2 Ready, no parse/plugin errors.

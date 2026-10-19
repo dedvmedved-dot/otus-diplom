@@ -1,0 +1,1 @@
+coredns image=registry.k8s.io/coredns/coredns:v1.14.2; replicas=2; cm UID=e268aa3a-d622-4b1b-aedf-cf683b8d441f; resourceVersion=232.

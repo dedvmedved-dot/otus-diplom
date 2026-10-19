@@ -1,0 +1,1 @@
+CLUSTER_BASELINE=PASS (3/3 Ready, CoreDNS 2/2, velero 1/1, node-agent 3/3, snapshot-controller 2/2, piraeus-r2-snapclass, LINSTOR 3/3, DRBD clean; BSL Unavailable DNS).

@@ -1,0 +1,1 @@
+BIND_CONFIG_CHANGED=NO; BIND_ACL_CHANGE_REQUIRED=NO. BIND9 returned authoritative answer (NOT REFUSED) — the CoreDNS pod query reached BIND9 with a source IP accepted by the existing 172.30.143.0/24 ACL (via node masquerade).
