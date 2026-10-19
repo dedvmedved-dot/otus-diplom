@@ -62,8 +62,8 @@ P7B1  Kubelet Serving TLS Bootstrap / CSR Approval      FINAL ACCEPTED
 P7B2  Metrics Server 0.8.1                              FINAL ACCEPTED
 P7C   Velero / Backup                                   IN PROGRESS
   P7C-B1  CSI Snapshot Foundation                        FINAL ACCEPTED
-  P7C-B2  Velero / S3 Foundation + CSI Data Movement     READY FOR ARCHITECT FINAL ACCEPTANCE
-  P7C-C   Failure / Recovery Validation                  NOT AUTHORIZED
+  P7C-B2  Velero / S3 Foundation + CSI Data Movement     FINAL ACCEPTED / CONNECTOR VERIFIED
+  P7C-C   Failure / Recovery Validation                  IN PROGRESS
 ```
 
 Переход между стадиями — только после явного решения Chief Architect:
@@ -117,9 +117,9 @@ Backup:
   CSI Snapshot Data Movement:  PASS
   offsite restore:             PASS
   checksum:                    PASS
-  P7C-B2:                      READY FOR ARCHITECT FINAL ACCEPTANCE
+  P7C-B2:                      FINAL ACCEPTED / CONNECTOR VERIFIED
 
-  Remaining P7 backup work:    P7C-C failure/recovery validation (NOT AUTHORIZED)
+  Remaining P7 backup work:    P7C-C failure/recovery validation (IN PROGRESS)
 ```
 
 ## Текущий verified state
@@ -133,8 +133,8 @@ P7C-B1:             FINAL ACCEPTED
 P7C-B2 runtime:     PASS / CONNECTOR VERIFIED
 P7C-B2 canonical:   PASS / CONNECTOR VERIFIED
 P7C-B2 reproducibility: PASS / CONNECTOR VERIFIED
-P7C-B2 final:       READY FOR ARCHITECT FINAL ACCEPTANCE
-P7C-C:              NOT AUTHORIZED
+P7C-B2 final:       FINAL ACCEPTED / CONNECTOR VERIFIED
+P7C-C:              IN PROGRESS
 ```
 
 ## Дорожная карта реализации Портала
@@ -165,8 +165,8 @@ P7C FINAL ACCEPTED
 P8 остаётся `NOT AUTHORIZED` до отдельного решения Chief Architect после
 завершения P7C.
 
-CURRENT: P7C-B2 final Architect gate
-NEXT:    P7C-C failure/recovery validation
+CURRENT: P7C-C failure/recovery validation
+NEXT:    P7C FINAL ACCEPTANCE (Architect gate)
 AFTER P7C FINAL ACCEPTED: P8 begins, including early Portal implementation
 
 Подробная дорожная карта:
