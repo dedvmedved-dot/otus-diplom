@@ -48,8 +48,8 @@ P3  HA Control Plane / kube-vip / etcd                 FINAL ACCEPTED
 P4  Calico / DNS / baseline policies                   FINAL ACCEPTED
 P5  LINSTOR / DRBD                                     FINAL ACCEPTED
 P6  MetalLB / Envoy Gateway                            FINAL ACCEPTED
-P7  Observability / Backup                             IN PROGRESS
-P8  PostgreSQL / Portal                                NOT AUTHORIZED
+P7  Observability / Backup                             FINAL ACCEPTED
+P8  PostgreSQL / Portal                                IN PROGRESS
 P9  Security / Failure / Performance / Restore / Acceptance
                                                         NOT AUTHORIZED
 ```
@@ -60,10 +60,10 @@ P9  Security / Failure / Performance / Restore / Acceptance
 P7A   Observability / Backup Preflight                  FINAL ACCEPTED
 P7B1  Kubelet Serving TLS Bootstrap / CSR Approval      FINAL ACCEPTED
 P7B2  Metrics Server 0.8.1                              FINAL ACCEPTED
-P7C   Velero / Backup                                   IN PROGRESS
+P7C   Velero / Backup                                   FINAL ACCEPTED
   P7C-B1  CSI Snapshot Foundation                        FINAL ACCEPTED
   P7C-B2  Velero / S3 Foundation + CSI Data Movement     FINAL ACCEPTED / CONNECTOR VERIFIED
-  P7C-C   Failure / Recovery Validation                  READY FOR ARCHITECT FINAL ACCEPTANCE
+  P7C-C   Failure / Recovery Validation                  FINAL ACCEPTED / CONNECTOR VERIFIED
 ```
 
 Переход между стадиями — только после явного решения Chief Architect:
@@ -119,7 +119,7 @@ Backup:
   checksum:                    PASS
   P7C-B2:                      FINAL ACCEPTED / CONNECTOR VERIFIED
 
-  Remaining P7 backup work:    P7C-C READY FOR ARCHITECT FINAL ACCEPTANCE
+  P7C-C:                       FINAL ACCEPTED / CONNECTOR VERIFIED
 ```
 
 ## Текущий verified state
@@ -134,7 +134,7 @@ P7C-B2 runtime:     PASS / CONNECTOR VERIFIED
 P7C-B2 canonical:   PASS / CONNECTOR VERIFIED
 P7C-B2 reproducibility: PASS / CONNECTOR VERIFIED
 P7C-B2 final:       FINAL ACCEPTED / CONNECTOR VERIFIED
-P7C-C:              READY FOR ARCHITECT FINAL ACCEPTANCE
+P7C-C:              FINAL ACCEPTED / CONNECTOR VERIFIED
 ```
 
 ## Дорожная карта реализации Портала
@@ -162,12 +162,11 @@ P7C FINAL ACCEPTED
   -> P9 final security / failure / performance / restore acceptance
 ```
 
-P8 остаётся `NOT AUTHORIZED` до отдельного решения Chief Architect после
-завершения P7C.
+P8 авторизован отдельным решением Chief Architect после завершения P7C.
 
-CURRENT: P7C-C final Architect gate
-NEXT:    P7C FINAL ACCEPTANCE (Architect gate)
-AFTER P7C FINAL ACCEPTED: P8 begins, including early Portal implementation
+CURRENT: P8A CloudNativePG / PostgreSQL foundation
+PARALLEL PREPARATION: Portal DB/API interface contract only
+NEXT: P8B after explicit Architect gate
 
 Подробная дорожная карта:
 [`docs/architecture/P8_PORTAL_IMPLEMENTATION_ROADMAP.md`](docs/architecture/P8_PORTAL_IMPLEMENTATION_ROADMAP.md).

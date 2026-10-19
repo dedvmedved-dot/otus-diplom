@@ -311,7 +311,7 @@ P9 предназначен для интегральной финальной �
 
 ```text
 CURRENT:
-P7C-C final Architect gate
+P8A CloudNativePG / PostgreSQL foundation
 
 THEN:
 P7C-B2 FINAL ACCEPTED

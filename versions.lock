@@ -23,7 +23,7 @@ components:
   drbd_utils:          "9.34.3"
   metallb:             "0.16.1"
   envoy_gateway:       "1.9.1"
-  cloudnative_pg:      "1.29.1"
+  cloudnative_pg:      "1.30.1"
   cert_manager:        "1.21.0"
   barman_cloud_plugin: "0.13.0"
   postgresql:          "17.10"
@@ -38,3 +38,4 @@ notes:
   - "Availability of these versions from approved/internal sources is NOT_VERIFIED."
   - "DRBD baseline realigned to 9.3.2 by ADR-003 (aligns P5 with piraeus-operator v2.10.6 component set); Astra/kernel compatibility verified by TASK-015-R1 before P5B."
   - "drbd_utils 9.34.3 supplied by digest-pinned piraeus-server:v1.33.2 image (sha256:0db38ed0...); no separate host drbd-utils package."
+  - "CloudNativePG baseline realigned from 1.29.1 to 1.30.1 by ADR-014 because the cluster runs Kubernetes 1.36.2; CNPG 1.29.1 does not support Kubernetes 1.36, while 1.30.1 does."
