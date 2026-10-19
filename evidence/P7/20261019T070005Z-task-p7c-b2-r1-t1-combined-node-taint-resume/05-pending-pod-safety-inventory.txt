@@ -1,0 +1,1 @@
+UNRELATED_PENDING_POD_WOULD_BE_ENABLED=NO (kubectl get pods -A --field-selector=status.phase=Pending = 'No resources found').

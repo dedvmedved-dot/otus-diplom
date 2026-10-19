@@ -1,0 +1,1 @@
+PRE_TAINT_CLUSTER_HEALTH=PASS (nodes 3 Ready; etcd 3; apiserver 3; kube-vip 3; calico 3; coredns 2; metallb 4; envoy 1; metrics-server 1; snapshot-controller 2; linstor 3; drbd clean; velero+node-agent 4; BSL Available).

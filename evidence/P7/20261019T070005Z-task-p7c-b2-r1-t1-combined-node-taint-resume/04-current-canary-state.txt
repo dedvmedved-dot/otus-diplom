@@ -1,0 +1,1 @@
+SOURCE_NAMESPACE_PRESENT=YES (p7c-b2-canary); SOURCE_PVC_BOUND=YES (piraeus-r2 1Gi); SOURCE_PAYLOAD_PRESENT=YES; VOLUMESNAPSHOT_READY=YES; DATAUPLOAD_PRESENT=YES (Failed/timeout); backups: p7c-b2-canary-20261019035931 (metadata-only, deleted earlier), p7c-b2-canary-20261019040100 (snapshotMoveData, DataUpload Failed).

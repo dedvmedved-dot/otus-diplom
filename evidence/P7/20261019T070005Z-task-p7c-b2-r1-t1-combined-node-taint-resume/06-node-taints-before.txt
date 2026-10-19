@@ -1,0 +1,1 @@
+NODE01_TAINT_BEFORE=node-role.kubernetes.io/control-plane:NoSchedule; NODE02_TAINT_BEFORE=same; NODE03_TAINT_BEFORE=same (all Ready).

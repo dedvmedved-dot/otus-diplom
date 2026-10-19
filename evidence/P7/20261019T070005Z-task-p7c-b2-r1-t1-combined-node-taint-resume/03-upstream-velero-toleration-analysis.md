@@ -1,0 +1,1 @@
+VELERO_1181_CUSTOM_DATA_MOVER_TOLERATIONS=NOT_SUPPORTED. pkg/util/third_party.go ThirdPartyTolerations=['kubernetes.azure.com/scalesetpriority','CriticalAddonsOnly'] (no control-plane). pkg/types/node_agent.go NodeAgentConfigs has NO tolerations field (only loadAffinity+podResources). Data mover/exposer pod cannot receive control-plane toleration via config.
