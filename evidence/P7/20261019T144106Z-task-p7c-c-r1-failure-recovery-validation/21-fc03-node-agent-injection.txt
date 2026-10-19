@@ -1,0 +1,1 @@
+Deleted one node-agent pod.

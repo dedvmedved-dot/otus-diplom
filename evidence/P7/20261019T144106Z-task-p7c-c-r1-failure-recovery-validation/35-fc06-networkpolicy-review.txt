@@ -1,0 +1,1 @@
+role=node-agent selects only node-agent pods (velero controller has deploy=velero). dry-run PASS.

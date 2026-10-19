@@ -1,0 +1,7 @@
+scenario,recovery_seconds
+FC02_velero_pod_loss,9
+FC03_node_agent_idle,9
+FC04_dataupload,AUTO_RESUME
+FC05_datadownload,AUTO_RESUME
+FC06_s3_path,BLOCKED
+FC07_final_restore,PASS

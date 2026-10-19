@@ -1,0 +1,1 @@
+FC06_RESULT=BLOCKED: NetworkPolicy role=node-agent does not block S3 path. Velero 1.18.1 ThirdPartyLabels only propagates azure.workload.identity/use to the data mover pod (not role=node-agent); the data mover (exposer) pod label velero.io/data-download does the S3 traffic. Per task §25 STOP - no selector improvisation. ARCHITECT DECISION REQUIRED.

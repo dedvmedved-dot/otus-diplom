@@ -1,0 +1,1 @@
+CANARY_STORAGE_BASELINE=PASS (PVC Bound 2Gi piraeus-r2).

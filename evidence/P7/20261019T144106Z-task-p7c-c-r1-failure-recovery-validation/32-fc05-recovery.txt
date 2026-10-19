@@ -1,0 +1,1 @@
+FC05_RECOVERY_MODE=AUTO_RESUME (DataDownload continued -> Completed).

@@ -1,0 +1,1 @@
+FC04_RECOVERY_MODE=AUTO_RESUME (DataUpload continued -> Completed).

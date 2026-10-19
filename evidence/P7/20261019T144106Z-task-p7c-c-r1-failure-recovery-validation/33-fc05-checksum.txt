@@ -1,0 +1,1 @@
+FC05_DATA_INTEGRITY=PASS (checksum MATCH).

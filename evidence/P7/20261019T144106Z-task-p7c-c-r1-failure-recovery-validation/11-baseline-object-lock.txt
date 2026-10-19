@@ -1,0 +1,1 @@
+P7C_C_OBJECT_LOCK=PASS (bucket default GOVERNANCE 7d inherited).

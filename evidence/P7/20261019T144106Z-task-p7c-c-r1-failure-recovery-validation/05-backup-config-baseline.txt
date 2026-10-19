@@ -1,0 +1,1 @@
+BACKUP_CONFIG_BASELINE=PASS (digests match, EnableCSI, kopia, node-agent-configmap arg, ignoreDelayBinding=true, prefix velero, VSL 0, hostNetwork NO).

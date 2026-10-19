@@ -1,0 +1,1 @@
+Authorized mutations only (canary ns/PVC/pods, Backup/Restore CRs, FC-02/03/04/05 pod deletions, FC-06 NetworkPolicy apply/delete). Forbidden counts = 0.

@@ -1,0 +1,1 @@
+Deleted node-agent-xq85c on node-03 during InProgress.

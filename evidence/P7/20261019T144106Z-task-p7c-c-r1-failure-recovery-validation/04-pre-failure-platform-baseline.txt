@@ -1,0 +1,1 @@
+PRE_FAILURE_BASELINE=PASS (nodes 3 Ready PreferNoSchedule, etcd 3, calico 3, coredns 2, snapshot-controller 2, linstor 3, drbd clean, velero 1/1, node-agent 3/3, BSL Available, active DU/DD 0).

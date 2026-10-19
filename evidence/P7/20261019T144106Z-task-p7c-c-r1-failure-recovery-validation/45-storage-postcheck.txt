@@ -1,0 +1,1 @@
+STORAGE_POSTCHECK=PASS (linstor 3/3, drbd clean, no orphan canary resources).
