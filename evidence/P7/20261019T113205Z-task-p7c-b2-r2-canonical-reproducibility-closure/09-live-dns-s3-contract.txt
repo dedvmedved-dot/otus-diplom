@@ -1,0 +1,1 @@
+LIVE_DNS_S3_CONTRACT=PASS (CoreDNS forward demo-pak.test -> 172.30.143.10; s3-backup.demo-pak.test resolves; POD_DNS_TO_S3/POD_TO_S3_PATH accepted PASS).

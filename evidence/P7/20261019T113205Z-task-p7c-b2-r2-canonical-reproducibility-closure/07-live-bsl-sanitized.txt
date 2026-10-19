@@ -1,0 +1,1 @@
+LIVE_BSL=PASS (provider aws, bucket portal-velero-backup, prefix velero, region ru-west-1, s3Url https://s3-backup.demo-pak.test, s3ForcePathStyle true, credential velero-s3-credentials/cloud, TLS enabled, phase Available).

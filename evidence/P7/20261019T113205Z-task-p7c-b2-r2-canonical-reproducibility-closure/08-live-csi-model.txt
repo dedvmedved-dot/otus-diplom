@@ -1,0 +1,1 @@
+LIVE_CSI_MODEL=PASS (EnableCSI yes, node-agent 3/3, uploader Kopia, VSC piraeus-r2-snapclass driver linstor.csi.linbit.com, LINSTOR VSL count 0).

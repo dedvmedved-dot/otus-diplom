@@ -1,0 +1,1 @@
+RUNTIME_MUTATIONS=0 (no apply/patch/edit/delete/taint/label/rollout/backup/restore/S3 mutation).

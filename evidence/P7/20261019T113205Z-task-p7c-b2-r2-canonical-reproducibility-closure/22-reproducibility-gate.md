@@ -1,0 +1,1 @@
+REPRODUCIBILITY_GATE=PASS. Model: TWO_FILE_SET. Order: 1) node-agent-config.yaml, 2) velero-install.yaml. Secret + CA out-of-band. Covers CRD/RBAC/Deployment/plugin/node-agent/BSL/EnableCSI/Kopia/prefix velero/ignoreDelayBinding.

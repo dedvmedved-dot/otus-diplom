@@ -1,0 +1,1 @@
+LIVE_COMBINED_NODE_POLICY=PASS (node-01/02/03 = node-role.kubernetes.io/control-plane:PreferNoSchedule; labels preserved).

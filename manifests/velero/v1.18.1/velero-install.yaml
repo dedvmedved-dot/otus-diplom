@@ -4280,6 +4280,7 @@ items:
           - node-agent
           - server
           - --features=EnableCSI
+          - --node-agent-configmap=node-agent-config
           command:
           - /velero
           env:

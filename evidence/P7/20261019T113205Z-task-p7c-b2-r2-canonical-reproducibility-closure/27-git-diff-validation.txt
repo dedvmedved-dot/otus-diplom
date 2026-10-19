@@ -1,0 +1,1 @@
+HEAD=origin/main fast-forward; only 3 current files modified (contract, README, velero-install.yaml); node-agent-config.yaml already canonical.
