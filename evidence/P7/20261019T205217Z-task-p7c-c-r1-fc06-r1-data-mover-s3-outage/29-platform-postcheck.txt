@@ -1,0 +1,1 @@
+PLATFORM_POSTCHECK=PASS (nodes 3, etcd 3, coredns 2, snapshot-controller 2, velero+node-agent 4, BSL Available).

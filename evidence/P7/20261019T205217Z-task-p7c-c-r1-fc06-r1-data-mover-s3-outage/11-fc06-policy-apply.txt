@@ -1,0 +1,1 @@
+FC06_POLICY_APPLIED=YES; velero Ready; node-agent 3/3; coredns 2/2; BSL Available; control components unaffected.

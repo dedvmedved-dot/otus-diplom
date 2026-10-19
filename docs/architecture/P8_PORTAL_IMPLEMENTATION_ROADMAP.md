@@ -311,7 +311,7 @@ P9 предназначен для интегральной финальной �
 
 ```text
 CURRENT:
-P7C-C failure/recovery validation / Architect gate
+P7C-C final Architect gate
 
 THEN:
 P7C-B2 FINAL ACCEPTED

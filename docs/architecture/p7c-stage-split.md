@@ -16,7 +16,7 @@ P7C-B2: Velero/S3 Foundation + CSI Snapshot Data Movement — Velero 1.18.1
 
 P7C-C: Failure / Recovery Validation — failure injection, repeated restore,
         recovery validation (FC-01..FC-07).
-        STATUS: AUTHORIZED / IN PROGRESS
+        STATUS: READY FOR ARCHITECT FINAL ACCEPTANCE
 
 P8 = NOT AUTHORIZED
 P9 = NOT AUTHORIZED

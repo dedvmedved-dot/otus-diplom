@@ -1,0 +1,1 @@
+FC06_DATA_MOVER_POD=p7c-c-s3path-r1-20261019204525-92rks; labels: velero.io/data-download=p7c-c-s3path-r1-20261019204525-92rks + velero.io/exposer-pod-group=generic-restore-exposer.

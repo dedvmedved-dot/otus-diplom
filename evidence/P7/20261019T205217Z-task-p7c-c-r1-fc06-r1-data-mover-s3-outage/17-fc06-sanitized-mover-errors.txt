@@ -1,0 +1,1 @@
+Mover log: 'Run cancelable dataDownload' then no S3 progress (connection blocked, no credentials exposed).

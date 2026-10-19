@@ -1,0 +1,1 @@
+1 NetworkPolicy apply + 1 delete + 1 FC-06 restore + 1 new FC-07 restore + temp ns/pod cleanup. Forbidden counts=0.

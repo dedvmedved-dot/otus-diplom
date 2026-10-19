@@ -1,0 +1,1 @@
+FC06_POLICY_SERVER_DRY_RUN=PASS (server dry run created).

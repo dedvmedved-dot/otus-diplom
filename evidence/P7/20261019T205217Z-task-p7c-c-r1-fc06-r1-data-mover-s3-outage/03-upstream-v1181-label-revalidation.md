@@ -1,0 +1,1 @@
+UPSTREAM_LABEL_MODEL=PASS (DataUploadLabel=velero.io/data-upload, DataDownloadLabel=velero.io/data-download, hostingPodLabels={DataDownloadLabel: dd.Name}, ThirdPartyLabels=[azure.workload.identity/use]).

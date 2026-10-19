@@ -63,7 +63,7 @@ P7B2  Metrics Server 0.8.1                              FINAL ACCEPTED
 P7C   Velero / Backup                                   IN PROGRESS
   P7C-B1  CSI Snapshot Foundation                        FINAL ACCEPTED
   P7C-B2  Velero / S3 Foundation + CSI Data Movement     FINAL ACCEPTED / CONNECTOR VERIFIED
-  P7C-C   Failure / Recovery Validation                  IN PROGRESS
+  P7C-C   Failure / Recovery Validation                  READY FOR ARCHITECT FINAL ACCEPTANCE
 ```
 
 Переход между стадиями — только после явного решения Chief Architect:
@@ -119,7 +119,7 @@ Backup:
   checksum:                    PASS
   P7C-B2:                      FINAL ACCEPTED / CONNECTOR VERIFIED
 
-  Remaining P7 backup work:    P7C-C failure/recovery validation (IN PROGRESS)
+  Remaining P7 backup work:    P7C-C READY FOR ARCHITECT FINAL ACCEPTANCE
 ```
 
 ## Текущий verified state
@@ -134,7 +134,7 @@ P7C-B2 runtime:     PASS / CONNECTOR VERIFIED
 P7C-B2 canonical:   PASS / CONNECTOR VERIFIED
 P7C-B2 reproducibility: PASS / CONNECTOR VERIFIED
 P7C-B2 final:       FINAL ACCEPTED / CONNECTOR VERIFIED
-P7C-C:              IN PROGRESS
+P7C-C:              READY FOR ARCHITECT FINAL ACCEPTANCE
 ```
 
 ## Дорожная карта реализации Портала
@@ -165,7 +165,7 @@ P7C FINAL ACCEPTED
 P8 остаётся `NOT AUTHORIZED` до отдельного решения Chief Architect после
 завершения P7C.
 
-CURRENT: P7C-C failure/recovery validation
+CURRENT: P7C-C final Architect gate
 NEXT:    P7C FINAL ACCEPTANCE (Architect gate)
 AFTER P7C FINAL ACCEPTED: P8 begins, including early Portal implementation
 

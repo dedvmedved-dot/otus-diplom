@@ -1,0 +1,1 @@
+FC06_S3_PATH_BLOCK_INDUCED=YES: DataDownload stuck InProgress ~60s with no byte progress (vs normal ~40s completion) while NetworkPolicy active.

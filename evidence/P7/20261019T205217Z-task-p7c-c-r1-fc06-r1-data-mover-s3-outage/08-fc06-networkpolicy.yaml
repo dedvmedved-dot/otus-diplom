@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: p7c-c-dd-deny-s3-r1
+  namespace: velero
+spec:
+  podSelector:
+    matchExpressions:
+      - key: velero.io/data-download
+        operator: Exists
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 172.30.143.10/32

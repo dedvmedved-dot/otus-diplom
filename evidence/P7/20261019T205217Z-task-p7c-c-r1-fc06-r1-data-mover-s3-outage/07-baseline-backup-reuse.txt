@@ -1,0 +1,1 @@
+BASELINE_BACKUP_REUSABLE=YES (p7c-c-baseline-20261019141012 Completed, DU Completed, S3 objects present, prefix velero/, Object Lock present).

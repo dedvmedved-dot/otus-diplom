@@ -1,0 +1,1 @@
+PRE_REMEDIATION_BASELINE=PASS (nodes 3, etcd 3, kube-vip 3, calico 3, coredns 2, metrics 1, metallb 4, envoy 1, snapshot-controller 2, linstor 3, drbd clean, velero 1/1, node-agent 3/3, BSL Available).
