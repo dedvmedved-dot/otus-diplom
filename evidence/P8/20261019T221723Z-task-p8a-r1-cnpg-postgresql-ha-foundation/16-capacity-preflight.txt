@@ -1,0 +1,1 @@
+P8A_CAPACITY=PASS (48 CPU + 256GB RAM per node, ~2% CPU / 0% mem used; 3x10Gi PVC).

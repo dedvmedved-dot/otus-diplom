@@ -1,0 +1,1 @@
+1.30.x supports K8s 1.34/1.35/1.36; PostgreSQL 14-18; EOL ~Dec 2026. CNPG_K8S_136_SUPPORTED=YES.

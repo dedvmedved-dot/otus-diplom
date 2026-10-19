@@ -1,0 +1,1 @@
+CNPG self-signed CA (portal-db), server cert SAN covers portal-db-rw/ro/r.portal.svc(.cluster.local).

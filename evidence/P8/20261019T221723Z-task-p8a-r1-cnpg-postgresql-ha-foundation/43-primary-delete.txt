@@ -1,0 +1,1 @@
+Deleted primary pod portal-db-1 (single pod delete only).

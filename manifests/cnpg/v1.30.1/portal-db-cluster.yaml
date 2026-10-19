@@ -1,0 +1,27 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: portal-db
+  namespace: portal
+spec:
+  instances: 3
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.10-system-trixie@sha256:ba9e496920d2baeffa6e383a72e66b90af336e2d67990a68e6216f34e25e4515
+  enableSuperuserAccess: false
+  storage:
+    size: 10Gi
+    storageClass: piraeus-r2
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  affinity:
+    enablePodAntiAffinity: true
+    topologyKey: kubernetes.io/hostname
+    podAntiAffinityType: required
+  bootstrap:
+    initdb:
+      database: portal
+      owner: portal_app

@@ -1,0 +1,1 @@
+CNPG_OPERATOR_SERVER_DRY_RUN=PASS (CRDs/webhooks accepted; namespace is prerequisite).

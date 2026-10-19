@@ -1,0 +1,1 @@
+cnpg-controller-manager Ready 1/1; imageID matches OP_DIGEST.

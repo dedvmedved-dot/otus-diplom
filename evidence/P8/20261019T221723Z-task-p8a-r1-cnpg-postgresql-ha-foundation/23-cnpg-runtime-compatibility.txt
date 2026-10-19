@@ -1,0 +1,1 @@
+CNPG_K8S_RUNTIME_COMPAT=PASS (Cluster smoke dry-run accepted).

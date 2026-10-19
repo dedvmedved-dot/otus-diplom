@@ -1,0 +1,1 @@
+PORTAL_DB_CONTRACT=READY (see docs/architecture/P8_PORTAL_DB_CONTRACT.md).

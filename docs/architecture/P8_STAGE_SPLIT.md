@@ -10,5 +10,5 @@ P8G = P8 integrated acceptance
 
 Current statuses:
 
-P8A = IN PROGRESS
+P8A = READY FOR ARCHITECT FINAL ACCEPTANCE
 P8B-P8G = NOT AUTHORIZED

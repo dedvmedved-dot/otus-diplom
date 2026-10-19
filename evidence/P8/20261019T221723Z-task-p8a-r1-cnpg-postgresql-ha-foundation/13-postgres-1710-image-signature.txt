@@ -1,0 +1,1 @@
+cosign verify operand image: PASS (index digest sha256:74f29d3343f8db89135b33b0b4c55641c415b96d08605034a6d0c2782f929146).

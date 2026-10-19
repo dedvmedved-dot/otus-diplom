@@ -1,0 +1,4 @@
+event,offset_sec
+primary_delete,0
+new_primary_elected,8
+cluster_3_of_3,16

@@ -164,9 +164,9 @@ P7C FINAL ACCEPTED
 
 P8 авторизован отдельным решением Chief Architect после завершения P7C.
 
-CURRENT: P8A CloudNativePG / PostgreSQL foundation
-PARALLEL PREPARATION: Portal DB/API interface contract only
-NEXT: P8B after explicit Architect gate
+CURRENT: P8A final Architect gate
+EARLY PORTAL PREPARATION: DB/API contract ready
+NEXT: P8B after Architect decision
 
 Подробная дорожная карта:
 [`docs/architecture/P8_PORTAL_IMPLEMENTATION_ROADMAP.md`](docs/architecture/P8_PORTAL_IMPLEMENTATION_ROADMAP.md).

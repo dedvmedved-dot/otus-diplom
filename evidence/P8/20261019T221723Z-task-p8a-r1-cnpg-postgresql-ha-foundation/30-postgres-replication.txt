@@ -1,0 +1,1 @@
+PG_STREAMING_REPLICATION=PASS (1 primary + 2 streaming async replicas, lag 0).

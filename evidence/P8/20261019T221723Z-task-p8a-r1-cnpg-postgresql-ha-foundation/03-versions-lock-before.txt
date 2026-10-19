@@ -1,0 +1,1 @@
+cloudnative_pg 1.29.1 (before ADR-014).

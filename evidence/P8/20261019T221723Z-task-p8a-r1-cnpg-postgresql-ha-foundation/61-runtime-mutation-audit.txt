@@ -1,0 +1,1 @@
+Authorized only: CNPG operator apply, portal ns, Cluster, primary pod delete (failover), verifier, probe table. Forbidden=0.

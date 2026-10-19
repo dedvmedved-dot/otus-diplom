@@ -1,0 +1,1 @@
+portal-db-1 (node-03), portal-db-2 (node-01), portal-db-3 (node-02).
