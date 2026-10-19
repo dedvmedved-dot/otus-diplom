@@ -1,0 +1,1 @@
+BSL default: provider aws; bucket portal-velero-backup; region ru-west-1; s3Url https://s3-backup.demo-pak.test; s3ForcePathStyle true; credential velero-s3-credentials/cloud; caCert (private CA); prefix ABSENT.

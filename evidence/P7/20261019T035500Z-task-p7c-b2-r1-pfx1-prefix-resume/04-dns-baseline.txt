@@ -1,0 +1,1 @@
+DNS_BASELINE=PASS (cluster.local PASS; public PASS; s3-backup.demo-pak.test -> 172.30.143.10 []; CoreDNS conditional block present; BIND authoritative PASS).

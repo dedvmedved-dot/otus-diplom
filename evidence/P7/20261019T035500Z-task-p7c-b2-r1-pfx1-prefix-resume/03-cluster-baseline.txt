@@ -1,0 +1,1 @@
+CLUSTER_BASELINE=PASS (nodes 3 Ready; CoreDNS 2 Running; snapshot-controller 2; velero/node-agent node-agent-7rslj Running node-agent-jthhv Running node-agent-zhp2q Running velero-cbdb5c6d-x4k7v Running; LINSTOR 3/3; DRBD clean; BSL Unavailable before fix).

@@ -1,0 +1,1 @@
+VELERO_RUNTIME_REVALIDATION=PASS (velero 1.18.1 @sha256:2752a011...; aws plugin v1.14.2 @sha256:abe29a7b...; EnableCSI; kopia; node-agent 3/3; hostNetwork NO; VSL=0).

@@ -1,0 +1,1 @@
+BSL_PREFIX_SCHEMA_SUPPORTED=YES (kubectl explain: spec.objectStorage.prefix <string> 'Prefix is the path inside a bucket to use for Velero storage. Optional.').

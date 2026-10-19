@@ -1,0 +1,1 @@
+VELERO_EFFECTIVE_S3_PREFIX=velero/; HISTORICAL_ROOT_OBJECTS_BLOCK_BSL=NO (BSL Available despite _p7c-* at bucket root).
