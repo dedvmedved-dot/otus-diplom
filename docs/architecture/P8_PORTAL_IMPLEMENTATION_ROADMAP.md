@@ -115,7 +115,7 @@ layer.
 
 Planned baseline:
 
-- CloudNativePG 1.29.1;
+- CloudNativePG 1.30.1;
 - PostgreSQL 17.10;
 - persistent storage на LINSTOR/DRBD;
 - HA/failover через CloudNativePG;
@@ -311,7 +311,7 @@ P9 предназначен для интегральной финальной �
 
 ```text
 CURRENT:
-P8A final Architect gate
+P8B PostgreSQL native backup + WAL/S3
 
 THEN:
 P7C-B2 FINAL ACCEPTED

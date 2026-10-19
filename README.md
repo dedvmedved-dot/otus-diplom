@@ -14,8 +14,8 @@
 - **HA control plane** — kubeadm + kube-vip (API VIP), etcd 3 узла;
 - **MetalLB** (L2) — внешние LoadBalancer-адреса;
 - **Envoy Gateway** — внешний ingress (HTTPRoute);
-- **PostgreSQL / CloudNativePG** — целевая СУБД (P8, ещё не развёрнута);
-- **Observability / Backup** — Metrics Server 0.8.1 deployed и FINAL ACCEPTED; Velero 1.18.1 deployed; P7C-B2 FINAL ACCEPTED / CONNECTOR VERIFIED; P7C-C READY FOR ARCHITECT FINAL ACCEPTANCE.
+- **PostgreSQL / CloudNativePG** — deployed (CloudNativePG 1.30.1, portal-db 3/3 HA, PostgreSQL 17.10);
+- **Observability / Backup** — Metrics Server 0.8.1 deployed и FINAL ACCEPTED; Velero 1.18.1 deployed; P7C-B2 FINAL ACCEPTED / CONNECTOR VERIFIED; P7C-C FINAL ACCEPTED / CONNECTOR VERIFIED.
 
 ## Архитектурный baseline
 
