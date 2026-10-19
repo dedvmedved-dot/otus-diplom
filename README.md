@@ -112,6 +112,38 @@ P7C (Velero / Backup Foundation):
 IN PROGRESS — PREFLIGHT / ARCHITECTURE CLOSURE (no runtime deployment authorized)
 ```
 
+
+## Дорожная карта реализации Портала
+
+Портал реализуется на **этапе P8 сразу после FINAL ACCEPTED этапа P7C**. Между
+закрытием P7C и началом разработки Портала не вводится отдельный длительный
+инфраструктурный этап.
+
+Ключевой принцип: Портал — не декоративный web-интерфейс, а демонстрационная
+оболочка над уже построенной платформой Kubernetes + LINSTOR/DRBD + Velero +
+CloudNativePG. Первая рабочая версия Портала должна появиться в начале P8 и
+развиваться параллельно с развёртыванием PostgreSQL и его backup/WAL-контура.
+
+Утверждённая последовательность:
+
+```text
+P7C FINAL ACCEPTED
+  -> P8A CloudNativePG / PostgreSQL foundation
+  -> P8B PostgreSQL backup + WAL / S3
+  -> P8C Portal MVP: backend + frontend
+  -> P8D Portal integration with Kubernetes / storage / backup / observability
+  -> P8E controlled demonstration scenarios
+  -> P8F Portal HA / application failover
+  -> P8G P8 acceptance
+  -> P9 final security / failure / performance / restore acceptance
+```
+
+P8 остаётся `NOT AUTHORIZED` до отдельного решения Chief Architect после
+завершения P7C.
+
+Подробная дорожная карта:
+[`docs/architecture/P8_PORTAL_IMPLEMENTATION_ROADMAP.md`](docs/architecture/P8_PORTAL_IMPLEMENTATION_ROADMAP.md).
+
 ## Рабочий процесс с репозиторием
 
 - Source of Truth — этот репозиторий (`main`).
