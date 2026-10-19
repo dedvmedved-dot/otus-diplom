@@ -15,7 +15,7 @@
 - **MetalLB** (L2) — внешние LoadBalancer-адреса;
 - **Envoy Gateway** — внешний ingress (HTTPRoute);
 - **PostgreSQL / CloudNativePG** — целевая СУБД (P8, ещё не развёрнута);
-- **Observability / Backup** — Metrics Server (P7B2, развёрнут) и Velero (P7C, ещё не начат).
+- **Observability / Backup** — Metrics Server 0.8.1 deployed и FINAL ACCEPTED; Velero 1.18.1 deployed; P7C-B2 runtime и reproducibility validation PASS, final Architect acceptance pending.
 
 ## Архитектурный baseline
 
@@ -60,7 +60,10 @@ P9  Security / Failure / Performance / Restore / Acceptance
 P7A   Observability / Backup Preflight                  FINAL ACCEPTED
 P7B1  Kubelet Serving TLS Bootstrap / CSR Approval      FINAL ACCEPTED
 P7B2  Metrics Server 0.8.1                              FINAL ACCEPTED
-P7C   Velero / Backup Foundation                        IN PROGRESS — PREFLIGHT / ARCHITECTURE CLOSURE
+P7C   Velero / Backup                                   IN PROGRESS
+  P7C-B1  CSI Snapshot Foundation                        FINAL ACCEPTED
+  P7C-B2  Velero / S3 Foundation + CSI Data Movement     READY FOR ARCHITECT FINAL ACCEPTANCE
+  P7C-C   Failure / Recovery Validation                  NOT AUTHORIZED
 ```
 
 Переход между стадиями — только после явного решения Chief Architect:
@@ -81,7 +84,12 @@ LINSTOR CSI:         1.11.0
 MetalLB:             0.16.1 (L2)
 Envoy Gateway:       1.9.1
 Metrics Server:      0.8.1 (deployed)
-Velero (target):         1.18.1
+Velero:              1.18.1 (deployed)
+Velero AWS plugin:   v1.14.2
+SeaweedFS:           4.48
+BSL:                 Available
+Velero S3 prefix:    velero/
+Combined-node taint: PreferNoSchedule
 Helm:                4.1.3
 ```
 
@@ -94,24 +102,40 @@ Observability:
   Metrics Server 0.8.1 deployed under P7B2 (secure kubelet TLS) and FINAL ACCEPTED.
 
 Backup:
-  заблокировано до получения параметров S3 (endpoint/bucket/region/object-lock/
-  secret-ref), закрепления версии object-store plugin и выбора стратегии бэкапа
-  (CSI snapshot API на кластере пока отсутствует).
+  SeaweedFS 4.48:              FINAL ACCEPTED for DEMO PAK
+  S3 endpoint:                 https://s3-backup.demo-pak.test
+  bucket:                      portal-velero-backup
+  network path:                VLAN143
+  private CA / TLS:            PASS
+  versioning:                  enabled
+  Object Lock:                 GOVERNANCE 7d
+  lifecycle:                   30d
+  CoreDNS private zone:        PASS
+  CSI Snapshot:                PASS
+  Velero:                      DEPLOYED (1.18.1)
+  BSL:                         Available
+  CSI Snapshot Data Movement:  PASS
+  offsite restore:             PASS
+  checksum:                    PASS
+  P7C-B2:                      READY FOR ARCHITECT FINAL ACCEPTANCE
+
+  Remaining P7 backup work:    P7C-C failure/recovery validation (NOT AUTHORIZED)
 ```
 
-## Текущий verified baseline
+## Текущий verified state
 
 ```text
-Current accepted baseline before P7C:
-7630ec38e77a52979605148d8888e67d94f1db6f
-
-P7B2 (Metrics Server 0.8.1):
-FINAL ACCEPTED
-
-P7C (Velero / Backup Foundation):
-IN PROGRESS — PREFLIGHT / ARCHITECTURE CLOSURE (no runtime deployment authorized)
+P0-P6:              FINAL ACCEPTED
+P7A:                FINAL ACCEPTED
+P7B1:               FINAL ACCEPTED
+P7B2:               FINAL ACCEPTED
+P7C-B1:             FINAL ACCEPTED
+P7C-B2 runtime:     PASS / CONNECTOR VERIFIED
+P7C-B2 canonical:   PASS / CONNECTOR VERIFIED
+P7C-B2 reproducibility: PASS / CONNECTOR VERIFIED
+P7C-B2 final:       READY FOR ARCHITECT FINAL ACCEPTANCE
+P7C-C:              NOT AUTHORIZED
 ```
-
 
 ## Дорожная карта реализации Портала
 
@@ -140,6 +164,10 @@ P7C FINAL ACCEPTED
 
 P8 остаётся `NOT AUTHORIZED` до отдельного решения Chief Architect после
 завершения P7C.
+
+CURRENT: P7C-B2 final Architect gate
+NEXT:    P7C-C failure/recovery validation
+AFTER P7C FINAL ACCEPTED: P8 begins, including early Portal implementation
 
 Подробная дорожная карта:
 [`docs/architecture/P8_PORTAL_IMPLEMENTATION_ROADMAP.md`](docs/architecture/P8_PORTAL_IMPLEMENTATION_ROADMAP.md).

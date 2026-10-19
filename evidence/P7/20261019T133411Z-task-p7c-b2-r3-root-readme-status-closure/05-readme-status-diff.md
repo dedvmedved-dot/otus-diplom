@@ -1,0 +1,1 @@
+README updated: subsystems (Velero deployed), P7 decomposition (P7C-B1/B2/C), technical state (Velero 1.18.1 deployed, SeaweedFS 4.48, BSL Available, prefix velero/, PreferNoSchedule), backup status (full current state), verified baseline (P7C-B2 READY). Portal roadmap preserved verbatim.
