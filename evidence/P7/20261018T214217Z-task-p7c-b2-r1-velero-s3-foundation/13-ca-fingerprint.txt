@@ -1,0 +1,1 @@
+S3_CA_FINGERPRINT (PEM sha256)=0dceb8ccfc7d67cc4cb97e021c2c5a8d2558666ec1c5bc14ee9af7c0f26ddbfa. CA is PUBLIC material (demo-pak.test demo CA).

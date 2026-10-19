@@ -1,0 +1,1 @@
+CA_CONFIGMAP=PASS (velero/velero-s3-ca, key ca.crt).

@@ -1,0 +1,1 @@
+BSL name=default; provider=aws; bucket=portal-velero-backup; region=ru-west-1; config s3Url=https://s3-backup.demo-pak.test, s3ForcePathStyle=true; objectStorage.caCert=<public CA b64>; credential={name:velero-s3-credentials,key:cloud}; default=true. TLS verification ENABLED (no insecureSkipTLSVerify).

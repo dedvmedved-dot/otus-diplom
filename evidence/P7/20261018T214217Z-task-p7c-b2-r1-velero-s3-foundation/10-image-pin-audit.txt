@@ -1,0 +1,1 @@
+velero=sha256:2752a01188bd8f16572a76b3b2c4331a6a5337a5cbe65715c22ac7f91b31bfa8 (docker.io); velero-plugin-for-aws=sha256:abe29a7b360231e359f7aaee79668141bd619ab6989c7cc78d041110987f6ca2 (docker.io). All applied references digest-pinned (no mutable tags). Public source (no internal mirror).
