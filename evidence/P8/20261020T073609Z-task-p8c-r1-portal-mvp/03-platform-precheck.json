@@ -1,0 +1,19 @@
+{
+  "kubernetes": "v1.36.2",
+  "nodes_ready": 3,
+  "nodes": [
+    "node-01",
+    "node-02",
+    "node-03"
+  ],
+  "allocatable_cpu_per_node": "48",
+  "allocatable_mem_per_node": "~256Gi",
+  "cnpg_portal_db": "ready=3/3 primary=portal-db-2 phase=Cluster in healthy state caSecret=portal-db-ca",
+  "scheduledbackup": "portal-db-daily (0 0 2 * * *)",
+  "objectstore": "portal-db-backup",
+  "velero_bsl": "Available",
+  "gatewayclass": "eg Accepted (gateway.envoyproxy.io/gatewayclass-controller)",
+  "metallb_pool": "p6-ingress-pool 172.30.140.110-172.30.140.119",
+  "cert_manager": "3/3 Ready",
+  "networkpolicy_portal": "NONE (no default-deny baseline)"
+}
