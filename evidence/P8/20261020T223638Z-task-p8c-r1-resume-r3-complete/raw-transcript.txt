@@ -1,0 +1,76 @@
+===== 2026-10-20T22:35:45Z FULL TEST RUN (source sha will be appended) =====
+--- go version ---
+go version go1.27.3 linux/amd64
+--- node version ---
+v22.23.2
+--- python version ---
+Python 3.11.15
+--- postgres version ---
+psql (PostgreSQL) 17.11 (Ubuntu 17.11-1.pgdg24.04+2)
+
+=== go build ===
+build exit=0
+=== go vet ===
+vet exit=0
+=== go test ===
+?   	github.com/dedvmedved-dot/otus-diplom/portal/cmd/portal	[no test files]
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/auth	(cached)
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/collectors	(cached)
+?   	github.com/dedvmedved-dot/otus-diplom/portal/internal/config	[no test files]
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/httpapi	(cached)
+?   	github.com/dedvmedved-dot/otus-diplom/portal/internal/model	[no test files]
+?   	github.com/dedvmedved-dot/otus-diplom/portal/internal/store	[no test files]
+?   	github.com/dedvmedved-dot/otus-diplom/portal/migrations	[no test files]
+?   	github.com/dedvmedved-dot/otus-diplom/portal/web	[no test files]
+test exit=0
+=== go test -race ===
+?   	github.com/dedvmedved-dot/otus-diplom/portal/cmd/portal	[no test files]
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/auth	(cached)
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/collectors	(cached)
+?   	github.com/dedvmedved-dot/otus-diplom/portal/internal/config	[no test files]
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/httpapi	1.107s
+?   	github.com/dedvmedved-dot/otus-diplom/portal/internal/model	[no test files]
+?   	github.com/dedvmedved-dot/otus-diplom/portal/internal/store	[no test files]
+?   	github.com/dedvmedved-dot/otus-diplom/portal/migrations	[no test files]
+?   	github.com/dedvmedved-dot/otus-diplom/portal/web	[no test files]
+race exit=0
+=== go test -tags integration (local PG17) ===
+=== RUN   TestIntegrationInsertBatchIdempotent
+--- PASS: TestIntegrationInsertBatchIdempotent (0.05s)
+=== RUN   TestIntegrationEventDedupAndRecreate
+--- PASS: TestIntegrationEventDedupAndRecreate (0.06s)
+=== RUN   TestIntegrationPruneTTL
+--- PASS: TestIntegrationPruneTTL (0.05s)
+=== RUN   TestIntegrationPruneCap
+--- PASS: TestIntegrationPruneCap (0.40s)
+=== RUN   TestIntegrationMigrationNoopAndMismatch
+--- PASS: TestIntegrationMigrationNoopAndMismatch (0.11s)
+=== RUN   TestIntegrationLedgerDrift
+--- PASS: TestIntegrationLedgerDrift (0.04s)
+PASS
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/store	(cached)
+integration exit=0
+=== helper mock tests (both helpers) ===
+..STOP: create timed out — UNKNOWN_OUTCOME. Re-check Secret state (get) before any further action; do not overwrite.
+.STOP: Secret portal/portal-registry-pull already exists; no overwrite.
+.STOP: cannot verify Secret state (Forbidden/network/other); no write attempted.
+..STOP: create failed (Secret may already exist); no overwrite attempted.
+.STOP: create timed out — UNKNOWN_OUTCOME. Re-check Secret state (get) before any further action; do not overwrite.
+.STOP: Secret portal/portal-ui-auth already exists; no implicit rotation.
+.STOP: cannot verify Secret state (Forbidden/network/other); no write attempted.
+.....
+----------------------------------------------------------------------
+Ran 14 tests in 0.009s
+
+OK
+OK: Secret portal/portal-registry-pull provisioned.
+Record name, type, access verification and expiry/rotation responsibility only.
+OK: Secret portal/portal-ui-auth key password-sha256 provisioned.
+Verifier value is NOT printed. Owner retains the password in their password manager.
+helpers exit=0
+=== JS renderer smoke (jsdom) ===
+renderer-smoke: PASS (stale-not-green, failed=unavailable, backup-health+Barman/WAL)
+renderer exit=0
+=== JS fixture smoke ===
+fixture-smoke: PASS (11 endpoints envelope + data shapes + error shape)
+fixture exit=0

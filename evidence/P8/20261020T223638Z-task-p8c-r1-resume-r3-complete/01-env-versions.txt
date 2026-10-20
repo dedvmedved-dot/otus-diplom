@@ -1,0 +1,6 @@
+Ubuntu 24.04.4 LTS
+Go: see raw-transcript (go version)
+Node: v22.23.2
+Python: 3.11.15
+PostgreSQL: 17 (PGDG), local isolated cluster /var/lib/postgresql/17/main
+jsdom: npm (test-only, gitignored via portal/.gitignore)
