@@ -1,0 +1,13 @@
+SOURCE_SHA=871315928f07dd209fc1377451e02931582b8ffc
+COMMAND=python3 portal/tools/test_helpers.py
+EXIT=0
+OK: Secret portal/portal-ui-auth key password-sha256 provisioned.
+Verifier value is NOT printed. Owner retains the password in their password manager.
+STOP: create failed (Secret may already exist); no overwrite attempted.
+.STOP: Secret portal/portal-ui-auth already exists; no implicit rotation.
+.STOP: cannot verify Secret state (Forbidden/network/other); no write attempted.
+.....
+----------------------------------------------------------------------
+Ran 7 tests in 0.003s
+
+OK

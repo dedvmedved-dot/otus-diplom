@@ -1,0 +1,56 @@
+{
+  "reviewed_sha": "cb8fbacd4cf036a4f7ec43fcb734f7dd751fd7ed",
+  "kind": "offline mock/static manifest checks; NOT runtime evidence",
+  "checks": [
+    {
+      "check": "provision-ui-auth.py: actual stdlib fallback_getpass",
+      "exit": 0,
+      "GetPassWarning_count": 2,
+      "mock_kubectl_verbs": [
+        "get",
+        "create"
+      ],
+      "required": "STOP before fallback input/write",
+      "disposition": "FAIL"
+    },
+    {
+      "check": "provision-registry-pull.py: actual stdlib fallback_getpass",
+      "exit": 0,
+      "GetPassWarning_count": 2,
+      "mock_kubectl_verbs": [
+        "get",
+        "create"
+      ],
+      "required": "STOP before fallback input/write",
+      "disposition": "FAIL"
+    },
+    {
+      "check": "static NetworkPolicy selectors/ports",
+      "actual_job_labels": {},
+      "migrator_policy_selects_job": false,
+      "cnpg_allows_migrator_5432": false,
+      "cnpg_allows_portal_metrics_9187": false,
+      "portal_allows_unrelated_namespace_pod_8080": true,
+      "dataplane_policy_present": false,
+      "disposition": "FAIL"
+    },
+    {
+      "check": "static release workflow",
+      "push_before_login": true,
+      "rootful_daemon": true,
+      "integration_command_present": false,
+      "race_command_present": false,
+      "browser_test_command_present": false,
+      "explicit_Containerfile_option": false,
+      "cosign_input": "v${COSIGN_VERSION}",
+      "disposition": "FAIL"
+    },
+    {
+      "check": "actual app.js renderers in Node VM; synthetic DOM/fetch (not browser)",
+      "failedPodsRender": "<p class=\"empty\">Нет данных</p>",
+      "staleOverallClass": "status healthy",
+      "staleAlerts": "<li class=\"empty\">нет предупреждений</li>",
+      "disposition": "FAIL"
+    }
+  ]
+}
