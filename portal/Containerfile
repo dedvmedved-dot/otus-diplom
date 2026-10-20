@@ -1,0 +1,8 @@
+# P8C Portal MVP image. FROM scratch has no base digest (NOT_APPLICABLE_EMPTY_BASE).
+# Binary is statically compiled outside the container; CA/public trust arrive via
+# mount projections at runtime (never copied from host /etc/ssl or /etc/passwd).
+FROM scratch
+COPY portal /portal
+USER 65532:65532
+EXPOSE 8080 8081
+ENTRYPOINT ["/portal"]

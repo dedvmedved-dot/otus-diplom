@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ПАК Портал</title>
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">ПАК Портал</div>
+    <div class="status" id="overall-status"><span class="dot"></span><span id="overall-text">—</span></div>
+    <div class="freshness" id="freshness">обновление: —</div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Разделы">
+    <button role="tab" data-tab="overview" class="tab active">Обзор</button>
+    <button role="tab" data-tab="kubernetes" class="tab">Kubernetes</button>
+    <button role="tab" data-tab="storage" class="tab">Хранилище</button>
+    <button role="tab" data-tab="backups" class="tab">Резервное копирование</button>
+    <button role="tab" data-tab="database" class="tab">PostgreSQL</button>
+    <button role="tab" data-tab="metrics" class="tab">Метрики</button>
+    <button role="tab" data-tab="events" class="tab">События</button>
+  </nav>
+
+  <main>
+    <!-- Обзор -->
+    <section id="tab-overview" class="tab-panel active">
+      <div class="cards" id="cards"></div>
+      <div class="panel">
+        <h2>Текущие предупреждения</h2>
+        <ul id="alerts" class="alerts"></ul>
+      </div>
+      <div class="panel">
+        <h2>Policy gaps</h2>
+        <ul id="policy-gaps" class="alerts"></ul>
+      </div>
+    </section>
+
+    <!-- Kubernetes -->
+    <section id="tab-kubernetes" class="tab-panel">
+      <div class="panel">
+        <h2>Nodes</h2>
+        <div class="toolbar"><input id="filter-nodes" placeholder="Фильтр по имени" aria-label="Фильтр nodes"></div>
+        <table id="table-nodes" class="data-table"></table>
+      </div>
+      <div class="panel">
+        <h2>Pods</h2>
+        <div class="toolbar"><input id="filter-pods" placeholder="Фильтр по имени" aria-label="Фильтр pods"></div>
+        <table id="table-pods" class="data-table"></table>
+      </div>
+      <div class="panel">
+        <h2>Workloads</h2>
+        <div class="toolbar"><input id="filter-workloads" placeholder="Фильтр по имени" aria-label="Фильтр workloads"></div>
+        <table id="table-workloads" class="data-table"></table>
+      </div>
+      <div class="panel">
+        <h2>Services</h2>
+        <table id="table-services" class="data-table"></table>
+      </div>
+    </section>
+
+    <!-- Хранилище -->
+    <section id="tab-storage" class="tab-panel">
+      <div class="panel">
+        <h2>Storage (Kubernetes view)</h2>
+        <p class="note">Прямое состояние DRBD/LINSTOR — вне MVP (scope=kubernetes_objects).</p>
+        <table id="table-storage" class="data-table"></table>
+      </div>
+    </section>
+
+    <!-- Резервное копирование -->
+    <section id="tab-backups" class="tab-panel">
+      <div class="panel">
+        <h2>Velero / PostgreSQL backup</h2>
+        <table id="table-backups" class="data-table"></table>
+      </div>
+    </section>
+
+    <!-- PostgreSQL -->
+    <section id="tab-database" class="tab-panel">
+      <div class="panel" id="database-panel"></div>
+    </section>
+
+    <!-- Метрики -->
+    <section id="tab-metrics" class="tab-panel">
+      <div class="panel">
+        <h2>Metrics Server samples</h2>
+        <table id="table-metrics" class="data-table"></table>
+      </div>
+    </section>
+
+    <!-- События -->
+    <section id="tab-events" class="tab-panel">
+      <div class="panel">
+        <h2>События</h2>
+        <table id="table-events" class="data-table"></table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot" id="foot">ПАК Портал — read-only операторская консоль</footer>
+  <script type="module" src="/assets/app.js"></script>
+</body>
+</html>

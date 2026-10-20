@@ -1,0 +1,35 @@
+# P8C Portal application + toolchain lock (new entries; does not override
+# infrastructure locks). Source metadata verified by Architect Connector; byte
+# download / signature / SBOM / runtime digest verification is G2 and recorded
+# separately in evidence. Digests are NEVER invented.
+baseline: "P8C-R1"
+verification_status: NOT_VERIFIED
+
+application:
+  go: "1.27.3"
+  go_archive_sha256: "65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40"
+  k8s_client_go: "v0.36.2"
+  k8s_client_go_commit: "877f5359348b5df85619f2aa379abc5bd74bca2d"
+  pgx: "v5.11.0"
+  pgx_commit: "5e583fa7aabfa88b796292f849fc9d7d75ac159d"
+
+tools:
+  buildkit: "v0.34.0"
+  buildkit_asset_sha256: "14813b1fb2a40082114e6d386c6fc5e7dd5298176ce7ee1a18bc33e73e109ac3"
+  syft: "v1.55.0"
+  syft_asset_sha256: "bb65249542db5fedeeb4d3f9b018b75e7264dbfbbb10486f044581a92f90490d"
+  trivy: "v0.76.0"
+  trivy_asset_sha256: "e24b1c51293c1b15e4ba8d45bbc7891ba053f90278ec2698f3562c993e145fe7"
+  cosign: "v3.1.3"
+  cosign_asset_sha256: "4629c757b7618056f8ddd7e2625ae9fdd94c0372a65049520bc7d9df9efc7f71"
+
+image:
+  registry: "ghcr.io/dedvmedved-dot/otus-diplom-portal"
+  digest: "NOT_VERIFIED"   # final digest only after reproducible build (G2)
+  base: "scratch"
+  base_digest: "NOT_APPLICABLE_EMPTY_BASE"
+
+notes:
+  - "go_archive_sha256 verified on build host 2026-10-20 (sha256sum match)."
+  - "k8s.io/client-go v0.36.2 go.mod requires go >= 1.26; pgx v5.11.0 requires go >= 1.25; Go 1.27.3 exceeds both."
+  - "Tool release metadata/sha256 recorded from source-verification.json (bytes+signature verification is G2)."
