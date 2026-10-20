@@ -1,0 +1,102 @@
+{
+  "review_head": "17fdf97b96ab19498d973f969bddc6244cb95af0",
+  "review_tree": "43eab119d3b576de221ea937652d87a9545569c5",
+  "base": "8f7acffd05b7814a56a03e5feaaf82cbeeb87eae",
+  "compare": {
+    "ahead": 3,
+    "behind": 0,
+    "changed_files": 27
+  },
+  "source_read_by_connector": [
+    {
+      "path": "portal/tools/p8c-portal-release.yml.template",
+      "blob_sha": "aa118b0a85debaa113913d15aaf61818b6295ceb"
+    },
+    {
+      "path": "portal/tools/provision-ui-auth.py",
+      "blob_sha": "66986c6b74823627db06a7b6e15d7cb0627242fb"
+    },
+    {
+      "path": "portal/tools/provision-registry-pull.py",
+      "blob_sha": "930be145981f0e852236adefa92f1db41fa9a8b4"
+    },
+    {
+      "path": "portal/networkpolicy/PLAN.md",
+      "blob_sha": "b2bad07070a98e50b81e22880e3182f2c54d4cea"
+    },
+    {
+      "path": "portal/internal/httpapi/handlers_test.go",
+      "blob_sha": "5b279ddfaf27cd387810cecd609087131155dbab"
+    },
+    {
+      "path": "portal/cmd/portal/main.go",
+      "blob_sha": "dc4c742d2113130c3b35303349ff87d55f1bf1f6"
+    },
+    {
+      "path": "portal/internal/collectors/collector.go",
+      "blob_sha": "f4590812b5d3d20013ac7683ebe0e14b200087a2"
+    },
+    {
+      "path": "portal/internal/collectors/transport.go",
+      "blob_sha": "f02b0bbece4ab26b047a74e1bb5b658f8206fd24"
+    },
+    {
+      "path": "portal/internal/store/store.go",
+      "blob_sha": "cd4e1e8b56d7bef623001f7d1b5770b6c5852d1b"
+    },
+    {
+      "path": "portal/internal/httpapi/handlers.go",
+      "blob_sha": "21aa4e13534ea0a5d7845d6ecc775a36bff43d4d"
+    },
+    {
+      "path": "portal/internal/httpapi/server.go",
+      "blob_sha": "951f40e6487a4bdb457afbe8b196942a491ae194"
+    },
+    {
+      "path": "portal/internal/model/model.go",
+      "blob_sha": "4fffc184c1bf540bc4722a624ed8ea4d57bcf524"
+    },
+    {
+      "path": "portal/internal/collectors/collect_methods.go",
+      "blob_sha": "7119d17abae2c73151429451e83faf4a59d962da"
+    },
+    {
+      "path": "portal/web/app.js",
+      "blob_sha": "ff87710d34b972c6a19316f3d20f8effe64968a5"
+    },
+    {
+      "path": "portal/manifests/deployment.yaml",
+      "blob_sha": "6a1d4f8d1049b39ea73a86390d75cf8fe7a41ef2"
+    },
+    {
+      "path": "evidence/P8/20261020T101719Z-task-p8c-r1-resume-portal-mvp/02-f01-f10-closure.md",
+      "blob_sha": "8e3f7020e5a3739952117ceffaa8805d4b6b3c9b"
+    },
+    {
+      "path": "evidence/P8/20261020T101719Z-task-p8c-r1-resume-portal-mvp/03-build-test-race.txt",
+      "blob_sha": "31e424414885689018ca76152469321132d8fd59"
+    },
+    {
+      "path": "evidence/P8/20261020T101719Z-task-p8c-r1-resume-portal-mvp/05-supply-chain.md",
+      "blob_sha": "68ae87c1059c3f073e3f4f661d7b0536cec7de6b"
+    }
+  ],
+  "contract_blob_sha": "74dd9743fb99f922506e30cff0f632f2f018ca37",
+  "upstream_client_go": {
+    "ref": "v0.36.2",
+    "path": "rest/config.go",
+    "blob_sha": "82d4f7136a404ff79a8a89693b2194e8dd466902"
+  },
+  "test_paths": [
+    "portal/internal/auth/auth_test.go",
+    "portal/internal/collectors/metrics_test.go",
+    "portal/internal/httpapi/handlers_test.go"
+  ],
+  "limitations": [
+    "No live cluster/DB/registry access.",
+    "No Go binary available in this Architect runtime; Go build/vet/race not rerun.",
+    "Local reproduction only: both helpers mocked; real JS renderers with synthetic responses.",
+    "GitHub workflow scope rejection reported by Hermes, but sanitized actual rejection response absent in read evidence.",
+    "Targeted review does not certify full codebase."
+  ]
+}

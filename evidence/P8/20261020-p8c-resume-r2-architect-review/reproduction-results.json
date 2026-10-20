@@ -1,0 +1,30 @@
+{
+  "review_head": "17fdf97b96ab19498d973f969bddc6244cb95af0",
+  "mode": "synthetic local mocks only; no real credentials, Kubernetes or GitHub mutations",
+  "results": [
+    {
+      "case": "provision-ui-auth.py: forbidden precheck",
+      "exit_code": 0,
+      "write_attempted": true,
+      "write_verb": "apply",
+      "expected": "nonzero exit and no write; FAIL reproduced"
+    },
+    {
+      "case": "provision-registry-pull.py: forbidden precheck",
+      "exit_code": 0,
+      "write_attempted": true,
+      "write_verb": "apply",
+      "expected": "nonzero exit and no write; FAIL reproduced"
+    },
+    {
+      "case": "frontend data.items",
+      "result": "FAIL reproduced",
+      "error": "((intermediate value) || []).map is not a function"
+    },
+    {
+      "case": "summary overall",
+      "expected": "healthy",
+      "actual": "unknown"
+    }
+  ]
+}
