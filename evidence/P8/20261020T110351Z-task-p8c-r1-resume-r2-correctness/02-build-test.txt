@@ -1,0 +1,4 @@
+go build (CGO_ENABLED=0): PASS exit 0
+go vet ./...: PASS exit 0
+go test ./...: PASS exit 0 (auth, collectors incl. transport positive/negative, httpapi)
+python3 -m py_compile provision-ui-auth.py provision-registry-pull.py: PASS
