@@ -1,0 +1,1 @@
+SCHEDULED_BACKUP_SERVER_DRY_RUN=PASS (kubectl apply --dry-run=server accepted).

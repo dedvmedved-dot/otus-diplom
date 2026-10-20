@@ -1,0 +1,1 @@
+Runtime object unchanged (Case A - already present, not recreated). status.lastCheckTime present.

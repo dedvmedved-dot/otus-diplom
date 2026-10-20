@@ -1,0 +1,1 @@
+portal-db-daily exists (created 2026-10-20T04:23:02Z, generation 1): schedule '0 0 2 * * *', cluster.name portal-db, backupOwnerReference self, target prefer-standby, method plugin, pluginConfiguration.name barman-cloud.cloudnative-pg.io.

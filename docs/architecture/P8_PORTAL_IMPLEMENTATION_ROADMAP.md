@@ -18,7 +18,7 @@ SCOPE: implementation sequencing for P8; this document does not authorize P8 run
 доведением PostgreSQL/CloudNativePG и его backup/WAL-контура до целевого
 состояния, как только определены стабильные интерфейсы приложения.
 
-До отдельного решения Chief Architect:
+До отдельного решения Chief Architect (исторический checkpoint):
 
 ```text
 P8 = NOT AUTHORIZED
@@ -313,15 +313,10 @@ P9 предназначен для интегральной финальной �
 CURRENT:
 P8B final Architect gate
 
-THEN:
-P7C-B2 FINAL ACCEPTED
-P7C-C
-P7C FINAL ACCEPTED
+AFTER P8B FINAL ACCEPTED:
+P8C Portal MVP may begin only after explicit Architect authorization
 
-THEN IMMEDIATELY:
-P8A + early P8C preparation
-P8B
-P8C Portal MVP
+THEN:
 P8D
 P8E
 P8F
@@ -332,6 +327,16 @@ P9
 
 END:
 PAK PORTAL FINAL ACCEPTED
+```
+
+Исторический checkpoint (завершено):
+
+```text
+P7C-B2 FINAL ACCEPTED
+P7C-C
+P7C FINAL ACCEPTED
+P8A FINAL ACCEPTED / CONNECTOR VERIFIED
+P8B READY FOR ARCHITECT FINAL ACCEPTANCE
 ```
 
 ## 13. Правило изменения дорожной карты

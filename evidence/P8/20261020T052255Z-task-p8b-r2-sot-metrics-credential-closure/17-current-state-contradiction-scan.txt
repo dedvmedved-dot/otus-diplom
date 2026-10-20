@@ -1,0 +1,1 @@
+CURRENT_STATE_CONTRADICTIONS=0 (no stale claims in README/roadmap/stage-split non-historical sections).

@@ -1,0 +1,1 @@
+SHELL_HISTORY_SECRET_ARTIFACT=NO. Hermes host /root/.bash_history clean. S3 VM ~/.bash_history: only 'sudo passwd root' (interactive, no embedded password).

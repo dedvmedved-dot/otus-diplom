@@ -1,0 +1,5 @@
+# captured from pod portal-db-1 (10.244.254.108) port 9187/metrics
+barman_cloud_cloudnative_pg_io_first_recoverability_point 1792469710
+barman_cloud_cloudnative_pg_io_last_available_backup_timestamp 1792469710
+barman_cloud_cloudnative_pg_io_last_failed_backup_timestamp 0
+# labels: none (ungauged). 1792469710 == 2026-10-20T04:15:10Z (base backup completion)

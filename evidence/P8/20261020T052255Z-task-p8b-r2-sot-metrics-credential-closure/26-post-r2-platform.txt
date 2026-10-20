@@ -1,0 +1,1 @@
+POST_R2_PLATFORM=PASS (portal-db 3/3, pg 17.10, 1+2, WAL archive on, sidecars 3/3, barman 1/1, cert-manager 3/3, ObjectStore+ScheduledBackup present, velero BSL Available, linstor 3, drbd clean).

@@ -1,0 +1,1 @@
+README: replaced 'CURRENT: P8A final Architect gate / NEXT: P8B after Architect decision' with P8A/P8B/P8C/P9 status + CURRENT: P8B final Architect gate + NEXT: P8C only after explicit Chief Architect authorization + PostgreSQL-native backup state.

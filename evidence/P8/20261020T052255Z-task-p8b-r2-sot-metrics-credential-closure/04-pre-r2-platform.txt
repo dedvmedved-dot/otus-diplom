@@ -1,0 +1,1 @@
+PRE_R2_PLATFORM=PASS (3/3 nodes, etcd 3, coredns 2, linstor 3, drbd clean, velero BSL Available, cnpg 1/1, portal-db 3/3 pg 17.10 1+2, sidecars 3/3, barman 1/1, cert-manager 3/3, ObjectStore present).

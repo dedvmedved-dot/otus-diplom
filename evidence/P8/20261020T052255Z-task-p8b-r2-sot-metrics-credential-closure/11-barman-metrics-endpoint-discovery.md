@@ -1,0 +1,1 @@
+BARMAN_METRICS_ENDPOINT=CNPG instance Pod metrics port 9187 /metrics (postgres container). Sidecar plugin-barman-cloud is distroless (no sh) and exposes no dedicated port; plugin metrics are merged into the instance manager metrics endpoint.

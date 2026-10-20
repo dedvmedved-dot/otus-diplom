@@ -1,0 +1,1 @@
+Changed: README.md, P8_PORTAL_IMPLEMENTATION_ROADMAP.md, manifests/barman-cloud/v0.13.0/README.md, NEW portal-db-daily-scheduledbackup.yaml, NEW R2 evidence dir. No functional R1 evidence modified.

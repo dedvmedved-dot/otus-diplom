@@ -1,0 +1,1 @@
+SSH_KEY_ACCESS=PASS (user=astraadm, host=minIO@172.30.143.10, public-key auth success; key material not recorded).

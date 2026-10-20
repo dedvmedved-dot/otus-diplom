@@ -1,0 +1,1 @@
+Chief Architect: P8B functional path PASS/CONNECTOR VERIFIED. Remaining blockers R2-01..R2-05 (canonical ScheduledBackup, runtime evidence, metrics evidence, stale docs, credential hygiene). P8B FINAL ACCEPTED not yet assigned.

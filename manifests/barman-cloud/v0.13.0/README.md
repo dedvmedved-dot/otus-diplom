@@ -15,6 +15,21 @@ Embedded Barman 3.19.1, boto3 1.43.26.
 ## Files
 - plugin-barman-cloud-v0.13.0-release.yaml — exact official GitHub release asset (unaltered)
 - plugin-barman-cloud-v0.13.0-digest-pinned.yaml — plugin image + SIDECAR_IMAGE pinned to digest
+- objectstore-portal-db.yaml — ObjectStore `portal-db-backup` (S3 destination + 14d retention)
+- portal-db-daily-scheduledbackup.yaml — ScheduledBackup `portal-db-daily`
+
+## ScheduledBackup
+Canonical file: `portal-db-daily-scheduledbackup.yaml`
+
+- schedule: `0 0 2 * * *` — daily at 02:00 UTC
+- method: `plugin`
+- plugin: `barman-cloud.cloudnative-pg.io`
+- target: `prefer-standby`
+- backupOwnerReference: `self`
+
+ScheduledBackup controls **when** backups are requested. It does **not** store
+`retentionPolicy`. Retention is defined by the ObjectStore `portal-db-backup`
+(`retentionPolicy: 14d` Barman recovery-window retention).
 
 ## Deploy
 Plugin installed in cnpg-system (same namespace as CNPG operator).

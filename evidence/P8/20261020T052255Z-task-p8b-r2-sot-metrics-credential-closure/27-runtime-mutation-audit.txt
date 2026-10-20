@@ -1,0 +1,1 @@
+Authorized: privileged password rotation (chpasswd); removal of plaintext password file; sudoers restoration (revert of prior-turn NOPASSWD addition per §25 do-not-weaken-sudo). Prohibited mutations all 0 (no new Backup CR, no restore/PITR Cluster, no ObjectStore/portal-db/S3/IAM mutation, no SeaweedFS/PostgreSQL restart, no Velero/LINSTOR/DRBD mutation, no P8C runtime).
