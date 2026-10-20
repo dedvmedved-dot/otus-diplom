@@ -1,0 +1,105 @@
+# P8C Portal ingress (dedicated Gateway + HTTPRoute) and dedicated UI demo PKI.
+# TLS terminate on Gateway; certificateRefs portal/portal-ui-tls. Port 80 not exposed.
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: portal-gateway
+  namespace: portal
+spec:
+  gatewayClassName: eg
+  listeners:
+  - name: https
+    port: 443
+    protocol: HTTPS
+    hostname: portal.demo-pak.test
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - kind: Secret
+        name: portal-ui-tls
+    allowedRoutes:
+      namespaces:
+        from: Same
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: portal
+  namespace: portal
+spec:
+  parentRefs:
+  - name: portal-gateway
+    sectionName: https
+  hostnames:
+  - portal.demo-pak.test
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: portal
+      port: 80
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: portal-ui-bootstrap
+  namespace: portal
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: portal-ui-root
+  namespace: portal
+spec:
+  isCA: true
+  commonName: PAK Portal P8C Demo UI Root
+  secretName: portal-ui-ca
+  duration: 8760h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+  - cert sign
+  - crl sign
+  issuerRef:
+    name: portal-ui-bootstrap
+    kind: Issuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: portal-ui-ca
+  namespace: portal
+spec:
+  ca:
+    secretName: portal-ui-ca
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: portal-ui-server
+  namespace: portal
+spec:
+  secretName: portal-ui-tls
+  dnsNames:
+  - portal.demo-pak.test
+  duration: 720h
+  renewBefore: 168h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+  - digital signature
+  - server auth
+  issuerRef:
+    name: portal-ui-ca
+    kind: Issuer
+    group: cert-manager.io

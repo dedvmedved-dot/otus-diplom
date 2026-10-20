@@ -1,0 +1,144 @@
+# P8C Portal read-only RBAC — exact allowlist (get/list only, no wildcard verbs).
+# Matches docs/architecture/p8c/rbac-design.yaml. Velero namespace confirmed at G0 = velero.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: portal-reader
+  namespace: portal
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: portal-migrator
+  namespace: portal
+automountServiceAccountToken: false
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: portal-platform-reader
+rules:
+- apiGroups: [""]
+  resources: [nodes, persistentvolumes, pods, services, persistentvolumeclaims, events]
+  verbs: [get, list]
+- apiGroups: [storage.k8s.io]
+  resources: [storageclasses]
+  verbs: [get, list]
+- apiGroups: [apps]
+  resources: [deployments, statefulsets, daemonsets, replicasets]
+  verbs: [get, list]
+- apiGroups: [batch]
+  resources: [jobs, cronjobs]
+  verbs: [get, list]
+- apiGroups: [discovery.k8s.io]
+  resources: [endpointslices]
+  verbs: [get, list]
+- apiGroups: [snapshot.storage.k8s.io]
+  resources: [volumesnapshots]
+  verbs: [get, list]
+- apiGroups: [metrics.k8s.io]
+  resources: [nodes, pods]
+  verbs: [get, list]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: portal-platform-reader
+subjects:
+- kind: ServiceAccount
+  name: portal-reader
+  namespace: portal
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: portal-platform-reader
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: portal-db-reader
+  namespace: portal
+rules:
+- apiGroups: [postgresql.cnpg.io]
+  resources: [clusters]
+  resourceNames: [portal-db]
+  verbs: [get]
+- apiGroups: [postgresql.cnpg.io]
+  resources: [scheduledbackups]
+  resourceNames: [portal-db-daily]
+  verbs: [get]
+- apiGroups: [postgresql.cnpg.io]
+  resources: [backups]
+  verbs: [get, list]
+- apiGroups: [barmancloud.cnpg.io]
+  resources: [objectstores]
+  resourceNames: [portal-db-backup]
+  verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: portal-db-reader
+  namespace: portal
+subjects:
+- kind: ServiceAccount
+  name: portal-reader
+  namespace: portal
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: portal-db-reader
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: portal-ingress-reader
+  namespace: portal
+rules:
+- apiGroups: [gateway.networking.k8s.io]
+  resources: [gateways]
+  resourceNames: [portal-gateway]
+  verbs: [get]
+- apiGroups: [gateway.networking.k8s.io]
+  resources: [httproutes]
+  resourceNames: [portal]
+  verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: portal-ingress-reader
+  namespace: portal
+subjects:
+- kind: ServiceAccount
+  name: portal-reader
+  namespace: portal
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: portal-ingress-reader
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: portal-velero-reader
+  namespace: velero
+rules:
+- apiGroups: [velero.io]
+  resources: [backupstoragelocations, backups, restores]
+  verbs: [get, list]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: portal-velero-reader
+  namespace: velero
+subjects:
+- kind: ServiceAccount
+  name: portal-reader
+  namespace: portal
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: portal-velero-reader

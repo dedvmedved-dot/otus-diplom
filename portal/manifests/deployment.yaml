@@ -1,0 +1,219 @@
+# P8C Portal Deployment + Service + Barman metrics Service + migration Job.
+# Image digest is pinned at build time (G2 supply chain) — never a mutable tag.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portal
+  namespace: portal
+  labels:
+    app.kubernetes.io/name: pak-portal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pak-portal
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: pak-portal
+    spec:
+      serviceAccountName: portal-reader
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: portal
+        image: ghcr.io/dedvmedved-dot/otus-diplom-portal@sha256:REPLACE_WITH_VERIFIED_DIGEST
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 8080
+        - name: mgmt
+          containerPort: 8081
+        env:
+        - name: PORTAL_NAMESPACE
+          value: portal
+        - name: PORTAL_DB_HOST
+          value: portal-db-rw.portal.svc
+        - name: PORTAL_DB_PORT
+          value: "5432"
+        - name: PORTAL_DB_NAME
+          value: portal
+        - name: PORTAL_DB_USER
+          value: portal_app
+        - name: PORTAL_DB_SSLMODE
+          value: verify-full
+        - name: PORTAL_DB_PASSWORD_FILE
+          value: /etc/portal/db/password
+        - name: PORTAL_DB_CA_FILE
+          value: /etc/portal/db/ca.crt
+        - name: PORTAL_AUTH_USERNAME
+          value: portal-operator
+        - name: PORTAL_AUTH_VERIFIER_FILE
+          value: /etc/portal/auth/password-sha256
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+          limits:
+            cpu: "1"
+            memory: 512Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
+        startupProbe:
+          httpGet:
+            path: /startupz
+            port: mgmt
+          failureThreshold: 12
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: mgmt
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /livez
+            port: mgmt
+          periodSeconds: 20
+        volumeMounts:
+        - name: db-password
+          mountPath: /etc/portal/db/password
+          subPath: password
+          readOnly: true
+        - name: db-ca
+          mountPath: /etc/portal/db/ca.crt
+          subPath: ca.crt
+          readOnly: true
+        - name: auth-verifier
+          mountPath: /etc/portal/auth/password-sha256
+          subPath: password-sha256
+          readOnly: true
+      volumes:
+      - name: db-password
+        secret:
+          secretName: portal-db-app
+          items:
+          - key: password
+            path: password
+      - name: db-ca
+        secret:
+          secretName: portal-db-ca
+          items:
+          - key: ca.crt
+            path: ca.crt
+      - name: auth-verifier
+        secret:
+          secretName: portal-ui-auth
+          items:
+          - key: password-sha256
+            path: password-sha256
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: portal
+  namespace: portal
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: pak-portal
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: portal-db-metrics
+  namespace: portal
+spec:
+  type: ClusterIP
+  selector:
+    cnpg.io/cluster: portal-db
+  ports:
+  - name: metrics
+    port: 9187
+    targetPort: 9187
+    protocol: TCP
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: portal-migrate-0001
+  namespace: portal
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      serviceAccountName: portal-migrator
+      automountServiceAccountToken: false
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: migrate
+        image: ghcr.io/dedvmedved-dot/otus-diplom-portal@sha256:REPLACE_WITH_VERIFIED_DIGEST
+        imagePullPolicy: IfNotPresent
+        args: ["migrate"]
+        env:
+        - name: PORTAL_DB_HOST
+          value: portal-db-rw.portal.svc
+        - name: PORTAL_DB_PORT
+          value: "5432"
+        - name: PORTAL_DB_NAME
+          value: portal
+        - name: PORTAL_DB_USER
+          value: portal_app
+        - name: PORTAL_DB_SSLMODE
+          value: verify-full
+        - name: PORTAL_DB_PASSWORD_FILE
+          value: /etc/portal/db/password
+        - name: PORTAL_DB_CA_FILE
+          value: /etc/portal/db/ca.crt
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: "1"
+            memory: 512Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
+        volumeMounts:
+        - name: db-password
+          mountPath: /etc/portal/db/password
+          subPath: password
+          readOnly: true
+        - name: db-ca
+          mountPath: /etc/portal/db/ca.crt
+          subPath: ca.crt
+          readOnly: true
+      volumes:
+      - name: db-password
+        secret:
+          secretName: portal-db-app
+          items:
+          - key: password
+            path: password
+      - name: db-ca
+        secret:
+          secretName: portal-db-ca
+          items:
+          - key: ca.crt
+            path: ca.crt

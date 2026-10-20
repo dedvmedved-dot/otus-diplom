@@ -1,0 +1,34 @@
+{
+  "stage": "P8C-R1",
+  "scope": "read-only Portal MVP",
+  "namespace": "portal",
+  "targets": [
+    {"apiVersion": "v1", "kind": "ServiceAccount", "name": "portal-reader", "namespace": "portal"},
+    {"apiVersion": "v1", "kind": "ServiceAccount", "name": "portal-migrator", "namespace": "portal"},
+    {"apiVersion": "rbac.authorization.k8s.io/v1", "kind": "ClusterRole", "name": "portal-platform-reader"},
+    {"apiVersion": "rbac.authorization.k8s.io/v1", "kind": "ClusterRoleBinding", "name": "portal-platform-reader"},
+    {"apiVersion": "rbac.authorization.k8s.io/v1", "kind": "Role", "name": "portal-db-reader", "namespace": "portal"},
+    {"apiVersion": "rbac.authorization.k8s.io/v1", "kind": "RoleBinding", "name": "portal-db-reader", "namespace": "portal"},
+    {"apiVersion": "rbac.authorization.k8s.io/v1", "kind": "Role", "name": "portal-ingress-reader", "namespace": "portal"},
+    {"apiVersion": "rbac.authorization.k8s.io/v1", "kind": "RoleBinding", "name": "portal-ingress-reader", "namespace": "portal"},
+    {"apiVersion": "rbac.authorization.k8s.io/v1", "kind": "Role", "name": "portal-velero-reader", "namespace": "velero"},
+    {"apiVersion": "rbac.authorization.k8s.io/v1", "kind": "RoleBinding", "name": "portal-velero-reader", "namespace": "velero"},
+    {"apiVersion": "apps/v1", "kind": "Deployment", "name": "portal", "namespace": "portal"},
+    {"apiVersion": "v1", "kind": "Service", "name": "portal", "namespace": "portal"},
+    {"apiVersion": "v1", "kind": "Service", "name": "portal-db-metrics", "namespace": "portal"},
+    {"apiVersion": "batch/v1", "kind": "Job", "name": "portal-migrate-0001", "namespace": "portal"},
+    {"apiVersion": "gateway.networking.k8s.io/v1", "kind": "Gateway", "name": "portal-gateway", "namespace": "portal"},
+    {"apiVersion": "gateway.networking.k8s.io/v1", "kind": "HTTPRoute", "name": "portal", "namespace": "portal"},
+    {"apiVersion": "cert-manager.io/v1", "kind": "Issuer", "name": "portal-ui-bootstrap", "namespace": "portal"},
+    {"apiVersion": "cert-manager.io/v1", "kind": "Certificate", "name": "portal-ui-root", "namespace": "portal"},
+    {"apiVersion": "cert-manager.io/v1", "kind": "Issuer", "name": "portal-ui-ca", "namespace": "portal"},
+    {"apiVersion": "cert-manager.io/v1", "kind": "Certificate", "name": "portal-ui-server", "namespace": "portal"}
+  ],
+  "expected_diff": "create-only of the listed objects; no mutation of CNPG/Velero/S3/infra resources",
+  "not_allowed": [
+    "cluster-admin for Portal",
+    "write/delete verbs on platform resources",
+    "mutation of existing CNPG cluster / ObjectStore / ScheduledBackup / S3 / LINSTOR / DRBD / Velero",
+    "P8D/P8E/P8F/P8G/P9 runtime"
+  ]
+}
