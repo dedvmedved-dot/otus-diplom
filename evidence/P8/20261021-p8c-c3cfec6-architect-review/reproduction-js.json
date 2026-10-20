@@ -1,0 +1,11 @@
+{
+  "kind": "offline actual JS renderer execution, synthetic DOM/fetch",
+  "unknownSnapshotStorageHealth": "healthy",
+  "staleCriticalClass": "status warning",
+  "backupMeta": "schedule=0 0 2 * * * target=prefer-standby lastSuccess=— | Barman scope=single_exporter_sample recoverabilityPoint=— lastAvailable=1792469710 failed=0 | WAL expectedArchiveTimeout=300s",
+  "realRecoverabilityTimestampRendered": false,
+  "observedScheduleRendered": false,
+  "paginationRequested": false,
+  "paginationNoteRendered": true,
+  "disposition": "FAIL: unknown storage -> healthy, stale critical -> warning, actual Barman/schedule omitted, cursor note without navigation"
+}

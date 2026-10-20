@@ -1,0 +1,54 @@
+{
+  "reviewed_sha": "c3cfec621f87fb496f35099b08bc3feeb00ba309",
+  "checks": [
+    {
+      "check": "provision-ui-auth.py EOF before final newline",
+      "exit": 0,
+      "mock_verbs": [
+        "get",
+        "create"
+      ],
+      "expected": "STOP before create",
+      "result": "FAIL"
+    },
+    {
+      "check": "provision-registry-pull.py EOF before final newline",
+      "exit": 0,
+      "mock_verbs": [
+        "get",
+        "create"
+      ],
+      "expected": "STOP before create",
+      "result": "FAIL"
+    },
+    {
+      "check": "Gateway vs NetworkPolicy cross-file consistency",
+      "gateway_name": "portal-gateway",
+      "policy_gateway_name": "pak-portal-gateway",
+      "match": false,
+      "dataplane_egress_ports": [
+        53,
+        8080
+      ]
+    },
+    {
+      "check": "Go allowlist source inspection (NOT execution)",
+      "actual_collector_api": "discovery.k8s.io/v1/endpointslices",
+      "actual_api_approved": false,
+      "incorrect_core_resource_present": true
+    },
+    {
+      "check": "workflow static source",
+      "buildkit_version": "0.34.0",
+      "renderer_smoke_invoked": false,
+      "provenance_attestation_present": false,
+      "sbom_attestation_verification_present": false,
+      "go_checksum_optional": true
+    },
+    {
+      "check": "collector source integration",
+      "listWithContinue_call_count": 1,
+      "pods_cap_equal_page": true
+    }
+  ]
+}

@@ -1,0 +1,250 @@
+{
+  "reviewed_sha": "c3cfec621f87fb496f35099b08bc3feeb00ba309",
+  "sources": [
+    {
+      "path": "portal/.gitignore",
+      "git_blob_sha": "504afef81fbadc8c0a072e1ac93f1376bca7f4a9",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/.gitignore"
+    },
+    {
+      "path": "portal/Containerfile",
+      "git_blob_sha": "e158e2f77d76a0e775b853c0968b38167fc02078",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/Containerfile"
+    },
+    {
+      "path": "portal/Makefile",
+      "git_blob_sha": "252ff9456112e2f0b68f47e64defba8a6f48c708",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/Makefile"
+    },
+    {
+      "path": "portal/README.md",
+      "git_blob_sha": "93ac85f703413ae4f4875432c6f7b6bbfa1803eb",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/README.md"
+    },
+    {
+      "path": "portal/change-allowlist.json",
+      "git_blob_sha": "ca464720c84bd21ddff0c961371aea4c32270650",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/change-allowlist.json"
+    },
+    {
+      "path": "portal/cmd/portal/main.go",
+      "git_blob_sha": "70dd8dbc6e0d2cde4092ca1704668bd451c0237d",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/cmd/portal/main.go"
+    },
+    {
+      "path": "portal/go.mod",
+      "git_blob_sha": "1b15db7116019b884b0bbab1fbca924218c97099",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/go.mod"
+    },
+    {
+      "path": "portal/internal/auth/auth.go",
+      "git_blob_sha": "62c7a0586895bfe2a03fd8207daf5641dc664f0c",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/internal/auth/auth.go"
+    },
+    {
+      "path": "portal/internal/auth/auth_test.go",
+      "git_blob_sha": "1fa925f4ee019caf784b6c094259f7c960395083",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/internal/auth/auth_test.go"
+    },
+    {
+      "path": "portal/internal/collectors/collect_methods.go",
+      "git_blob_sha": "dc3bda1bedc988619c2b44ba8add46e47eef855d",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/internal/collectors/collect_methods.go"
+    },
+    {
+      "path": "portal/internal/collectors/collector.go",
+      "git_blob_sha": "a87d9f02101d433c9d63c574dd585beae0b5801e",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/internal/collectors/collector.go"
+    },
+    {
+      "path": "portal/internal/collectors/continuation.go",
+      "git_blob_sha": "25b2c69550fcd4509acaa28a5e1df3b42d0f2c74",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/internal/collectors/continuation.go"
+    },
+    {
+      "path": "portal/internal/collectors/continuation_test.go",
+      "git_blob_sha": "4f9a4af6a0b54374892805c954315edb278f0130",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/internal/collectors/continuation_test.go"
+    },
+    {
+      "path": "portal/internal/collectors/metrics.go",
+      "git_blob_sha": "d38f86a190042bd43abeabcfabcc9100aa595c81",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/internal/collectors/metrics.go"
+    },
+    {
+      "path": "portal/internal/collectors/metrics_test.go",
+      "git_blob_sha": "fa9724086f064236b04c6c9fad0ead42f8c2312f",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/internal/collectors/metrics_test.go"
+    },
+    {
+      "path": "portal/internal/collectors/quantities.go",
+      "git_blob_sha": "41078a76d759492dd2d3f5810469f22c0e70773a",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/internal/collectors/quantities.go"
+    },
+    {
+      "path": "portal/internal/collectors/transport.go",
+      "git_blob_sha": "edca68ab5544e8365e540544f60d17c2e006d261",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/internal/collectors/transport.go"
+    },
+    {
+      "path": "portal/internal/collectors/transport_test.go",
+      "git_blob_sha": "c3d75ac686a25c096d29f5072a1a8b858614dd3b",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/internal/collectors/transport_test.go"
+    },
+    {
+      "path": "portal/internal/config/config.go",
+      "git_blob_sha": "e90a44eca2983f2eee51656ce80fba07674b08dd",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/internal/config/config.go"
+    },
+    {
+      "path": "portal/internal/httpapi/contract_test.go",
+      "git_blob_sha": "103df68c926cd65e6a0156ce8c7d1bf5108e69c0",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/internal/httpapi/contract_test.go"
+    },
+    {
+      "path": "portal/internal/httpapi/handlers.go",
+      "git_blob_sha": "661293ad4c1565a29047064168df5aa387633fec",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/internal/httpapi/handlers.go"
+    },
+    {
+      "path": "portal/internal/httpapi/handlers_test.go",
+      "git_blob_sha": "32e0001561b746da26b1a6fdfb96db0a2dc234cc",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/internal/httpapi/handlers_test.go"
+    },
+    {
+      "path": "portal/internal/httpapi/server.go",
+      "git_blob_sha": "8723b4e30479d49581b8c5074095e42bd6b65201",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/internal/httpapi/server.go"
+    },
+    {
+      "path": "portal/internal/model/model.go",
+      "git_blob_sha": "4fffc184c1bf540bc4722a624ed8ea4d57bcf524",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/internal/model/model.go"
+    },
+    {
+      "path": "portal/internal/store/integration_test.go",
+      "git_blob_sha": "c369c59ad0005ddaf6db885200700c7ef6d25400",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/internal/store/integration_test.go"
+    },
+    {
+      "path": "portal/internal/store/store.go",
+      "git_blob_sha": "1ab6dd4f809cbd236fbcdd75046cbad9b93e2ec9",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/internal/store/store.go"
+    },
+    {
+      "path": "portal/manifests/deployment.yaml",
+      "git_blob_sha": "e67dee643367eee26f01e7f257278abdf012aceb",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/manifests/deployment.yaml"
+    },
+    {
+      "path": "portal/manifests/gateway.yaml",
+      "git_blob_sha": "1e1f48a3c6d03c4558f4b4c3cca24bc12c22b763",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/manifests/gateway.yaml"
+    },
+    {
+      "path": "portal/manifests/networkpolicy.yaml",
+      "git_blob_sha": "e60e25e93da6918ae4d5a4652f1f0f387ba6c2b0",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/manifests/networkpolicy.yaml"
+    },
+    {
+      "path": "portal/manifests/rbac.yaml",
+      "git_blob_sha": "036e90b40a44701c04b145af4c987ae962648477",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/manifests/rbac.yaml"
+    },
+    {
+      "path": "portal/migrations/0001_portal_observations.sql",
+      "git_blob_sha": "1c18b84a18e48e1b6c1a1ecfe84a9a95412becd5",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/migrations/0001_portal_observations.sql"
+    },
+    {
+      "path": "portal/migrations/migrations.go",
+      "git_blob_sha": "084f9ee38ffb93dcdf2daf671ebcf09de9e9d37d",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/migrations/migrations.go"
+    },
+    {
+      "path": "portal/networkpolicy/PLAN.md",
+      "git_blob_sha": "b2bad07070a98e50b81e22880e3182f2c54d4cea",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/networkpolicy/PLAN.md"
+    },
+    {
+      "path": "portal/tools/p8c-portal-release.yml.template",
+      "git_blob_sha": "f10878da167e8e4aa89fbca6523b5ecbbc5b7963",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/tools/p8c-portal-release.yml.template"
+    },
+    {
+      "path": "portal/tools/provision-registry-pull.py",
+      "git_blob_sha": "8818132113bc442c503bef269b25845d3829195a",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/tools/provision-registry-pull.py"
+    },
+    {
+      "path": "portal/tools/provision-ui-auth.py",
+      "git_blob_sha": "208dbe75fb2e7baa01eae904ca301a47366016b6",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/tools/provision-ui-auth.py"
+    },
+    {
+      "path": "portal/tools/test_helpers.py",
+      "git_blob_sha": "daed5a10d35ef41216d97c0f81d6ef78c9081bc9",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/tools/test_helpers.py"
+    },
+    {
+      "path": "portal/versions.lock",
+      "git_blob_sha": "fe7b0ab8c99189a051ca3b449a8b75c3dcd40fd8",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/versions.lock"
+    },
+    {
+      "path": "portal/web/app.js",
+      "git_blob_sha": "d56274154c3bc367c390b4d7073834586de62027",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/web/app.js"
+    },
+    {
+      "path": "portal/web/embed.go",
+      "git_blob_sha": "d95fcfa909cb882e22d5148a2987b99a518b23c7",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/web/embed.go"
+    },
+    {
+      "path": "portal/web/fixture-smoke.test.mjs",
+      "git_blob_sha": "1120f9f931fecb42b244ae830621b88bcf1cd4ed",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/web/fixture-smoke.test.mjs"
+    },
+    {
+      "path": "portal/web/index.html",
+      "git_blob_sha": "2d28a3ab3093a09ef0874ff7d4299a4a0b5840dc",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/web/index.html"
+    },
+    {
+      "path": "portal/web/renderer-smoke.test.mjs",
+      "git_blob_sha": "9bc965464071cb8d870d6e80f84598d3e28ca661",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/web/renderer-smoke.test.mjs"
+    },
+    {
+      "path": "portal/web/style.css",
+      "git_blob_sha": "70c5af2644ade9075181bedb1f4c04c488c91e0c",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/portal/web/style.css"
+    },
+    {
+      "path": "evidence/P8/20261020T223638Z-task-p8c-r1-resume-r3-complete/00-closure-matrix.md",
+      "git_blob_sha": "40b196c7301917580ce2f06b982b076d6ee8cf9a",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/evidence/P8/20261020T223638Z-task-p8c-r1-resume-r3-complete/00-closure-matrix.md"
+    },
+    {
+      "path": "evidence/P8/20261020T223638Z-task-p8c-r1-resume-r3-complete/01-env-versions.txt",
+      "git_blob_sha": "ffb1104343844317212a4bd8a0c35a142f150e81",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/evidence/P8/20261020T223638Z-task-p8c-r1-resume-r3-complete/01-env-versions.txt"
+    },
+    {
+      "path": "evidence/P8/20261020T223638Z-task-p8c-r1-resume-r3-complete/raw-transcript.txt",
+      "git_blob_sha": "a811f7f37b18da879d2d577809502f7891f04be1",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/evidence/P8/20261020T223638Z-task-p8c-r1-resume-r3-complete/raw-transcript.txt"
+    },
+    {
+      "path": "evidence/P8/20261020T223638Z-task-p8c-r1-resume-r3-complete/result.md",
+      "git_blob_sha": "c43af9ebf6cdca3c2eecc57e5d4a4d62d89be148",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/evidence/P8/20261020T223638Z-task-p8c-r1-resume-r3-complete/result.md"
+    },
+    {
+      "path": "docs/architecture/p8c/openapi.json",
+      "git_blob_sha": "74dd9743fb99f922506e30cff0f632f2f018ca37",
+      "url": "https://github.com/dedvmedved-dot/otus-diplom/blob/c3cfec621f87fb496f35099b08bc3feeb00ba309/docs/architecture/p8c/openapi.json"
+    }
+  ]
+}

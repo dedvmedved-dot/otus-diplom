@@ -1,0 +1,32 @@
+COMMAND=python3 portal/tools/test_helpers.py -v
+EXIT=0
+OK: Secret portal/portal-registry-pull provisioned.
+Record name, type, access verification and expiry/rotation responsibility only.
+OK: Secret portal/portal-ui-auth key password-sha256 provisioned.
+Verifier value is NOT printed. Owner retains the password in their password manager.
+test_non_tty_raises (__main__.TestNoEchoFailClosed.test_non_tty_raises) ... ok
+test_termios_unavailable_raises (__main__.TestNoEchoFailClosed.test_termios_unavailable_raises) ... ok
+test_create_timeout_unknown_outcome (__main__.TestRegistryFailClosedCreateOnly.test_create_timeout_unknown_outcome) ... STOP: create timed out — UNKNOWN_OUTCOME. Re-check Secret state (get) before any further action; do not overwrite.
+ok
+test_existing_secret_stops (__main__.TestRegistryFailClosedCreateOnly.test_existing_secret_stops) ... STOP: Secret portal/portal-registry-pull already exists; no overwrite.
+ok
+test_forbidden_probe_stops_before_write (__main__.TestRegistryFailClosedCreateOnly.test_forbidden_probe_stops_before_write) ... STOP: cannot verify Secret state (Forbidden/network/other); no write attempted.
+ok
+test_success_uses_create_only (__main__.TestRegistryFailClosedCreateOnly.test_success_uses_create_only) ... ok
+test_already_exists_race_stops_no_overwrite (__main__.TestUIFailClosedCreateOnly.test_already_exists_race_stops_no_overwrite) ... STOP: create failed (Secret may already exist); no overwrite attempted.
+ok
+test_create_timeout_unknown_outcome (__main__.TestUIFailClosedCreateOnly.test_create_timeout_unknown_outcome) ... STOP: create timed out — UNKNOWN_OUTCOME. Re-check Secret state (get) before any further action; do not overwrite.
+ok
+test_existing_secret_stops (__main__.TestUIFailClosedCreateOnly.test_existing_secret_stops) ... STOP: Secret portal/portal-ui-auth already exists; no implicit rotation.
+ok
+test_forbidden_probe_stops_before_write (__main__.TestUIFailClosedCreateOnly.test_forbidden_probe_stops_before_write) ... STOP: cannot verify Secret state (Forbidden/network/other); no write attempted.
+ok
+test_success_uses_create_only (__main__.TestUIFailClosedCreateOnly.test_success_uses_create_only) ... ok
+test_bad_alphabet (__main__.TestValidatePassword.test_bad_alphabet) ... ok
+test_valid (__main__.TestValidatePassword.test_valid) ... ok
+test_wrong_length (__main__.TestValidatePassword.test_wrong_length) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.007s
+
+OK
