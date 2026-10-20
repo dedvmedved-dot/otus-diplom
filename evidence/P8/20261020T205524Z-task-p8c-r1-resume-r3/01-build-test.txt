@@ -1,0 +1,9 @@
+UTC 2026-10-20 (commands run from /root/otus-diplom/portal):
+$ CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o /tmp/portal ./cmd/portal
+  exit 0
+$ go vet ./...            -> exit 0
+$ go test ./...           -> ok auth, collectors (transport+continuation), httpapi (11-handler contract); exit 0
+$ go test -race ./...     -> ok auth (1.0s), collectors (1.1s), httpapi (1.1s); exit 0
+$ python3 tools/test_helpers.py -> Ran 14 tests OK; exit 0 (BOTH helpers)
+$ node web/fixture-smoke.test.mjs  -> fixture-smoke: PASS (11 endpoints); exit 0
+$ go vet -tags integration ./internal/store/ -> compile-check only (runtime = CI postgres:17)
