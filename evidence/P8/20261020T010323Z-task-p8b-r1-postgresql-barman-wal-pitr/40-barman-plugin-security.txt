@@ -1,0 +1,1 @@
+priv=null/false, allowPrivilegeEscalation=false, readOnlyRootFilesystem=true, hostNetwork=false.

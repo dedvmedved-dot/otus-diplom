@@ -1,0 +1,1 @@
+barman-cloud-client + barman-cloud-server certificates + selfsigned-issuer created.

@@ -1,0 +1,1 @@
+image IDs MATCH approved digests (controller/webhook/cainjector).

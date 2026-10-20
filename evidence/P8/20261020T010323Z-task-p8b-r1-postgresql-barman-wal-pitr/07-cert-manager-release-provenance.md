@@ -1,0 +1,1 @@
+v1.21.0, commit b8f325e36f49626ba72d7efbe138c01a5e661d96, 2026-07-08; cert-manager.yaml sha256 6e499c3f1ab356abe79a7853911f80cb09c213885bfdf81092fdff142ba63c4a (MATCH); crds sha256 cc046deb... (MATCH).

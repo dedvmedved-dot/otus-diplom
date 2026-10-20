@@ -1,0 +1,1 @@
+BARMAN_PLUGIN_RUNTIME=PASS (Deployment barman-cloud 1/1, ObjectStore CRD Established, cert client/server + selfsigned-issuer Ready).

@@ -1,0 +1,1 @@
+CERT_MANAGER_SERVER_DRY_RUN=PASS (namespace prerequisite).

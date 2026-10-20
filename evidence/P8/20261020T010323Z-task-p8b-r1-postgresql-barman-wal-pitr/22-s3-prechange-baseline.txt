@@ -1,0 +1,1 @@
+Buckets: portal-velero-backup (owner admin), p7c-s3-p1-reclaim-test. iam.json root-only. S3 443 active.

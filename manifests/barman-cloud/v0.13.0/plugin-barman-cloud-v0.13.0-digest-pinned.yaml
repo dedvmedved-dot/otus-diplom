@@ -962,7 +962,10 @@ subjects:
 apiVersion: v1
 data:
   SIDECAR_IMAGE: |
-    Z2hjci5pby9jbG91ZG5hdGl2ZS1wZy9wbHVnaW4tYmFybWFuLWNsb3VkLXNpZGVjYXJAc2hhMjU2OjE1Y2IxYTAxZTdjNTIzNWVlZGFjMjA2MWNhYjgyMDhlNWY3YzM5ZGJkYTI5MmY5YzJkNGRkYWEwYzFmMjExZTY=: Secret
+    Z2hjci5pby9jbG91ZG5hdGl2ZS1wZy9wbHVnaW4tYmFybWFuLWNsb3VkLXNpZGVjYXJAc2hhMjU2
+    OjE1Y2IxYTAxZTdjNTIzNWVlZGFjMjA2MWNhYjgyMDhlNWY3YzM5ZGJkYTI5MmY5YzJkNGRkYWEw
+    YzFmMjExZTY=
+kind: Secret
 metadata:
   name: plugin-barman-cloud-m5m67kfh8f
   namespace: cnpg-system

@@ -1,0 +1,1 @@
+BARMAN_PLUGIN_SERVER_DRY_RUN=PASS (after digest-pinned manifest base64 fix).
