@@ -208,8 +208,9 @@ type EventRow struct {
 	Message     string     `json:"message"`
 }
 
-// ListEvents returns recent timeline events, optionally filtered by severity and since.
-func (s *Store) ListEvents(ctx context.Context, since *time.Time, severity string, limit int) ([]EventRow, error) {
+// ListEvents returns recent timeline events, filtered by since/severity/namespace
+// and paginated by limit+offset (no post-filter, no hidden row loss).
+func (s *Store) ListEvents(ctx context.Context, since *time.Time, severity, namespace string, limit, offset int) ([]EventRow, error) {
 	cctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 	q := `SELECT dedup_key, ingested_at, source_time, source, severity, object_kind, object_namespace, object_name,
@@ -225,11 +226,15 @@ func (s *Store) ListEvents(ctx context.Context, since *time.Time, severity strin
 		conds = append(conds, fmt.Sprintf("severity = $%d", len(args)+1))
 		args = append(args, severity)
 	}
+	if namespace != "" {
+		conds = append(conds, fmt.Sprintf("object_namespace = $%d", len(args)+1))
+		args = append(args, namespace)
+	}
 	if len(conds) > 0 {
 		q += " WHERE " + strings.Join(conds, " AND ")
 	}
-	q += fmt.Sprintf(" ORDER BY ingested_at DESC, id DESC LIMIT $%d", len(args)+1)
-	args = append(args, limit)
+	q += fmt.Sprintf(" ORDER BY ingested_at DESC, id DESC LIMIT $%d OFFSET $%d", len(args)+1, len(args)+2)
+	args = append(args, limit, offset)
 
 	rows, err := s.pool.Query(cctx, q, args...)
 	if err != nil {

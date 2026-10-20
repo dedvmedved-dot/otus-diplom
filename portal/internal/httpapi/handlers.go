@@ -78,14 +78,15 @@ func (s *Server) snapshotID() string {
 	return strconv.FormatInt(snap.CollectedAt.UnixNano(), 10)
 }
 
-// cursorState decodes a snapshot-bound cursor.
+// cursorState decodes a snapshot+filter-bound cursor.
 type cursorState struct {
 	snapshotID string
+	namespace  string
 	offset     int
 }
 
-func encodeCursor(snapID string, offset int) string {
-	return base64.RawURLEncoding.EncodeToString([]byte(snapID + ":" + strconv.Itoa(offset)))
+func encodeCursor(snapID, namespace string, offset int) string {
+	return base64.RawURLEncoding.EncodeToString([]byte(snapID + ":" + namespace + ":" + strconv.Itoa(offset)))
 }
 
 func decodeCursor(cursor string) (cursorState, error) {
@@ -93,15 +94,15 @@ func decodeCursor(cursor string) (cursorState, error) {
 	if err != nil {
 		return cursorState{}, errBadQuery("cursor")
 	}
-	parts := strings.SplitN(string(raw), ":", 2)
-	if len(parts) != 2 {
+	parts := strings.SplitN(string(raw), ":", 3)
+	if len(parts) != 3 {
 		return cursorState{}, errBadQuery("cursor")
 	}
-	off, err := strconv.Atoi(parts[1])
+	off, err := strconv.Atoi(parts[2])
 	if err != nil || off < 0 {
 		return cursorState{}, errBadQuery("cursor")
 	}
-	return cursorState{snapshotID: parts[0], offset: off}, nil
+	return cursorState{snapshotID: parts[0], namespace: parts[1], offset: off}, nil
 }
 
 type queryError struct{ field string }
@@ -125,6 +126,8 @@ func dns1123(s string) bool {
 }
 
 // parseListQuery validates allowed keys and returns limit, cursor offset, namespace.
+// The cursor is bound to (snapshot + namespace filter + endpoint); a mismatch
+// in any dimension returns CURSOR_EXPIRED.
 func (s *Server) parseListQuery(r *http.Request, allowed []string) (limit int, offset int, namespace string, err error) {
 	limit = 50
 	offset = 0
@@ -145,6 +148,12 @@ func (s *Server) parseListQuery(r *http.Request, allowed []string) (limit int, o
 		}
 		limit = n
 	}
+	if v := r.URL.Query().Get("namespace"); v != "" {
+		if !dns1123(v) {
+			return 0, 0, "", errBadQuery("namespace")
+		}
+		namespace = v
+	}
 	if v := r.URL.Query().Get("cursor"); v != "" {
 		if len(v) > 512 {
 			return 0, 0, "", errBadQuery("cursor")
@@ -156,13 +165,10 @@ func (s *Server) parseListQuery(r *http.Request, allowed []string) (limit int, o
 		if cs.snapshotID != s.snapshotID() {
 			return 0, 0, "", errCursorExpired{}
 		}
-		offset = cs.offset
-	}
-	if v := r.URL.Query().Get("namespace"); v != "" {
-		if !dns1123(v) {
-			return 0, 0, "", errBadQuery("namespace")
+		if cs.namespace != namespace {
+			return 0, 0, "", errCursorExpired{}
 		}
-		namespace = v
+		offset = cs.offset
 	}
 	return limit, offset, namespace, nil
 }
@@ -171,8 +177,9 @@ type errCursorExpired struct{}
 
 func (errCursorExpired) Error() string { return "cursor expired" }
 
-// paginate slices a sorted slice and returns the page + next cursor.
-func (s *Server) paginate[T any](items []T, limit, offset int) ([]T, *string) {
+// paginate slices a sorted slice and returns the page + next cursor (bound to
+// snapshot + namespace filter).
+func (s *Server) paginate[T any](items []T, limit, offset int, namespace string) ([]T, *string) {
 	if offset >= len(items) {
 		return []T{}, nil
 	}
@@ -183,7 +190,7 @@ func (s *Server) paginate[T any](items []T, limit, offset int) ([]T, *string) {
 	page := items[offset:end]
 	var next *string
 	if end < len(items) {
-		c := encodeCursor(s.snapshotID(), end)
+		c := encodeCursor(s.snapshotID(), namespace, end)
 		next = &c
 	}
 	return page, next
@@ -491,7 +498,7 @@ func (s *Server) handleNodes(w http.ResponseWriter, r *http.Request) {
 	if snap != nil {
 		items = snap.Nodes
 	}
-	page, next := s.paginate(items, limit, offset)
+	page, next := s.paginate(items, limit, offset, "")
 	env := s.envelope(snap)
 	env.Data = model.Nodes{Items: page}
 	env.NextCursor = next
@@ -510,7 +517,7 @@ func (s *Server) handleWorkloads(w http.ResponseWriter, r *http.Request) {
 		items = snap.Workloads
 	}
 	items = filterWorkloads(items, ns)
-	page, next := s.paginate(items, limit, offset)
+	page, next := s.paginate(items, limit, offset, ns)
 	env := s.envelope(snap)
 	env.Data = model.Workloads{Items: page}
 	env.NextCursor = next
@@ -529,7 +536,7 @@ func (s *Server) handlePods(w http.ResponseWriter, r *http.Request) {
 		items = snap.Pods
 	}
 	items = filterPods(items, ns)
-	page, next := s.paginate(items, limit, offset)
+	page, next := s.paginate(items, limit, offset, ns)
 	env := s.envelope(snap)
 	env.Data = model.Pods{Items: page}
 	env.NextCursor = next
@@ -548,7 +555,7 @@ func (s *Server) handleServices(w http.ResponseWriter, r *http.Request) {
 		items = snap.Services
 	}
 	items = filterServices(items, ns)
-	page, next := s.paginate(items, limit, offset)
+	page, next := s.paginate(items, limit, offset, ns)
 	env := s.envelope(snap)
 	env.Data = model.Services{Items: page}
 	env.NextCursor = next
@@ -569,7 +576,7 @@ func (s *Server) handleStorage(w http.ResponseWriter, r *http.Request) {
 		data = model.Storage{Scope: "kubernetes_objects", DrbdDirectHealth: "not_observed", Items: []model.StorageItem{}}
 	}
 	items := filterStorage(data.Items, ns)
-	page, next := s.paginate(items, limit, offset)
+	page, next := s.paginate(items, limit, offset, ns)
 	data.Items = page
 	env := s.envelope(snap)
 	env.Data = data
@@ -634,7 +641,7 @@ func (s *Server) handleMetrics(w http.ResponseWriter, r *http.Request) {
 		items = snap.Metrics
 	}
 	items = filterMetrics(items, ns)
-	page, next := s.paginate(items, limit, offset)
+	page, next := s.paginate(items, limit, offset, ns)
 	env := s.envelope(snap)
 	env.Data = model.Metrics{Items: page}
 	env.NextCursor = next
@@ -701,9 +708,10 @@ func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
 		severity = v
 	}
 
-	rows, err := s.store.ListEvents(r.Context(), since, severity, 200)
+	rows, err := s.store.ListEvents(r.Context(), since, severity, ns, limit, offset)
 	storage := "postgresql"
 	var events []model.TimelineEvent
+	var next *string
 	if err != nil {
 		// Bounded in-memory fallback: serve the latest collected events instead
 		// of failing closed. auditComplete remains false.
@@ -712,12 +720,12 @@ func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
 			events = snap.Events
 		}
 		events = filterEventsInMemory(events, since, severity, ns)
+		var page []model.TimelineEvent
+		page, next = s.paginate(events, limit, offset, ns)
+		events = page
 	} else {
 		events = make([]model.TimelineEvent, 0, len(rows))
 		for _, row := range rows {
-			if ns != "" && (row.ObjectNS == "" || row.ObjectNS != ns) {
-				continue
-			}
 			var st *string
 			if row.SourceTime != nil {
 				v := row.SourceTime.UTC().Format(time.RFC3339)
@@ -731,9 +739,12 @@ func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
 				OccurrenceCount: row.Occurrences, Message: row.Message,
 			})
 		}
+		if len(events) == limit {
+			c := encodeCursor(s.snapshotID(), ns, offset+limit)
+			next = &c
+		}
 	}
-	page, next := s.paginate(events, limit, offset)
-	data := model.Events{Storage: storage, AuditComplete: false, Items: page}
+	data := model.Events{Storage: storage, AuditComplete: false, Items: events}
 	env := s.envelope(s.snapshot())
 	env.Data = data
 	env.NextCursor = next

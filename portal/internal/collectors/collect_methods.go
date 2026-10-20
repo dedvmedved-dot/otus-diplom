@@ -443,19 +443,22 @@ func dsConditions(conds []appsv1.DaemonSetCondition) []model.Condition {
 
 func (c *Collector) collectPods(ctx context.Context, snap *Snapshot, reg *SourceRegistry) {
 	now := time.Now()
-	list, err := c.clients.typed.CoreV1().Pods("").List(ctx, metav1.ListOptions{Limit: listPage})
+	pods, truncated, err := listWithContinue(ctx, listPage, listPage, func(opts metav1.ListOptions) ([]corev1.Pod, string, error) {
+		l, e := c.clients.typed.CoreV1().Pods("").List(ctx, opts)
+		if e != nil {
+			return nil, "", e
+		}
+		return l.Items, l.Continue, nil
+	})
 	state := "ok"
 	if err != nil {
 		state = "error"
 		snap.setPartial()
-	} else if list.Continue != "" {
+	} else if truncated {
 		snap.setPartial()
 	}
 	reg.set(sourceStatus("k8s/pods", state, now, err))
-	if err != nil {
-		return
-	}
-	for _, p := range list.Items {
+	for _, p := range pods {
 		ready, total := 0, 0
 		var restarts int32
 		for _, cs := range p.Status.ContainerStatuses {

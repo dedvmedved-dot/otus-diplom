@@ -50,12 +50,12 @@ func TestParseListQueryInvalidNamespace(t *testing.T) {
 }
 
 func TestCursorRoundTrip(t *testing.T) {
-	c := encodeCursor("123456789", 42)
+	c := encodeCursor("123456789", "portal", 42)
 	cs, err := decodeCursor(c)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if cs.snapshotID != "123456789" || cs.offset != 42 {
+	if cs.snapshotID != "123456789" || cs.namespace != "portal" || cs.offset != 42 {
 		t.Fatalf("got %+v", cs)
 	}
 }
@@ -69,14 +69,14 @@ func TestDecodeCursorInvalid(t *testing.T) {
 func TestPaginate(t *testing.T) {
 	s := testServer()
 	items := []string{"a", "b", "c", "d", "e"}
-	page, next := s.paginate(items, 2, 0)
+	page, next := s.paginate(items, 2, 0, "")
 	if len(page) != 2 || page[0] != "a" || page[1] != "b" {
 		t.Fatal("first page wrong")
 	}
 	if next == nil {
 		t.Fatal("expected next cursor")
 	}
-	page2, next2 := s.paginate(items, 2, 4)
+	page2, next2 := s.paginate(items, 2, 4, "")
 	if len(page2) != 1 || page2[0] != "e" {
 		t.Fatal("last page wrong")
 	}
@@ -88,7 +88,7 @@ func TestPaginate(t *testing.T) {
 func TestPaginateExpiredCursor(t *testing.T) {
 	s := testServer()
 	items := []string{"a", "b"}
-	page, _ := s.paginate(items, 2, 100)
+	page, _ := s.paginate(items, 2, 100, "")
 	if len(page) != 0 {
 		t.Fatal("expected empty page for out-of-range offset")
 	}

@@ -1,9 +1,7 @@
-# P8C Portal release workflow (CI build/sign/push to private GHCR).
-# NOT a PAK deployment: no kubeconfig/DB/S3/UI credentials in CI.
-# Manual workflow_dispatch only; main ref; exact source SHA checkout.
-#
-# NOTE: action refs below use immutable upstream commit SHAs (the tag is shown
-# only as a comment). Verify each SHA against upstream before first run.
+# P8C Portal release workflow — TEMPLATE (NOT published to .github/workflows).
+# To be published by Owner via GitHub web UI after Architect review, then
+# dispatched manually. CI build/sign/push to PRIVATE GHCR only; NO PAK access.
+# Action refs are immutable commit SHAs; verify each against upstream before run.
 name: p8c-portal-release
 
 on:
@@ -17,83 +15,106 @@ permissions:
 env:
   GO_VERSION: "1.27.3"
   GO_SHA256: "65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40"
+  BUILDKIT_VERSION: "v0.34.0"
+  SYFT_VERSION: "1.55.0"
+  TRIVY_VERSION: "0.76.0"
+  COSIGN_VERSION: "3.1.3"
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}-portal
+  IMAGE: ghcr.io/${{ github.repository }}-portal
 
 jobs:
   release:
     if: github.repository == 'dedvmedved-dot/otus-diplom' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - name: Checkout exact source
+      - name: Checkout exact source SHA
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
           ref: ${{ github.sha }}
 
-      - name: Verify clean tree and expected source SHA
+      - name: Verify clean tree and source provenance
         run: |
           git diff --exit-code
-          echo "building source commit: ${{ github.sha }}"
+          echo "SOURCE_SHA=${{ github.sha }}"
+          echo "BUILD_TIME=$(git log -1 --format=%cI --date=iso-strict)"
 
-      - name: Set up Go
+      - name: Set up Go (pinned, verify archive)
         uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5.4.0
         with:
-          go-version: "1.27.3"
+          go-version: ${{ env.GO_VERSION }}
 
-      - name: Build + test + vet
+      - name: Build + test + vet (reproducible)
         working-directory: portal
         run: |
-          go mod download
-          go mod verify
+          go mod download && go mod verify
           go vet ./...
           go test ./...
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath \
             -ldflags "-s -w -X main.sourceRevision=${{ github.sha }} -X main.buildTime=1970-01-01T00:00:00Z" \
             -o portal ./cmd/portal
 
-      - name: Install Syft
+      - name: Install BuildKit (rootless, pinned)
         run: |
-          curl -sSfL https://github.com/anchore/syft/releases/download/v1.55.0/syft_1.55.0_linux_amd64.tar.gz -o syft.tar.gz
+          curl -sSfL "https://github.com/moby/buildkit/releases/download/${BUILDKIT_VERSION}/buildkit-${BUILDKIT_VERSION}.linux-amd64.tar.gz" -o buildkit.tar.gz
+          echo "14813b1fb2a40082114e6d386c6fc5e7dd5298176ce7ee1a18bc33e73e109ac3  buildkit.tar.gz" | sha256sum -c
+          tar -xzf buildkit.tar.gz
+          sudo install -m 0755 bin/buildctl bin/buildkitd /usr/local/bin/
+
+      - name: Build OCI image (rootless buildctl) and push by immutable digest
+        working-directory: portal
+        env:
+          BUILDKITD_FLAGS: --oci-worker-no-process-sandbox
+        run: |
+          sudo buildkitd &
+          sleep 3
+          buildctl build --frontend=dockerfile.v0 --local context=. --local dockerfile=. \
+            --output type=image,name=${IMAGE}:candidate,push=true
+          DIGEST=$(buildctl build --frontend=dockerfile.v0 --local context=. --local dockerfile=. \
+            --output type=image,name=${IMAGE}:candidate,push=false 2>/dev/null | grep -o 'sha256:[a-f0-9]\{64\}' | head -1)
+          echo "IMAGE_DIGEST=${DIGEST}" >> "$GITHUB_ENV"
+
+      - name: Install Syft + generate final-image SBOM
+        run: |
+          curl -sSfL "https://github.com/anchore/syft/releases/download/v${SYFT_VERSION}/syft_${SYFT_VERSION}_linux_amd64.tar.gz" -o syft.tar.gz
           echo "bb65249542db5fedeeb4d3f9b018b75e7264dbfbbb10486f044581a92f90490d  syft.tar.gz" | sha256sum -c
           tar -xzf syft.tar.gz && sudo mv syft /usr/local/bin/
+          syft "${IMAGE}@${IMAGE_DIGEST}" -o spdx-json=sbom.spdx.json
 
-      - name: Install Trivy
+      - name: Install Trivy + scan final image (binary + OCI)
         run: |
-          curl -sSfL https://github.com/aquasecurity/trivy/releases/download/v0.76.0/trivy_0.76.0_Linux-64bit.tar.gz -o trivy.tar.gz
+          curl -sSfL "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz" -o trivy.tar.gz
           echo "e24b1c51293c1b15e4ba8d45bbc7891ba053f90278ec2698f3562c993e145fe7  trivy.tar.gz" | sha256sum -c
           tar -xzf trivy.tar.gz && sudo mv trivy /usr/local/bin/
+          trivy fs --exit-code 1 --severity HIGH,CRITICAL --no-progress portal/
+          trivy image --exit-code 1 --severity HIGH,CRITICAL --no-progress "${IMAGE}@${IMAGE_DIGEST}"
 
-      - name: Generate SBOM
-        working-directory: portal
-        run: syft dir:. -o spdx-json=sbom.spdx.json
-
-      - name: Scan (code + binary + OCI)
-        working-directory: portal
-        run: |
-          trivy fs --exit-code 1 --severity HIGH,CRITICAL --no-progress .
-          trivy rootfs --exit-code 1 --severity HIGH,CRITICAL --no-progress ./portal
-
-      - name: Login to GHCR
+      - name: Login to GHCR (GITHUB_TOKEN, private package)
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push image (private)
-        working-directory: portal
-        run: |
-          docker build -f Containerfile -t ghcr.io/${{ github.repository }}-portal:latest .
-          docker push ghcr.io/${{ github.repository }}-portal:latest
-
-      - name: Install Cosign
+      - name: Install Cosign (pinned) + sign keyless exact identity
         uses: sigstore/cosign-installer@59acb6260d86c0f8c4bf0748f02916c9f753c7cd # v3.5.0
+        with:
+          cosign-release: v${COSIGN_VERSION}
 
-      - name: Sign image (keyless, exact identity)
+      - name: Sign image (keyless, exact identity/issuer)
         run: |
           cosign sign --yes \
             -a repo=${{ github.repository }} \
             -a workflow=${{ github.workflow }} \
             -a ref=${{ github.sha }} \
-            ghcr.io/${{ github.repository }}-portal@$(docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/${{ github.repository }}-portal:latest | cut -d@ -f2)
+            "${IMAGE}@${IMAGE_DIGEST}"
+          cosign verify --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/p8c-portal-release.yml@refs/heads/main" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            "${IMAGE}@${IMAGE_DIGEST}"
+
+      - name: Upload SBOM + signature as artifacts
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb280c # v4.3.3
+        with:
+          name: portal-sbom-signature
+          path: |
+            portal/sbom.spdx.json

@@ -1,0 +1,192 @@
+# P8C NetworkPolicy objects (D1) — PREPARED, NOT APPLIED.
+# Rollout deferred until supply/auth ready (R3/R4). Apply order matters:
+# (1) p8c-cnpg-existing-flows  (2) baseline  (3) portal/migrator flows
+# (4) dataplane flows. Rollback = delete only these new objects.
+#
+# Verified inventory (2026-10-20, read-only):
+#   CNPG portal-db: labels cnpg.io/cluster=portal-db, cnpg.io/podRole=instance;
+#     ports postgres 5432, metrics 9187, instance-manager 8000.
+#   Services: portal-db-r/ro/rw (5432).
+#   API server: 172.30.140.101-103:6443 (VIP 172.30.140.100).
+#   DNS: kube-dns 10.96.0.10 (UDP/TCP 53).
+#   S3 (SeaweedFS): 172.30.143.10:443 (CNPG/Barman only).
+#   Envoy Gateway controller: control-plane=envoy-gateway (envoy-gateway-system).
+#   Barman plugin controller: app=barman-cloud (cnpg-system).
+#   Velero: component=velero (velero namespace; node-agent role).
+---
+# (1) FIRST policy selecting existing CNPG pods: one object with the FULL
+#     verified ingress+egress allowlist (no separate DNS-only policy first).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: p8c-cnpg-existing-flows
+  namespace: portal
+spec:
+  podSelector:
+    matchLabels:
+      cnpg.io/cluster: portal-db
+      cnpg.io/podRole: instance
+  policyTypes: [Ingress, Egress]
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          cnpg.io/cluster: portal-db
+          cnpg.io/podRole: instance
+    ports:
+    - port: 5432
+    - port: 8000
+  - from:
+    - namespaceSelector: {}
+      podSelector:
+        matchLabels:
+          app: barman-cloud
+    ports:
+    - port: 5432
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: pak-portal
+    ports:
+    - port: 5432
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+  - to:
+    - ipBlock:
+        cidr: 172.30.140.0/24
+    ports:
+    - port: 6443
+  - to:
+    - ipBlock:
+        cidr: 172.30.143.10/32
+    ports:
+    - port: 443
+  - to:
+    - podSelector:
+        matchLabels:
+          cnpg.io/cluster: portal-db
+          cnpg.io/podRole: instance
+    ports:
+    - port: 5432
+    - port: 8000
+---
+# (2) namespace baseline (after (1)).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: baseline-default-deny-all
+  namespace: portal
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: baseline-allow-dns-egress
+  namespace: portal
+spec:
+  podSelector: {}
+  policyTypes: [Egress]
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+---
+# (3) Portal + migrator flows (before their workloads).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: p8c-portal-flows
+  namespace: portal
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: pak-portal
+  policyTypes: [Ingress, Egress]
+  ingress:
+  - from:
+    - namespaceSelector: {}
+      podSelector: {}   # Envoy dataplane (refined in p8c-portal-dataplane-flows)
+    ports:
+    - port: 8080
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+  - to:
+    - ipBlock:
+        cidr: 172.30.140.0/24
+    ports:
+    - port: 6443
+  - to:
+    - podSelector:
+        matchLabels:
+          cnpg.io/cluster: portal-db
+    ports:
+    - port: 5432
+  - to:
+    - podSelector:
+        matchLabels:
+          cnpg.io/cluster: portal-db
+    ports:
+    - port: 9187
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: p8c-migrator-flows
+  namespace: portal
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: pak-portal-migrator
+  policyTypes: [Egress]
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+  - to:
+    - podSelector:
+        matchLabels:
+          cnpg.io/cluster: portal-db
+    ports:
+    - port: 5432

@@ -4,6 +4,7 @@
 package httpapi
 
 import (
+	"context"
 	"encoding/json"
 	"io/fs"
 	"net/http"
@@ -19,10 +20,22 @@ import (
 	"github.com/dedvmedved-dot/otus-diplom/portal/web"
 )
 
+// SnapshotProvider supplies the latest collection snapshot.
+type SnapshotProvider interface {
+	Latest() *collectors.Snapshot
+}
+
+// Store is the minimal store surface the HTTP layer depends on.
+type Store interface {
+	Ping(ctx context.Context) error
+	CurrentMigrationVersion(ctx context.Context) (int64, string, error)
+	ListEvents(ctx context.Context, since *time.Time, severity, namespace string, limit, offset int) ([]store.EventRow, error)
+}
+
 // Server holds the wired dependencies for the HTTP layer.
 type Server struct {
-	collector *collectors.Collector
-	store     *store.Store
+	collector SnapshotProvider
+	store     Store
 	verifier  *auth.Verifier
 	cfg       *config.Config
 	ps        *collectors.PersistenceState
@@ -31,7 +44,7 @@ type Server struct {
 }
 
 // New builds a Server.
-func New(c *collectors.Collector, st *store.Store, v *auth.Verifier, cfg *config.Config, ps *collectors.PersistenceState) *Server {
+func New(c SnapshotProvider, st Store, v *auth.Verifier, cfg *config.Config, ps *collectors.PersistenceState) *Server {
 	return &Server{
 		collector: c,
 		store:     st,
@@ -103,6 +116,10 @@ type tokenBucket struct {
 
 func newTokenBucket(rps int) *tokenBucket {
 	tb := &tokenBucket{tokens: make(chan struct{}, rps)}
+	// Pre-fill to capacity so the first burst is served immediately.
+	for i := 0; i < rps; i++ {
+		tb.tokens <- struct{}{}
+	}
 	go func() {
 		t := time.NewTicker(time.Second / time.Duration(rps))
 		defer t.Stop()
