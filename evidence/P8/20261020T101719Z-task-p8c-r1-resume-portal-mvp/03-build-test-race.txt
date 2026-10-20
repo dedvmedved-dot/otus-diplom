@@ -1,0 +1,4 @@
+go build (CGO_ENABLED=0 GOOS=linux GOARCH=amd64 -trimpath): PASS (exit 0)
+go vet ./...: PASS (exit 0)
+go test ./...: PASS (auth, collectors, httpapi; exit 0)
+go test -race ./internal/collectors ./internal/httpapi: PASS (exit 0)

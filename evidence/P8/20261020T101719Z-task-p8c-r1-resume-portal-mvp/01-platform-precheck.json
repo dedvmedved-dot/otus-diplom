@@ -1,0 +1,17 @@
+{
+  "kubernetes": "v1.36.2",
+  "nodes_ready": 3,
+  "cnpg_portal_db": "ready=3 desired=3 primary=portal-db-2 phase=healthy caSecret=portal-db-ca ContinuousArchiving=True",
+  "velero_bsl": "Available",
+  "gatewayclass_eg": "Accepted=True",
+  "metallb_pool": "172.30.140.110-172.30.140.119",
+  "networkpolicy": "NONE cluster-wide (baseline absent -> D1 applies)",
+  "secrets_portal": [
+    "portal-barman-s3-ca",
+    "portal-barman-s3-credentials",
+    "portal-db-app",
+    "portal-db-ca",
+    "portal-db-replication",
+    "portal-db-server"
+  ]
+}

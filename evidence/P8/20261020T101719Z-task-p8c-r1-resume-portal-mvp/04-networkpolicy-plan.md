@@ -1,0 +1,1 @@
+See portal/networkpolicy/PLAN.md (inventory + 5 planned objects + D1 safety order). Live apply deferred to R5 (after R3/R4).

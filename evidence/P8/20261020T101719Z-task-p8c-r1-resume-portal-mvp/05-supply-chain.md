@@ -1,0 +1,1 @@
+Workflow prepared: .github/workflows/p8c-portal-release.yml (manual dispatch, main, contents:read+packages:write+id-token:write, pinned SHA refs, Go1.27.3+Syft+Trivy+Cosign). NOT executed: needs GitHub Actions dispatch + run verification. IMAGE_DIGEST: NOT_VERIFIED.

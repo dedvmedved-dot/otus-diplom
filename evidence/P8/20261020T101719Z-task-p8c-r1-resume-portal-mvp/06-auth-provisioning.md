@@ -1,0 +1,1 @@
+Helpers prepared: portal/tools/provision-ui-auth.py + provision-registry-pull.py (Owner-side only, getpass no-echo, SHA256 in memory, JSON stdin, no argv/env/temp/log, existing-secret STOP). Owner runs them in a secure session; Hermes/chat never sees password/verifier/token.
