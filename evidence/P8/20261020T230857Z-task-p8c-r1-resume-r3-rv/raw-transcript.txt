@@ -1,0 +1,84 @@
+===== 2026-10-20T23:08:35Z RV CLOSURE FULL RUN =====
+SOURCE_SHA=6496d509d5bc203655b157eb6d32f5665a6a76b1
+--- go go1.27.3 node v22.23.2 python 3.11.15 psql 17.11
+
+=== go build ===
+build exit=0
+=== go vet ===
+vet exit=0
+=== go test -count=1 ===
+?   	github.com/dedvmedved-dot/otus-diplom/portal/cmd/portal	[no test files]
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/auth	0.006s
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/collectors	0.030s
+?   	github.com/dedvmedved-dot/otus-diplom/portal/internal/config	[no test files]
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/httpapi	0.019s
+?   	github.com/dedvmedved-dot/otus-diplom/portal/internal/model	[no test files]
+?   	github.com/dedvmedved-dot/otus-diplom/portal/internal/store	[no test files]
+?   	github.com/dedvmedved-dot/otus-diplom/portal/migrations	[no test files]
+?   	github.com/dedvmedved-dot/otus-diplom/portal/web	[no test files]
+test exit=0
+=== go test -race -count=1 ===
+?   	github.com/dedvmedved-dot/otus-diplom/portal/cmd/portal	[no test files]
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/auth	1.027s
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/collectors	1.101s
+?   	github.com/dedvmedved-dot/otus-diplom/portal/internal/config	[no test files]
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/httpapi	1.105s
+?   	github.com/dedvmedved-dot/otus-diplom/portal/internal/model	[no test files]
+?   	github.com/dedvmedved-dot/otus-diplom/portal/internal/store	[no test files]
+?   	github.com/dedvmedved-dot/otus-diplom/portal/migrations	[no test files]
+?   	github.com/dedvmedved-dot/otus-diplom/portal/web	[no test files]
+race exit=0
+=== go test -tags integration (local PG17, fresh -count=1) ===
+=== RUN   TestIntegrationInsertBatchIdempotent
+--- PASS: TestIntegrationInsertBatchIdempotent (0.04s)
+=== RUN   TestIntegrationEventDedupAndRecreate
+--- PASS: TestIntegrationEventDedupAndRecreate (0.05s)
+=== RUN   TestIntegrationPruneTTL
+--- PASS: TestIntegrationPruneTTL (0.06s)
+=== RUN   TestIntegrationPruneCap
+--- PASS: TestIntegrationPruneCap (0.36s)
+=== RUN   TestIntegrationMigrationNoopAndMismatch
+--- PASS: TestIntegrationMigrationNoopAndMismatch (0.07s)
+=== RUN   TestIntegrationLedgerDrift
+--- PASS: TestIntegrationLedgerDrift (0.05s)
+PASS
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/store	0.636s
+integration exit=0
+=== helper mock tests (both helpers, 14 tests) ===
+test_non_tty_raises (__main__.TestNoEchoFailClosed.test_non_tty_raises) ... ok
+test_termios_unavailable_raises (__main__.TestNoEchoFailClosed.test_termios_unavailable_raises) ... ok
+test_create_timeout_unknown_outcome (__main__.TestRegistryFailClosedCreateOnly.test_create_timeout_unknown_outcome) ... STOP: create timed out — UNKNOWN_OUTCOME. Re-check Secret state (get) before any further action; do not overwrite.
+ok
+test_existing_secret_stops (__main__.TestRegistryFailClosedCreateOnly.test_existing_secret_stops) ... STOP: Secret portal/portal-registry-pull already exists; no overwrite.
+ok
+test_forbidden_probe_stops_before_write (__main__.TestRegistryFailClosedCreateOnly.test_forbidden_probe_stops_before_write) ... STOP: cannot verify Secret state (Forbidden/network/other); no write attempted.
+ok
+test_success_uses_create_only (__main__.TestRegistryFailClosedCreateOnly.test_success_uses_create_only) ... ok
+test_already_exists_race_stops_no_overwrite (__main__.TestUIFailClosedCreateOnly.test_already_exists_race_stops_no_overwrite) ... STOP: create failed (Secret may already exist); no overwrite attempted.
+ok
+test_create_timeout_unknown_outcome (__main__.TestUIFailClosedCreateOnly.test_create_timeout_unknown_outcome) ... STOP: create timed out — UNKNOWN_OUTCOME. Re-check Secret state (get) before any further action; do not overwrite.
+ok
+test_existing_secret_stops (__main__.TestUIFailClosedCreateOnly.test_existing_secret_stops) ... STOP: Secret portal/portal-ui-auth already exists; no implicit rotation.
+ok
+test_forbidden_probe_stops_before_write (__main__.TestUIFailClosedCreateOnly.test_forbidden_probe_stops_before_write) ... STOP: cannot verify Secret state (Forbidden/network/other); no write attempted.
+ok
+test_success_uses_create_only (__main__.TestUIFailClosedCreateOnly.test_success_uses_create_only) ... ok
+test_bad_alphabet (__main__.TestValidatePassword.test_bad_alphabet) ... ok
+test_valid (__main__.TestValidatePassword.test_valid) ... ok
+test_wrong_length (__main__.TestValidatePassword.test_wrong_length) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.010s
+
+OK
+OK: Secret portal/portal-registry-pull provisioned.
+Record name, type, access verification and expiry/rotation responsibility only.
+OK: Secret portal/portal-ui-auth key password-sha256 provisioned.
+Verifier value is NOT printed. Owner retains the password in their password manager.
+helpers exit=0
+=== JS renderer smoke (jsdom) ===
+renderer-smoke: PASS (stale-not-green, failed=unavailable, backup-health+Barman/WAL)
+renderer exit=0
+=== JS fixture smoke ===
+fixture-smoke: PASS (11 endpoints envelope + data shapes + error shape)
+fixture exit=0
