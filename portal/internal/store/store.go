@@ -166,23 +166,30 @@ type TimelineEvent struct {
 	ObjectNamespace       string
 	ObjectName            string
 	ReasonCode            string
+	Occurrences           int64
 	Message               string
 }
 
-// UpsertEvent inserts or increments a deduplicated timeline event.
+// UpsertEvent inserts or idempotently refreshes a deduplicated timeline event.
+// The occurrence count reflects the source count (never incremented blindly),
+// so a repeated poll of an unchanged event does not inflate the count.
 func (s *Store) UpsertEvent(ctx context.Context, e TimelineEvent) error {
 	cctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
+	occ := e.Occurrences
+	if occ < 1 {
+		occ = 1
+	}
 	_, err := s.pool.Exec(cctx, `INSERT INTO portal.timeline_events
 		(dedup_key, source, source_uid, source_resource_version, source_time, severity,
 		 object_kind, object_namespace, object_name, reason_code, occurrence_count, message)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,1,$11)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
 		ON CONFLICT (dedup_key) DO UPDATE SET
-			occurrence_count = timeline_events.occurrence_count + 1,
+			occurrence_count = EXCLUDED.occurrence_count,
 			ingested_at = CURRENT_TIMESTAMP`,
 		e.DedupKey, e.Source, nullStr(e.SourceUID), nullStr(e.SourceResourceVersion), e.SourceTime,
 		e.Severity, nullStr(e.ObjectKind), nullStr(e.ObjectNamespace), nullStr(e.ObjectName),
-		e.ReasonCode, e.Message)
+		e.ReasonCode, occ, e.Message)
 	return err
 }
 

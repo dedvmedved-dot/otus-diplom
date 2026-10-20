@@ -37,6 +37,12 @@ func (s *Server) envelope(snap *collectors.Snapshot) model.Envelope {
 	if snap != nil {
 		sources = snap.Sources
 		warnings = snap.Warnings
+		if sources == nil {
+			sources = []model.SourceStatus{}
+		}
+		if warnings == nil {
+			warnings = []model.Warning{}
+		}
 		partial = snap.Partial
 		if !snap.CollectedAt.IsZero() {
 			o := snap.CollectedAt.UTC().Format(time.RFC3339)
@@ -366,7 +372,11 @@ func buildSubsystems(snap *collectors.Snapshot) []model.Subsystem {
 		return []model.Subsystem{}
 	}
 	subs := []model.Subsystem{}
-	ts := nowPtrString()
+	var ts *string
+	if !snap.CollectedAt.IsZero() {
+		v := snap.CollectedAt.UTC().Format(time.RFC3339)
+		ts = &v
+	}
 	subs = append(subs, model.Subsystem{ID: "nodes", Health: subsystemNodesHealth(snap), Scope: "kubernetes_nodes", ObservedAt: ts, Message: "nodes ready/observed"})
 	subs = append(subs, model.Subsystem{ID: "workloads", Health: subsystemWorkloadsHealth(snap), Scope: "kubernetes_workloads", ObservedAt: ts, Message: "deployments/sts/ds/rs/job/cronjob"})
 	subs = append(subs, model.Subsystem{ID: "storage", Health: subsystemStorageHealth(snap), Scope: "kubernetes_objects", ObservedAt: ts, Message: "pvc/pv/sc/snapshot; DRBD not observed"})

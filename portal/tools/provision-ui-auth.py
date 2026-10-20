@@ -1,24 +1,26 @@
 #!/usr/bin/env python3
 """Owner-side provisioning helper for the Portal operator UI password.
 
-Contract (P8C-R1 D3): the Owner stores the base64url encoding of 32 random
-bytes (43 ASCII characters, no padding) in their own password manager. This
-is the LOGIN password. This helper computes the SHA-256 of those exact 43
-ASCII characters in memory and creates ONLY the Secret
-`portal/portal-ui-auth` key `password-sha256` via kubectl JSON stdin.
+Contract (P8C-R1 D3 + R2-01): the Owner stores the base64url encoding of 32
+random bytes (43 ASCII chars, no padding) in their password manager. This is
+the LOGIN password. This helper computes SHA-256 of those exact 43 ASCII chars
+in memory and creates ONLY the Secret `portal/portal-ui-auth` key
+`password-sha256` via an atomic `kubectl create` (JSON stdin).
 
-The password and its verifier never touch argv, env, temporary files, logs or
-the chat. The helper is intended to be run by the Owner in a secure,
-non-recorded session; it is NOT run by the agent or CI.
+Fail-closed: any non-zero `get` result (Forbidden/network/other) stops BEFORE
+any write; the only write verb is `create`, which cannot overwrite on a race.
+No apply/patch/replace/force, no last-applied annotation, no argv/env/temp
+files/logs with the password or verifier. Owner runs it in a secure,
+non-recorded session; not run by the agent or CI.
 
 Usage:
     python3 portal/tools/provision-ui-auth.py --context <explicit-approved-context>
 
 Exit codes:
     0  success (Secret created)
-    2  usage / validation error
-    3  Secret already exists (STOP, no implicit rotation)
-    4  kubectl / provisioning error
+    2  usage / validation / non-TTY error
+    3  Secret already exists OR cannot verify state (STOP, no write)
+    4  create failed (STOP, no overwrite)
 """
 import argparse
 import base64
@@ -32,6 +34,13 @@ SECRET_NAME = "portal-ui-auth"
 SECRET_KEY = "password-sha256"
 EXPECTED_LEN = 43
 B64URL_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+KUBECTL_TIMEOUT = 60
+
+
+def require_tty() -> None:
+    if not sys.stdin.isatty():
+        print("STOP: password input requires a TTY (no echo); refusing to run non-interactively.", file=sys.stderr)
+        sys.exit(2)
 
 
 def validate_password(pwd: str) -> str:
@@ -42,32 +51,39 @@ def validate_password(pwd: str) -> str:
     return ""
 
 
+def run_kubectl(args, input_text=None):
+    try:
+        return subprocess.run(
+            args, input=input_text, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            text=True, timeout=KUBECTL_TIMEOUT,
+        )
+    except (subprocess.TimeoutExpired, OSError) as e:
+        # Bounded message only; no captured stderr/body/credentials.
+        print(f"error: kubectl failed ({type(e).__name__}); no write attempted", file=sys.stderr)
+        return None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Provision portal-ui-auth Secret (Owner-side only)")
     parser.add_argument("--context", required=True, help="explicit approved kubectl context")
     args = parser.parse_args()
 
+    require_tty()
+
     import getpass
     pwd1 = getpass.getpass("Enter operator password (43-char base64url, no echo): ")
     pwd2 = getpass.getpass("Confirm operator password: ")
-
     if pwd1 != pwd2:
         print("error: passwords do not match", file=sys.stderr)
         return 2
-
     err = validate_password(pwd1)
     if err:
         print(f"error: {err}", file=sys.stderr)
         return 2
 
-    # Compute SHA-256 of the exact ASCII string in memory.
     verifier = hashlib.sha256(pwd1.encode("ascii")).hexdigest()
+    del pwd1, pwd2
 
-    # Never log the password or verifier.
-    del pwd1
-    del pwd2
-
-    # Build the Secret body in memory only (no temp files, no --from-literal).
     body = {
         "apiVersion": "v1",
         "kind": "Secret",
@@ -76,23 +92,30 @@ def main() -> int:
         "data": {SECRET_KEY: base64.b64encode(verifier.encode("ascii")).decode("ascii")},
     }
 
-    # Check for existing Secret (no implicit rotation).
-    probe = subprocess.run(
-        ["kubectl", "--context", args.context, "-n", NAMESPACE, "get", "secret", SECRET_NAME, "-o", "name"],
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
-    )
-    if probe.returncode == 0:
+    # Existence check: distinguish absent vs any other failure. Non-zero here
+    # (Forbidden/network/...) must STOP without a write.
+    probe = run_kubectl([
+        "kubectl", "--context", args.context, "-n", NAMESPACE, "get", "secret",
+        SECRET_NAME, "--ignore-not-found", "-o", "name",
+    ])
+    if probe is None:
+        return 4
+    if probe.returncode != 0:
+        print("STOP: cannot verify Secret state (Forbidden/network/other); no write attempted.", file=sys.stderr)
+        return 4
+    if probe.stdout.strip():
         print(f"STOP: Secret {NAMESPACE}/{SECRET_NAME} already exists; no implicit rotation.", file=sys.stderr)
         return 3
 
-    # Apply via JSON stdin (output captured; body not printed on error).
-    proc = subprocess.run(
-        ["kubectl", "--context", args.context, "apply", "-f", "-"],
-        input=json.dumps(body), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
-    )
+    # Atomic create (no-overwrite on race; no last-applied annotation).
+    proc = run_kubectl([
+        "kubectl", "--context", args.context, "create", "-f", "-",
+    ], input_text=json.dumps(body))
+    if proc is None:
+        return 4
     if proc.returncode != 0:
-        # Do NOT print stderr/stdout (may contain request body); print a bounded message.
-        print("error: kubectl apply failed (no body/credentials printed)", file=sys.stderr)
+        # AlreadyExists/409 is a race -> STOP, never overwrite.
+        print("STOP: create failed (Secret may already exist); no overwrite attempted.", file=sys.stderr)
         return 4
 
     print(f"OK: Secret {NAMESPACE}/{SECRET_NAME} key {SECRET_KEY} provisioned.")

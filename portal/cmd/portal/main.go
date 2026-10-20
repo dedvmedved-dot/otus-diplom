@@ -168,13 +168,14 @@ func persistOnce(ctx context.Context, st *store.Store, col *collectors.Collector
 	id := newUUID()
 	if err := st.InsertBatch(ctx, id, snap.CollectedAt, cfg.SourceRevision, "unknown", snap.Partial, summary); err != nil {
 		ps.DataLoss.Store(true)
-		ps.LagSeconds.Store(0)
+		ps.LagSeconds.Add(1)
 		return
 	}
+	writeFailed := false
 	for _, e := range snap.Events {
 		se := store.TimelineEvent{
 			DedupKey: e.ID, Source: e.Source, Severity: e.Severity, ReasonCode: e.ReasonCode,
-			Message: e.Message,
+			Occurrences: e.OccurrenceCount, Message: e.Message,
 		}
 		if e.SourceTime != nil {
 			if t, err := time.Parse(time.RFC3339, *e.SourceTime); err == nil {
@@ -190,7 +191,14 @@ func persistOnce(ctx context.Context, st *store.Store, col *collectors.Collector
 		if e.ObjectName != nil {
 			se.ObjectName = *e.ObjectName
 		}
-		_ = st.UpsertEvent(ctx, se)
+		if err := st.UpsertEvent(ctx, se); err != nil {
+			writeFailed = true
+		}
+	}
+	if writeFailed {
+		ps.DataLoss.Store(true)
+		ps.LagSeconds.Add(1)
+		return
 	}
 	ps.LagSeconds.Store(0)
 }

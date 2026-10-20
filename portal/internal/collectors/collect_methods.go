@@ -1022,7 +1022,9 @@ func (c *Collector) collectEvents(ctx context.Context, snap *Snapshot, reg *Sour
 		if e.Type == corev1.EventTypeWarning {
 			sev = "warning"
 		}
-		dedup := "k8s:" + e.Namespace + ":" + e.InvolvedObject.Kind + ":" + e.InvolvedObject.Name + ":" + e.Reason
+		// Identity-aware dedup: same event object (UID) is one row; a recreated
+		// object (new UID) must NOT merge with the old.
+		dedup := "k8s:" + string(e.UID) + ":" + string(e.InvolvedObject.UID) + ":" + e.Reason
 		var st *string
 		if !e.LastTimestamp.IsZero() {
 			v := e.LastTimestamp.UTC().Format(time.RFC3339)
