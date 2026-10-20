@@ -1,21 +1,22 @@
 # P8C NetworkPolicy objects (D1) — PREPARED, NOT APPLIED.
 # Rollout deferred until supply/auth ready (R3/R4). Apply order matters:
-# (1) p8c-cnpg-existing-flows  (2) baseline  (3) portal/migrator flows
-# (4) dataplane flows. Rollback = delete only these new objects.
+# (1) p8c-cnpg-existing-flows  (2) baseline  (3) portal/migrator/dataplane flows.
+# Rollback = delete only these new objects.
 #
-# Verified inventory (2026-10-20, read-only):
+# Verified inventory (2026-10-20, read-only, cmd transcripts in evidence):
 #   CNPG portal-db: labels cnpg.io/cluster=portal-db, cnpg.io/podRole=instance;
 #     ports postgres 5432, metrics 9187, instance-manager 8000.
 #   Services: portal-db-r/ro/rw (5432).
 #   API server: 172.30.140.101-103:6443 (VIP 172.30.140.100).
 #   DNS: kube-dns 10.96.0.10 (UDP/TCP 53).
 #   S3 (SeaweedFS): 172.30.143.10:443 (CNPG/Barman only).
-#   Envoy Gateway controller: control-plane=envoy-gateway (envoy-gateway-system).
-#   Barman plugin controller: app=barman-cloud (cnpg-system).
-#   Velero: component=velero (velero namespace; node-agent role).
+#   CNPG operator: cnpg-system, app.kubernetes.io/name=cloudnative-pg (instance-manager 8000).
+#   Barman plugin controller: cnpg-system, app=barman-cloud (5432).
+#   Envoy Gateway controller: envoy-gateway-system, control-plane=envoy-gateway.
+#   Velero: velero namespace, component=velero.
 ---
 # (1) FIRST policy selecting existing CNPG pods: one object with the FULL
-#     verified ingress+egress allowlist (no separate DNS-only policy first).
+#     verified ingress+egress allowlist.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -28,6 +29,7 @@ spec:
       cnpg.io/podRole: instance
   policyTypes: [Ingress, Egress]
   ingress:
+  # CNPG peer replication + instance-manager
   - from:
     - podSelector:
         matchLabels:
@@ -36,17 +38,39 @@ spec:
     ports:
     - port: 5432
     - port: 8000
+  # CNPG operator instance-manager calls (reconcile/switchover/restart)
   - from:
-    - namespaceSelector: {}
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: cnpg-system
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: cloudnative-pg
+    ports:
+    - port: 8000
+  # Barman plugin controller (5432 only)
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: cnpg-system
       podSelector:
         matchLabels:
           app: barman-cloud
     ports:
     - port: 5432
+  # Portal app: application DB (5432) + CNPG metrics scrape (9187)
   - from:
     - podSelector:
         matchLabels:
           app.kubernetes.io/name: pak-portal
+    ports:
+    - port: 5432
+    - port: 9187
+  # Migrator Job: application DB bootstrap (5432)
+  - from:
+    - podSelector:
+        matchLabels:
+          app.kubernetes.io/name: pak-portal-migrator
     ports:
     - port: 5432
   egress:
@@ -125,9 +149,14 @@ spec:
       app.kubernetes.io/name: pak-portal
   policyTypes: [Ingress, Egress]
   ingress:
+  # Only the Envoy dataplane (Gateway-owned) reaches the Portal UI.
   - from:
-    - namespaceSelector: {}
-      podSelector: {}   # Envoy dataplane (refined in p8c-portal-dataplane-flows)
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: envoy-gateway-system
+      podSelector:
+        matchLabels:
+          gateway.envoyproxy.io/owning-gateway-name: pak-portal-gateway
     ports:
     - port: 8080
   egress:
@@ -190,3 +219,38 @@ spec:
           cnpg.io/cluster: portal-db
     ports:
     - port: 5432
+---
+# (4) Envoy dataplane policy: dataplane -> Portal (8080) and its xDS/upstreams.
+#     Deployed with the Gateway (namespace of the dataplane pods).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: p8c-portal-dataplane-flows
+  namespace: envoy-gateway-system
+spec:
+  podSelector:
+    matchLabels:
+      gateway.envoyproxy.io/owning-gateway-name: pak-portal-gateway
+  policyTypes: [Egress]
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: portal
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: pak-portal
+    ports:
+    - port: 8080
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP

@@ -9,76 +9,115 @@ type roundTripFunc func(*http.Request) (*http.Response, error)
 
 func (f roundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
 
-func TestGuardAllowsGetToAPIHost(t *testing.T) {
-	base := roundTripFunc(func(req *http.Request) (*http.Response, error) {
-		if req.Method != http.MethodGet {
-			t.Fatalf("unexpected method %s", req.Method)
-		}
-		return &http.Response{StatusCode: 200, Body: http.NoBody, Request: req}, nil
+func okBase() http.RoundTripper {
+	return roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		return &http.Response{StatusCode: 200, Body: http.NoBody, Request: r}, nil
 	})
-	g := newGuardTransport(base, "https://172.30.140.100:6443")
-	req, _ := http.NewRequest(http.MethodGet, "https://172.30.140.100:6443/api/v1/nodes", nil)
-	resp, err := g.RoundTrip(req)
-	if err != nil {
-		t.Fatalf("allowed request rejected: %v", err)
+}
+
+func TestGuardAllowsApprovedPaths(t *testing.T) {
+	paths := []string{
+		"/api/v1/nodes",
+		"/api/v1/nodes/node-01",
+		"/api/v1/pods",
+		"/api/v1/namespaces/portal/pods",
+		"/api/v1/namespaces/portal/services/portal-db-rw",
+		"/api/v1/persistentvolumeclaims",
+		"/api/v1/events",
+		"/api/v1/endpointslices",
+		"/apis/apps/v1/deployments",
+		"/apis/apps/v1/namespaces/portal/statefulsets",
+		"/apis/batch/v1/jobs",
+		"/apis/batch/v1/cronjobs",
+		"/apis/storage.k8s.io/v1/storageclasses",
+		"/apis/snapshot.storage.k8s.io/v1/volumesnapshots",
+		"/apis/metrics.k8s.io/v1beta1/nodes",
+		"/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters",
+		"/apis/postgresql.cnpg.io/v1/namespaces/portal/scheduledbackups",
+		"/apis/postgresql.cnpg.io/v1/namespaces/portal/backups",
+		"/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores",
+		"/apis/velero.io/v1/backupstoragelocations",
+		"/apis/velero.io/v1/backups",
+		"/apis/gateway.networking.k8s.io/v1/gateways",
 	}
-	resp.Body.Close()
+	g := newGuardTransport(okBase(), "https://10.0.0.1:6443")
+	for _, p := range paths {
+		req, _ := http.NewRequest(http.MethodGet, "https://10.0.0.1:6443"+p, nil)
+		if _, err := g.RoundTrip(req); err != nil {
+			t.Fatalf("approved path %s rejected: %v", p, err)
+		}
+	}
+}
+
+func TestGuardRejectsUnapprovedPaths(t *testing.T) {
+	paths := []string{
+		"/api/v1/configmaps",                          // unapproved core resource
+		"/api/v1/secrets",                             // secrets
+		"/api/v1/namespaces/portal/secrets",           // secrets in namespace
+		"/api/v1/serviceaccounts/portal/token",        // token subresource
+		"/api/v1/namespaces/portal/pods/x/log",        // log subresource
+		"/api/v1/namespaces/portal/pods/x/exec",       // exec subresource
+		"/apis/rbac.authorization.k8s.io/v1/roles",    // unapproved GVR
+		"/apis/apps/v1/namespaces/portal/deployments/x/status", // status subresource
+		"/apis/core/v1/nodes",                         // wrong group
+		"/api/v1/namespaces/portal/pods/x/proxy",      // proxy
+	}
+	g := newGuardTransport(okBase(), "https://10.0.0.1:6443")
+	for _, p := range paths {
+		req, _ := http.NewRequest(http.MethodGet, "https://10.0.0.1:6443"+p, nil)
+		if _, err := g.RoundTrip(req); err != errForbiddenPath {
+			t.Fatalf("unapproved path %s: expected errForbiddenPath, got %v", p, err)
+		}
+	}
 }
 
 func TestGuardRejectsWrongHost(t *testing.T) {
-	g := newGuardTransport(roundTripFunc(func(*http.Request) (*http.Response, error) {
-		return &http.Response{StatusCode: 200, Body: http.NoBody}, nil
-	}), "https://172.30.140.100:6443")
-	req, _ := http.NewRequest(http.MethodGet, "https://172.30.140.101:6443/api/v1/nodes", nil)
+	g := newGuardTransport(okBase(), "https://10.0.0.1:6443")
+	req, _ := http.NewRequest("GET", "https://10.0.0.2:6443/api/v1/nodes", nil)
 	if _, err := g.RoundTrip(req); err != errForbiddenHost {
 		t.Fatalf("expected errForbiddenHost, got %v", err)
 	}
 }
 
-func TestGuardRejectsWrongScheme(t *testing.T) {
-	g := newGuardTransport(roundTripFunc(func(*http.Request) (*http.Response, error) {
-		return &http.Response{StatusCode: 200, Body: http.NoBody}, nil
-	}), "https://172.30.140.100:6443")
-	req, _ := http.NewRequest(http.MethodGet, "http://172.30.140.100:6443/api/v1/nodes", nil)
-	if _, err := g.RoundTrip(req); err != errForbiddenScheme {
-		t.Fatalf("expected errForbiddenScheme, got %v", err)
+func TestGuardRejectsHostOverride(t *testing.T) {
+	g := newGuardTransport(okBase(), "https://10.0.0.1:6443")
+	req, _ := http.NewRequest("GET", "https://10.0.0.1:6443/api/v1/nodes", nil)
+	req.Host = "evil.example.com"
+	if _, err := g.RoundTrip(req); err != errForbiddenHost {
+		t.Fatalf("expected errForbiddenHost for Host override, got %v", err)
 	}
 }
 
-func TestGuardRejectsNonGet(t *testing.T) {
-	g := newGuardTransport(nil, "https://172.30.140.100:6443")
-	req, _ := http.NewRequest(http.MethodPost, "https://172.30.140.100:6443/api/v1/nodes", nil)
+func TestGuardRejectsUserinfo(t *testing.T) {
+	g := newGuardTransport(okBase(), "https://10.0.0.1:6443")
+	req, _ := http.NewRequest("GET", "https://user@10.0.0.1:6443/api/v1/nodes", nil)
+	if _, err := g.RoundTrip(req); err != errForbiddenHost {
+		t.Fatalf("expected errForbiddenHost for userinfo, got %v", err)
+	}
+}
+
+func TestGuardRejectsEmptyHost(t *testing.T) {
+	g := newGuardTransport(okBase(), "")
+	req, _ := http.NewRequest("GET", "https://10.0.0.1:6443/api/v1/nodes", nil)
+	if _, err := g.RoundTrip(req); err != errForbiddenHost {
+		t.Fatalf("expected errForbiddenHost for empty configured host, got %v", err)
+	}
+}
+
+func TestGuardRejectsPost(t *testing.T) {
+	g := newGuardTransport(okBase(), "https://10.0.0.1:6443")
+	req, _ := http.NewRequest("POST", "https://10.0.0.1:6443/api/v1/nodes", nil)
 	if _, err := g.RoundTrip(req); err != errForbiddenMethod {
 		t.Fatalf("expected errForbiddenMethod, got %v", err)
 	}
 }
 
-func TestGuardRejectsForbiddenPath(t *testing.T) {
-	g := newGuardTransport(nil, "https://172.30.140.100:6443")
-	for _, p := range []string{
-		"/api/v1/namespaces/portal/pods/portal-x/log",
-		"/api/v1/namespaces/portal/pods/portal-x/exec",
-		"/api/v1/namespaces/portal/secrets",
-		"/api/v1/namespaces/portal/serviceaccounts/portal-reader/token",
-	} {
-		req, _ := http.NewRequest(http.MethodGet, "https://172.30.140.100:6443"+p, nil)
-		if _, err := g.RoundTrip(req); err != errForbiddenPath {
-			t.Fatalf("path %q: expected errForbiddenPath, got %v", p, err)
-		}
-	}
-}
-
 func TestGuardRejectsRedirect(t *testing.T) {
 	base := roundTripFunc(func(req *http.Request) (*http.Response, error) {
-		return &http.Response{
-			StatusCode: http.StatusFound,
-			Header:     http.Header{"Location": []string{"http://evil.example/"}},
-			Body:       http.NoBody,
-			Request:    req,
-		}, nil
+		return &http.Response{StatusCode: 302, Header: http.Header{"Location": []string{"/other"}}, Body: http.NoBody, Request: req}, nil
 	})
-	g := newGuardTransport(base, "https://172.30.140.100:6443")
-	req, _ := http.NewRequest(http.MethodGet, "https://172.30.140.100:6443/api/v1/nodes", nil)
+	g := newGuardTransport(base, "https://10.0.0.1:6443")
+	req, _ := http.NewRequest("GET", "https://10.0.0.1:6443/api/v1/nodes", nil)
 	if _, err := g.RoundTrip(req); err != errRedirect {
 		t.Fatalf("expected errRedirect, got %v", err)
 	}

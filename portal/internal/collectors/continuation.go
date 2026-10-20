@@ -8,8 +8,8 @@ import (
 
 // listWithContinue pages through a Kubernetes List using the Continue token
 // until the cap is reached or there are no more pages. Returns the accumulated
-// items, whether the result is truncated (a continue token remains), and any
-// error. pageSize <= cap; the returned slice never exceeds cap.
+// items (never exceeding cap), whether the result is truncated (a continue
+// token remains or the cap was hit), and any error. pageSize <= cap.
 func listWithContinue[T any](ctx context.Context, pageSize, cap int, listFn func(opts metav1.ListOptions) (items []T, cont string, err error)) ([]T, bool, error) {
 	out := make([]T, 0, pageSize)
 	opts := metav1.ListOptions{Limit: int64(pageSize)}
@@ -18,9 +18,17 @@ func listWithContinue[T any](ctx context.Context, pageSize, cap int, listFn func
 		if err != nil {
 			return out, cont != "", err
 		}
+		room := cap - len(out)
+		if len(items) > room {
+			out = append(out, items[:room]...)
+			return out, true, nil
+		}
 		out = append(out, items...)
-		if cont == "" || len(out) >= cap {
-			return out, cont != "", nil
+		if cont == "" {
+			return out, false, nil
+		}
+		if len(out) >= cap {
+			return out, true, nil
 		}
 		opts.Continue = cont
 	}

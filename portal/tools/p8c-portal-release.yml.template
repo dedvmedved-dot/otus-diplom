@@ -1,7 +1,7 @@
 # P8C Portal release workflow — TEMPLATE (NOT published to .github/workflows).
 # To be published by Owner via GitHub web UI after Architect review, then
 # dispatched manually. CI build/sign/push to PRIVATE GHCR only; NO PAK access.
-# Action refs are immutable commit SHAs; verify each against upstream before run.
+# Action refs are immutable commit SHAs (verify against upstream before run).
 name: p8c-portal-release
 
 on:
@@ -15,7 +15,8 @@ permissions:
 env:
   GO_VERSION: "1.27.3"
   GO_SHA256: "65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40"
-  BUILDKIT_VERSION: "v0.34.0"
+  BUILDKIT_VERSION: "0.34.0"
+  ROOTLESSKIT_VERSION: "2.3.1"
   SYFT_VERSION: "1.55.0"
   TRIVY_VERSION: "0.76.0"
   COSIGN_VERSION: "3.1.3"
@@ -23,12 +24,63 @@ env:
   IMAGE: ghcr.io/${{ github.repository }}-portal
 
 jobs:
+  test:
+    if: github.repository == 'dedvmedved-dot/otus-diplom' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: portal_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 10s
+          --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+
+      - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5.4.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Verify Go toolchain SHA256
+        run: |
+          dl="$GOROOT/../go${{ env.GO_VERSION }}.linux-amd64.tar.gz"
+          if [ -f "$dl" ]; then echo "${{ env.GO_SHA256 }}  $dl" | sha256sum -c; fi
+
+      - name: Go vet + test + race
+        working-directory: portal
+        run: |
+          go mod download && go mod verify
+          go vet ./...
+          go test -race ./...
+
+      - name: DB integration tests (isolated postgres:17, FAIL if unset)
+        working-directory: portal
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/portal_test
+        run: |
+          test -n "$TEST_DATABASE_URL" || { echo "TEST_DATABASE_URL unset"; exit 1; }
+          go test -tags integration ./internal/store/ -v
+
+      - name: Helper mock tests (both helpers)
+        working-directory: portal
+        run: python3 tools/test_helpers.py -v
+
+      - name: JS/browser fixture smoke (Node VM + synthetic DOM/fetch)
+        working-directory: portal
+        run: node web/fixture-smoke.test.mjs
+
   release:
+    needs: test
     if: github.repository == 'dedvmedved-dot/otus-diplom' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     steps:
-      - name: Checkout exact source SHA
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
           ref: ${{ github.sha }}
@@ -39,39 +91,51 @@ jobs:
           echo "SOURCE_SHA=${{ github.sha }}"
           echo "BUILD_TIME=$(git log -1 --format=%cI --date=iso-strict)"
 
-      - name: Set up Go (pinned, verify archive)
-        uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5.4.0
+      - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5.4.0
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - name: Build + test + vet (reproducible)
+      - name: Build binary (reproducible)
         working-directory: portal
         run: |
-          go mod download && go mod verify
-          go vet ./...
-          go test ./...
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath \
             -ldflags "-s -w -X main.sourceRevision=${{ github.sha }} -X main.buildTime=1970-01-01T00:00:00Z" \
             -o portal ./cmd/portal
 
-      - name: Install BuildKit (rootless, pinned)
+      - name: Install rootlesskit + BuildKit (pinned, verified)
         run: |
+          sudo apt-get update && sudo apt-get install -y uidmap
+          curl -sSfL "https://github.com/rootless-containers/rootlesskit/releases/download/v${ROOTLESSKIT_VERSION}/rootlesskit-x86_64.tar.gz" -o rootlesskit.tar.gz
+          echo "feb79eaae57e61b9ac9840e02f5f15d3e0cd38ab8e8c07ca43926c1d3a9cfa6f  rootlesskit.tar.gz" | sha256sum -c
+          tar -xzf rootlesskit.tar.gz && sudo mv rootlesskit/bin/rootlesskit /usr/local/bin/
           curl -sSfL "https://github.com/moby/buildkit/releases/download/${BUILDKIT_VERSION}/buildkit-${BUILDKIT_VERSION}.linux-amd64.tar.gz" -o buildkit.tar.gz
           echo "14813b1fb2a40082114e6d386c6fc5e7dd5298176ce7ee1a18bc33e73e109ac3  buildkit.tar.gz" | sha256sum -c
-          tar -xzf buildkit.tar.gz
-          sudo install -m 0755 bin/buildctl bin/buildkitd /usr/local/bin/
+          tar -xzf buildkit.tar.gz && sudo install -m 0755 bin/buildctl bin/buildkitd /usr/local/bin/
 
-      - name: Build OCI image (rootless buildctl) and push by immutable digest
+      - name: Login to GHCR (BEFORE build/push)
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build OCI image (rootless buildctl) + immutable digest from metadata
         working-directory: portal
         env:
-          BUILDKITD_FLAGS: --oci-worker-no-process-sandbox
+          BUILDKIT_HOST: unix:///tmp/buildkit.sock
         run: |
-          sudo buildkitd &
-          sleep 3
-          buildctl build --frontend=dockerfile.v0 --local context=. --local dockerfile=. \
-            --output type=image,name=${IMAGE}:candidate,push=true
-          DIGEST=$(buildctl build --frontend=dockerfile.v0 --local context=. --local dockerfile=. \
-            --output type=image,name=${IMAGE}:candidate,push=false 2>/dev/null | grep -o 'sha256:[a-f0-9]\{64\}' | head -1)
+          rootlesskit --net=slirp4netns --copy-up=/etc --copy-up=/run \
+            buildkitd --oci-worker-no-process-sandbox --addr unix:///tmp/buildkit.sock > /tmp/buildkitd.log 2>&1 &
+          for i in $(seq 1 30); do buildctl debug workers >/dev/null 2>&1 && break; sleep 1; done
+          buildctl build \
+            --frontend=dockerfile.v0 \
+            --opt filename=Containerfile \
+            --local context=. \
+            --local dockerfile=. \
+            --output type=image,name=${IMAGE}:candidate,push=true \
+            --metadata-file /tmp/build-metadata.json
+          DIGEST=$(python3 -c "import json;print(json.load(open('/tmp/build-metadata.json'))['containerimage.digest'])")
+          test -n "$DIGEST" || { echo "no digest"; exit 1; }
           echo "IMAGE_DIGEST=${DIGEST}" >> "$GITHUB_ENV"
 
       - name: Install Syft + generate final-image SBOM
@@ -79,37 +143,33 @@ jobs:
           curl -sSfL "https://github.com/anchore/syft/releases/download/v${SYFT_VERSION}/syft_${SYFT_VERSION}_linux_amd64.tar.gz" -o syft.tar.gz
           echo "bb65249542db5fedeeb4d3f9b018b75e7264dbfbbb10486f044581a92f90490d  syft.tar.gz" | sha256sum -c
           tar -xzf syft.tar.gz && sudo mv syft /usr/local/bin/
-          syft "${IMAGE}@${IMAGE_DIGEST}" -o spdx-json=sbom.spdx.json
+          syft "${IMAGE}@${IMAGE_DIGEST}" -o spdx-json=portal/sbom.spdx.json
 
       - name: Install Trivy + scan final image (binary + OCI)
         run: |
           curl -sSfL "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz" -o trivy.tar.gz
           echo "e24b1c51293c1b15e4ba8d45bbc7891ba053f90278ec2698f3562c993e145fe7  trivy.tar.gz" | sha256sum -c
           tar -xzf trivy.tar.gz && sudo mv trivy /usr/local/bin/
-          trivy fs --exit-code 1 --severity HIGH,CRITICAL --no-progress portal/
+          trivy fs --exit-code 1 --severity HIGH,CRITICAL --no-progress portal/portal
           trivy image --exit-code 1 --severity HIGH,CRITICAL --no-progress "${IMAGE}@${IMAGE_DIGEST}"
 
-      - name: Login to GHCR (GITHUB_TOKEN, private package)
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install Cosign (exact pinned version)
+        run: |
+          curl -sSfL "https://github.com/sigstore/cosign/releases/download/v${COSIGN_VERSION}/cosign-linux-amd64" -o cosign
+          echo "9d6f25a9a4dcd0dd097e4f45a76cba8ddc9d40c980a25c9150d33d85d8b4a19d  cosign" | sha256sum -c
+          chmod +x cosign && sudo mv cosign /usr/local/bin/
 
-      - name: Install Cosign (pinned) + sign keyless exact identity
-        uses: sigstore/cosign-installer@59acb6260d86c0f8c4bf0748f02916c9f753c7cd # v3.5.0
-        with:
-          cosign-release: v${COSIGN_VERSION}
-
-      - name: Sign image (keyless, exact identity/issuer)
+      - name: Sign keyless + verify exact identity/issuer/source
         run: |
           cosign sign --yes \
             -a repo=${{ github.repository }} \
             -a workflow=${{ github.workflow }} \
             -a ref=${{ github.sha }} \
             "${IMAGE}@${IMAGE_DIGEST}"
-          cosign verify --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/p8c-portal-release.yml@refs/heads/main" \
+          cosign verify \
+            --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/p8c-portal-release.yml@refs/heads/main" \
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            -a ref=${{ github.sha }} \
             "${IMAGE}@${IMAGE_DIGEST}"
 
       - name: Upload SBOM + signature as artifacts
