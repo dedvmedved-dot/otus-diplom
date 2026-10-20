@@ -1,0 +1,5 @@
+go build (CGO_ENABLED=0 GOOS=linux GOARCH=amd64 -trimpath): PASS exit 0
+go vet ./...: PASS exit 0
+go test ./...: PASS exit 0 (auth, collectors incl transport+continuation, httpapi incl 11-handler contract)
+go vet -tags integration ./internal/store/: PASS exit 0 (compile check; runtime in CI postgres:17)
+python3 portal/tools/test_helpers.py: 7/7 PASS exit 0

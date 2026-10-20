@@ -1,0 +1,9 @@
+{
+  "source_sha": "871315928f07dd209fc1377451e02931582b8ffc",
+  "instance_manager_port_confirmed": 8000,
+  "cnpg_labels": "cnpg.io/cluster=portal-db, cnpg.io/podRole=instance",
+  "api_server": "172.30.140.101-103:6443 (VIP 172.30.140.100)",
+  "dns": "kube-dns 10.96.0.10 (UDP/TCP 53)",
+  "s3": "172.30.143.10:443",
+  "networkpolicy": "none cluster-wide (baseline absent)"
+}
