@@ -169,6 +169,12 @@ func persistOnce(ctx context.Context, st *store.Store, col *collectors.Collector
 	if err := st.InsertBatch(ctx, id, snap.CollectedAt, cfg.SourceRevision, "unknown", snap.Partial, summary); err != nil {
 		ps.DataLoss.Store(true)
 		ps.LagSeconds.Add(1)
+		// Status transition: portal-status event on write failure.
+		_ = st.UpsertEvent(ctx, store.TimelineEvent{
+			DedupKey: "portal-status:persistence-write-failed", Source: "portal-status",
+			Severity: "critical", ReasonCode: "PERSISTENCE_WRITE_FAILED",
+			Occurrences: 1, Message: "application DB batch write failed",
+		})
 		return
 	}
 	writeFailed := false
