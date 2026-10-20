@@ -702,30 +702,38 @@ func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := s.store.ListEvents(r.Context(), since, severity, 200)
+	storage := "postgresql"
+	var events []model.TimelineEvent
 	if err != nil {
-		writeError(w, http.StatusServiceUnavailable, "UNAVAILABLE", "events store unavailable")
-		return
-	}
-	events := make([]model.TimelineEvent, 0, len(rows))
-	for _, row := range rows {
-		if ns != "" && (row.ObjectNS == "" || row.ObjectNS != ns) {
-			continue
+		// Bounded in-memory fallback: serve the latest collected events instead
+		// of failing closed. auditComplete remains false.
+		storage = "memory-fallback"
+		if snap := s.snapshot(); snap != nil {
+			events = snap.Events
 		}
-		var st *string
-		if row.SourceTime != nil {
-			v := row.SourceTime.UTC().Format(time.RFC3339)
-			st = &v
+		events = filterEventsInMemory(events, since, severity, ns)
+	} else {
+		events = make([]model.TimelineEvent, 0, len(rows))
+		for _, row := range rows {
+			if ns != "" && (row.ObjectNS == "" || row.ObjectNS != ns) {
+				continue
+			}
+			var st *string
+			if row.SourceTime != nil {
+				v := row.SourceTime.UTC().Format(time.RFC3339)
+				st = &v
+			}
+			events = append(events, model.TimelineEvent{
+				ID: row.ID, Source: row.Source, SourceTime: st,
+				IngestedAt: row.IngestedAt.UTC().Format(time.RFC3339), Severity: row.Severity,
+				ObjectKind: strPtrOrNil(row.ObjectKind), Namespace: strPtrOrNil(row.ObjectNS),
+				ObjectName: strPtrOrNil(row.ObjectName), ReasonCode: row.ReasonCode,
+				OccurrenceCount: row.Occurrences, Message: row.Message,
+			})
 		}
-		events = append(events, model.TimelineEvent{
-			ID: row.ID, Source: row.Source, SourceTime: st,
-			IngestedAt: row.IngestedAt.UTC().Format(time.RFC3339), Severity: row.Severity,
-			ObjectKind: strPtrOrNil(row.ObjectKind), Namespace: strPtrOrNil(row.ObjectNS),
-			ObjectName: strPtrOrNil(row.ObjectName), ReasonCode: row.ReasonCode,
-			OccurrenceCount: row.Occurrences, Message: row.Message,
-		})
 	}
 	page, next := s.paginate(events, limit, offset)
-	data := model.Events{Storage: "postgresql", AuditComplete: false, Items: page}
+	data := model.Events{Storage: storage, AuditComplete: false, Items: page}
 	env := s.envelope(s.snapshot())
 	env.Data = data
 	env.NextCursor = next
@@ -803,6 +811,31 @@ func filterMetrics(items []model.Metric, ns string) []model.Metric {
 		if it.Namespace != nil && *it.Namespace == ns {
 			out = append(out, it)
 		}
+	}
+	return out
+}
+
+// filterEventsInMemory applies since/severity/namespace filters to in-memory
+// events (bounded memory fallback path).
+func filterEventsInMemory(items []model.TimelineEvent, since *time.Time, severity, ns string) []model.TimelineEvent {
+	out := make([]model.TimelineEvent, 0, len(items))
+	for _, it := range items {
+		if ns != "" && (it.Namespace == nil || *it.Namespace != ns) {
+			continue
+		}
+		if severity != "" && it.Severity != severity {
+			continue
+		}
+		if since != nil {
+			if it.SourceTime == nil {
+				continue
+			}
+			t, err := time.Parse(time.RFC3339, *it.SourceTime)
+			if err != nil || t.Before(*since) {
+				continue
+			}
+		}
+		out = append(out, it)
 	}
 	return out
 }

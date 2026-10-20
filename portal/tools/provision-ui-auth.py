@@ -24,6 +24,7 @@ Exit codes:
 """
 import argparse
 import base64
+import getpass
 import hashlib
 import json
 import subprocess
@@ -70,7 +71,6 @@ def main() -> int:
 
     require_tty()
 
-    import getpass
     pwd1 = getpass.getpass("Enter operator password (43-char base64url, no echo): ")
     pwd2 = getpass.getpass("Confirm operator password: ")
     if pwd1 != pwd2:

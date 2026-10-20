@@ -23,6 +23,7 @@ Exit codes:
 """
 import argparse
 import base64
+import getpass
 import json
 import subprocess
 import sys
@@ -57,7 +58,6 @@ def main() -> int:
 
     require_tty()
 
-    import getpass
     username = getpass.getpass(f"Registry username for {REGISTRY} (read-only credential, no echo): ")
     token = getpass.getpass(f"Registry token for {REGISTRY} (no echo): ")
     if not username or not token:
