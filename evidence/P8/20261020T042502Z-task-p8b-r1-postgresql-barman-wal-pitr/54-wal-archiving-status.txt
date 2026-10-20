@@ -1,0 +1,1 @@
+archive_mode=on, archive_timeout=5min(300s), archive_command=/controller/manager wal-archive.

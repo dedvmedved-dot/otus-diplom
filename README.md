@@ -89,6 +89,10 @@ Velero AWS plugin:   v1.14.2
 SeaweedFS:           4.48
 BSL:                 Available
 Velero S3 prefix:    velero/
+CloudNativePG:       1.30.1
+PostgreSQL:          17.10 (portal-db 3/3 HA)
+Barman Cloud Plugin: 0.13.0
+cert-manager:        1.21.0
 Combined-node taint: PreferNoSchedule
 Helm:                4.1.3
 ```

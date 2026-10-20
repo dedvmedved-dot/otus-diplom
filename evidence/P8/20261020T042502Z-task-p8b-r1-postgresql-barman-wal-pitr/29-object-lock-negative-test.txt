@@ -1,0 +1,1 @@
+barman delete-version on GOVERNANCE object: DENIED (AccessDenied); retention inherited GOVERNANCE 7d; BYPASS_USED=NO.

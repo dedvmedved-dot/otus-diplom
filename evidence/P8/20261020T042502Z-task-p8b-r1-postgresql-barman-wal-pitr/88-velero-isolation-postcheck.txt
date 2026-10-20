@@ -1,0 +1,1 @@
+VELERO_BACKUP_DOMAIN_REGRESSION=NO (BSL Available, portal-velero-backup untouched).

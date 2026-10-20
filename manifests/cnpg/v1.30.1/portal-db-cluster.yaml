@@ -21,6 +21,14 @@ spec:
     enablePodAntiAffinity: true
     topologyKey: kubernetes.io/hostname
     podAntiAffinityType: required
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: portal-db-backup
+  postgresql:
+    parameters:
+      archive_timeout: "300s"
   bootstrap:
     initdb:
       database: portal

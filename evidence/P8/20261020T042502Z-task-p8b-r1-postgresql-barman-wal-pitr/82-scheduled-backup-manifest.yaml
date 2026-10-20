@@ -1,0 +1,1 @@
+ScheduledBackup portal-db-daily (0 0 2 * * *, method plugin, target prefer-standby).

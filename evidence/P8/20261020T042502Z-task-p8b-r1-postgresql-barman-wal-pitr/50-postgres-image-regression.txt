@@ -1,0 +1,1 @@
+POSTGRES_IMAGE_REGRESSION=NO (ba9e4969... unchanged).

@@ -1,0 +1,1 @@
+S3_POSTCHECK=PASS (both buckets versioned + Object Lock; PG lifecycle 30d).

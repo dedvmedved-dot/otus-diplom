@@ -1,0 +1,1 @@
+BARMAN_PLUGIN_RUNTIME=PASS (Deployment 1/1, ObjectStore CRD Established, certs Ready).

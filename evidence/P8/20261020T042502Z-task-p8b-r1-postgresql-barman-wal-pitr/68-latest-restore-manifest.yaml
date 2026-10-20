@@ -1,0 +1,1 @@
+portal-db-restore-latest (recovery source portal-db-source, plugin barman-cloud).

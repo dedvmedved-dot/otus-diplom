@@ -1,0 +1,35 @@
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: portal-db-backup
+  namespace: portal
+spec:
+  retentionPolicy: 14d
+  configuration:
+    destinationPath: s3://portal-postgres-backup/
+    endpointURL: https://s3-backup.demo-pak.test
+    endpointCA:
+      name: portal-barman-s3-ca
+      key: ca.crt
+    s3Credentials:
+      accessKeyId:
+        name: portal-barman-s3-credentials
+        key: ACCESS_KEY_ID
+      secretAccessKey:
+        name: portal-barman-s3-credentials
+        key: ACCESS_SECRET_KEY
+      region:
+        name: portal-barman-s3-credentials
+        key: AWS_REGION
+    data:
+      compression: gzip
+      additionalCommandArgs:
+        - --addressing-style=path
+      restoreAdditionalCommandArgs:
+        - --addressing-style=path
+    wal:
+      compression: gzip
+      archiveAdditionalCommandArgs:
+        - --addressing-style=path
+      restoreAdditionalCommandArgs:
+        - --addressing-style=path

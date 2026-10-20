@@ -1,0 +1,1 @@
+PG_S3_LIFECYCLE_DAYS=30 (expire-30d).

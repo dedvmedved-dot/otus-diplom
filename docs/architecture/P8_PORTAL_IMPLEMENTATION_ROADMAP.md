@@ -311,7 +311,7 @@ P9 предназначен для интегральной финальной �
 
 ```text
 CURRENT:
-P8B PostgreSQL native backup + WAL/S3
+P8B final Architect gate
 
 THEN:
 P7C-B2 FINAL ACCEPTED

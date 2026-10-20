@@ -1,0 +1,1 @@
+PLUGIN_ROLLOUT=PASS (3/3, sidecar 3/3).

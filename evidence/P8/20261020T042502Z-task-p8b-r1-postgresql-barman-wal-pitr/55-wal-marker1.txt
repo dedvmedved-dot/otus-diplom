@@ -1,0 +1,1 @@
+marker id=1 BASELINE_BEFORE_BACKUP; hash a4110793ee7156acdd622a1a93d8f947; pg_switch_wal 0/A0299D8.
