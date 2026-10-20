@@ -15,9 +15,12 @@ function pill(text, kind) {
   return `<span class="pill ${kind || 'muted'}">${escapeHtml(text)}</span>`;
 }
 
+// setOverall: freshness downgrades the displayed status — a stale/unavailable
+// snapshot must NOT stay green even if its last health was "healthy".
 function setOverall(health, freshness) {
   const el = document.getElementById('overall-status');
-  el.className = 'status ' + (healthClass(health));
+  const effective = (freshness === 'stale' || freshness === 'unavailable') ? 'warning' : health;
+  el.className = 'status ' + healthClass(effective);
   document.getElementById('overall-text').textContent = health || '—';
   const f = document.getElementById('freshness');
   f.textContent = 'обновление: ' + (freshness || '—');
@@ -31,34 +34,58 @@ async function getJSON(path) {
   return r.json();
 }
 
-function rowsToTable(elId, headers, rows) {
+// rowsToTable distinguishes "source unavailable" (fetch failed) from "empty
+// result". source is the raw fetch result (null on error).
+function rowsToTable(elId, headers, rows, source) {
   const el = document.getElementById(elId);
   if (!el) return;
+  if (source === null || source === undefined) {
+    el.innerHTML = '<p class="empty warning">источник недоступен</p>';
+    return;
+  }
   const head = '<thead><tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr></thead>';
   const body = '<tbody>' + rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('') + '</tbody>';
-  el.innerHTML = rows.length ? head + body : `<p class="empty">Нет данных</p>`;
+  el.innerHTML = rows.length ? head + body : '<p class="empty">Нет данных</p>';
+}
+
+function cursorNote(source) {
+  if (source && source.nextCursor) {
+    return '<div class="note">есть следующая страница (nextCursor)</div>';
+  }
+  return '';
+}
+
+function storageHealth(d) {
+  // Scoped health from the observed storage, not a fixed constant.
+  const items = d?.items || [];
+  if (!items.length) return 'unknown';
+  const unbound = items.some(s => s.phase === 'Pending' || (s.phase === 'Bound' ? false : s.health === 'warning' || s.health === 'critical'));
+  return unbound ? 'warning' : 'healthy';
 }
 
 async function renderOverview() {
-  const [summary, database, backups, events] = await Promise.all([
+  const [summary, database, backups, events, storage] = await Promise.all([
     getJSON(`${API}/summary`).catch(() => null),
     getJSON(`${API}/database`).catch(() => null),
     getJSON(`${API}/backups`).catch(() => null),
     getJSON(`${API}/events?limit=10`).catch(() => null),
+    getJSON(`${API}/storage`).catch(() => null),
   ]);
   const s = summary?.data || {};
-  setOverall(s.overall || 'unknown', summary?.freshness);
+  setOverall(s.overall || (summary ? 'unknown' : 'unavailable'), summary?.freshness);
 
   const c = s.counts || {};
   const db = database?.data || {};
   const b = backups?.data || {};
+  const st = storage?.data || {};
+  const stHealth = storageHealth(st);
   const cards = [
     ['Nodes', `${c.nodesReady ?? '—'}/${c.nodesExpected ?? '—'}`, 'ready/expected', c.nodesReady === c.nodesExpected && c.nodesObserved != null ? 'healthy' : 'unknown'],
     ['PostgreSQL', `${db.readyInstances ?? '—'}/${db.desiredInstances ?? '—'}`, db.phase || '', db.readyInstances === db.desiredInstances && db.readyInstances > 0 ? 'healthy' : 'unknown'],
     ['Velero backup', b.velero?.health || '—', 'velero domain', healthClass(b.velero?.health)],
     ['PostgreSQL backup/WAL', b.postgresql?.health || '—', 'CNPG + Barman', healthClass(b.postgresql?.health)],
-    ['Storage (k8s view)', `${c.pvcBound ?? '—'}/${c.pvcObserved ?? '—'}`, 'pvc bound/observed; DRBD not observed', 'unknown'],
-    ['Pods', `${c.podsReady ?? '—'}/${c.podsObserved ?? '—'}`, 'ready/observed', 'unknown'],
+    ['Storage (k8s view)', `${c.pvcBound ?? '—'}/${c.pvcObserved ?? '—'}`, `pvc bound/observed; DRBD ${st.drbdDirectHealth ?? 'not_observed'}`, stHealth],
+    ['Pods', `${c.podsReady ?? '—'}/${c.podsObserved ?? '—'}`, 'ready/observed', c.podsObserved != null && c.podsReady === c.podsObserved ? 'healthy' : 'unknown'],
   ];
   document.getElementById('cards').innerHTML = cards.map(([t, v, sub, kind]) =>
     `<div class="card ${kind}"><h3>${t}</h3><div class="value">${escapeHtml(v)}</div><div class="sub">${escapeHtml(sub)}</div></div>`
@@ -83,13 +110,13 @@ async function renderKubernetes() {
     getJSON(`${API}/services`).catch(() => null),
   ]);
   rowsToTable('table-nodes', ['Имя', 'Ready', 'Health', 'CPU alloc', 'Memory alloc'],
-    (nodes?.data?.items || []).map(n => [escapeHtml(n.name), pill(n.ready, n.ready === 'True' ? 'healthy' : n.ready === 'False' ? 'critical' : 'muted'), pill(n.health, healthClass(n.health)), escapeHtml(n.allocatableCpuCores ?? '—'), escapeHtml(n.allocatableMemoryBytes ?? '—')]));
+    (nodes?.data?.items || []).map(n => [escapeHtml(n.name), pill(n.ready, n.ready === 'True' ? 'healthy' : n.ready === 'False' ? 'critical' : 'muted'), pill(n.health, healthClass(n.health)), escapeHtml(n.allocatableCpuCores ?? '—'), escapeHtml(n.allocatableMemoryBytes ?? '—')]), nodes);
   rowsToTable('table-pods', ['Namespace', 'Имя', 'Phase', 'Ready', 'Restarts', 'Health'],
-    (pods?.data?.items || []).map(p => [escapeHtml(p.namespace), escapeHtml(p.name), pill(p.phase, p.phase === 'Running' ? 'healthy' : p.phase === 'Failed' ? 'critical' : p.phase === 'Pending' ? 'warning' : 'muted'), escapeHtml(`${p.readyContainers}/${p.totalContainers}`), escapeHtml(String(p.restartCount)), pill(p.health, healthClass(p.health))]));
+    (pods?.data?.items || []).map(p => [escapeHtml(p.namespace), escapeHtml(p.name), pill(p.phase, p.phase === 'Running' ? 'healthy' : p.phase === 'Failed' ? 'critical' : p.phase === 'Pending' ? 'warning' : 'muted'), escapeHtml(`${p.readyContainers}/${p.totalContainers}`), escapeHtml(String(p.restartCount)), pill(p.health, healthClass(p.health))]), pods);
   rowsToTable('table-workloads', ['Kind', 'Namespace', 'Имя', 'Ready', 'Desired', 'Health'],
-    (workloads?.data?.items || []).map(w => [escapeHtml(w.kind), escapeHtml(w.namespace), escapeHtml(w.name), escapeHtml(w.ready ?? '—'), escapeHtml(w.desired ?? '—'), pill(w.health, healthClass(w.health))]));
+    (workloads?.data?.items || []).map(w => [escapeHtml(w.kind), escapeHtml(w.namespace), escapeHtml(w.name), escapeHtml(w.ready ?? '—'), escapeHtml(w.desired ?? '—'), pill(w.health, healthClass(w.health))]), workloads);
   rowsToTable('table-services', ['Namespace', 'Имя', 'Type', 'Ready endpoints', 'Health'],
-    (services?.data?.items || []).map(sv => [escapeHtml(sv.namespace), escapeHtml(sv.name), escapeHtml(sv.type), escapeHtml(sv.readyEndpoints ?? '—'), pill(sv.health, healthClass(sv.health))]));
+    (services?.data?.items || []).map(sv => [escapeHtml(sv.namespace), escapeHtml(sv.name), escapeHtml(sv.type), escapeHtml(sv.readyEndpoints ?? '—'), pill(sv.health, healthClass(sv.health))]), services);
 }
 
 async function renderStorage() {
@@ -98,7 +125,7 @@ async function renderStorage() {
   rowsToTable('table-storage', ['Kind', 'Namespace', 'Имя', 'Phase', 'ReadyToUse', 'Health'],
     (d.items || []).map(s => [escapeHtml(s.kind), escapeHtml(s.namespace ?? '—'), escapeHtml(s.name), escapeHtml(s.phase ?? '—'),
       s.kind === 'VolumeSnapshot' ? escapeHtml(s.snapshotReadyToUse ?? 'unknown') : '—',
-      pill(s.health, healthClass(s.health))]));
+      pill(s.health, healthClass(s.health))]), storage);
 }
 
 async function renderBackups() {
@@ -106,16 +133,23 @@ async function renderBackups() {
   const b = backups?.data || {};
   const vel = b.velero || {};
   const pg = b.postgresql || {};
+  const barman = pg.barman || {};
+  const wal = pg.wal || {};
+  // Rows carry [domain, kind, ns, name, phase, health-value].
   const rows = [
-    ...(vel.locations || []).map(x => ['velero', 'Location', x.namespace, x.name, x.phase, healthClass(x.health)]),
-    ...(vel.backups || []).map(x => ['velero', 'Backup', x.namespace, x.name, x.phase, healthClass(x.health)]),
-    ...(vel.restores || []).map(x => ['velero', 'Restore', x.namespace, x.name, x.phase, healthClass(x.health)]),
-    ...(pg.backups || []).map(x => ['postgresql', 'Backup', x.namespace, x.name, x.phase, healthClass(x.health)]),
+    ...(vel.locations || []).map(x => ['velero', 'Location', x.namespace, x.name, x.phase, x.health]),
+    ...(vel.backups || []).map(x => ['velero', 'Backup', x.namespace, x.name, x.phase, x.health]),
+    ...(vel.restores || []).map(x => ['velero', 'Restore', x.namespace, x.name, x.phase, x.health]),
+    ...(pg.backups || []).map(x => ['postgresql', 'Backup', x.namespace, x.name, x.phase, x.health]),
   ];
   rowsToTable('table-backups', ['Domain', 'Kind', 'Namespace', 'Имя', 'Phase', 'Health'],
-    rows.map(r => [escapeHtml(r[0]), escapeHtml(r[1]), escapeHtml(r[2]), escapeHtml(r[3]), pill(r[4], healthClass(r[4])), pill(r[4], r[5])]));
+    rows.map(r => [escapeHtml(r[0]), escapeHtml(r[1]), escapeHtml(r[2]), escapeHtml(r[3]), pill(r[4], healthClass(r[4])), pill(r[5], healthClass(r[5]))]), backups);
   document.getElementById('pg-backup-meta').innerHTML =
-    `schedule=${escapeHtml(pg.schedule ?? '—')} target=${escapeHtml(pg.target ?? '—')} observed=${pg.scheduledBackupObserved ? 'да' : 'нет'} lastSuccess=${escapeHtml(pg.lastSuccessfulBackupAt ?? '—')}`;
+    `schedule=${escapeHtml(pg.expectedSchedule ?? pg.schedule ?? '—')} target=${escapeHtml(pg.expectedTarget ?? pg.target ?? '—')} ` +
+    `lastSuccess=${escapeHtml(pg.lastSuccessfulBackupAt ?? '—')} | ` +
+    `Barman scope=${escapeHtml(barman.scope ?? '—')} recoverabilityPoint=${escapeHtml(barman.firstRecoverabilityPoint ?? '—')} ` +
+    `lastAvailable=${escapeHtml(barman.lastAvailableBackupTimestamp ?? '—')} failed=${escapeHtml(barman.lastFailedBackupTimestamp ?? '0')} | ` +
+    `WAL expectedArchiveTimeout=${escapeHtml(wal.expectedArchiveTimeoutSeconds ?? '—')}s`;
 }
 
 async function renderDatabase() {
@@ -137,14 +171,17 @@ async function renderDatabase() {
 async function renderMetrics() {
   const m = await getJSON(`${API}/metrics`).catch(() => null);
   rowsToTable('table-metrics', ['Kind', 'Namespace', 'Имя', 'CPU (cores)', 'Memory (bytes)'],
-    (m?.data?.items || []).map(x => [escapeHtml(x.kind), escapeHtml(x.namespace ?? '—'), escapeHtml(x.name), escapeHtml(x.cpuCores ?? '—'), escapeHtml(x.memoryBytes ?? '—')]));
+    (m?.data?.items || []).map(x => [escapeHtml(x.kind), escapeHtml(x.namespace ?? '—'), escapeHtml(x.name), escapeHtml(x.cpuCores ?? '—'), escapeHtml(x.memoryBytes ?? '—')]), m);
 }
 
 async function renderEvents() {
   const e = await getJSON(`${API}/events?limit=200`).catch(() => null);
   const d = e?.data || {};
-  rowsToTable('table-events', ['Ingested', 'Source', 'Severity', 'Object', 'Reason', 'Count', 'Message'],
-    (d.items || []).map(ev => [escapeHtml(ev.ingestedAt), escapeHtml(ev.source), pill(ev.severity, ev.severity === 'critical' ? 'critical' : ev.severity === 'warning' ? 'warning' : 'muted'), escapeHtml(ev.objectName ?? '—'), escapeHtml(ev.reasonCode), escapeHtml(String(ev.occurrenceCount)), escapeHtml(ev.message)]));
+  const rows = (d.items || []).map(ev => [escapeHtml(ev.ingestedAt), escapeHtml(ev.source), pill(ev.severity, ev.severity === 'critical' ? 'critical' : ev.severity === 'warning' ? 'warning' : 'muted'), escapeHtml(ev.objectName ?? '—'), escapeHtml(ev.reasonCode), escapeHtml(String(ev.occurrenceCount)), escapeHtml(ev.message)]);
+  document.getElementById('table-events').innerHTML =
+    (e === null ? '<p class="empty warning">события недоступны</p>' : '') +
+    (rows.length ? '<thead><tr>' + ['Ingested','Source','Severity','Object','Reason','Count','Message'].map(h => `<th>${h}</th>`).join('') + '</tr></thead><tbody>' + rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('') + '</tbody>' : (e === null ? '' : '<p class="empty">событий нет</p>')) +
+    cursorNote(e);
 }
 
 const renderers = {

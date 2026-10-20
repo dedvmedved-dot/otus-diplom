@@ -1,24 +1,30 @@
 //go:build integration
 
-// Package store integration tests run against an isolated PostgreSQL 17
-// (CI service container postgres:17). They are NOT part of `go test ./...`;
-// run with: TEST_DATABASE_URL=postgres://... go test -tags integration ./internal/store/
+// Package store integration tests run against an isolated, disposable
+// PostgreSQL 17 (local cluster or CI postgres:17 service). They are NOT part of
+// `go test ./...`; run with:
+//   TEST_DATABASE_URL=postgres://... go test -tags integration ./internal/store/
+// The suite FAILS (not skips) if TEST_DATABASE_URL is unset.
 package store
 
 import (
 	"context"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/dedvmedved-dot/otus-diplom/portal/migrations"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+const sourceRev = "a000000000000000000000000000000000000000"
 
 func integrationPool(t *testing.T) *pgxpool.Pool {
 	t.Helper()
 	url := os.Getenv("TEST_DATABASE_URL")
 	if url == "" {
-		t.Skip("TEST_DATABASE_URL not set; run in CI with postgres:17")
+		t.Fatal("TEST_DATABASE_URL is unset; integration tests require an isolated PostgreSQL 17")
 	}
 	ctx := context.Background()
 	pool, err := pgxpool.New(ctx, url)
@@ -26,78 +32,64 @@ func integrationPool(t *testing.T) *pgxpool.Pool {
 		t.Fatalf("connect: %v", err)
 	}
 	t.Cleanup(pool.Close)
-	if _, err := pool.Exec(ctx, `CREATE SCHEMA IF NOT EXISTS portal`); err != nil {
-		t.Fatalf("create schema: %v", err)
-	}
 	return pool
 }
 
-func migrate(t *testing.T, pool *pgxpool.Pool, version int64, checksum, rev, ddl string) {
+// freshSchema drops and recreates the application schema for full isolation.
+func freshSchema(t *testing.T) (*pgxpool.Pool, *Store) {
 	t.Helper()
+	pool := integrationPool(t)
 	ctx := context.Background()
-	tx, err := pool.Begin(ctx)
-	if err != nil {
-		t.Fatalf("begin: %v", err)
+	if _, err := pool.Exec(ctx, `DROP SCHEMA IF EXISTS portal CASCADE`); err != nil {
+		t.Fatalf("drop schema: %v", err)
 	}
-	defer tx.Rollback(ctx) //nolint:errcheck
-	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock($1)`, AdvisoryLockID); err != nil {
-		t.Fatalf("lock: %v", err)
+	if _, err := pool.Exec(ctx, `CREATE SCHEMA portal`); err != nil {
+		t.Fatalf("create schema: %v", err)
 	}
-	if _, err := tx.Exec(ctx, `CREATE TABLE IF NOT EXISTS portal.schema_migrations (
-		version bigint PRIMARY KEY CHECK (version > 0),
-		checksum text NOT NULL CHECK (checksum ~ '^[0-9a-f]{64}$'),
-		applied_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		source_revision text NOT NULL CHECK (source_revision ~ '^[0-9a-f]{40}$')
-	)`); err != nil {
-		t.Fatalf("ledger: %v", err)
+	s := &Store{pool: pool}
+	// Apply the ACTUAL embedded migration (not a duplicate DDL string).
+	if err := s.Migrate(ctx, migrations.Version0001, migrations.Checksum0001(), sourceRev, migrations.SQL0001); err != nil {
+		t.Fatalf("migrate: %v", err)
 	}
-	if _, err := tx.Exec(ctx, ddl); err != nil {
-		t.Fatalf("ddl: %v", err)
+	return pool, s
+}
+
+func batchCount(t *testing.T, pool *pgxpool.Pool) int {
+	t.Helper()
+	var n int
+	if err := pool.QueryRow(context.Background(), `SELECT count(*) FROM portal.observation_batches`).Scan(&n); err != nil {
+		t.Fatalf("count batches: %v", err)
 	}
-	if _, err := tx.Exec(ctx, `INSERT INTO portal.schema_migrations (version, checksum, source_revision) VALUES ($1,$2,$3)`, version, checksum, rev); err != nil {
-		t.Fatalf("ledger write: %v", err)
+	return n
+}
+
+func TestIntegrationInsertBatchIdempotent(t *testing.T) {
+	pool, s := freshSchema(t)
+	ctx := context.Background()
+	id := "00000000-0000-0000-0000-000000000001"
+	if err := s.InsertBatch(ctx, id, time.Now(), sourceRev, "healthy", false, []byte(`{"partial":false}`)); err != nil {
+		t.Fatalf("insert: %v", err)
 	}
-	if err := tx.Commit(ctx); err != nil {
-		t.Fatalf("commit: %v", err)
+	// Same id -> ON CONFLICT DO NOTHING -> still one batch.
+	if err := s.InsertBatch(ctx, id, time.Now(), sourceRev, "healthy", false, []byte(`{"partial":false}`)); err != nil {
+		t.Fatalf("insert2: %v", err)
+	}
+	if batchCount(t, pool) != 1 {
+		t.Fatalf("expected 1 batch (idempotent), got %d", batchCount(t, pool))
 	}
 }
 
-const ddl = `
-CREATE TABLE portal.observation_batches (
-    id uuid PRIMARY KEY,
-    observed_at timestamptz NOT NULL,
-    recorded_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    source_revision text NOT NULL CHECK (source_revision ~ '^[0-9a-f]{40}$'),
-    overall_health text NOT NULL CHECK (overall_health IN ('healthy','warning','critical','unknown')),
-    partial boolean NOT NULL,
-    summary jsonb NOT NULL CHECK (jsonb_typeof(summary)='object' AND octet_length(summary::text) <= 65536)
-);
-CREATE TABLE portal.timeline_events (
-    id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    dedup_key varchar(180) NOT NULL UNIQUE,
-    source varchar(32) NOT NULL CHECK (source IN ('kubernetes','portal-status')),
-    source_uid varchar(80), source_resource_version varchar(80), source_time timestamptz,
-    ingested_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    severity varchar(16) NOT NULL CHECK (severity IN ('normal','warning','critical')),
-    object_kind varchar(80), object_namespace varchar(63), object_name varchar(253),
-    reason_code varchar(80) NOT NULL,
-    occurrence_count bigint NOT NULL DEFAULT 1 CHECK (occurrence_count > 0),
-    message varchar(1024) NOT NULL
-);
-`
-
-func TestIntegrationEventDedupIdempotent(t *testing.T) {
-	pool := integrationPool(t)
+func TestIntegrationEventDedupAndRecreate(t *testing.T) {
+	_, s := freshSchema(t)
 	ctx := context.Background()
-	migrate(t, pool, 1, checksumOf(ddl), "a000000000000000000000000000000000000000", ddl)
-	s := &Store{pool: pool}
 
+	// NULL object fields must round-trip as nil (no scan into string).
 	e := TimelineEvent{DedupKey: "k8s:uid-1:obj-1:reason", Source: "kubernetes", Severity: "warning",
-		ReasonCode: "reason", Occurrences: 3, Message: "kubernetes event reason"}
+		ReasonCode: "reason", Occurrences: 3, Message: "event"}
 	if err := s.UpsertEvent(ctx, e); err != nil {
 		t.Fatalf("upsert: %v", err)
 	}
-	// Same event, unchanged: occurrence_count must NOT increment (idempotent).
+	// Same event unchanged -> count NOT incremented (idempotent).
 	if err := s.UpsertEvent(ctx, e); err != nil {
 		t.Fatalf("upsert2: %v", err)
 	}
@@ -106,70 +98,90 @@ func TestIntegrationEventDedupIdempotent(t *testing.T) {
 		t.Fatalf("list: %v", err)
 	}
 	if len(rows) != 1 || rows[0].Occurrences != 3 {
-		t.Fatalf("expected one event with count 3, got %d rows count %d", len(rows), rows[0].Occurrences)
+		t.Fatalf("expected 1 row count 3, got %d rows count %d", len(rows), rows[0].Occurrences)
 	}
-	// Recreated object (new UID) must NOT merge.
-	e2 := TimelineEvent{DedupKey: "k8s:uid-2:obj-1:reason", Source: "kubernetes", Severity: "warning",
-		ReasonCode: "reason", Occurrences: 1, Message: "kubernetes event reason"}
-	if err := s.UpsertEvent(ctx, e2); err != nil {
+	if rows[0].ObjectKind != nil || rows[0].ObjectNS != nil || rows[0].ObjectName != nil {
+		t.Fatal("NULL object fields must read back as nil")
+	}
+	// Increased source count -> occurrence_count updates.
+	e.Occurrences = 5
+	if err := s.UpsertEvent(ctx, e); err != nil {
 		t.Fatalf("upsert3: %v", err)
 	}
 	rows, _ = s.ListEvents(ctx, nil, "", "", 10, 0)
+	if rows[0].Occurrences != 5 {
+		t.Fatalf("expected count 5 after increase, got %d", rows[0].Occurrences)
+	}
+	// Recreated object (new UID) -> distinct row, NOT merged.
+	e2 := TimelineEvent{DedupKey: "k8s:uid-2:obj-1:reason", Source: "kubernetes", Severity: "warning",
+		ReasonCode: "reason", Occurrences: 1, Message: "event"}
+	if err := s.UpsertEvent(ctx, e2); err != nil {
+		t.Fatalf("upsert4: %v", err)
+	}
+	rows, _ = s.ListEvents(ctx, nil, "", "", 10, 0)
 	if len(rows) != 2 {
-		t.Fatalf("expected two distinct events, got %d", len(rows))
+		t.Fatalf("expected 2 distinct events, got %d", len(rows))
 	}
 }
 
-func TestIntegrationPruneTTLAndCap(t *testing.T) {
-	pool := integrationPool(t)
+func TestIntegrationPruneTTL(t *testing.T) {
+	pool, s := freshSchema(t)
 	ctx := context.Background()
-	migrate(t, pool, 1, checksumOf(ddl), "a000000000000000000000000000000000000000", ddl)
-	s := &Store{pool: pool}
-
-	// Insert a batch far in the past (TTL expired) and a recent one.
-	oldID := "00000000-0000-0000-0000-000000000001"
-	if _, err := pool.Exec(ctx, `INSERT INTO portal.observation_batches (id, observed_at, source_revision, overall_health, partial, summary)
-		VALUES ($1, now() - interval '8 days', 'a000000000000000000000000000000000000000', 'healthy', false, '{}')`, oldID); err != nil {
+	// Expired by recorded_at (>7d), NOT observed_at.
+	if _, err := pool.Exec(ctx, `INSERT INTO portal.observation_batches (id, observed_at, recorded_at, source_revision, overall_health, partial, summary)
+		VALUES (gen_random_uuid(), now(), now() - interval '8 days', $1, 'healthy', false, '{}')`, sourceRev); err != nil {
 		t.Fatalf("insert old: %v", err)
 	}
-	newID := "00000000-0000-0000-0000-000000000002"
-	if _, err := pool.Exec(ctx, `INSERT INTO portal.observation_batches (id, observed_at, source_revision, overall_health, partial, summary)
-		VALUES ($1, now(), 'a000000000000000000000000000000000000000', 'healthy', false, '{}')`, newID); err != nil {
+	// Recent.
+	if _, err := pool.Exec(ctx, `INSERT INTO portal.observation_batches (id, observed_at, recorded_at, source_revision, overall_health, partial, summary)
+		VALUES (gen_random_uuid(), now(), now(), $1, 'healthy', false, '{}')`, sourceRev); err != nil {
 		t.Fatalf("insert new: %v", err)
 	}
 	if err := s.Prune(ctx); err != nil {
 		t.Fatalf("prune: %v", err)
 	}
-	var cnt int
-	if err := pool.QueryRow(ctx, `SELECT count(*) FROM portal.observation_batches`).Scan(&cnt); err != nil {
-		t.Fatalf("count: %v", err)
+	if n := batchCount(t, pool); n != 1 {
+		t.Fatalf("expected 1 batch after TTL prune, got %d", n)
 	}
-	if cnt != 1 {
-		t.Fatalf("expected 1 batch after TTL prune, got %d", cnt)
+}
+
+func TestIntegrationPruneCap(t *testing.T) {
+	pool, s := freshSchema(t)
+	ctx := context.Background()
+	// Insert 20005 recent batches (over the 20000 cap) in one statement.
+	if _, err := pool.Exec(ctx, `INSERT INTO portal.observation_batches (id, observed_at, recorded_at, source_revision, overall_health, partial, summary)
+		SELECT gen_random_uuid(), now(), now(), $1, 'healthy', false, '{}' FROM generate_series(1, 20005)`, sourceRev); err != nil {
+		t.Fatalf("insert cap rows: %v", err)
+	}
+	if err := s.Prune(ctx); err != nil {
+		t.Fatalf("prune: %v", err)
+	}
+	if n := batchCount(t, pool); n > 20000 {
+		t.Fatalf("expected <=20000 after cap prune, got %d", n)
 	}
 }
 
 func TestIntegrationMigrationNoopAndMismatch(t *testing.T) {
-	pool := integrationPool(t)
+	_, s := freshSchema(t)
 	ctx := context.Background()
-	checksum := checksumOf(ddl)
-	rev := "a000000000000000000000000000000000000000"
-	s := &Store{pool: pool}
-	if err := s.Migrate(ctx, 1, checksum, rev, ddl); err != nil {
-		t.Fatalf("migrate: %v", err)
-	}
-	// Repeat with same checksum -> no-op (idempotent).
-	if err := s.Migrate(ctx, 1, checksum, rev, ddl); err != nil {
+	// Repeat with same checksum -> no-op.
+	if err := s.Migrate(ctx, migrations.Version0001, migrations.Checksum0001(), sourceRev, migrations.SQL0001); err != nil {
 		t.Fatalf("repeat migrate: %v", err)
 	}
-	// Mismatch -> error (no silent drift).
-	if err := s.Migrate(ctx, 1, checksumOf("different"), rev, ddl); err == nil {
+	// Different checksum -> error (no silent drift).
+	if err := s.Migrate(ctx, migrations.Version0001, strings.Repeat("b", 64), sourceRev, migrations.SQL0001); err == nil {
 		t.Fatal("expected checksum mismatch error")
 	}
 }
 
-func checksumOf(s string) string {
-	return ChecksumFile([]byte(s))
+func TestIntegrationLedgerDrift(t *testing.T) {
+	pool, s := freshSchema(t)
+	ctx := context.Background()
+	// Corrupt ledger checksum -> Migrate must detect drift on next attempt.
+	if _, err := pool.Exec(ctx, `UPDATE portal.schema_migrations SET checksum = $1`, strings.Repeat("c", 64)); err != nil {
+		t.Fatalf("corrupt ledger: %v", err)
+	}
+	if err := s.Migrate(ctx, migrations.Version0001, migrations.Checksum0001(), sourceRev, migrations.SQL0001); err == nil {
+		t.Fatal("expected drift error on corrupted ledger checksum")
+	}
 }
-
-var _ = time.Second

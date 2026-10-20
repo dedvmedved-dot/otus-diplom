@@ -36,7 +36,21 @@ func (s *Server) envelope(snap *collectors.Snapshot) model.Envelope {
 	warnings := []model.Warning{}
 	partial := false
 	if snap != nil {
-		sources = snap.Sources
+		// Copy to avoid mutating the shared snapshot, then recompute source age
+		// at response time (dynamic freshness, not frozen at collection).
+		sources = append([]model.SourceStatus{}, snap.Sources...)
+		respNow := time.Now()
+		for i := range sources {
+			if sources[i].ObservedAt != nil {
+				if t, err := time.Parse(time.RFC3339, *sources[i].ObservedAt); err == nil {
+					age := respNow.Sub(t).Seconds()
+					if age < 0 {
+						age = 0
+					}
+					sources[i].AgeSeconds = &age
+				}
+			}
+		}
 		warnings = snap.Warnings
 		if sources == nil {
 			sources = []model.SourceStatus{}
@@ -267,6 +281,13 @@ func (s *Server) handleSummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	snap := s.snapshot()
+	// application-db health reflects actual store connectivity (not hard-coded).
+	dbHealth := "unknown"
+	if err := s.store.Ping(r.Context()); err == nil {
+		dbHealth = "healthy"
+	} else {
+		dbHealth = "warning"
+	}
 	counts := model.Counts{NodesExpected: 3}
 	if snap != nil {
 		var nodesObserved, nodesReady, podsObserved, podsReady, pvcObserved, pvcBound int64
@@ -310,8 +331,8 @@ func (s *Server) handleSummary(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	overall := aggregateSummaryHealth(counts, snap)
-	subsystems := buildSubsystems(snap)
+	overall := aggregateSummaryHealth(counts, snap, dbHealth)
+	subsystems := buildSubsystems(snap, dbHealth)
 	data := model.Summary{
 		Overall:    overall,
 		Counts:     counts,
@@ -343,7 +364,7 @@ func warningsOrEmpty(snap *collectors.Snapshot) []model.Warning {
 	return snap.Warnings
 }
 
-func aggregateSummaryHealth(c model.Counts, snap *collectors.Snapshot) string {
+func aggregateSummaryHealth(c model.Counts, snap *collectors.Snapshot, dbHealth string) string {
 	if snap == nil {
 		return "unknown"
 	}
@@ -361,7 +382,7 @@ func aggregateSummaryHealth(c model.Counts, snap *collectors.Snapshot) string {
 		}
 	}
 	// subsystems
-	for _, sub := range buildSubsystems(snap) {
+	for _, sub := range buildSubsystems(snap, dbHealth) {
 		switch sub.Health {
 		case "critical":
 			hasCritical = true
@@ -383,7 +404,7 @@ func aggregateSummaryHealth(c model.Counts, snap *collectors.Snapshot) string {
 	return "healthy"
 }
 
-func buildSubsystems(snap *collectors.Snapshot) []model.Subsystem {
+func buildSubsystems(snap *collectors.Snapshot, dbHealth string) []model.Subsystem {
 	if snap == nil {
 		return []model.Subsystem{}
 	}
@@ -399,7 +420,7 @@ func buildSubsystems(snap *collectors.Snapshot) []model.Subsystem {
 	subs = append(subs, model.Subsystem{ID: "velero", Health: subsystemVeleroHealth(snap), Scope: "velero_bsl_backup_restore", ObservedAt: ts, Message: "velero backup domain"})
 	subs = append(subs, model.Subsystem{ID: "postgresql", Health: subsystemDBHealth(snap), Scope: "cnpg_cluster", ObservedAt: ts, Message: "postgresql cluster"})
 	subs = append(subs, model.Subsystem{ID: "postgresql-backup", Health: subsystemPGBackupHealth(snap), Scope: "cnpg_barman", ObservedAt: ts, Message: "postgresql backup/WAL"})
-	subs = append(subs, model.Subsystem{ID: "application-db", Health: "unknown", Scope: "portal_app_db", ObservedAt: ts, Message: "portal application schema"})
+	subs = append(subs, model.Subsystem{ID: "application-db", Health: dbHealth, Scope: "portal_app_db", ObservedAt: ts, Message: "portal application schema"})
 	subs = append(subs, model.Subsystem{ID: "metrics", Health: subsystemMetricsHealth(snap), Scope: "metrics_server", ObservedAt: ts, Message: "metrics server samples"})
 	return subs
 }
@@ -410,12 +431,16 @@ func subsystemNodesHealth(snap *collectors.Snapshot) string {
 	if len(snap.Nodes) == 0 {
 		return "unknown"
 	}
+	hs := []string{}
 	for _, n := range snap.Nodes {
 		if n.Ready != "True" {
-			return "critical"
+			hs = append(hs, "critical")
+		} else {
+			// node.Health is derived from conditions incl. pressure.
+			hs = append(hs, n.Health)
 		}
 	}
-	return "healthy"
+	return aggregate(hs)
 }
 
 func subsystemWorkloadsHealth(snap *collectors.Snapshot) string {
