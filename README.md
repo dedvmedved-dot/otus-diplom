@@ -169,13 +169,14 @@ P7C FINAL ACCEPTED
 P8 авторизован отдельным решением Chief Architect после завершения P7C.
 
 P8A = FINAL ACCEPTED / CONNECTOR VERIFIED
-P8B = READY FOR ARCHITECT FINAL ACCEPTANCE
-P8C = NOT AUTHORIZED
+P8B = FINAL ACCEPTED / CONNECTOR VERIFIED
+P8C = AUTHORIZED — NOT STARTED
+P8D-P8G = NOT AUTHORIZED
 P9 = NOT AUTHORIZED
 
-CURRENT: P8B final Architect gate
-EARLY PORTAL PREPARATION: DB/API contract ready
-NEXT: P8C only after explicit Chief Architect authorization
+CURRENT: P8C Portal MVP
+P8A/P8B FOUNDATION: FINAL ACCEPTED / CONNECTOR VERIFIED
+NEXT: implement Portal MVP backend + frontend under P8C only
 
 PostgreSQL-native backup state:
 - Barman Cloud Plugin 0.13.0: deployed
@@ -184,6 +185,8 @@ PostgreSQL-native backup state:
 - latest restore: PASS
 - PITR: PASS
 - ScheduledBackup: portal-db-daily / 02:00 UTC
+- Barman metrics: PASS (last available backup + first recoverability point present)
+- P8B: FINAL ACCEPTED / CONNECTOR VERIFIED
 
 Подробная дорожная карта:
 [`docs/architecture/P8_PORTAL_IMPLEMENTATION_ROADMAP.md`](docs/architecture/P8_PORTAL_IMPLEMENTATION_ROADMAP.md).

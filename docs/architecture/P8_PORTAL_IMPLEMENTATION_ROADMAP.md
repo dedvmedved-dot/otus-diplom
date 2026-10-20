@@ -311,10 +311,14 @@ P9 предназначен для интегральной финальной �
 
 ```text
 CURRENT:
-P8B final Architect gate
+P8C Portal MVP — AUTHORIZED / NOT STARTED
 
-AFTER P8B FINAL ACCEPTED:
-P8C Portal MVP may begin only after explicit Architect authorization
+COMPLETED:
+P8A FINAL ACCEPTED / CONNECTOR VERIFIED
+P8B FINAL ACCEPTED / CONNECTOR VERIFIED
+
+AFTER P8C FINAL ACCEPTED:
+P8D may begin only after explicit Architect authorization
 
 THEN:
 P8D
@@ -336,7 +340,7 @@ P7C-B2 FINAL ACCEPTED
 P7C-C
 P7C FINAL ACCEPTED
 P8A FINAL ACCEPTED / CONNECTOR VERIFIED
-P8B READY FOR ARCHITECT FINAL ACCEPTANCE
+P8B FINAL ACCEPTED / CONNECTOR VERIFIED
 ```
 
 ## 13. Правило изменения дорожной карты
