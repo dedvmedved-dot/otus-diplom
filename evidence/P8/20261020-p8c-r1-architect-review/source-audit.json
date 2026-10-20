@@ -1,0 +1,234 @@
+{
+  "task": "P8C-R1 Architect source review and bounded resume",
+  "date_utc": "2026-10-20",
+  "method": "GitHub Connector read at immutable commit; local static inspection only; no runtime execution",
+  "review_head": "00b491771230556f061280fb914b6dd6806e2264",
+  "review_tree": "0c8ed4812625db31020903550e61f95b2e6cde2e",
+  "baseline": "6aa27fd8a6fe6b965a27bef1eef93d6050884155",
+  "compare": {
+    "status": "ahead",
+    "ahead_by": 3,
+    "behind_by": 0,
+    "total_commits": 3,
+    "changed_files": 39,
+    "all_added": true
+  },
+  "files": [
+    {
+      "path": "evidence/P8/20261020T073609Z-task-p8c-r1-portal-mvp/01-start-state.md",
+      "blob_sha": "3b0368cb370e9bbbd38b0e6db793073cbe40b1bc",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "evidence/P8/20261020T073609Z-task-p8c-r1-portal-mvp/02-git-ancestry.json",
+      "blob_sha": "1ca7b0a2c5b40a402f95f161316f299d7f576db5",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "evidence/P8/20261020T073609Z-task-p8c-r1-portal-mvp/03-platform-precheck.json",
+      "blob_sha": "ca3bff58520fdb1698d92a9beacbdd62e8fb0abe",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "evidence/P8/20261020T073609Z-task-p8c-r1-portal-mvp/05-api-discovery.json",
+      "blob_sha": "3618398d0271a463fd51b241bcc482e7411f8471",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "evidence/P8/20261020T073609Z-task-p8c-r1-portal-mvp/06-design-decisions.md",
+      "blob_sha": "31cee119709c54e4d5cb599c82e05f689b115889",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "evidence/P8/20261020T073609Z-task-p8c-r1-portal-mvp/08-effective-network-policy.md",
+      "blob_sha": "7e8143fab40bd993fa75ab1ea1d62ba76deadad6",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "evidence/P8/20261020T073609Z-task-p8c-r1-portal-mvp/10-source-lock.json",
+      "blob_sha": "522b1e6cb3d2e9070baaa93e27d37e0fe19538d8",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "evidence/P8/20261020T073609Z-task-p8c-r1-portal-mvp/14-build-tests.txt",
+      "blob_sha": "8b23d6238fb48905138580dcc73c4827ded07b0b",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "evidence/P8/20261020T073609Z-task-p8c-r1-portal-mvp/20-blockers.md",
+      "blob_sha": "30ed67c041db8bea4e4a77a17a0f9115b5e86dd2",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "evidence/P8/20261020T073609Z-task-p8c-r1-portal-mvp/result.md",
+      "blob_sha": "2d0d8e53c1940e1df269dd8105f6fda238a47b28",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/Containerfile",
+      "blob_sha": "e158e2f77d76a0e775b853c0968b38167fc02078",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/Makefile",
+      "blob_sha": "252ff9456112e2f0b68f47e64defba8a6f48c708",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/README.md",
+      "blob_sha": "93ac85f703413ae4f4875432c6f7b6bbfa1803eb",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/change-allowlist.json",
+      "blob_sha": "ca464720c84bd21ddff0c961371aea4c32270650",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/cmd/portal/main.go",
+      "blob_sha": "76bb1f8fa4730be21c297318613da79c365a6fb5",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/go.mod",
+      "blob_sha": "1b15db7116019b884b0bbab1fbca924218c97099",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/go.sum",
+      "blob_sha": "e5b08be362ac76b3df2c4fa36278017fdffe3443",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/internal/auth/auth.go",
+      "blob_sha": "042fde345ae715514444499803d26b92af305beb",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/internal/auth/auth_test.go",
+      "blob_sha": "e44492879a4377b9a9fdb71cc6446bcd00844844",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/internal/collectors/collect_methods.go",
+      "blob_sha": "c2347138a9fd602eaf4f4a93d351bdbedce26bb4",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/internal/collectors/collector.go",
+      "blob_sha": "531eef4debf5a3cc6134a10266f11adf111b93d0",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/internal/collectors/metrics.go",
+      "blob_sha": "9435cdafd72ec5accc5e6631ef23f5afce98cbe4",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/internal/collectors/metrics_test.go",
+      "blob_sha": "fa9724086f064236b04c6c9fad0ead42f8c2312f",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/internal/config/config.go",
+      "blob_sha": "a8262bf29634b201848abd9562fd280485bc9e51",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/internal/httpapi/handlers.go",
+      "blob_sha": "5de556f75e5bfd7efe1dbdd10444cd65a7c7147e",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/internal/httpapi/handlers_test.go",
+      "blob_sha": "570aa68d5b0ed868722eea42fcf23bd1c123190a",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/internal/httpapi/server.go",
+      "blob_sha": "ae5f70b98c67817ac297b1c72a411d581ec2f00f",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/internal/model/model.go",
+      "blob_sha": "5d56d692743dd8828a3eeb5f77210d3a6a222786",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/internal/store/store.go",
+      "blob_sha": "1a251a1f0d56108d1970cd0abea63d2c140df1aa",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/manifests/deployment.yaml",
+      "blob_sha": "f524c4c41ed1d64a5d0ddc27378c112bce46012d",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/manifests/gateway.yaml",
+      "blob_sha": "1e1f48a3c6d03c4558f4b4c3cca24bc12c22b763",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/manifests/rbac.yaml",
+      "blob_sha": "036e90b40a44701c04b145af4c987ae962648477",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/migrations/0001_portal_observations.sql",
+      "blob_sha": "1c18b84a18e48e1b6c1a1ecfe84a9a95412becd5",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/migrations/migrations.go",
+      "blob_sha": "084f9ee38ffb93dcdf2daf671ebcf09de9e9d37d",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/versions.lock",
+      "blob_sha": "fe7b0ab8c99189a051ca3b449a8b75c3dcd40fd8",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/web/app.js",
+      "blob_sha": "ff87710d34b972c6a19316f3d20f8effe64968a5",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/web/embed.go",
+      "blob_sha": "d95fcfa909cb882e22d5148a2987b99a518b23c7",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/web/index.html",
+      "blob_sha": "24fe0e86bce94fbc7732fdf608b7f86b2580874d",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    },
+    {
+      "path": "portal/web/style.css",
+      "blob_sha": "70c5af2644ade9075181bedb1f4c04c488c91e0c",
+      "read_at": "00b491771230556f061280fb914b6dd6806e2264"
+    }
+  ],
+  "limitations": [
+    "No independent live cluster/DB/browser access performed.",
+    "Go build/test/vet not rerun by Architect; published test evidence is Hermes summary.",
+    "Actions workflow endpoint unsupported by Connector; Actions/OIDC/package permissions not verified.",
+    "Full targeted source review does not certify absence of other defects."
+  ],
+  "disposition": {
+    "G1": "REWORK_REQUIRED",
+    "G2": "PARTIAL_NOT_ACCEPTED",
+    "G3": "BLOCKED_PENDING_FACTUAL_CLOSURE",
+    "P8C": "IN_PROGRESS_NOT_FINAL_ACCEPTED",
+    "runtime_targets": "NOT_DEPLOYED according to published Hermes evidence",
+    "P8D_P8G_P9": "NOT_AUTHORIZED"
+  },
+  "external_sources_checked": [
+    "https://kubernetes.io/docs/concepts/services-networking/network-policies/",
+    "https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry",
+    "https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions",
+    "https://docs.sigstore.dev/quickstart/quickstart-ci/",
+    "https://www.postgresql.org/docs/17/sql-delete.html"
+  ]
+}
