@@ -1,5 +1,6 @@
 # P8C Portal Deployment + Service + Barman metrics Service + migration Job.
-# Image digest is pinned at build time (G2 supply chain) — never a mutable tag.
+# Image digest pinned at build time (G2 supply chain) — never a mutable tag.
+# DB password/auth verifier arrive via secretKeyRef; public DB CA via projection.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -37,24 +38,20 @@ spec:
         env:
         - name: PORTAL_NAMESPACE
           value: portal
-        - name: PORTAL_DB_HOST
-          value: portal-db-rw.portal.svc
-        - name: PORTAL_DB_PORT
-          value: "5432"
-        - name: PORTAL_DB_NAME
-          value: portal
-        - name: PORTAL_DB_USER
-          value: portal_app
-        - name: PORTAL_DB_SSLMODE
-          value: verify-full
-        - name: PORTAL_DB_PASSWORD_FILE
-          value: /etc/portal/db/password
-        - name: PORTAL_DB_CA_FILE
-          value: /etc/portal/db/ca.crt
+        - name: PORTAL_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: portal-db-app
+              key: password
         - name: PORTAL_AUTH_USERNAME
           value: portal-operator
-        - name: PORTAL_AUTH_VERIFIER_FILE
-          value: /etc/portal/auth/password-sha256
+        - name: PORTAL_AUTH_VERIFIER
+          valueFrom:
+            secretKeyRef:
+              name: portal-ui-auth
+              key: password-sha256
+        - name: PORTAL_DB_CA_FILE
+          value: /etc/portal/db/ca.crt
         resources:
           requests:
             cpu: 200m
@@ -84,37 +81,38 @@ spec:
             port: mgmt
           periodSeconds: 20
         volumeMounts:
-        - name: db-password
-          mountPath: /etc/portal/db/password
-          subPath: password
+        - name: sa-token
+          mountPath: /var/run/secrets/kubernetes.io/serviceaccount
           readOnly: true
         - name: db-ca
           mountPath: /etc/portal/db/ca.crt
           subPath: ca.crt
           readOnly: true
-        - name: auth-verifier
-          mountPath: /etc/portal/auth/password-sha256
-          subPath: password-sha256
-          readOnly: true
       volumes:
-      - name: db-password
-        secret:
-          secretName: portal-db-app
-          items:
-          - key: password
-            path: password
+      - name: sa-token
+        projected:
+          defaultMode: 420
+          sources:
+          - serviceAccountToken:
+              expirationSeconds: 3600
+              path: token
+          - configMap:
+              name: kube-root-ca.crt
+              items:
+              - key: ca.crt
+                path: ca.crt
+          - downwardAPI:
+              items:
+              - path: namespace
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
       - name: db-ca
         secret:
           secretName: portal-db-ca
           items:
           - key: ca.crt
             path: ca.crt
-      - name: auth-verifier
-        secret:
-          secretName: portal-ui-auth
-          items:
-          - key: password-sha256
-            path: password-sha256
 ---
 apiVersion: v1
 kind: Service
@@ -169,18 +167,11 @@ spec:
         imagePullPolicy: IfNotPresent
         args: ["migrate"]
         env:
-        - name: PORTAL_DB_HOST
-          value: portal-db-rw.portal.svc
-        - name: PORTAL_DB_PORT
-          value: "5432"
-        - name: PORTAL_DB_NAME
-          value: portal
-        - name: PORTAL_DB_USER
-          value: portal_app
-        - name: PORTAL_DB_SSLMODE
-          value: verify-full
-        - name: PORTAL_DB_PASSWORD_FILE
-          value: /etc/portal/db/password
+        - name: PORTAL_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: portal-db-app
+              key: password
         - name: PORTAL_DB_CA_FILE
           value: /etc/portal/db/ca.crt
         resources:
@@ -196,21 +187,11 @@ spec:
           capabilities:
             drop: ["ALL"]
         volumeMounts:
-        - name: db-password
-          mountPath: /etc/portal/db/password
-          subPath: password
-          readOnly: true
         - name: db-ca
           mountPath: /etc/portal/db/ca.crt
           subPath: ca.crt
           readOnly: true
       volumes:
-      - name: db-password
-        secret:
-          secretName: portal-db-app
-          items:
-          - key: password
-            path: password
       - name: db-ca
         secret:
           secretName: portal-db-ca

@@ -1,151 +1,328 @@
-// Package model defines the sanitized DTO types returned by the Portal API.
-// No raw Kubernetes object (spec.env, commands, volumes, annotations, secret
-// refs) is ever serialized into these types.
+// Package model defines the sanitized DTO types that exactly match
+// docs/architecture/p8c/openapi.json (additionalProperties=false, required
+// fields, explicit null via pointers). No raw Kubernetes object (spec.env,
+// commands, volumes, annotations, secret refs) is ever serialized.
 package model
 
-import "time"
+// ---- common envelope -------------------------------------------------------
 
-// SourceStatus describes the collection state of one data source.
-type SourceStatus struct {
-	ID          string  `json:"id"`
-	State       string  `json:"state"` // fresh|stale|error|unsupported|partial
-	ObservedAt  *string `json:"observedAt"`
-	AgeSeconds  *int64  `json:"ageSeconds"`
-	ErrorCode   *string `json:"errorCode"`
-}
-
-// Envelope is the common response wrapper for all list endpoints.
+// Envelope is the common wrapper for every 200 response.
 type Envelope struct {
 	RequestID   string         `json:"requestId"`
 	GeneratedAt string         `json:"generatedAt"`
 	ObservedAt  *string        `json:"observedAt"`
-	Freshness   string         `json:"freshness"`
+	Freshness   string         `json:"freshness"` // fresh|stale|unavailable
 	Partial     bool           `json:"partial"`
 	Sources     []SourceStatus `json:"sources"`
 	Data        any            `json:"data"`
-	Warnings    []string       `json:"warnings"`
+	Warnings    []Warning      `json:"warnings"`
 	NextCursor  *string        `json:"nextCursor"`
 }
 
-// NodeInfo is the sanitized node projection.
-type NodeInfo struct {
-	Name          string            `json:"name"`
-	Ready         bool              `json:"ready"`
-	Roles         []string          `json:"roles"`
-	Version       string            `json:"version"`
-	Conditions    map[string]string `json:"conditions"` // only condition type -> status
-	CPUCapacity   string            `json:"cpuCapacity"`
-	MemoryCapacity string           `json:"memoryCapacity"`
-	CPUAllocatable string           `json:"cpuAllocatable"`
-	MemoryAllocatable string        `json:"memoryAllocatable"`
+// SourceStatus describes one collection source's state.
+type SourceStatus struct {
+	ID         string   `json:"id"`
+	State      string   `json:"state"` // ok|error|unsupported
+	ObservedAt *string  `json:"observedAt"`
+	AgeSeconds *float64 `json:"ageSeconds"`
+	ErrorCode  *string  `json:"errorCode"`
 }
 
-// WorkloadInfo aggregates Deployment/StatefulSet/DaemonSet/ReplicaSet/Job/CronJob.
-type WorkloadInfo struct {
-	Kind        string `json:"kind"`
-	Namespace   string `json:"namespace"`
-	Name        string `json:"name"`
-	Ready       string `json:"ready"`
-	Desired     int32  `json:"desired"`
-	Current     int32  `json:"current"`
-	UpToDate    int32  `json:"upToDate"`
-	Available   int32  `json:"available"`
-	Suspended   bool   `json:"suspended,omitempty"`
+// Warning is a structured, bounded warning entry.
+type Warning struct {
+	Code     string `json:"code"`
+	Severity string `json:"severity"` // normal|warning|critical
+	Message  string `json:"message"`
+	Source   string `json:"source"`
 }
 
-// PodInfo is the sanitized pod projection (no spec/env/logs).
-type PodInfo struct {
-	Namespace  string `json:"namespace"`
-	Name       string `json:"name"`
-	Phase      string `json:"phase"`
-	Ready      string `json:"ready"`
-	Restarts   int32  `json:"restarts"`
-	NodeName   string `json:"nodeName"`
+// Condition is a sanitized Kubernetes/CNPG condition.
+type Condition struct {
+	Type               string  `json:"type"`
+	Status             string  `json:"status"` // True|False|Unknown
+	Reason             *string `json:"reason"`
+	LastTransitionTime *string `json:"lastTransitionTime"`
+	ObservedGeneration *int64  `json:"observedGeneration"`
 }
 
-// ServiceInfo is the sanitized service projection (no generic proxy).
-type ServiceInfo struct {
-	Namespace string   `json:"namespace"`
-	Name      string   `json:"name"`
-	Type      string   `json:"type"`
-	Ports     []string `json:"ports"`
-	Endpoints int      `json:"endpoints"`
+// ---- /health ----------------------------------------------------------------
+
+// Health is the /health data object.
+type Health struct {
+	Status                string   `json:"status"` // healthy|warning|critical|unknown
+	BuildRevision         string   `json:"buildRevision"`
+	ApplicationDb         string   `json:"applicationDb"` // connected|disconnected|unknown
+	SchemaVersion         *int64   `json:"schemaVersion"`
+	CollectorState        string   `json:"collectorState"` // starting|running|degraded|stopped
+	PersistenceLagSeconds *float64 `json:"persistenceLagSeconds"`
+	DataLoss              bool     `json:"dataLoss"`
 }
 
-// StorageInfo aggregates PVC/PV/StorageClass/VolumeSnapshot.
-type StorageInfo struct {
-	Kind        string `json:"kind"`
-	Namespace   string `json:"namespace"`
-	Name        string `json:"name"`
-	Phase       string `json:"phase"`
-	Capacity    string `json:"capacity"`
-	StorageClass string `json:"storageClass"`
-	BoundTo     string `json:"boundTo,omitempty"`
+// ---- /summary ---------------------------------------------------------------
+
+type Subsystem struct {
+	ID         string  `json:"id"`
+	Health     string  `json:"health"`
+	Scope      string  `json:"scope"`
+	ObservedAt *string `json:"observedAt"`
+	Message    string  `json:"message"`
 }
 
-// BackupInfo aggregates Velero and CNPG/Barman backup observations.
-type BackupInfo struct {
-	Domain      string `json:"domain"` // velero|postgresql
-	Kind        string `json:"kind"`
-	Namespace   string `json:"namespace"`
-	Name        string `json:"name"`
-	Phase       string `json:"phase"`
-	Available   bool   `json:"available,omitempty"`
-	StartedAt   string `json:"startedAt,omitempty"`
-	ExpiresAt   string `json:"expiresAt,omitempty"`
+type Counts struct {
+	NodesObserved   *int64 `json:"nodesObserved"`
+	NodesReady      *int64 `json:"nodesReady"`
+	NodesExpected   int64  `json:"nodesExpected"`
+	PostgresDesired *int64 `json:"postgresDesired"`
+	PostgresReady   *int64 `json:"postgresReady"`
+	PodsObserved    *int64 `json:"podsObserved"`
+	PodsReady       *int64 `json:"podsReady"`
+	PvcObserved     *int64 `json:"pvcObserved"`
+	PvcBound        *int64 `json:"pvcBound"`
 }
 
-// DatabaseInfo is the CNPG cluster projection.
-type DatabaseInfo struct {
-	Name          string `json:"name"`
-	Desired       int32  `json:"desired"`
-	Ready         int32  `json:"ready"`
-	CurrentPrimary string `json:"currentPrimary"`
-	Phase         string `json:"phase"`
-	Replicas      int32  `json:"replicas"`
-	ReplicaInferred bool `json:"replicaInferred"`
-	LastFullBackupAge string `json:"lastFullBackupAge,omitempty"`
-	WALArchiving  string `json:"walArchiving"`
+type Summary struct {
+	Overall    string      `json:"overall"`
+	Counts     Counts      `json:"counts"`
+	Subsystems []Subsystem `json:"subsystems"`
+	Alerts     []Warning   `json:"alerts"`
+	Coverage   string      `json:"coverage"`
 }
 
-// MetricInfo is a single metrics-sample projection (cores/bytes).
-type MetricInfo struct {
-	Kind      string `json:"kind"` // node|pod
-	Namespace string `json:"namespace,omitempty"`
-	Name      string `json:"name"`
-	CPU       string `json:"cpu"`
-	Memory    string `json:"memory"`
-	Window    string `json:"window"`
+// ---- /nodes ------------------------------------------------------------------
+
+type Node struct {
+	Name                  string      `json:"name"`
+	UID                   string      `json:"uid"`
+	Ready                 string      `json:"ready"` // True|False|Unknown
+	Health                string      `json:"health"`
+	Conditions            []Condition `json:"conditions"`
+	CapacityCpuCores      *float64    `json:"capacityCpuCores"`
+	AllocatableCpuCores   *float64    `json:"allocatableCpuCores"`
+	CapacityMemoryBytes   *int64      `json:"capacityMemoryBytes"`
+	AllocatableMemoryBytes *int64     `json:"allocatableMemoryBytes"`
 }
 
-// EventInfo is the sanitized timeline event.
-type EventInfo struct {
-	IngestedAt  string  `json:"ingestedAt"`
-	SourceTime  *string `json:"sourceTime"`
-	Source      string  `json:"source"`
-	Severity    string  `json:"severity"`
-	ObjectKind  string  `json:"objectKind"`
-	ObjectNS    string  `json:"objectNamespace"`
-	ObjectName  string  `json:"objectName"`
-	ReasonCode  string  `json:"reasonCode"`
-	Occurrences int64   `json:"occurrenceCount"`
-	Message     string  `json:"message"`
+// ---- /workloads ---------------------------------------------------------------
+
+type Workload struct {
+	Name       string      `json:"name"`
+	Namespace  string      `json:"namespace"`
+	UID        string      `json:"uid"`
+	Kind       string      `json:"kind"`
+	Health     string      `json:"health"`
+	Desired    *int32      `json:"desired"`
+	Ready      *int32      `json:"ready"`
+	Active     *int32      `json:"active"`
+	Succeeded  *int32      `json:"succeeded"`
+	Failed     *int32      `json:"failed"`
+	Suspended  *bool       `json:"suspended"`
+	Conditions []Condition `json:"conditions"`
 }
 
-// HealthInfo is the /health response data.
-type HealthInfo struct {
-	Process         string `json:"process"`
-	DBConnectivity  string `json:"dbConnectivity"`
-	SchemaVersion   string `json:"schemaVersion"`
-	Collector       string `json:"collector"`
-	Build           string `json:"build"`
+// ---- /pods ---------------------------------------------------------------------
+
+type Pod struct {
+	Name            string  `json:"name"`
+	Namespace       string  `json:"namespace"`
+	UID             string  `json:"uid"`
+	NodeName        *string `json:"nodeName"`
+	Phase           string  `json:"phase"`
+	ReadyContainers int32   `json:"readyContainers"`
+	TotalContainers int32   `json:"totalContainers"`
+	RestartCount    int32   `json:"restartCount"`
+	Health          string  `json:"health"`
 }
 
-// SummaryInfo is the /summary response data.
-type SummaryInfo struct {
-	OverallHealth string            `json:"overallHealth"`
-	Counts        map[string]int    `json:"counts"`
-	Alerts        []string          `json:"alerts"`
-	PolicyGaps    []string          `json:"policyGaps"`
-	ObservedAt    *time.Time        `json:"observedAt,omitempty"`
+// ---- /services ------------------------------------------------------------------
+
+type ServicePort struct {
+	Name     *string `json:"name"`
+	Port     int32   `json:"port"`
+	Protocol string  `json:"protocol"`
+}
+
+type Service struct {
+	Name           string        `json:"name"`
+	Namespace      string        `json:"namespace"`
+	UID            string        `json:"uid"`
+	Type           string        `json:"type"`
+	Ports          []ServicePort `json:"ports"`
+	ReadyEndpoints *int32        `json:"readyEndpoints"`
+	Health         string        `json:"health"`
+}
+
+// ---- /storage --------------------------------------------------------------------
+
+type StorageItem struct {
+	Kind                 string  `json:"kind"`
+	Name                 string  `json:"name"`
+	Namespace            *string `json:"namespace"`
+	UID                  string  `json:"uid"`
+	Phase                *string `json:"phase"`
+	StorageClass         *string `json:"storageClass"`
+	CapacityBytes        *int64  `json:"capacityBytes"`
+	RequestedBytes       *int64  `json:"requestedBytes"`
+	SnapshotReadyToUse   *bool   `json:"snapshotReadyToUse"`
+	SnapshotCreationTime *string `json:"snapshotCreationTime"`
+	Health               string  `json:"health"`
+}
+
+type Storage struct {
+	Scope             string        `json:"scope"`
+	DrbdDirectHealth  string        `json:"drbdDirectHealth"`
+	Items             []StorageItem `json:"items"`
+}
+
+// ---- /backups ---------------------------------------------------------------------
+
+type BackupRecord struct {
+	Name          string  `json:"name"`
+	Namespace     string  `json:"namespace"`
+	Phase         *string `json:"phase"`
+	StartedAt     *string `json:"startedAt"`
+	CompletedAt   *string `json:"completedAt"`
+	WarningsCount *int32  `json:"warningsCount"`
+	ErrorsCount   *int32  `json:"errorsCount"`
+	Health        string  `json:"health"`
+}
+
+type BackupStorageLocation struct {
+	Name               string  `json:"name"`
+	Namespace          string  `json:"namespace"`
+	Phase              *string `json:"phase"`
+	LastValidationTime *string `json:"lastValidationTime"`
+	Health             string  `json:"health"`
+}
+
+type PolicyGap struct {
+	ID          string `json:"id"`
+	Status      string `json:"status"`
+	Explanation string `json:"explanation"`
+}
+
+type BarmanSample struct {
+	SampledAt                        *string  `json:"sampledAt"`
+	ExporterInstance                 *string  `json:"exporterInstance"`
+	Scope                            string   `json:"scope"`
+	LastAvailableBackupTimestamp     *float64 `json:"lastAvailableBackupTimestamp"`
+	FirstRecoverabilityPointTimestamp *float64 `json:"firstRecoverabilityPointTimestamp"`
+	LastFailedBackupTimestamp        *float64 `json:"lastFailedBackupTimestamp"`
+}
+
+type Wal struct {
+	State                          string     `json:"state"`
+	ContinuousArchiving            *Condition `json:"continuousArchiving"`
+	ConfiguredArchiveTimeoutSeconds *int32    `json:"configuredArchiveTimeoutSeconds"`
+	MeasuredRpoSeconds             *float64   `json:"measuredRpoSeconds"` // MUST be null in P8C
+	ExpectedArchiveTimeoutSeconds  int32      `json:"expectedArchiveTimeoutSeconds"`
+}
+
+type PostgresBackups struct {
+	Health                     string         `json:"health"`
+	Cluster                    string         `json:"cluster"`
+	ObjectStore                string         `json:"objectStore"`
+	Schedule                   *string        `json:"schedule"`
+	Target                     *string        `json:"target"`
+	ScheduledBackupObserved    bool           `json:"scheduledBackupObserved"`
+	LastSuccessfulBackupAt     *string        `json:"lastSuccessfulBackupAt"`
+	SuccessfulBackupsObserved  int32          `json:"successfulBackupsObserved"`
+	CollectionTruncated        bool           `json:"collectionTruncated"`
+	Backups                    []BackupRecord `json:"backups"`
+	Wal                        Wal            `json:"wal"`
+	Barman                     BarmanSample   `json:"barman"`
+	ExpectedSchedule           string         `json:"expectedSchedule"`
+	ExpectedTarget             string         `json:"expectedTarget"`
+}
+
+type VeleroBackups struct {
+	Health              string                  `json:"health"`
+	CollectionTruncated bool                    `json:"collectionTruncated"`
+	Locations           []BackupStorageLocation `json:"locations"`
+	Backups             []BackupRecord          `json:"backups"`
+	Restores            []BackupRecord          `json:"restores"`
+}
+
+type Backups struct {
+	Velero     VeleroBackups  `json:"velero"`
+	Postgresql PostgresBackups `json:"postgresql"`
+	PolicyGaps []PolicyGap    `json:"policyGaps"`
+}
+
+// ---- /database ---------------------------------------------------------------------
+
+type HistoricalQualification struct {
+	Scope           string `json:"scope"`
+	Date            string `json:"date"`
+	LatestRestore   string `json:"latestRestore"`
+	Pitr            string `json:"pitr"`
+	IsLiveRecoveryTest bool `json:"isLiveRecoveryTest"`
+}
+
+type Database struct {
+	Namespace                string                  `json:"namespace"`
+	Cluster                  string                  `json:"cluster"`
+	Health                   string                  `json:"health"`
+	DesiredInstances         *int32                  `json:"desiredInstances"`
+	ReadyInstances           *int32                  `json:"readyInstances"`
+	PrimaryName              *string                 `json:"primaryName"`
+	ReplicasObserved         *int32                  `json:"replicasObserved"`
+	ReplicasInferred         bool                    `json:"replicasInferred"`
+	Phase                    *string                 `json:"phase"`
+	Conditions               []Condition             `json:"conditions"`
+	ApplicationDbConnected   bool                    `json:"applicationDbConnected"`
+	RecoveryState            *string                 `json:"recoveryState"`
+	HistoricalQualification  HistoricalQualification `json:"historicalQualification"`
+}
+
+// ---- /metrics ----------------------------------------------------------------------
+
+type Metric struct {
+	Kind                        string   `json:"kind"` // Node|Pod
+	Name                        string   `json:"name"`
+	Namespace                   *string  `json:"namespace"`
+	SampleTimestamp             string   `json:"sampleTimestamp"`
+	WindowSeconds               float64  `json:"windowSeconds"`
+	CpuCores                    *float64 `json:"cpuCores"`
+	MemoryBytes                 *int64   `json:"memoryBytes"`
+	CpuPercentOfAllocatable     *float64 `json:"cpuPercentOfAllocatable"`
+	MemoryPercentOfAllocatable  *float64 `json:"memoryPercentOfAllocatable"`
+}
+
+// ---- /events ------------------------------------------------------------------------
+
+type TimelineEvent struct {
+	ID              string  `json:"id"`
+	Source          string  `json:"source"` // kubernetes|portal-status
+	SourceTime      *string `json:"sourceTime"`
+	IngestedAt      string  `json:"ingestedAt"`
+	Severity        string  `json:"severity"`
+	ObjectKind      *string `json:"objectKind"`
+	Namespace       *string `json:"namespace"`
+	ObjectName      *string `json:"objectName"`
+	ReasonCode      string  `json:"reasonCode"`
+	OccurrenceCount int64   `json:"occurrenceCount"`
+	Message         string  `json:"message"`
+}
+
+type Events struct {
+	Storage       string          `json:"storage"` // postgresql|memory-fallback
+	AuditComplete bool            `json:"auditComplete"` // always false in P8C
+	Items         []TimelineEvent `json:"items"`
+}
+
+// ---- list wrappers ----------------------------------------------------------------
+
+type Nodes struct     { Items []Node `json:"items"` }
+type Workloads struct { Items []Workload `json:"items"` }
+type Pods struct     { Items []Pod `json:"items"` }
+type Services struct  { Items []Service `json:"items"` }
+type Metrics struct   { Items []Metric `json:"items"` }
+
+// ---- error --------------------------------------------------------------------------
+
+type Error struct {
+	RequestID   string `json:"requestId"`
+	GeneratedAt string `json:"generatedAt"`
+	Code        string `json:"code"` // BAD_REQUEST|CURSOR_EXPIRED|UNAUTHORIZED|NOT_FOUND|METHOD_NOT_ALLOWED|RATE_LIMITED|UNAVAILABLE
+	Message     string `json:"message"`
 }

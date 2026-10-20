@@ -10,7 +10,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -24,21 +23,18 @@ type Store struct {
 	pool *pgxpool.Pool
 }
 
-// New connects to the application database using the P8 Portal DB contract.
+// New connects to the application database using the fixed DB contract.
+// The password is supplied via config (secretKeyRef env) and never logged.
 func New(ctx context.Context, cfg *config.Config) (*Store, error) {
-	password, err := os.ReadFile(cfg.DBPasswordFile)
-	if err != nil {
-		return nil, fmt.Errorf("read db password: %w", err)
-	}
 	connStr := fmt.Sprintf(
 		"host=%s port=%d dbname=%s user=%s sslmode=%s sslrootcert=%s",
-		cfg.DBHost, cfg.DBPort, cfg.DBName, cfg.DBUser, cfg.DBSSLMode, cfg.DBCACertFile,
+		config.DBHost, config.DBPort, config.DBName, config.DBUser, config.DBSSLMode, cfg.DBCACertFile,
 	)
 	pc, err := pgxpool.ParseConfig(connStr)
 	if err != nil {
 		return nil, err
 	}
-	pc.ConnConfig.Password = strings.TrimSpace(string(password))
+	pc.ConnConfig.Password = cfg.DBPassword
 	pc.MaxConns = int32(cfg.DBPoolMaxConns)
 	pc.MinConns = 0
 	pc.ConnConfig.ConnectTimeout = cfg.DBConnectTimeout
@@ -192,23 +188,24 @@ func (s *Store) UpsertEvent(ctx context.Context, e TimelineEvent) error {
 
 // EventRow is a persisted timeline event projection.
 type EventRow struct {
-	IngestedAt   time.Time `json:"ingestedAt"`
-	SourceTime   *time.Time `json:"sourceTime"`
-	Source       string    `json:"source"`
-	Severity     string    `json:"severity"`
-	ObjectKind   string    `json:"objectKind"`
-	ObjectNS     string    `json:"objectNamespace"`
-	ObjectName   string    `json:"objectName"`
-	ReasonCode   string    `json:"reasonCode"`
-	Occurrences  int64     `json:"occurrenceCount"`
-	Message      string    `json:"message"`
+	ID          string     `json:"id"`
+	IngestedAt  time.Time  `json:"ingestedAt"`
+	SourceTime  *time.Time `json:"sourceTime"`
+	Source      string     `json:"source"`
+	Severity    string     `json:"severity"`
+	ObjectKind  string     `json:"objectKind"`
+	ObjectNS    string     `json:"objectNamespace"`
+	ObjectName  string     `json:"objectName"`
+	ReasonCode  string     `json:"reasonCode"`
+	Occurrences int64      `json:"occurrenceCount"`
+	Message     string     `json:"message"`
 }
 
 // ListEvents returns recent timeline events, optionally filtered by severity and since.
 func (s *Store) ListEvents(ctx context.Context, since *time.Time, severity string, limit int) ([]EventRow, error) {
 	cctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
-	q := `SELECT ingested_at, source_time, source, severity, object_kind, object_namespace, object_name,
+	q := `SELECT dedup_key, ingested_at, source_time, source, severity, object_kind, object_namespace, object_name,
 		reason_code, occurrence_count, message
 		FROM portal.timeline_events`
 	var args []any
@@ -236,7 +233,7 @@ func (s *Store) ListEvents(ctx context.Context, since *time.Time, severity strin
 	for rows.Next() {
 		var r EventRow
 		var st *time.Time
-		if err := rows.Scan(&r.IngestedAt, &st, &r.Source, &r.Severity, &r.ObjectKind, &r.ObjectNS, &r.ObjectName, &r.ReasonCode, &r.Occurrences, &r.Message); err != nil {
+		if err := rows.Scan(&r.ID, &r.IngestedAt, &st, &r.Source, &r.Severity, &r.ObjectKind, &r.ObjectNS, &r.ObjectName, &r.ReasonCode, &r.Occurrences, &r.Message); err != nil {
 			return nil, err
 		}
 		r.SourceTime = st
@@ -245,29 +242,39 @@ func (s *Store) ListEvents(ctx context.Context, since *time.Time, severity strin
 	return out, rows.Err()
 }
 
-// Prune enforces retention + hard caps on the two application tables.
+// Prune enforces retention + hard caps on the two application tables using a
+// PostgreSQL-17-valid CTE (TTL OR excess-over-cap, bounded batch of <=1000 ids).
 func (s *Store) Prune(ctx context.Context) error {
-	cctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	cctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
-	// 7-day retention, hard cap 20000 batches.
-	if _, err := s.pool.Exec(cctx, `DELETE FROM portal.observation_batches
-		WHERE id IN (
-			SELECT id FROM portal.observation_batches
-			WHERE recorded_at < CURRENT_TIMESTAMP - interval '7 days'
-			ORDER BY recorded_at DESC
-			OFFSET 19999
-		) LIMIT 1000`); err != nil {
+	if err := s.pruneTable(cctx, "portal.observation_batches", "recorded_at", 20000); err != nil {
 		return err
 	}
-	// 7-day retention, hard cap 50000 events.
-	if _, err := s.pool.Exec(cctx, `DELETE FROM portal.timeline_events
-		WHERE id IN (
-			SELECT id FROM portal.timeline_events
-			WHERE ingested_at < CURRENT_TIMESTAMP - interval '7 days'
-			ORDER BY ingested_at DESC
-			OFFSET 49999
-		) LIMIT 1000`); err != nil {
-		return err
+	return s.pruneTable(cctx, "portal.timeline_events", "ingested_at", 50000)
+}
+
+// pruneTable deletes rows that are expired (TTL 7d) OR beyond the newest `cap`
+// rows, in bounded batches of at most 1000 ids per statement. Only these two
+// application tables are touched — never system/P8A/P8B objects.
+func (s *Store) pruneTable(ctx context.Context, table, timeCol string, cap int) error {
+	for i := 0; i < 20; i++ {
+		q := fmt.Sprintf(`
+			WITH ranked AS (
+				SELECT id, row_number() OVER (ORDER BY %s DESC) AS rn,
+				       (%s < CURRENT_TIMESTAMP - interval '7 days') AS expired
+				FROM %s
+			), doomed AS (
+				SELECT id FROM ranked WHERE expired OR rn > %d LIMIT 1000
+			)
+			DELETE FROM %s WHERE id IN (SELECT id FROM doomed)
+		`, timeCol, timeCol, table, cap, table)
+		tag, err := s.pool.Exec(ctx, q)
+		if err != nil {
+			return err
+		}
+		if tag.RowsAffected() < 1000 {
+			return nil
+		}
 	}
 	return nil
 }

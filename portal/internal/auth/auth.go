@@ -9,7 +9,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"net/http"
-	"os"
 	"strings"
 )
 
@@ -19,20 +18,17 @@ type Verifier struct {
 	sumHex   string
 }
 
-// NewVerifier reads the verifier (hex SHA-256) from a mounted secret file.
-func NewVerifier(username, verifierFile string) (*Verifier, error) {
-	raw, err := os.ReadFile(verifierFile)
-	if err != nil {
-		return nil, err
-	}
-	sumHex := strings.TrimSpace(string(raw))
+// NewVerifier builds a verifier from the hex SHA-256 of the operator password
+// (supplied via secretKeyRef env; never logged). Comparison is constant-time.
+func NewVerifier(username, sumHex string) (*Verifier, error) {
+	sumHex = strings.TrimSpace(strings.ToLower(sumHex))
 	if len(sumHex) != 64 {
 		return nil, errBadVerifier
 	}
 	if _, err := hex.DecodeString(sumHex); err != nil {
 		return nil, errBadVerifier
 	}
-	return &Verifier{username: username, sumHex: strings.ToLower(sumHex)}, nil
+	return &Verifier{username: username, sumHex: sumHex}, nil
 }
 
 var errBadVerifier = &verifierError{}

@@ -5,12 +5,16 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"sync/atomic"
 	"syscall"
+	"time"
 
 	"github.com/dedvmedved-dot/otus-diplom/portal/internal/auth"
 	"github.com/dedvmedved-dot/otus-diplom/portal/internal/collectors"
@@ -40,7 +44,6 @@ func main() {
 	runServer(cfg)
 }
 
-// runMigrate applies the versioned forward-only migration and exits.
 func runMigrate(cfg *config.Config) {
 	ctx := context.Background()
 	st, err := store.New(ctx, cfg)
@@ -54,7 +57,6 @@ func runMigrate(cfg *config.Config) {
 	log.Printf("migration version %d applied (checksum %s)", migrations.Version0001, migrations.Checksum0001()[:12])
 }
 
-// runServer starts the collectors, HTTP server and management probes.
 func runServer(cfg *config.Config) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -65,25 +67,29 @@ func runServer(cfg *config.Config) {
 	}
 	defer st.Close()
 
-	verifier, err := auth.NewVerifier(cfg.AuthUsername, cfg.AuthVerifierFile)
+	verifier, err := auth.NewVerifier(cfg.AuthUsername, cfg.AuthVerifier)
 	if err != nil {
 		log.Fatalf("auth verifier: %v", err)
 	}
 
-	col, err := collectors.New(cfg.CollectInterval, cfg.MetricsServiceURL)
+	col, err := collectors.New(cfg.CollectInterval, cfg.MetricsServiceURL, cfg.Namespace)
 	if err != nil {
 		log.Fatalf("collector: %v", err)
 	}
 	go col.Run(ctx)
 
-	srv := httpapi.New(col, st, verifier, cfg)
+	ps := &collectors.PersistenceState{}
+	go runPersistence(ctx, st, col, cfg, ps)
 
+	srv := httpapi.New(col, st, verifier, cfg, ps)
+
+	// Readiness requires exact migration version + checksum (not just >=1).
 	var migrationOK atomic.Bool
-	ver, _, err := st.CurrentMigrationVersion(ctx)
-	if err == nil && ver >= migrations.Version0001 {
+	ver, checksum, err := st.CurrentMigrationVersion(ctx)
+	if err == nil && ver == migrations.Version0001 && checksum == migrations.Checksum0001() {
 		migrationOK.Store(true)
 	} else {
-		log.Printf("warning: migration version not yet validated (err=%v, version=%d)", err, ver)
+		log.Printf("warning: migration not validated (version=%d err=%v)", ver, err)
 	}
 
 	ready := func(w http.ResponseWriter, _ *http.Request) {
@@ -103,15 +109,25 @@ func runServer(cfg *config.Config) {
 	mgmt.HandleFunc("/readyz", ready)
 	mgmt.HandleFunc("/startupz", ready)
 	go func() {
+		ms := &http.Server{
+			Addr: cfg.MgmtAddr, Handler: mgmt,
+			ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second,
+			WriteTimeout: 10 * time.Second, IdleTimeout: 30 * time.Second, MaxHeaderBytes: 1 << 20,
+		}
 		log.Printf("management probes on %s", cfg.MgmtAddr)
-		if err := http.ListenAndServe(cfg.MgmtAddr, mgmt); err != nil {
+		if err := ms.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("mgmt server: %v", err)
 		}
 	}()
 
 	go func() {
+		hs := &http.Server{
+			Addr: cfg.ServerAddr, Handler: srv.Handler(),
+			ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second,
+			WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 1 << 20,
+		}
 		log.Printf("serving on %s (revision %s)", cfg.ServerAddr, sourceRevision)
-		if err := http.ListenAndServe(cfg.ServerAddr, srv.Handler()); err != nil {
+		if err := hs.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("http server: %v", err)
 		}
 	}()
@@ -121,4 +137,81 @@ func runServer(cfg *config.Config) {
 	<-sig
 	log.Printf("shutting down")
 	cancel()
+}
+
+// runPersistence runs the bounded background persistence loop (batch + events +
+// prune). It never blocks the UI/API; on failure it marks data loss.
+func runPersistence(ctx context.Context, st *store.Store, col *collectors.Collector, cfg *config.Config, ps *collectors.PersistenceState) {
+	ticker := time.NewTicker(cfg.CollectInterval)
+	defer ticker.Stop()
+	var pruneCounter int
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			persistOnce(ctx, st, col, cfg, ps)
+			pruneCounter++
+			if pruneCounter%60 == 0 {
+				_ = st.Prune(ctx)
+			}
+		}
+	}
+}
+
+func persistOnce(ctx context.Context, st *store.Store, col *collectors.Collector, cfg *config.Config, ps *collectors.PersistenceState) {
+	snap := col.Latest()
+	if snap == nil {
+		return
+	}
+	summary := buildSummaryJSON(snap)
+	id := newUUID()
+	if err := st.InsertBatch(ctx, id, snap.CollectedAt, cfg.SourceRevision, "unknown", snap.Partial, summary); err != nil {
+		ps.DataLoss.Store(true)
+		ps.LagSeconds.Store(0)
+		return
+	}
+	for _, e := range snap.Events {
+		se := store.TimelineEvent{
+			DedupKey: e.ID, Source: e.Source, Severity: e.Severity, ReasonCode: e.ReasonCode,
+			Message: e.Message,
+		}
+		if e.SourceTime != nil {
+			if t, err := time.Parse(time.RFC3339, *e.SourceTime); err == nil {
+				se.SourceTime = &t
+			}
+		}
+		if e.ObjectKind != nil {
+			se.ObjectKind = *e.ObjectKind
+		}
+		if e.Namespace != nil {
+			se.ObjectNamespace = *e.Namespace
+		}
+		if e.ObjectName != nil {
+			se.ObjectName = *e.ObjectName
+		}
+		_ = st.UpsertEvent(ctx, se)
+	}
+	ps.LagSeconds.Store(0)
+}
+
+func buildSummaryJSON(snap *collectors.Snapshot) []byte {
+	s := map[string]any{
+		"nodes":     len(snap.Nodes),
+		"workloads": len(snap.Workloads),
+		"pods":      len(snap.Pods),
+		"services":  len(snap.Services),
+		"metrics":   len(snap.Metrics),
+		"partial":   snap.Partial,
+	}
+	b, _ := json.Marshal(s)
+	return b
+}
+
+func newUUID() string {
+	b := make([]byte, 16)
+	_, _ = rand.Read(b)
+	b[6] = (b[6] & 0x0f) | 0x40
+	b[8] = (b[8] & 0x3f) | 0x80
+	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:16])
 }
