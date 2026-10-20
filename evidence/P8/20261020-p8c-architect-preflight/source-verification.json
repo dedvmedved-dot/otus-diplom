@@ -1,0 +1,223 @@
+{
+  "audited_commit": "6e19db29d9da0f9f67c87fd3e1bb3a3320a49702",
+  "audited_tree": "ad210e322bb829bbc91b4b90814b981dfbadbc3d",
+  "audit_type": "CONNECTOR_DOCUMENTARY_READ_ONLY",
+  "runtime_tested": false,
+  "files": [
+    {
+      "path": "README.md",
+      "blob_sha": "14d292ddd0b136e23a325226289d1a433c5b44c3"
+    },
+    {
+      "path": "docs/architecture/P8B_POSTGRES_BACKUP_CONTRACT.md",
+      "blob_sha": "b1e2b51ff46bda7f172432ce43713b7d1a7415c0"
+    },
+    {
+      "path": "docs/architecture/P8_BACKUP_POLICY_GAPS.md",
+      "blob_sha": "39b55f24ca8c306f25ca862b23d82ef048398799"
+    },
+    {
+      "path": "docs/architecture/P8_PORTAL_DB_CONTRACT.md",
+      "blob_sha": "8e2ca99794be49a43f538bf1a40e01d74e842e95"
+    },
+    {
+      "path": "docs/architecture/P8_PORTAL_IMPLEMENTATION_ROADMAP.md",
+      "blob_sha": "b034e5f628583b15709737203a8b909609ac259c"
+    },
+    {
+      "path": "docs/architecture/P8_PORTAL_PLATFORM_API_CONTRACT_R0.md",
+      "blob_sha": "15c215db8d2969969c0485abd01ec86e8e32bb21"
+    },
+    {
+      "path": "docs/architecture/P8_STAGE_SPLIT.md",
+      "blob_sha": "4a17bcca3669dffe75ec0572e76ee2df4164a156"
+    },
+    {
+      "path": "docs/governance/P8B_FINAL_TO_P8C_NEXT_WORK_HANDOFF_20261020.md",
+      "blob_sha": "acc8db156922f5f3461b7fc165a5094667898b00"
+    },
+    {
+      "path": "docs/governance/project-governance.md",
+      "blob_sha": "8342550575c71a3bff7fc0e0cd8306b949061698"
+    },
+    {
+      "path": "docs/network/P4B-NETWORKPOLICY-BASELINE.md",
+      "blob_sha": "4c877ed2428daae34c2c15501355f56e251e5b0c"
+    },
+    {
+      "path": "evidence/P6/20260909T232839Z-task-p6d-r2-final-evidence-contract-closure/p6d-r2-validation-gateway.yaml",
+      "blob_sha": "377c4012e5910a249476de657a1f65f19b9ae349"
+    },
+    {
+      "path": "evidence/P6/20260909T232839Z-task-p6d-r2-final-evidence-contract-closure/result.md",
+      "blob_sha": "a909d84ffa1527b4f397a74dce6fb3fd82140678"
+    },
+    {
+      "path": "evidence/P8/20261019T221723Z-task-p8a-r1-cnpg-postgresql-ha-foundation/35-app-secret-sanitized.txt",
+      "blob_sha": "3cc86116fb3dd2f9ada19e405425bdc78c5a4648"
+    },
+    {
+      "path": "evidence/P8/20261019T221723Z-task-p8a-r1-cnpg-postgresql-ha-foundation/36-tls-model.txt",
+      "blob_sha": "c840a7833ec2dd9e448fcc81f8c8c0b8f3f16982"
+    },
+    {
+      "path": "evidence/P8/20261019T221723Z-task-p8a-r1-cnpg-postgresql-ha-foundation/38-verifier-pod.yaml",
+      "blob_sha": "aabd38a54ce46f0f09d7ee7020367b1aa2155229"
+    },
+    {
+      "path": "evidence/P8/20261020T052255Z-task-p8b-r2-sot-metrics-credential-closure/09-scheduledbackup-canonical-match.md",
+      "blob_sha": "74f33cd34df98b6374368ddf68d2bbf57bf650ff"
+    },
+    {
+      "path": "evidence/P8/20261020T052255Z-task-p8b-r2-sot-metrics-credential-closure/11-barman-metrics-endpoint-discovery.md",
+      "blob_sha": "6fe4745774f0eac12fece655c69a6f312a6d73ec"
+    },
+    {
+      "path": "evidence/P8/20261020T052255Z-task-p8b-r2-sot-metrics-credential-closure/12-barman-metrics-raw-sanitized.txt",
+      "blob_sha": "2af8086164f4f9e003f28c9b9d3404dfe89b7fac"
+    },
+    {
+      "path": "evidence/P8/20261020T052255Z-task-p8b-r2-sot-metrics-credential-closure/20-password-rotation-sanitized.txt",
+      "blob_sha": "82eb2703800c614536d99e5de5c621bb6c695b8f"
+    },
+    {
+      "path": "evidence/P8/20261020T052255Z-task-p8b-r2-sot-metrics-credential-closure/21-plaintext-password-file-removal.txt",
+      "blob_sha": "073ac358963a08e002e716b151cb9e8f3514e91a"
+    },
+    {
+      "path": "evidence/P8/20261020T052255Z-task-p8b-r2-sot-metrics-credential-closure/26-post-r2-platform.txt",
+      "blob_sha": "8e5554e950fd699c8b93f5a3bf3eef91db0e9231"
+    },
+    {
+      "path": "evidence/P8/20261020T052255Z-task-p8b-r2-sot-metrics-credential-closure/result.md",
+      "blob_sha": "2d41948ba9a1516872a75ed06a8f60bee4101ab4"
+    },
+    {
+      "path": "manifests/barman-cloud/v0.13.0/portal-db-daily-scheduledbackup.yaml",
+      "blob_sha": "ee77400cc7f826c952fca3fab4f4da0a8aa7509f"
+    },
+    {
+      "path": "manifests/envoy-gateway/p6c-gatewayclass.yaml",
+      "blob_sha": "80b1d683a7193fd1cebc5d29d6f6b0a671f5d1b6"
+    },
+    {
+      "path": "versions.lock",
+      "blob_sha": "05beed6b083b0dc5f80a7ff5bcd3a429383012e6"
+    }
+  ],
+  "releases": {
+    "trivy": {
+      "version": "v0.76.0",
+      "url": "https://github.com/aquasecurity/trivy/releases/tag/v0.76.0",
+      "published_at": "2026-10-14T11:45:44Z",
+      "verification": "RELEASE_METADATA_AND_ASSET_DIGEST_OBSERVED; BYTES_AND_SIGNATURES_NOT_VERIFIED",
+      "assets": [
+        {
+          "name": "trivy_0.76.0_Linux-64bit.tar.gz",
+          "sha256": "sha256:e24b1c51293c1b15e4ba8d45bbc7891ba053f90278ec2698f3562c993e145fe7",
+          "url": "https://github.com/aquasecurity/trivy/releases/download/v0.76.0/trivy_0.76.0_Linux-64bit.tar.gz"
+        }
+      ]
+    },
+    "syft": {
+      "version": "v1.55.0",
+      "url": "https://github.com/anchore/syft/releases/tag/v1.55.0",
+      "published_at": "2026-10-19T19:01:26Z",
+      "verification": "RELEASE_METADATA_AND_ASSET_DIGEST_OBSERVED; BYTES_AND_SIGNATURES_NOT_VERIFIED",
+      "assets": [
+        {
+          "name": "syft_1.55.0_linux_amd64.tar.gz",
+          "sha256": "sha256:bb65249542db5fedeeb4d3f9b018b75e7264dbfbbb10486f044581a92f90490d",
+          "url": "https://github.com/anchore/syft/releases/download/v1.55.0/syft_1.55.0_linux_amd64.tar.gz"
+        }
+      ]
+    },
+    "cosign": {
+      "version": "v3.1.3",
+      "url": "https://github.com/sigstore/cosign/releases/tag/v3.1.3",
+      "published_at": "2026-08-06T01:09:23Z",
+      "verification": "RELEASE_METADATA_AND_ASSET_DIGEST_OBSERVED; BYTES_AND_SIGNATURES_NOT_VERIFIED",
+      "assets": [
+        {
+          "name": "cosign-linux-amd64",
+          "sha256": "sha256:4629c757b7618056f8ddd7e2625ae9fdd94c0372a65049520bc7d9df9efc7f71",
+          "url": "https://github.com/sigstore/cosign/releases/download/v3.1.3/cosign-linux-amd64"
+        }
+      ]
+    },
+    "buildkit": {
+      "version": "v0.34.0",
+      "url": "https://github.com/moby/buildkit/releases/tag/v0.34.0",
+      "published_at": "2026-10-07T23:37:31Z",
+      "verification": "RELEASE_METADATA_AND_ASSET_DIGEST_OBSERVED; BYTES_AND_SIGNATURES_NOT_VERIFIED",
+      "assets": [
+        {
+          "name": "buildkit-v0.34.0.linux-amd64.tar.gz",
+          "sha256": "sha256:14813b1fb2a40082114e6d386c6fc5e7dd5298176ce7ee1a18bc33e73e109ac3",
+          "url": "https://github.com/moby/buildkit/releases/download/v0.34.0/buildkit-v0.34.0.linux-amd64.tar.gz"
+        }
+      ]
+    }
+  },
+  "go": {
+    "version": "1.27.3",
+    "url": "https://go.dev/dl/?mode=json",
+    "artifact": "go1.27.3.linux-amd64.tar.gz",
+    "sha256": "65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40",
+    "verification": "OFFICIAL_METADATA_OBSERVED; BYTES_NOT_DOWNLOADED"
+  },
+  "modules": {
+    "k8s.io/client-go": {
+      "version": "v0.36.2",
+      "commit": "877f5359348b5df85619f2aa379abc5bd74bca2d",
+      "go_min": "1.26.0"
+    },
+    "github.com/jackc/pgx/v5": {
+      "version": "v5.11.0",
+      "commit": "5e583fa7aabfa88b796292f849fc9d7d75ac159d",
+      "go_min": "1.25.0"
+    }
+  },
+  "commits": [
+    {
+      "sha": "6e19db29d9da0f9f67c87fd3e1bb3a3320a49702",
+      "parent": "3c4dde36d8d03dd208d400381ab7b5869dd509d8",
+      "message": "architect: accept P8B and hand off P8C",
+      "date": "2026-10-20T06:27:20Z"
+    },
+    {
+      "sha": "3c4dde36d8d03dd208d400381ab7b5869dd509d8",
+      "parent": "7a286689fffbfd9f9f2820d6329a7f1d4995042e",
+      "message": "P8B-R2: close scheduled backup metrics and credential hygiene",
+      "date": "2026-10-20T05:23:01Z"
+    },
+    {
+      "sha": "7a286689fffbfd9f9f2820d6329a7f1d4995042e",
+      "parent": "68e377918ec33d3d62ecbddbc5bd8534a45b9f7e",
+      "message": "P8B-R1: enable Barman WAL archiving, base backup, restore and PITR validation",
+      "date": "2026-10-20T04:25:09Z"
+    },
+    {
+      "sha": "68e377918ec33d3d62ecbddbc5bd8534a45b9f7e",
+      "parent": "cec598508138b71068f3131740eb41de88d908ea",
+      "message": "P8B-R1: deploy cert-manager and Barman Cloud plugin (blocked on S3 admin creds)",
+      "date": "2026-10-20T01:03:27Z"
+    },
+    {
+      "sha": "cec598508138b71068f3131740eb41de88d908ea",
+      "parent": "ef24d486ecec3c3d5b0c2b4e63d9f005bac60c74",
+      "message": "P8B-R1: define PostgreSQL native backup and pinned Barman stack",
+      "date": "2026-10-19T23:39:04Z"
+    },
+    {
+      "sha": "ef24d486ecec3c3d5b0c2b4e63d9f005bac60c74",
+      "parent": "edb9ef8a5ca4fe21ee397cabbd008befcf177e17",
+      "message": "P8A-R1: deploy CloudNativePG PostgreSQL HA foundation and validate failover",
+      "date": "2026-10-19T22:17:29Z"
+    }
+  ],
+  "actions": {
+    "runs": [],
+    "conclusion": "NO_WORKFLOW_RUNS_RETURNED; CI_SUCCESS_NOT_CLAIMED"
+  }
+}

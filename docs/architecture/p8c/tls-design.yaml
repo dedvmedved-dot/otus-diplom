@@ -1,0 +1,63 @@
+# DESIGN ONLY. Dedicated UI demo PKI, not deployed. Never export private keys.
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: portal-ui-bootstrap
+  namespace: portal
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: portal-ui-root
+  namespace: portal
+spec:
+  isCA: true
+  commonName: PAK Portal P8C Demo UI Root
+  secretName: portal-ui-ca
+  duration: 8760h
+  renewBefore: 720h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+  - cert sign
+  - crl sign
+  issuerRef:
+    name: portal-ui-bootstrap
+    kind: Issuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: portal-ui-ca
+  namespace: portal
+spec:
+  ca:
+    secretName: portal-ui-ca
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: portal-ui-server
+  namespace: portal
+spec:
+  secretName: portal-ui-tls
+  dnsNames:
+  - portal.demo-pak.test
+  duration: 720h
+  renewBefore: 168h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages:
+  - digital signature
+  - server auth
+  issuerRef:
+    name: portal-ui-ca
+    kind: Issuer
+    group: cert-manager.io
