@@ -5,7 +5,7 @@ package main
 
 import (
 	"context"
-	"crypto/rand"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -153,7 +153,9 @@ func runPersistence(ctx context.Context, st *store.Store, col *collectors.Collec
 			persistOnce(ctx, st, col, cfg, ps)
 			pruneCounter++
 			if pruneCounter%60 == 0 {
-				_ = st.Prune(ctx)
+				if err := st.Prune(ctx); err != nil {
+					ps.DataLoss.Store(true)
+				}
 			}
 		}
 	}
@@ -165,16 +167,12 @@ func persistOnce(ctx context.Context, st *store.Store, col *collectors.Collector
 		return
 	}
 	summary := buildSummaryJSON(snap)
-	id := newUUID()
-	if err := st.InsertBatch(ctx, id, snap.CollectedAt, cfg.SourceRevision, "unknown", snap.Partial, summary); err != nil {
-		ps.DataLoss.Store(true)
-		ps.LagSeconds.Add(1)
-		// Status transition: portal-status event on write failure.
-		_ = st.UpsertEvent(ctx, store.TimelineEvent{
-			DedupKey: "portal-status:persistence-write-failed", Source: "portal-status",
-			Severity: "critical", ReasonCode: "PERSISTENCE_WRITE_FAILED",
-			Occurrences: 1, Message: "application DB batch write failed",
-		})
+	health := snapshotHealth(snap)
+	// Deterministic identity: same snapshot -> same batch id, idempotent via
+	// INSERT ... ON CONFLICT DO NOTHING (no duplicate batches on retry).
+	id := newUUIDDeterministic(snap.CollectedAt)
+	if err := st.InsertBatch(ctx, id, snap.CollectedAt, cfg.SourceRevision, health, snap.Partial, summary); err != nil {
+		markPersistenceFailure(ps)
 		return
 	}
 	writeFailed := false
@@ -202,11 +200,55 @@ func persistOnce(ctx context.Context, st *store.Store, col *collectors.Collector
 		}
 	}
 	if writeFailed {
-		ps.DataLoss.Store(true)
-		ps.LagSeconds.Add(1)
+		markPersistenceFailure(ps)
 		return
 	}
 	ps.LagSeconds.Store(0)
+	ps.LastSuccessUnix.Store(time.Now().Unix())
+}
+
+// markPersistenceFailure records data loss and lag as elapsed seconds since
+// the last successful persistence (not an error counter).
+func markPersistenceFailure(ps *collectors.PersistenceState) {
+	ps.DataLoss.Store(true)
+	if last := ps.LastSuccessUnix.Load(); last > 0 {
+		ps.LagSeconds.Store(time.Now().Unix() - last)
+	}
+}
+
+// snapshotHealth derives the batch overall_health from the snapshot, not a
+// hard-coded constant.
+func snapshotHealth(snap *collectors.Snapshot) string {
+	if snap == nil {
+		return "unknown"
+	}
+	critical := false
+	warning := false
+	for _, w := range snap.Warnings {
+		switch w.Severity {
+		case "critical":
+			critical = true
+		case "warning":
+			warning = true
+		}
+	}
+	if critical {
+		return "critical"
+	}
+	if warning || snap.Partial {
+		return "warning"
+	}
+	return "healthy"
+}
+
+// newUUIDDeterministic returns a stable UUID for a given observation timestamp
+// so a retried batch write of the same snapshot is idempotent.
+func newUUIDDeterministic(t time.Time) string {
+	sum := sha256.Sum256([]byte(t.UTC().Format(time.RFC3339Nano)))
+	b := sum[:16]
+	b[6] = (b[6] & 0x0f) | 0x50 // version 5
+	b[8] = (b[8] & 0x3f) | 0x80 // variant RFC 4122
+	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:16])
 }
 
 func buildSummaryJSON(snap *collectors.Snapshot) []byte {
@@ -220,12 +262,4 @@ func buildSummaryJSON(snap *collectors.Snapshot) []byte {
 	}
 	b, _ := json.Marshal(s)
 	return b
-}
-
-func newUUID() string {
-	b := make([]byte, 16)
-	_, _ = rand.Read(b)
-	b[6] = (b[6] & 0x0f) | 0x40
-	b[8] = (b[8] & 0x3f) | 0x80
-	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:16])
 }

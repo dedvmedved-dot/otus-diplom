@@ -31,8 +31,9 @@ func (s *Server) snapshot() *collectors.Snapshot {
 func (s *Server) envelope(snap *collectors.Snapshot) model.Envelope {
 	var obs *string
 	freshness := "unavailable"
-	var sources []model.SourceStatus
-	var warnings []model.Warning
+	// Non-null schema arrays even for a nil snapshot (startup/error).
+	sources := []model.SourceStatus{}
+	warnings := []model.Warning{}
 	partial := false
 	if snap != nil {
 		sources = snap.Sources
@@ -78,15 +79,16 @@ func (s *Server) snapshotID() string {
 	return strconv.FormatInt(snap.CollectedAt.UnixNano(), 10)
 }
 
-// cursorState decodes a snapshot+filter-bound cursor.
+// cursorState decodes a snapshot+filter+endpoint-bound cursor.
 type cursorState struct {
 	snapshotID string
 	namespace  string
+	endpoint   string
 	offset     int
 }
 
-func encodeCursor(snapID, namespace string, offset int) string {
-	return base64.RawURLEncoding.EncodeToString([]byte(snapID + ":" + namespace + ":" + strconv.Itoa(offset)))
+func encodeCursor(snapID, namespace, endpoint string, offset int) string {
+	return base64.RawURLEncoding.EncodeToString([]byte(snapID + ":" + namespace + ":" + endpoint + ":" + strconv.Itoa(offset)))
 }
 
 func decodeCursor(cursor string) (cursorState, error) {
@@ -94,15 +96,15 @@ func decodeCursor(cursor string) (cursorState, error) {
 	if err != nil {
 		return cursorState{}, errBadQuery("cursor")
 	}
-	parts := strings.SplitN(string(raw), ":", 3)
-	if len(parts) != 3 {
+	parts := strings.SplitN(string(raw), ":", 4)
+	if len(parts) != 4 {
 		return cursorState{}, errBadQuery("cursor")
 	}
-	off, err := strconv.Atoi(parts[2])
+	off, err := strconv.Atoi(parts[3])
 	if err != nil || off < 0 {
 		return cursorState{}, errBadQuery("cursor")
 	}
-	return cursorState{snapshotID: parts[0], namespace: parts[1], offset: off}, nil
+	return cursorState{snapshotID: parts[0], namespace: parts[1], endpoint: parts[2], offset: off}, nil
 }
 
 type queryError struct{ field string }
@@ -128,7 +130,7 @@ func dns1123(s string) bool {
 // parseListQuery validates allowed keys and returns limit, cursor offset, namespace.
 // The cursor is bound to (snapshot + namespace filter + endpoint); a mismatch
 // in any dimension returns CURSOR_EXPIRED.
-func (s *Server) parseListQuery(r *http.Request, allowed []string) (limit int, offset int, namespace string, err error) {
+func (s *Server) parseListQuery(r *http.Request, allowed []string, endpoint string) (limit int, offset int, namespace string, err error) {
 	limit = 50
 	offset = 0
 	namespace = ""
@@ -168,6 +170,9 @@ func (s *Server) parseListQuery(r *http.Request, allowed []string) (limit int, o
 		if cs.namespace != namespace {
 			return 0, 0, "", errCursorExpired{}
 		}
+		if cs.endpoint != endpoint {
+			return 0, 0, "", errCursorExpired{}
+		}
 		offset = cs.offset
 	}
 	return limit, offset, namespace, nil
@@ -178,8 +183,8 @@ type errCursorExpired struct{}
 func (errCursorExpired) Error() string { return "cursor expired" }
 
 // paginate slices a sorted slice and returns the page + next cursor (bound to
-// snapshot + namespace filter).
-func (s *Server) paginate[T any](items []T, limit, offset int, namespace string) ([]T, *string) {
+// snapshot + namespace filter + endpoint).
+func (s *Server) paginate[T any](items []T, limit, offset int, namespace, endpoint string) ([]T, *string) {
 	if offset >= len(items) {
 		return []T{}, nil
 	}
@@ -190,7 +195,7 @@ func (s *Server) paginate[T any](items []T, limit, offset int, namespace string)
 	page := items[offset:end]
 	var next *string
 	if end < len(items) {
-		c := encodeCursor(s.snapshotID(), namespace, end)
+		c := encodeCursor(s.snapshotID(), namespace, endpoint, end)
 		next = &c
 	}
 	return page, next
@@ -199,6 +204,10 @@ func (s *Server) paginate[T any](items []T, limit, offset int, namespace string)
 // ---- handlers ------------------------------------------------------------------
 
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
+	if err := requireNoQuery(r); err != nil {
+		writeError(w, http.StatusBadRequest, "BAD_REQUEST", err.Error())
+		return
+	}
 	snap := s.snapshot()
 	dbState := "unknown"
 	var schemaVersion *int64
@@ -488,7 +497,7 @@ func aggregate(hs []string) string {
 }
 
 func (s *Server) handleNodes(w http.ResponseWriter, r *http.Request) {
-	limit, offset, _, err := s.parseListQuery(r, []string{"limit", "cursor"})
+	limit, offset, _, err := s.parseListQuery(r, []string{"limit", "cursor"}, "nodes")
 	if err != nil {
 		writeListError(w, err)
 		return
@@ -498,7 +507,7 @@ func (s *Server) handleNodes(w http.ResponseWriter, r *http.Request) {
 	if snap != nil {
 		items = snap.Nodes
 	}
-	page, next := s.paginate(items, limit, offset, "")
+	page, next := s.paginate(items, limit, offset, "", "nodes")
 	env := s.envelope(snap)
 	env.Data = model.Nodes{Items: page}
 	env.NextCursor = next
@@ -506,7 +515,7 @@ func (s *Server) handleNodes(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleWorkloads(w http.ResponseWriter, r *http.Request) {
-	limit, offset, ns, err := s.parseListQuery(r, []string{"limit", "cursor", "namespace"})
+	limit, offset, ns, err := s.parseListQuery(r, []string{"limit", "cursor", "namespace"}, "workloads")
 	if err != nil {
 		writeListError(w, err)
 		return
@@ -517,7 +526,7 @@ func (s *Server) handleWorkloads(w http.ResponseWriter, r *http.Request) {
 		items = snap.Workloads
 	}
 	items = filterWorkloads(items, ns)
-	page, next := s.paginate(items, limit, offset, ns)
+	page, next := s.paginate(items, limit, offset, ns, "workloads")
 	env := s.envelope(snap)
 	env.Data = model.Workloads{Items: page}
 	env.NextCursor = next
@@ -525,7 +534,7 @@ func (s *Server) handleWorkloads(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handlePods(w http.ResponseWriter, r *http.Request) {
-	limit, offset, ns, err := s.parseListQuery(r, []string{"limit", "cursor", "namespace"})
+	limit, offset, ns, err := s.parseListQuery(r, []string{"limit", "cursor", "namespace"}, "pods")
 	if err != nil {
 		writeListError(w, err)
 		return
@@ -536,7 +545,7 @@ func (s *Server) handlePods(w http.ResponseWriter, r *http.Request) {
 		items = snap.Pods
 	}
 	items = filterPods(items, ns)
-	page, next := s.paginate(items, limit, offset, ns)
+	page, next := s.paginate(items, limit, offset, ns, "pods")
 	env := s.envelope(snap)
 	env.Data = model.Pods{Items: page}
 	env.NextCursor = next
@@ -544,7 +553,7 @@ func (s *Server) handlePods(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleServices(w http.ResponseWriter, r *http.Request) {
-	limit, offset, ns, err := s.parseListQuery(r, []string{"limit", "cursor", "namespace"})
+	limit, offset, ns, err := s.parseListQuery(r, []string{"limit", "cursor", "namespace"}, "services")
 	if err != nil {
 		writeListError(w, err)
 		return
@@ -555,7 +564,7 @@ func (s *Server) handleServices(w http.ResponseWriter, r *http.Request) {
 		items = snap.Services
 	}
 	items = filterServices(items, ns)
-	page, next := s.paginate(items, limit, offset, ns)
+	page, next := s.paginate(items, limit, offset, ns, "services")
 	env := s.envelope(snap)
 	env.Data = model.Services{Items: page}
 	env.NextCursor = next
@@ -563,7 +572,7 @@ func (s *Server) handleServices(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleStorage(w http.ResponseWriter, r *http.Request) {
-	limit, offset, ns, err := s.parseListQuery(r, []string{"limit", "cursor", "namespace"})
+	limit, offset, ns, err := s.parseListQuery(r, []string{"limit", "cursor", "namespace"}, "storage")
 	if err != nil {
 		writeListError(w, err)
 		return
@@ -576,7 +585,7 @@ func (s *Server) handleStorage(w http.ResponseWriter, r *http.Request) {
 		data = model.Storage{Scope: "kubernetes_objects", DrbdDirectHealth: "not_observed", Items: []model.StorageItem{}}
 	}
 	items := filterStorage(data.Items, ns)
-	page, next := s.paginate(items, limit, offset, ns)
+	page, next := s.paginate(items, limit, offset, ns, "storage")
 	data.Items = page
 	env := s.envelope(snap)
 	env.Data = data
@@ -630,7 +639,7 @@ func (s *Server) handleDatabase(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleMetrics(w http.ResponseWriter, r *http.Request) {
-	limit, offset, ns, err := s.parseListQuery(r, []string{"limit", "cursor", "namespace"})
+	limit, offset, ns, err := s.parseListQuery(r, []string{"limit", "cursor", "namespace"}, "metrics")
 	if err != nil {
 		writeListError(w, err)
 		return
@@ -641,7 +650,7 @@ func (s *Server) handleMetrics(w http.ResponseWriter, r *http.Request) {
 		items = snap.Metrics
 	}
 	items = filterMetrics(items, ns)
-	page, next := s.paginate(items, limit, offset, ns)
+	page, next := s.paginate(items, limit, offset, ns, "metrics")
 	env := s.envelope(snap)
 	env.Data = model.Metrics{Items: page}
 	env.NextCursor = next
@@ -669,6 +678,13 @@ func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
 		}
 		limit = n
 	}
+	if v := r.URL.Query().Get("namespace"); v != "" {
+		if !dns1123(v) {
+			writeError(w, http.StatusBadRequest, "BAD_REQUEST", "invalid query: namespace")
+			return
+		}
+		ns = v
+	}
 	if v := r.URL.Query().Get("cursor"); v != "" {
 		if len(v) > 512 {
 			writeError(w, http.StatusBadRequest, "BAD_REQUEST", "invalid query: cursor")
@@ -679,18 +695,11 @@ func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusBadRequest, "BAD_REQUEST", "invalid query: cursor")
 			return
 		}
-		if cs.snapshotID != s.snapshotID() {
+		if cs.snapshotID != s.snapshotID() || cs.endpoint != "events" || cs.namespace != ns {
 			writeError(w, http.StatusBadRequest, "CURSOR_EXPIRED", "cursor expired")
 			return
 		}
 		offset = cs.offset
-	}
-	if v := r.URL.Query().Get("namespace"); v != "" {
-		if !dns1123(v) {
-			writeError(w, http.StatusBadRequest, "BAD_REQUEST", "invalid query: namespace")
-			return
-		}
-		ns = v
 	}
 	if v := r.URL.Query().Get("since"); v != "" {
 		t, e := time.Parse(time.RFC3339, v)
@@ -721,7 +730,7 @@ func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
 		}
 		events = filterEventsInMemory(events, since, severity, ns)
 		var page []model.TimelineEvent
-		page, next = s.paginate(events, limit, offset, ns)
+		page, next = s.paginate(events, limit, offset, ns, "events")
 		events = page
 	} else {
 		events = make([]model.TimelineEvent, 0, len(rows))
@@ -734,13 +743,13 @@ func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
 			events = append(events, model.TimelineEvent{
 				ID: row.ID, Source: row.Source, SourceTime: st,
 				IngestedAt: row.IngestedAt.UTC().Format(time.RFC3339), Severity: row.Severity,
-				ObjectKind: strPtrOrNil(row.ObjectKind), Namespace: strPtrOrNil(row.ObjectNS),
-				ObjectName: strPtrOrNil(row.ObjectName), ReasonCode: row.ReasonCode,
+				ObjectKind: row.ObjectKind, Namespace: row.ObjectNS,
+				ObjectName: row.ObjectName, ReasonCode: row.ReasonCode,
 				OccurrenceCount: row.Occurrences, Message: row.Message,
 			})
 		}
 		if len(events) == limit {
-			c := encodeCursor(s.snapshotID(), ns, offset+limit)
+			c := encodeCursor(s.snapshotID(), ns, "events", offset+limit)
 			next = &c
 		}
 	}

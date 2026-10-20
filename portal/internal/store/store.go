@@ -149,7 +149,8 @@ func (s *Store) InsertBatch(ctx context.Context, id string, observedAt time.Time
 	defer cancel()
 	_, err := s.pool.Exec(cctx, `INSERT INTO portal.observation_batches
 		(id, observed_at, source_revision, overall_health, partial, summary)
-		VALUES ($1,$2,$3,$4,$5,$6)`,
+		VALUES ($1,$2,$3,$4,$5,$6)
+		ON CONFLICT (id) DO NOTHING`,
 		id, observedAt, sourceRevision, overallHealth, partial, string(summary))
 	return err
 }
@@ -200,9 +201,9 @@ type EventRow struct {
 	SourceTime  *time.Time `json:"sourceTime"`
 	Source      string     `json:"source"`
 	Severity    string     `json:"severity"`
-	ObjectKind  string     `json:"objectKind"`
-	ObjectNS    string     `json:"objectNamespace"`
-	ObjectName  string     `json:"objectName"`
+	ObjectKind  *string    `json:"objectKind"`
+	ObjectNS    *string    `json:"objectNamespace"`
+	ObjectName  *string    `json:"objectName"`
 	ReasonCode  string     `json:"reasonCode"`
 	Occurrences int64      `json:"occurrenceCount"`
 	Message     string     `json:"message"`
@@ -245,10 +246,14 @@ func (s *Store) ListEvents(ctx context.Context, since *time.Time, severity, name
 	for rows.Next() {
 		var r EventRow
 		var st *time.Time
-		if err := rows.Scan(&r.ID, &r.IngestedAt, &st, &r.Source, &r.Severity, &r.ObjectKind, &r.ObjectNS, &r.ObjectName, &r.ReasonCode, &r.Occurrences, &r.Message); err != nil {
+		var objKind, objNS, objName *string
+		if err := rows.Scan(&r.ID, &r.IngestedAt, &st, &r.Source, &r.Severity, &objKind, &objNS, &objName, &r.ReasonCode, &r.Occurrences, &r.Message); err != nil {
 			return nil, err
 		}
 		r.SourceTime = st
+		r.ObjectKind = objKind
+		r.ObjectNS = objNS
+		r.ObjectName = objName
 		out = append(out, r)
 	}
 	return out, rows.Err()

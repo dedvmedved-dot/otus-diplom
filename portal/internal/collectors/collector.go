@@ -93,8 +93,9 @@ type Snapshot struct {
 
 // PersistenceState tracks the bounded persistence loop's lag and data loss.
 type PersistenceState struct {
-	LagSeconds atomic.Int64
-	DataLoss   atomic.Bool
+	LagSeconds      atomic.Int64
+	LastSuccessUnix atomic.Int64
+	DataLoss        atomic.Bool
 }
 
 func (s *Snapshot) addEvent(e model.TimelineEvent) {
