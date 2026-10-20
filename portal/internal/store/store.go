@@ -187,6 +187,11 @@ func (s *Store) UpsertEvent(ctx context.Context, e TimelineEvent) error {
 		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
 		ON CONFLICT (dedup_key) DO UPDATE SET
 			occurrence_count = EXCLUDED.occurrence_count,
+			source_uid = EXCLUDED.source_uid,
+			source_resource_version = EXCLUDED.source_resource_version,
+			source_time = EXCLUDED.source_time,
+			severity = EXCLUDED.severity,
+			message = EXCLUDED.message,
 			ingested_at = CURRENT_TIMESTAMP`,
 		e.DedupKey, e.Source, nullStr(e.SourceUID), nullStr(e.SourceResourceVersion), e.SourceTime,
 		e.Severity, nullStr(e.ObjectKind), nullStr(e.ObjectNamespace), nullStr(e.ObjectName),

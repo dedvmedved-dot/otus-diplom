@@ -650,6 +650,7 @@ func (s *Server) handleDatabase(w http.ResponseWriter, r *http.Request) {
 		data = *snap.Database
 	} else {
 		data = model.Database{Namespace: "portal", Cluster: "portal-db", Health: "unknown",
+			Conditions: []model.Condition{},
 			HistoricalQualification: model.HistoricalQualification{Scope: "historical_P8B_evidence", Date: "2026-10-20", LatestRestore: "PASS", Pitr: "PASS", IsLiveRecoveryTest: false}}
 	}
 	// application DB connectivity reflects the Portal's own store connection.

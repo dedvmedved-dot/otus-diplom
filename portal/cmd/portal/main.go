@@ -216,8 +216,8 @@ func markPersistenceFailure(ps *collectors.PersistenceState) {
 	}
 }
 
-// snapshotHealth derives the batch overall_health from the snapshot, not a
-// hard-coded constant.
+// snapshotHealth derives the batch overall_health from the snapshot (warnings,
+// node/db health, partial), not a hard-coded constant.
 func snapshotHealth(snap *collectors.Snapshot) string {
 	if snap == nil {
 		return "unknown"
@@ -232,10 +232,30 @@ func snapshotHealth(snap *collectors.Snapshot) string {
 			warning = true
 		}
 	}
+	if snap.Database != nil {
+		switch snap.Database.Health {
+		case "critical":
+			critical = true
+		case "warning":
+			warning = true
+		}
+	}
+	for _, n := range snap.Nodes {
+		if n.Ready != "True" {
+			critical = true
+		} else if n.Health == "critical" {
+			critical = true
+		} else if n.Health == "warning" {
+			warning = true
+		}
+	}
+	if snap.Partial {
+		warning = true
+	}
 	if critical {
 		return "critical"
 	}
-	if warning || snap.Partial {
+	if warning {
 		return "warning"
 	}
 	return "healthy"

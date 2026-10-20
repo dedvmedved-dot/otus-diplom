@@ -56,11 +56,14 @@ function cursorNote(source) {
 }
 
 function storageHealth(d) {
-  // Scoped health from the observed storage, not a fixed constant.
+  // Scoped health from the observed storage items, not a fixed constant.
   const items = d?.items || [];
   if (!items.length) return 'unknown';
-  const unbound = items.some(s => s.phase === 'Pending' || (s.phase === 'Bound' ? false : s.health === 'warning' || s.health === 'critical'));
-  return unbound ? 'warning' : 'healthy';
+  const hs = items.map(s => s.health);
+  if (hs.includes('critical')) return 'critical';
+  if (hs.includes('warning')) return 'warning';
+  if (hs.every(h => h === 'healthy')) return 'healthy';
+  return 'unknown';
 }
 
 async function renderOverview() {
@@ -135,6 +138,13 @@ async function renderBackups() {
   const pg = b.postgresql || {};
   const barman = pg.barman || {};
   const wal = pg.wal || {};
+  // Observed schedule/target take precedence over expected; a mismatch between
+  // the actual policy and the expectation must not be hidden.
+  const sched = pg.schedule ?? pg.expectedSchedule ?? '—';
+  const target = pg.target ?? pg.expectedTarget ?? '—';
+  const lastFailed = barman.lastFailedBackupTimestamp != null ? String(barman.lastFailedBackupTimestamp) : '—';
+  const walState = wal.state || '—';
+  const contArch = wal.continuousArchiving ? String(wal.continuousArchiving.status ?? '—') : '—';
   // Rows carry [domain, kind, ns, name, phase, health-value].
   const rows = [
     ...(vel.locations || []).map(x => ['velero', 'Location', x.namespace, x.name, x.phase, x.health]),
@@ -145,11 +155,11 @@ async function renderBackups() {
   rowsToTable('table-backups', ['Domain', 'Kind', 'Namespace', 'Имя', 'Phase', 'Health'],
     rows.map(r => [escapeHtml(r[0]), escapeHtml(r[1]), escapeHtml(r[2]), escapeHtml(r[3]), pill(r[4], healthClass(r[4])), pill(r[5], healthClass(r[5]))]), backups);
   document.getElementById('pg-backup-meta').innerHTML =
-    `schedule=${escapeHtml(pg.expectedSchedule ?? pg.schedule ?? '—')} target=${escapeHtml(pg.expectedTarget ?? pg.target ?? '—')} ` +
+    `schedule=${escapeHtml(sched)} target=${escapeHtml(target)} ` +
     `lastSuccess=${escapeHtml(pg.lastSuccessfulBackupAt ?? '—')} | ` +
-    `Barman scope=${escapeHtml(barman.scope ?? '—')} recoverabilityPoint=${escapeHtml(barman.firstRecoverabilityPoint ?? '—')} ` +
-    `lastAvailable=${escapeHtml(barman.lastAvailableBackupTimestamp ?? '—')} failed=${escapeHtml(barman.lastFailedBackupTimestamp ?? '0')} | ` +
-    `WAL expectedArchiveTimeout=${escapeHtml(wal.expectedArchiveTimeoutSeconds ?? '—')}s`;
+    `Barman scope=${escapeHtml(barman.scope ?? '—')} firstRecoverabilityPoint=${escapeHtml(barman.firstRecoverabilityPointTimestamp ?? '—')} ` +
+    `lastAvailable=${escapeHtml(barman.lastAvailableBackupTimestamp ?? '—')} lastFailed=${escapeHtml(lastFailed)} | ` +
+    `WAL state=${escapeHtml(walState)} continuousArchiving=${escapeHtml(contArch)} expectedArchiveTimeout=${escapeHtml(wal.expectedArchiveTimeoutSeconds ?? '—')}s`;
 }
 
 async function renderDatabase() {

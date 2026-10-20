@@ -16,10 +16,30 @@ deploy"). This document records the verified inventory + planned objects.
 - DNS: CoreDNS kube-dns (kube-system), TCP/UDP 53.
 - API server: 172.30.140.100:6443 (VIP).
 - S3 (SeaweedFS): 172.30.143.10:443 (TLS; CNPG/Barman only).
-- CNPG replication: pods portal-db-1/2/3, ports 5432 + 8008 (instance-manager).
+- CNPG replication: pods portal-db-1/2/3, ports 5432 + 8000 (instance-manager,
+  VERIFIED 2026-10-20 via pod spec containerPort; NOT 8008).
+- Gateway: name `portal-gateway` (namespace portal), dataplane pods labeled
+  `gateway.envoyproxy.io/owning-gateway-name: portal-gateway`; controller in
+  envoy-gateway-system (control-plane=envoy-gateway) xDS on 18000.
 - Barman plugin: S3 egress to 172.30.143.10:443 + CNPG cluster.
 - Portal DB app: portal-db-rw.portal.svc:5432 (verify-full).
 - Metrics: portal-db-metrics.portal.svc:9187 (CNPG instance manager).
+
+## Flow matrix (source → destination:port → purpose)
+
+| Source | Destination | Port | Purpose |
+|---|---|---|---|
+| CNPG pod (peer) | CNPG pod | 5432/8000 | replication / instance-manager |
+| CNPG operator (cnpg-system) | CNPG pod | 8000 | reconcile/switchover |
+| Barman controller (cnpg-system) | CNPG pod | 5432 | backup plugin |
+| Portal pod | CNPG pod | 5432/9187 | app DB / metrics scrape |
+| Migrator Job | CNPG pod | 5432 | schema bootstrap |
+| CNPG pod | DNS (kube-system) | 53 | resolution |
+| CNPG pod | API (172.30.140.0/24) | 6443 | Kubernetes API |
+| CNPG pod | S3 (172.30.143.10/32) | 443 | SeaweedFS backup |
+| Portal pod | DNS/API/CNPG | 53/6443/5432/9187 | app dependencies |
+| Envoy dataplane | control-plane (envoy-gateway-system) | 18000 | xDS |
+| Envoy dataplane | Portal pod | 8080 | UI backend (svc :80→8080) |
 
 ## Planned new objects (created at deploy, after R3/R4)
 

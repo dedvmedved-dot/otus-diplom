@@ -62,13 +62,23 @@ def read_secret_noecho(prompt: str) -> str:
         sys.stderr.write(prompt)
         sys.stderr.flush()
         chars = []
+        eof = False
         while True:
             c = sys.stdin.read(1)
-            if c in ("", "\n", "\r"):
+            if c == "":
+                eof = True
+                break
+            if c in ("\x03", "\x04"):
+                sys.stderr.write("\n")
+                sys.stderr.flush()
+                raise NoEchoError("input cancelled (control character)")
+            if c in ("\n", "\r"):
                 break
             chars.append(c)
         sys.stderr.write("\n")
         sys.stderr.flush()
+        if eof:
+            raise NoEchoError("input ended (EOF) before completion")
     except (OSError, ValueError) as e:
         raise NoEchoError("no-echo read failed") from e
     finally:

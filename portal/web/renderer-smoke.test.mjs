@@ -78,7 +78,7 @@ async function testBackupHealthCellShowsHealth() {
   const dom = run((url) => {
     if (url.includes('/summary')) return resp(summaryHealthy);
     if (url.includes('/database')) return resp(envelope({ cluster: 'portal-db', readyInstances: 3, desiredInstances: 3, health: 'healthy', applicationDbConnected: true }));
-    if (url.includes('/backups')) return resp(envelope({ velero: { health: 'healthy', locations: [{ namespace: 'velero', name: 'default', phase: 'Available', health: 'healthy' }], backups: [], restores: [] }, postgresql: { cluster: 'portal-db', health: 'unknown', backups: [], wal: { expectedArchiveTimeoutSeconds: 300 }, barman: { scope: 'single_exporter_sample', firstRecoverabilityPoint: '1792469710', lastAvailableBackupTimestamp: '1792469710', lastFailedBackupTimestamp: '0' } }, policyGaps: [] }));
+    if (url.includes('/backups')) return resp(envelope({ velero: { health: 'healthy', locations: [{ namespace: 'velero', name: 'default', phase: 'Available', health: 'healthy' }], backups: [], restores: [] }, postgresql: { cluster: 'portal-db', health: 'unknown', schedule: '0 30 2 * * *', expectedSchedule: '0 0 2 * * *', backups: [], wal: { state: 'ok', continuousArchiving: { status: 'True' }, expectedArchiveTimeoutSeconds: 300 }, barman: { scope: 'single_exporter_sample', firstRecoverabilityPointTimestamp: 1792469710, lastAvailableBackupTimestamp: 1792469710, lastFailedBackupTimestamp: null } }, policyGaps: [] }));
     if (url.includes('/events')) return resp(envelope({ storage: 'memory-fallback', auditComplete: false, items: [] }));
     if (url.includes('/storage')) return resp(envelope({ scope: 'kubernetes_objects', drbdDirectHealth: 'not_observed', items: [] }));
     return resp(envelope({ items: [] }));
@@ -90,7 +90,12 @@ async function testBackupHealthCellShowsHealth() {
   await settle();
   const meta = dom.window.document.getElementById('pg-backup-meta').innerHTML;
   assert.ok(meta.includes('Barman scope'), 'Barman meta must be rendered');
-  assert.ok(meta.includes('expectedArchiveTimeout'), 'WAL meta must be rendered');
+  assert.ok(meta.includes('firstRecoverabilityPoint=1792469710'), `actual recoverability timestamp must render, got "${meta}"`);
+  assert.ok(meta.includes('lastFailed=—'), `null lastFailed must render as "—", got "${meta}"`);
+  assert.ok(meta.includes('schedule=0 30 2 * * *'), `observed schedule must take precedence, got "${meta}"`);
+  assert.ok(meta.includes('WAL state=ok'), 'WAL state must render');
+  const backupTable = dom.window.document.getElementById('table-backups').innerHTML;
+  assert.ok(backupTable.includes('healthy'), 'backup Health cell must show health value');
   dom.window.close();
 }
 

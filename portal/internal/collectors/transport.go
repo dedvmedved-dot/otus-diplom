@@ -1,10 +1,12 @@
 package collectors
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 var (
@@ -21,12 +23,13 @@ var (
 var approvedCoreResources = map[string]bool{
 	"nodes": true, "pods": true, "services": true,
 	"persistentvolumeclaims": true, "persistentvolumes": true,
-	"events": true, "endpointslices": true,
+	"events": true,
 }
 
 // key = "group/version/resource".
 var approvedGroupResources = map[string]bool{
 	"storage.k8s.io/v1/storageclasses":            true,
+	"discovery.k8s.io/v1/endpointslices":          true,
 	"apps/v1/deployments":                         true,
 	"apps/v1/statefulsets":                        true,
 	"apps/v1/daemonsets":                          true,
@@ -91,7 +94,10 @@ func (g *guardTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	if !pathAllowed(req.URL.Path) {
 		return nil, errForbiddenPath
 	}
-	resp, err := g.base.RoundTrip(req)
+	// Per-request deadline (5s) inside the 20s collection cycle.
+	ctx, cancel := context.WithTimeout(req.Context(), 5*time.Second)
+	defer cancel()
+	resp, err := g.base.RoundTrip(req.WithContext(ctx))
 	if err != nil {
 		return nil, err
 	}

@@ -24,7 +24,8 @@ func TestGuardAllowsApprovedPaths(t *testing.T) {
 		"/api/v1/namespaces/portal/services/portal-db-rw",
 		"/api/v1/persistentvolumeclaims",
 		"/api/v1/events",
-		"/api/v1/endpointslices",
+		"/apis/discovery.k8s.io/v1/endpointslices",
+		"/apis/discovery.k8s.io/v1/namespaces/portal/endpointslices",
 		"/apis/apps/v1/deployments",
 		"/apis/apps/v1/namespaces/portal/statefulsets",
 		"/apis/batch/v1/jobs",
@@ -52,6 +53,7 @@ func TestGuardAllowsApprovedPaths(t *testing.T) {
 func TestGuardRejectsUnapprovedPaths(t *testing.T) {
 	paths := []string{
 		"/api/v1/configmaps",                          // unapproved core resource
+		"/api/v1/endpointslices",                      // wrong: endpointslices is a grouped resource
 		"/api/v1/secrets",                             // secrets
 		"/api/v1/namespaces/portal/secrets",           // secrets in namespace
 		"/api/v1/serviceaccounts/portal/token",        // token subresource

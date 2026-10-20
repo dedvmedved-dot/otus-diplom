@@ -1,0 +1,9 @@
+{
+  "name": "pak-portal-web-tests",
+  "private": true,
+  "type": "module",
+  "description": "Test-only frontend dependencies (jsdom) for P8C Portal renderer smoke tests. NOT a runtime dependency.",
+  "devDependencies": {
+    "jsdom": "24.1.3"
+  }
+}

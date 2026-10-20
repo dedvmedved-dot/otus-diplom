@@ -156,7 +156,7 @@ spec:
           kubernetes.io/metadata.name: envoy-gateway-system
       podSelector:
         matchLabels:
-          gateway.envoyproxy.io/owning-gateway-name: pak-portal-gateway
+          gateway.envoyproxy.io/owning-gateway-name: portal-gateway
     ports:
     - port: 8080
   egress:
@@ -230,9 +230,20 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      gateway.envoyproxy.io/owning-gateway-name: pak-portal-gateway
+      gateway.envoyproxy.io/owning-gateway-name: portal-gateway
   policyTypes: [Egress]
   egress:
+  # xDS to Envoy Gateway control-plane (required for dataplane config).
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: envoy-gateway-system
+      podSelector:
+        matchLabels:
+          control-plane: envoy-gateway
+    ports:
+    - port: 18000
+  # backend (Portal UI) via Service portal:80 -> container 8080.
   - to:
     - namespaceSelector:
         matchLabels:

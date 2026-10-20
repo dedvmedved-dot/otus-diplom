@@ -905,6 +905,9 @@ func (c *Collector) collectDatabase(ctx context.Context, snap *Snapshot, reg *So
 	}
 
 	conds := conditionsFromUnstructured(obj.Object)
+	if conds == nil {
+		conds = []model.Condition{}
+	}
 
 	// WAL archiving condition.
 	walState := "unknown"
