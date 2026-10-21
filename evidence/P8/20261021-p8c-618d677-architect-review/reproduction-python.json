@@ -1,0 +1,83 @@
+{
+  "reviewedHead": "618d6775ff159353412312d1b57f11813d8c7aee",
+  "helperRuns": [
+    {
+      "cwd": ".",
+      "argv": [
+        "python3",
+        "portal/tools/test_helpers.py",
+        "-v"
+      ],
+      "exit": 0,
+      "stdout": "OK: Secret portal/portal-registry-pull provisioned.\nRecord name, type, access verification and expiry/rotation responsibility only.\nOK: Secret portal/portal-ui-auth key password-sha256 provisioned.\nVerifier value is NOT printed. Owner retains the password in their password manager.\n",
+      "stderr": "test_non_tty_raises (__main__.TestNoEchoFailClosed.test_non_tty_raises) ... ok\ntest_termios_unavailable_raises (__main__.TestNoEchoFailClosed.test_termios_unavailable_raises) ... ok\ntest_create_timeout_unknown_outcome (__main__.TestRegistryFailClosedCreateOnly.test_create_timeout_unknown_outcome) ... STOP: create timed out \u2014 UNKNOWN_OUTCOME. Re-check Secret state (get) before any further action; do not overwrite.\nok\ntest_existing_secret_stops (__main__.TestRegistryFailClosedCreateOnly.test_existing_secret_stops) ... STOP: Secret portal/portal-registry-pull already exists; no overwrite.\nok\ntest_forbidden_probe_stops_before_write (__main__.TestRegistryFailClosedCreateOnly.test_forbidden_probe_stops_before_write) ... STOP: cannot verify Secret state (Forbidden/network/other); no write attempted.\nok\ntest_success_uses_create_only (__main__.TestRegistryFailClosedCreateOnly.test_success_uses_create_only) ... ok\ntest_already_exists_race_stops_no_overwrite (__main__.TestUIFailClosedCreateOnly.test_already_exists_race_stops_no_overwrite) ... STOP: create failed (Secret may already exist); no overwrite attempted.\nok\ntest_create_timeout_unknown_outcome (__main__.TestUIFailClosedCreateOnly.test_create_timeout_unknown_outcome) ... STOP: create timed out \u2014 UNKNOWN_OUTCOME. Re-check Secret state (get) before any further action; do not overwrite.\nok\ntest_existing_secret_stops (__main__.TestUIFailClosedCreateOnly.test_existing_secret_stops) ... STOP: Secret portal/portal-ui-auth already exists; no implicit rotation.\nok\ntest_forbidden_probe_stops_before_write (__main__.TestUIFailClosedCreateOnly.test_forbidden_probe_stops_before_write) ... STOP: cannot verify Secret state (Forbidden/network/other); no write attempted.\nok\ntest_success_uses_create_only (__main__.TestUIFailClosedCreateOnly.test_success_uses_create_only) ... ok\ntest_bad_alphabet (__main__.TestValidatePassword.test_bad_alphabet) ... ok\ntest_valid (__main__.TestValidatePassword.test_valid) ... ok\ntest_wrong_length (__main__.TestValidatePassword.test_wrong_length) ... ok\n\n----------------------------------------------------------------------\nRan 14 tests in 0.006s\n\nOK\n"
+    },
+    {
+      "cwd": "portal",
+      "argv": [
+        "python3",
+        "tools/test_helpers.py",
+        "-v"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"/workspace/scratch/14185c8f871f/review618/portal/tools/test_helpers.py\", line 22, in <module>\n    ui = load(\"portal/tools/provision-ui-auth.py\", \"ui_auth\")\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/scratch/14185c8f871f/review618/portal/tools/test_helpers.py\", line 18, in load\n    spec.loader.exec_module(mod)\n  File \"<frozen importlib._bootstrap_external>\", line 995, in exec_module\n  File \"<frozen importlib._bootstrap_external>\", line 1132, in get_code\n  File \"<frozen importlib._bootstrap_external>\", line 1190, in get_data\nFileNotFoundError: [Errno 2] No such file or directory: '/workspace/scratch/14185c8f871f/review618/portal/portal/tools/provision-ui-auth.py'\n"
+    }
+  ],
+  "provenanceFileTopLevelKeys": [
+    "_type",
+    "subject",
+    "predicateType",
+    "predicate"
+  ],
+  "expectedPredicateFieldsMissing": [
+    "builder",
+    "buildType",
+    "invocation"
+  ],
+  "lagContract": {
+    "anyOf": [
+      {
+        "type": "number",
+        "minimum": 0
+      },
+      {
+        "type": "null"
+      }
+    ]
+  },
+  "emittedInitialFailureLag": -1,
+  "verifySchemaMissingColumns": [
+    "id",
+    "object_kind",
+    "object_namespace",
+    "object_name"
+  ],
+  "eventsOffsetCounterexample": {
+    "engine": "SQLite; same ORDER/OFFSET semantics only",
+    "page1": [
+      1,
+      2
+    ],
+    "page2AfterUpsert": [
+      2
+    ],
+    "duplicateIDs": [
+      2
+    ],
+    "unseenID": 3
+  },
+  "snapshotReadsPerHandler": {
+    "handleHealth": 1,
+    "handleSummary": 1,
+    "handleNodes": 1,
+    "handleWorkloads": 1,
+    "handlePods": 1,
+    "handleServices": 1,
+    "handleStorage": 1,
+    "handleBackups": 1,
+    "handleDatabase": 1,
+    "handleMetrics": 1,
+    "handleEvents": 1
+  }
+}

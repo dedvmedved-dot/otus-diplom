@@ -1,0 +1,11 @@
+{
+  "url": "https://github.com/sigstore/cosign/blob/v3.1.3/pkg/cosign/attestation/attestation.go",
+  "access": "GitHub Connector",
+  "functions": [
+    "GenerateStatement",
+    "generateSLSAProvenanceStatementSLSA02"
+  ],
+  "finding": "Input is a SLSA predicate; generator itself constructs Statement. Workflow passes Statement wrapper as predicate.",
+  "goReference": "https://pkg.go.dev/net/http@go1.27.3",
+  "goFinding": "Outgoing request context covers response-body reading; RoundTrip returns before full body is consumed."
+}

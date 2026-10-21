@@ -1,0 +1,18 @@
+{
+  "execution": "actual app.js in Node VM; synthetic DOM/fetch, no browser/network",
+  "overview": {
+    "overallClass": "status warning",
+    "overallText": "critical",
+    "greenCards": 6,
+    "alerts": "<li class=\"empty\">нет предупреждений</li>"
+  },
+  "requests": [
+    "/api/v1/nodes",
+    "/api/v1/pods",
+    "/api/v1/workloads",
+    "/api/v1/services",
+    "/api/v1/events?limit=200"
+  ],
+  "followupCursorRequest": false,
+  "eventsNote": "<p class=\"empty\">событий нет</p><div class=\"note\">есть следующая страница (nextCursor)</div>"
+}

@@ -1,0 +1,28 @@
+{
+  "task": "P8C-R1 RESUME-R3 independent source review",
+  "reviewedHead": "618d6775ff159353412312d1b57f11813d8c7aee",
+  "sourceSha": "60e200795debcec5c375a48e52e7c25d44ddaa05",
+  "decision": "REWORK_REQUIRED",
+  "coherentCollectorSnapshot": "SOURCE_REVIEW_ACCEPTED",
+  "CI_DISPATCH_APPROVED": false,
+  "OWNER_HELPERS_APPROVED_FOR_REAL_CREDENTIALS": false,
+  "NETPOL_APPROVED_FOR_APPLY": false,
+  "PRODUCTION_DEPLOY_APPROVED": false,
+  "P8C": "IN_PROGRESS / NOT_FINAL_ACCEPTED",
+  "executed": [
+    "Python helper mocks 14/14 from repo root",
+    "exact workflow helper command failed from portal cwd",
+    "Node VM actual app.js synthetic DOM/fetch",
+    "static source/workflow/provenance/schema analysis",
+    "SQLite ORDER/OFFSET semantic counterexample"
+  ],
+  "notExecuted": [
+    "Go build/test/race by Architect",
+    "PG17 integration by Architect",
+    "browser/jsdom by Architect",
+    "CI release/registry",
+    "live cluster",
+    "real Owner helpers"
+  ],
+  "scope": "existing R3 RV-01..08; no new stage"
+}
