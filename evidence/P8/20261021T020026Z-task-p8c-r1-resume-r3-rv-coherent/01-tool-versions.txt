@@ -1,0 +1,3 @@
+SOURCE_SHA: 60e200795debcec5c375a48e52e7c25d44ddaa05
+Ubuntu 24.04.4; Go/Node/Python/psql: raw-transcript.txt.
+PostgreSQL 17 (PGDG) local; test DB portal_test (test-only). jsdom 24.1.3 pinned.
