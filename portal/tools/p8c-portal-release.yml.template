@@ -193,18 +193,18 @@ jobs:
       - name: SBOM + provenance attestation (generate + verify both)
         run: |
           DIGEST_HEX="${IMAGE_DIGEST#sha256:}"
+          # cosign --type slsaprovenance expects the SLSA PROVENANCE predicate
+          # (top-level builder/buildType/invocation); GenerateStatement wraps it
+          # into the in-toto Statement itself.
           cat > /tmp/provenance.json <<EOF
           {
-            "_type": "https://in-toto.io/Statement/v0.1",
-            "subject": [{"name": "${IMAGE}", "digest": {"sha256": "${DIGEST_HEX}"}}],
-            "predicateType": "https://slsa.dev/provenance/v0.2",
-            "predicate": {
-              "builder": {"id": "https://github.com/${{ github.repository }}/.github/workflows/p8c-portal-release.yml@refs/heads/main"},
-              "buildType": "https://github.com/Attestations/GitHubActionsWorkflow@v1",
-              "invocation": {
-                "configSource": {
-                  "uri": "git+https://github.com/${{ github.repository }}@refs/heads/main",
-                  "digest": {"sha1": "${{ github.sha }}"}}}}}
+            "builder": {"id": "https://github.com/${{ github.repository }}/.github/workflows/p8c-portal-release.yml@refs/heads/main"},
+            "buildType": "https://github.com/Attestations/GitHubActionsWorkflow@v1",
+            "invocation": {
+              "configSource": {
+                "uri": "git+https://github.com/${{ github.repository }}@refs/heads/main",
+                "digest": {"sha1": "${{ github.sha }}"}}}
+          }
           EOF
           cosign attest --yes --type spdxjson --predicate portal/sbom.spdx.json \
             "${IMAGE}@${IMAGE_DIGEST}"

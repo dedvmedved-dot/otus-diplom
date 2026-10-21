@@ -85,6 +85,12 @@ type Snapshot struct {
 	Partial     bool
 	Warnings    []model.Warning
 
+	// Cross-collector handoffs (written by collectDatabase, consumed by
+	// finalize into Backups.Postgresql.Wal). Kept as plain fields because each
+	// source writes a disjoint field; finalize runs after wg.Wait().
+	WalState              string
+	WalArchivingCondition *model.Condition
+
 	mu       sync.Mutex
 	partial  bool
 	warnings []model.Warning
@@ -154,6 +160,20 @@ func (s *Snapshot) finalize() {
 	s.Warnings = append([]model.Warning(nil), s.warnings...)
 	s.Events = append([]model.TimelineEvent(nil), s.events...)
 	s.mu.Unlock()
+
+	// Cross-collector dataflow: Barman sample (collectBarmanMetrics) and WAL
+	// state/condition (collectDatabase) must land in the Backups domain that the
+	// /backups handler actually serves. collectBackups only reserves empty
+	// placeholders, so this copy is the single point of truth.
+	if s.Backups != nil {
+		if s.Barman != nil {
+			s.Backups.Postgresql.Barman = *s.Barman
+		}
+		s.Backups.Postgresql.Wal.State = s.WalState
+		if s.WalArchivingCondition != nil {
+			s.Backups.Postgresql.Wal.ContinuousArchiving = s.WalArchivingCondition
+		}
+	}
 }
 
 // Collector runs the polling loop and stores the latest snapshot.

@@ -159,6 +159,7 @@ func (s *Store) VerifySchema(ctx context.Context) error {
 		{"portal.observation_batches", "overall_health"},
 		{"portal.observation_batches", "partial"},
 		{"portal.observation_batches", "summary"},
+		{"portal.timeline_events", "id"},
 		{"portal.timeline_events", "dedup_key"},
 		{"portal.timeline_events", "source"},
 		{"portal.timeline_events", "source_uid"},
@@ -166,6 +167,9 @@ func (s *Store) VerifySchema(ctx context.Context) error {
 		{"portal.timeline_events", "source_time"},
 		{"portal.timeline_events", "ingested_at"},
 		{"portal.timeline_events", "severity"},
+		{"portal.timeline_events", "object_kind"},
+		{"portal.timeline_events", "object_namespace"},
+		{"portal.timeline_events", "object_name"},
 		{"portal.timeline_events", "reason_code"},
 		{"portal.timeline_events", "occurrence_count"},
 		{"portal.timeline_events", "message"},
@@ -267,7 +271,10 @@ func (s *Store) ListEvents(ctx context.Context, since *time.Time, severity, name
 	var args []any
 	var conds []string
 	if since != nil {
-		conds = append(conds, fmt.Sprintf("ingested_at >= $%d", len(args)+1))
+		// "since" filters by source_time (when the event occurred), matching the
+		// in-memory fallback semantics. NULL source_time is excluded (consistent
+		// with the fallback, which drops null-SourceTime events under since).
+		conds = append(conds, fmt.Sprintf("source_time >= $%d", len(args)+1))
 		args = append(args, *since)
 	}
 	if severity != "" {

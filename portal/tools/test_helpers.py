@@ -8,6 +8,7 @@ timeout-phase distinction (timeout after create -> UNKNOWN_OUTCOME, never
 "no write attempted").
 """
 import importlib.util
+import os
 import unittest
 from unittest import mock
 
@@ -19,8 +20,11 @@ def load(path, name):
     return mod
 
 
-ui = load("portal/tools/provision-ui-auth.py", "ui_auth")
-reg = load("portal/tools/provision-registry-pull.py", "reg_pull")
+# Resolve helpers relative to THIS file (cwd-independent), so the suite works
+# from repo root AND from portal/ (the workflow's working-directory).
+_HERE = os.path.dirname(os.path.abspath(__file__))
+ui = load(os.path.join(_HERE, "provision-ui-auth.py"), "ui_auth")
+reg = load(os.path.join(_HERE, "provision-registry-pull.py"), "reg_pull")
 
 
 class _TtyStdin:

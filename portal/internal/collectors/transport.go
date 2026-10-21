@@ -3,9 +3,11 @@ package collectors
 import (
 	"context"
 	"errors"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -49,6 +51,9 @@ var approvedGroupResources = map[string]bool{
 	"gateway.networking.k8s.io/v1/gateways":       true,
 	"gateway.networking.k8s.io/v1/httproutes":     true,
 }
+
+// transportDeadline is the per-request deadline. Overridable in tests only.
+var transportDeadline = 5 * time.Second
 
 type guardTransport struct {
 	base    http.RoundTripper
@@ -94,18 +99,43 @@ func (g *guardTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	if !pathAllowed(req.URL.Path) {
 		return nil, errForbiddenPath
 	}
-	// Per-request deadline (5s) inside the 20s collection cycle.
-	ctx, cancel := context.WithTimeout(req.Context(), 5*time.Second)
-	defer cancel()
+	// Per-request deadline (5s) inside the 20s collection cycle. The deadline
+	// must cover the WHOLE request including body read, so the cancel is tied
+	// to the body's Read/Close (EOF) rather than to RoundTrip's return.
+	ctx, cancel := context.WithTimeout(req.Context(), transportDeadline)
 	resp, err := g.base.RoundTrip(req.WithContext(ctx))
 	if err != nil {
+		cancel()
 		return nil, err
 	}
 	if isRedirect(resp.StatusCode) {
 		resp.Body.Close()
+		cancel()
 		return nil, errRedirect
 	}
+	resp.Body = &deadlineBody{rc: resp.Body, cancel: cancel}
 	return resp, nil
+}
+
+// deadlineBody keeps the per-request deadline alive until the response body is
+// fully read (EOF/error) or explicitly closed, then cancels the context.
+type deadlineBody struct {
+	rc     io.ReadCloser
+	cancel context.CancelFunc
+	once   sync.Once
+}
+
+func (b *deadlineBody) Read(p []byte) (int, error) {
+	n, err := b.rc.Read(p)
+	if err != nil {
+		b.once.Do(b.cancel)
+	}
+	return n, err
+}
+
+func (b *deadlineBody) Close() error {
+	b.once.Do(b.cancel)
+	return b.rc.Close()
 }
 
 func isRedirect(code int) bool {

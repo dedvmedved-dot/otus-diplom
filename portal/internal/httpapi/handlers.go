@@ -297,7 +297,11 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 	var lag *float64
 	if s.ps != nil {
 		v := float64(s.ps.LagSeconds.Load())
-		lag = &v
+		// Negative sentinel means "no successful persistence yet": report null
+		// (the OpenAPI type is number|null, minimum 0), never a negative number.
+		if v >= 0 {
+			lag = &v
+		}
 	}
 	dataLoss := false
 	if s.ps != nil {

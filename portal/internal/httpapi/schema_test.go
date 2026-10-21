@@ -49,7 +49,22 @@ func validateAgainstSchema(oa map[string]any, path, name string, schema map[stri
 			if cs, ok := oa["components"].(map[string]any)["schemas"].(map[string]any)[comp].(map[string]any); ok {
 				return validateAgainstSchema(oa, path, name, cs, val)
 			}
+			errs = append(errs, fmt.Errorf("%s %s: unresolved $ref %q", path, name, ref))
+			return errs
 		}
+		errs = append(errs, fmt.Errorf("%s %s: unsupported $ref %q", path, name, ref))
+		return errs
+	}
+	// anyOf: value must match at least one branch (checked BEFORE the null gate,
+	// so a null branch in anyOf is honoured).
+	if branches, ok := schema["anyOf"].([]any); ok {
+		for _, b := range branches {
+			bs, _ := b.(map[string]any)
+			if len(validateAgainstSchema(oa, path, name, bs, val)) == 0 {
+				return nil
+			}
+		}
+		errs = append(errs, fmt.Errorf("%s %s: value %v matches no anyOf branch", path, name, val))
 		return errs
 	}
 	// nullable: null value is valid when nullable:true, type:"null", or no type.
@@ -69,17 +84,6 @@ func validateAgainstSchema(oa map[string]any, path, name string, schema map[stri
 	// type:"null" requires a null value.
 	if t, _ := schema["type"].(string); t == "null" {
 		errs = append(errs, fmt.Errorf("%s %s: expected null, got %v", path, name, val))
-		return errs
-	}
-	// anyOf: value must match at least one branch.
-	if branches, ok := schema["anyOf"].([]any); ok {
-		for _, b := range branches {
-			bs, _ := b.(map[string]any)
-			if len(validateAgainstSchema(oa, path, name, bs, val)) == 0 {
-				return nil
-			}
-		}
-		errs = append(errs, fmt.Errorf("%s %s: value %v matches no anyOf branch", path, name, val))
 		return errs
 	}
 	st, _ := schema["type"].(string)
@@ -142,8 +146,16 @@ func validateAgainstSchema(oa map[string]any, path, name string, schema map[stri
 			errs = append(errs, fmt.Errorf("%s %s: %v > maximum %v", path, name, f, max))
 		}
 	case "number":
-		if _, ok := val.(float64); !ok {
+		f, ok := val.(float64)
+		if !ok {
 			errs = append(errs, fmt.Errorf("%s %s: expected number, got %T", path, name, val))
+			return errs
+		}
+		if min, ok := schema["minimum"].(float64); ok && f < min {
+			errs = append(errs, fmt.Errorf("%s %s: %v < minimum %v", path, name, f, min))
+		}
+		if max, ok := schema["maximum"].(float64); ok && f > max {
+			errs = append(errs, fmt.Errorf("%s %s: %v > maximum %v", path, name, f, max))
 		}
 	case "boolean":
 		if _, ok := val.(bool); !ok {

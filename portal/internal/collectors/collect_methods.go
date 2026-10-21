@@ -493,7 +493,7 @@ func (c *Collector) collectServices(ctx context.Context, snap *Snapshot, reg *So
 
 	// EndpointSlice ready counts, keyed by "namespace/name".
 	readyByService := map[string]int32{}
-	slices, _, serr := listWithContinue(ctx, listPage, listCap, func(opts metav1.ListOptions) ([]discoveryv1.EndpointSlice, string, error) {
+	slices, slicesTruncated, serr := listWithContinue(ctx, listPage, listCap, func(opts metav1.ListOptions) ([]discoveryv1.EndpointSlice, string, error) {
 		l, e := c.clients.typed.DiscoveryV1().EndpointSlices("").List(ctx, opts)
 		if e != nil {
 			return nil, "", e
@@ -504,6 +504,9 @@ func (c *Collector) collectServices(ctx context.Context, snap *Snapshot, reg *So
 		snap.addWarning(model.Warning{Code: "ENDPOINTSLICES_UNAVAILABLE", Severity: "warning",
 			Message: "endpointslices read failed; readyEndpoints unknown", Source: "k8s/endpointslices"})
 	} else {
+		if slicesTruncated {
+			snap.setPartial()
+		}
 		for _, es := range slices {
 			svcName := es.Labels["kubernetes.io/service-name"]
 			if svcName == "" {
@@ -678,6 +681,19 @@ func snapshotHealth(ready *bool) string {
 
 func f64p(v float64) *float64 { return &v }
 
+// parseDurationSeconds converts a metrics-server "window" duration string (e.g.
+// "30s") to float64 seconds. Returns 0 for empty/unparseable input.
+func parseDurationSeconds(s string) float64 {
+	if s == "" {
+		return 0
+	}
+	d, err := time.ParseDuration(s)
+	if err != nil {
+		return 0
+	}
+	return d.Seconds()
+}
+
 // ---- backups -----------------------------------------------------------------------
 
 func (c *Collector) collectBackups(ctx context.Context, snap *Snapshot, reg *SourceRegistry) {
@@ -694,7 +710,7 @@ func (c *Collector) collectBackups(ctx context.Context, snap *Snapshot, reg *Sou
 	var veleroErr, pgErr error
 
 	// Velero BSL
-	bsl, _, err := listWithContinue(ctx, listPage, listCap, func(opts metav1.ListOptions) ([]unstructured.Unstructured, string, error) {
+	bsl, bslTruncated, err := listWithContinue(ctx, listPage, listCap, func(opts metav1.ListOptions) ([]unstructured.Unstructured, string, error) {
 		l, e := c.clients.dynamic.Resource(gvrVeleroBSL).Namespace(velNS).List(ctx, opts)
 		if e != nil {
 			return nil, "", e
@@ -705,6 +721,9 @@ func (c *Collector) collectBackups(ctx context.Context, snap *Snapshot, reg *Sou
 		veleroErr = err
 		reg.set(sourceStatus("velero/bsl", "error", now, err))
 	} else {
+		if bslTruncated {
+			veleroTruncated = true
+		}
 		for _, b := range bsl {
 			phase, _, _ := unstructured.NestedString(b.Object, "status", "phase")
 			var lvt *string
@@ -789,7 +808,16 @@ func (c *Collector) collectBackups(ctx context.Context, snap *Snapshot, reg *Sou
 	// ScheduledBackup + ObjectStore named GET
 	collectPGNamed(ctx, c, &pg, reg, now)
 
-	velero.Health = aggregateHealth([]string{healthFromErr(veleroErr)})
+	veleroHealths := []string{}
+	if veleroErr != nil {
+		veleroHealths = append(veleroHealths, "critical")
+	}
+	for _, loc := range velero.Locations {
+		veleroHealths = append(veleroHealths, loc.Health)
+	}
+	veleroHealths = append(veleroHealths, backupAggregateHealth(velero.Backups))
+	veleroHealths = append(veleroHealths, backupAggregateHealth(velero.Restores))
+	velero.Health = aggregateHealth(veleroHealths)
 	velero.CollectionTruncated = veleroTruncated
 	pg.CollectionTruncated = pgTruncated
 	if pgErr != nil {
@@ -997,13 +1025,18 @@ func (c *Collector) collectDatabase(ctx context.Context, snap *Snapshot, reg *So
 	}
 	_ = walState
 	_ = archCond
+	// Cross-collector handoff to Backups.Postgresql.Wal (consumed in finalize).
+	snap.WalState = walState
+	if archCond != nil {
+		snap.WalArchivingCondition = archCond
+	}
 }
 
 // ---- metrics ------------------------------------------------------------------------
 
 func (c *Collector) collectMetrics(ctx context.Context, snap *Snapshot, reg *SourceRegistry) {
 	now := time.Now()
-	nm, _, err := listWithContinue(ctx, listPage, listCap, func(opts metav1.ListOptions) ([]unstructured.Unstructured, string, error) {
+	nm, nmTruncated, err := listWithContinue(ctx, listPage, listCap, func(opts metav1.ListOptions) ([]unstructured.Unstructured, string, error) {
 		l, e := c.clients.dynamic.Resource(gvrNodeMetrics).List(ctx, opts)
 		if e != nil {
 			return nil, "", e
@@ -1012,20 +1045,24 @@ func (c *Collector) collectMetrics(ctx context.Context, snap *Snapshot, reg *Sou
 	})
 	if err != nil {
 		reg.set(sourceStatus("k8s/metrics", "error", now, err))
+		snap.setPartial()
 		return
+	}
+	if nmTruncated {
+		snap.setPartial()
 	}
 	for _, n := range nm {
 		ts, _, _ := unstructured.NestedString(n.Object, "timestamp")
-		window, _, _ := unstructured.NestedInt64(n.Object, "window")
+		windowStr, _, _ := unstructured.NestedString(n.Object, "window")
 		cpuStr, _, _ := unstructured.NestedString(n.Object, "usage", "cpu")
 		memStr, _, _ := unstructured.NestedString(n.Object, "usage", "memory")
 		snap.Metrics = append(snap.Metrics, model.Metric{
 			Kind: "Node", Name: n.GetName(), SampleTimestamp: ts,
-			WindowSeconds: float64(window), CpuCores: parseCpuCores(cpuStr), MemoryBytes: parseMemoryBytes(memStr),
+			WindowSeconds: parseDurationSeconds(windowStr), CpuCores: parseCpuCores(cpuStr), MemoryBytes: parseMemoryBytes(memStr),
 		})
 	}
 
-	pm, _, err := listWithContinue(ctx, listPage, listCap, func(opts metav1.ListOptions) ([]unstructured.Unstructured, string, error) {
+	pm, pmTruncated, err := listWithContinue(ctx, listPage, listCap, func(opts metav1.ListOptions) ([]unstructured.Unstructured, string, error) {
 		l, e := c.clients.dynamic.Resource(gvrPodMetrics).List(ctx, opts)
 		if e != nil {
 			return nil, "", e
@@ -1035,9 +1072,12 @@ func (c *Collector) collectMetrics(ctx context.Context, snap *Snapshot, reg *Sou
 	if err != nil {
 		reg.set(sourceStatus("k8s/podmetrics", "error", now, err))
 	} else {
+		if pmTruncated {
+			snap.setPartial()
+		}
 		for _, p := range pm {
 			ts, _, _ := unstructured.NestedString(p.Object, "timestamp")
-			window, _, _ := unstructured.NestedInt64(p.Object, "window")
+			windowStr, _, _ := unstructured.NestedString(p.Object, "window")
 			var cpuMillis, memBytes int64
 			containers, _, _ := unstructured.NestedSlice(p.Object, "containers")
 			for _, c := range containers {
@@ -1061,7 +1101,7 @@ func (c *Collector) collectMetrics(ctx context.Context, snap *Snapshot, reg *Sou
 			cpuCores := float64(cpuMillis) / 1000.0
 			snap.Metrics = append(snap.Metrics, model.Metric{
 				Kind: "Pod", Name: p.GetName(), Namespace: &ns, SampleTimestamp: ts,
-				WindowSeconds: float64(window), CpuCores: &cpuCores, MemoryBytes: &memBytes,
+				WindowSeconds: parseDurationSeconds(windowStr), CpuCores: &cpuCores, MemoryBytes: &memBytes,
 			})
 		}
 		reg.set(sourceStatus("k8s/podmetrics", "ok", now, nil))
