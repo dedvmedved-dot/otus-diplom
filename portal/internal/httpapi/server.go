@@ -29,7 +29,7 @@ type SnapshotProvider interface {
 type Store interface {
 	Ping(ctx context.Context) error
 	CurrentMigrationVersion(ctx context.Context) (int64, string, error)
-	ListEvents(ctx context.Context, since *time.Time, severity, namespace string, limit, offset int) ([]store.EventRow, error)
+	ListEvents(ctx context.Context, since *time.Time, severity, namespace string, limit int, afterID int64) ([]store.EventRow, error)
 }
 
 // Server holds the wired dependencies for the HTTP layer.

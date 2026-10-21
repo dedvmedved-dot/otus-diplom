@@ -21,7 +21,7 @@ import (
 func TestEventsCursorRoundTripRFC3339(t *testing.T) {
 	// RFC3339 since contains ':' — the JSON cursor must round-trip it safely.
 	since := "2026-10-21T07:30:00Z"
-	c := encodeEventsCursor("snap123", "portal", since, "warning", "memory-fallback", 42)
+	c := encodeEventsCursor("snap123", "portal", since, "warning", "memory-fallback", 42, 0)
 	p, err := decodeEventsCursor(c)
 	if err != nil {
 		t.Fatalf("decode: %v", err)
@@ -34,7 +34,7 @@ func TestEventsCursorRoundTripRFC3339(t *testing.T) {
 
 type failStore struct{ mockStore }
 
-func (failStore) ListEvents(ctx context.Context, since *time.Time, severity, namespace string, limit, offset int) ([]store.EventRow, error) {
+func (failStore) ListEvents(ctx context.Context, since *time.Time, severity, namespace string, limit int, afterID int64) ([]store.EventRow, error) {
 	return nil, context.DeadlineExceeded
 }
 

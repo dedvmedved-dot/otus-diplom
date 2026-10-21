@@ -28,7 +28,7 @@ func (mockStore) Ping(ctx context.Context) error { return nil }
 func (mockStore) CurrentMigrationVersion(ctx context.Context) (int64, string, error) {
 	return 1, strings.Repeat("a", 64), nil
 }
-func (mockStore) ListEvents(ctx context.Context, since *time.Time, severity, namespace string, limit, offset int) ([]store.EventRow, error) {
+func (mockStore) ListEvents(ctx context.Context, since *time.Time, severity, namespace string, limit int, afterID int64) ([]store.EventRow, error) {
 	return []store.EventRow{}, nil
 }
 

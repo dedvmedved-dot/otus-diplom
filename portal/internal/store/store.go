@@ -180,6 +180,41 @@ func (s *Store) VerifySchema(ctx context.Context) error {
 			return fmt.Errorf("schema structure %s.%s: %w", c.table, c.column, err)
 		}
 	}
+	// Type checks: SELECT col LIMIT 0 does not catch an incompatible column type
+	// (e.g. int8 vs text). Verify the expected information_schema data_type.
+	typeChecks := []struct{ column, wantType string }{
+		{"id", "bigint"},
+		{"dedup_key", "character varying"},
+		{"source_time", "timestamp with time zone"},
+		{"ingested_at", "timestamp with time zone"},
+		{"occurrence_count", "bigint"},
+	}
+	for _, tc := range typeChecks {
+		var dt string
+		if err := s.pool.QueryRow(cctx,
+			`SELECT data_type FROM information_schema.columns
+			 WHERE table_schema='portal' AND table_name='timeline_events' AND column_name=$1`,
+			tc.column).Scan(&dt); err != nil {
+			return fmt.Errorf("schema type timeline_events.%s: %w", tc.column, err)
+		}
+		if dt != tc.wantType {
+			return fmt.Errorf("schema type timeline_events.%s: want %s got %s", tc.column, tc.wantType, dt)
+		}
+	}
+	// Constraint checks: dedup_key must have a UNIQUE constraint (identity for
+	// the upsert ON CONFLICT (dedup_key)).
+	var n int
+	if err := s.pool.QueryRow(cctx,
+		`SELECT count(*) FROM information_schema.table_constraints tc
+		 JOIN information_schema.key_column_usage kcu
+		   ON tc.constraint_name = kcu.constraint_name AND tc.constraint_schema = kcu.constraint_schema
+		 WHERE tc.constraint_schema='portal' AND tc.table_name='timeline_events'
+		   AND tc.constraint_type='UNIQUE' AND kcu.column_name='dedup_key'`).Scan(&n); err != nil {
+		return fmt.Errorf("schema constraint check: %w", err)
+	}
+	if n == 0 {
+		return fmt.Errorf("schema constraint: timeline_events.dedup_key UNIQUE missing")
+	}
 	return nil
 }
 
@@ -245,8 +280,10 @@ func (s *Store) UpsertEvent(ctx context.Context, e TimelineEvent) error {
 	return err
 }
 
-// EventRow is a persisted timeline event projection.
+// EventRow is a persisted timeline event projection. Seq is the stable
+// bigserial identity used for keyset pagination (id in the table).
 type EventRow struct {
+	Seq         int64      `json:"-"`
 	ID          string     `json:"id"`
 	IngestedAt  time.Time  `json:"ingestedAt"`
 	SourceTime  *time.Time `json:"sourceTime"`
@@ -260,12 +297,14 @@ type EventRow struct {
 	Message     string     `json:"message"`
 }
 
-// ListEvents returns recent timeline events, filtered by since/severity/namespace
-// and paginated by limit+offset (no post-filter, no hidden row loss).
-func (s *Store) ListEvents(ctx context.Context, since *time.Time, severity, namespace string, limit, offset int) ([]EventRow, error) {
+// ListEvents returns recent timeline events filtered by since/severity/namespace,
+// paginated by a STABLE keyset (id < afterID, ordered id DESC). The bigserial id
+// never changes on upsert, so concurrent insert/update/prune cannot shift pages
+// (unlike ORDER BY ingested_at + OFFSET). afterID<=0 means "from the newest".
+func (s *Store) ListEvents(ctx context.Context, since *time.Time, severity, namespace string, limit int, afterID int64) ([]EventRow, error) {
 	cctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
-	q := `SELECT dedup_key, ingested_at, source_time, source, severity, object_kind, object_namespace, object_name,
+	q := `SELECT id, dedup_key, ingested_at, source_time, source, severity, object_kind, object_namespace, object_name,
 		reason_code, occurrence_count, message
 		FROM portal.timeline_events`
 	var args []any
@@ -285,11 +324,15 @@ func (s *Store) ListEvents(ctx context.Context, since *time.Time, severity, name
 		conds = append(conds, fmt.Sprintf("object_namespace = $%d", len(args)+1))
 		args = append(args, namespace)
 	}
+	if afterID > 0 {
+		conds = append(conds, fmt.Sprintf("id < $%d", len(args)+1))
+		args = append(args, afterID)
+	}
 	if len(conds) > 0 {
 		q += " WHERE " + strings.Join(conds, " AND ")
 	}
-	q += fmt.Sprintf(" ORDER BY ingested_at DESC, id DESC LIMIT $%d OFFSET $%d", len(args)+1, len(args)+2)
-	args = append(args, limit, offset)
+	q += fmt.Sprintf(" ORDER BY id DESC LIMIT $%d", len(args)+1)
+	args = append(args, limit)
 
 	rows, err := s.pool.Query(cctx, q, args...)
 	if err != nil {
@@ -301,7 +344,7 @@ func (s *Store) ListEvents(ctx context.Context, since *time.Time, severity, name
 		var r EventRow
 		var st *time.Time
 		var objKind, objNS, objName *string
-		if err := rows.Scan(&r.ID, &r.IngestedAt, &st, &r.Source, &r.Severity, &objKind, &objNS, &objName, &r.ReasonCode, &r.Occurrences, &r.Message); err != nil {
+		if err := rows.Scan(&r.Seq, &r.ID, &r.IngestedAt, &st, &r.Source, &r.Severity, &objKind, &objNS, &objName, &r.ReasonCode, &r.Occurrences, &r.Message); err != nil {
 			return nil, err
 		}
 		r.SourceTime = st

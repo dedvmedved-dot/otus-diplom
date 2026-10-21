@@ -124,6 +124,54 @@ func TestIntegrationEventDedupAndRecreate(t *testing.T) {
 	}
 }
 
+func TestIntegrationListEventsKeysetStableUnderInsert(t *testing.T) {
+	_, s := freshSchema(t)
+	ctx := context.Background()
+	now := time.Now().UTC()
+	// Insert 3 events in order -> bigserial ids 1,2,3.
+	for i, dk := range []string{"k8s:u1:o1:r", "k8s:u2:o1:r", "k8s:u3:o1:r"} {
+		st := now.Add(-time.Duration(i) * time.Minute)
+		e := TimelineEvent{DedupKey: dk, Source: "kubernetes", Severity: "normal",
+			ReasonCode: "r", Occurrences: 1, Message: "m", SourceTime: &st}
+		if err := s.UpsertEvent(ctx, e); err != nil {
+			t.Fatalf("upsert %d: %v", i, err)
+		}
+	}
+
+	// Page 1 (limit 2): newest-by-id first -> id3 (u3), id2 (u2).
+	page1, err := s.ListEvents(ctx, nil, "", "", 2, 0)
+	if err != nil {
+		t.Fatalf("page1: %v", err)
+	}
+	if len(page1) != 2 || page1[0].ID != "k8s:u3:o1:r" || page1[1].ID != "k8s:u2:o1:r" {
+		t.Fatalf("page1 wrong: %+v", page1)
+	}
+	afterID := page1[1].Seq // id of u2
+
+	// Concurrent insert (id4) + upsert of id3 (ingested_at changes, id stable).
+	stNew := now.Add(time.Minute)
+	e4 := TimelineEvent{DedupKey: "k8s:u4:o1:r", Source: "kubernetes", Severity: "normal",
+		ReasonCode: "r", Occurrences: 1, Message: "m", SourceTime: &stNew}
+	if err := s.UpsertEvent(ctx, e4); err != nil {
+		t.Fatalf("insert u4: %v", err)
+	}
+	e3 := TimelineEvent{DedupKey: "k8s:u3:o1:r", Source: "kubernetes", Severity: "normal",
+		ReasonCode: "r", Occurrences: 2, Message: "m", SourceTime: &stNew}
+	if err := s.UpsertEvent(ctx, e3); err != nil {
+		t.Fatalf("upsert u3: %v", err)
+	}
+
+	// Page 2 (keyset afterID = id2): must return ONLY id1 (u1) — no duplicate of
+	// u2 and no skip caused by u3's ingested_at change or u4's insert.
+	page2, err := s.ListEvents(ctx, nil, "", "", 2, afterID)
+	if err != nil {
+		t.Fatalf("page2: %v", err)
+	}
+	if len(page2) != 1 || page2[0].ID != "k8s:u1:o1:r" {
+		t.Fatalf("page2 must be exactly [u1], got %+v", page2)
+	}
+}
+
 func TestIntegrationPruneTTL(t *testing.T) {
 	pool, s := freshSchema(t)
 	ctx := context.Background()
