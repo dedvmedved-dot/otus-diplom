@@ -87,7 +87,13 @@ func (s *Server) envelope(snap *collectors.Snapshot) model.Envelope {
 
 // snapshotID returns a stable id for the current snapshot (for cursor binding).
 func (s *Server) snapshotID() string {
-	snap := s.snapshot()
+	return snapshotIDFor(s.snapshot())
+}
+
+// snapshotIDFor derives a stable id from a SPECIFIC snapshot (not the latest).
+// Handlers capture the snapshot once and pass its id so cursor validation and
+// pagination never observe a newer snapshot than the data they serve.
+func snapshotIDFor(snap *collectors.Snapshot) string {
 	if snap == nil || snap.CollectedAt.IsZero() {
 		return ""
 	}
@@ -179,8 +185,9 @@ func dns1123(s string) bool {
 
 // parseListQuery validates allowed keys and returns limit, cursor offset, namespace.
 // The cursor is bound to (snapshot + namespace filter + endpoint); a mismatch
-// in any dimension returns CURSOR_EXPIRED.
-func (s *Server) parseListQuery(r *http.Request, allowed []string, endpoint string) (limit int, offset int, namespace string, err error) {
+// in any dimension returns CURSOR_EXPIRED. snapID is the handler's single
+// captured snapshot id (coherent with the data it will serve).
+func (s *Server) parseListQuery(r *http.Request, allowed []string, endpoint, snapID string) (limit int, offset int, namespace string, err error) {
 	limit = 50
 	offset = 0
 	namespace = ""
@@ -214,7 +221,7 @@ func (s *Server) parseListQuery(r *http.Request, allowed []string, endpoint stri
 		if e != nil {
 			return 0, 0, "", e
 		}
-		if cs.snapshotID != s.snapshotID() {
+		if cs.snapshotID != snapID {
 			return 0, 0, "", errCursorExpired{}
 		}
 		if cs.namespace != namespace {
@@ -233,8 +240,8 @@ type errCursorExpired struct{}
 func (errCursorExpired) Error() string { return "cursor expired" }
 
 // paginate slices a sorted slice and returns the page + next cursor (bound to
-// snapshot + namespace filter + endpoint).
-func (s *Server) paginate[T any](items []T, limit, offset int, namespace, endpoint string) ([]T, *string) {
+// snapshot + namespace filter + endpoint). snapID is the captured snapshot id.
+func (s *Server) paginate[T any](items []T, limit, offset int, namespace, endpoint, snapID string) ([]T, *string) {
 	if offset >= len(items) {
 		return []T{}, nil
 	}
@@ -245,7 +252,7 @@ func (s *Server) paginate[T any](items []T, limit, offset int, namespace, endpoi
 	page := items[offset:end]
 	var next *string
 	if end < len(items) {
-		c := encodeCursor(s.snapshotID(), namespace, endpoint, end)
+		c := encodeCursor(snapID, namespace, endpoint, end)
 		next = &c
 	}
 	return page, next
@@ -558,17 +565,18 @@ func aggregate(hs []string) string {
 }
 
 func (s *Server) handleNodes(w http.ResponseWriter, r *http.Request) {
-	limit, offset, _, err := s.parseListQuery(r, []string{"limit", "cursor"}, "nodes")
+	snap := s.snapshot()
+	snapID := snapshotIDFor(snap)
+	limit, offset, _, err := s.parseListQuery(r, []string{"limit", "cursor"}, "nodes", snapID)
 	if err != nil {
 		writeListError(w, err)
 		return
 	}
-	snap := s.snapshot()
 	var items []model.Node
 	if snap != nil {
 		items = snap.Nodes
 	}
-	page, next := s.paginate(items, limit, offset, "", "nodes")
+	page, next := s.paginate(items, limit, offset, "", "nodes", snapID)
 	env := s.envelope(snap)
 	env.Data = model.Nodes{Items: page}
 	env.NextCursor = next
@@ -576,18 +584,19 @@ func (s *Server) handleNodes(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleWorkloads(w http.ResponseWriter, r *http.Request) {
-	limit, offset, ns, err := s.parseListQuery(r, []string{"limit", "cursor", "namespace"}, "workloads")
+	snap := s.snapshot()
+	snapID := snapshotIDFor(snap)
+	limit, offset, ns, err := s.parseListQuery(r, []string{"limit", "cursor", "namespace"}, "workloads", snapID)
 	if err != nil {
 		writeListError(w, err)
 		return
 	}
-	snap := s.snapshot()
 	var items []model.Workload
 	if snap != nil {
 		items = snap.Workloads
 	}
 	items = filterWorkloads(items, ns)
-	page, next := s.paginate(items, limit, offset, ns, "workloads")
+	page, next := s.paginate(items, limit, offset, ns, "workloads", snapID)
 	env := s.envelope(snap)
 	env.Data = model.Workloads{Items: page}
 	env.NextCursor = next
@@ -595,18 +604,19 @@ func (s *Server) handleWorkloads(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handlePods(w http.ResponseWriter, r *http.Request) {
-	limit, offset, ns, err := s.parseListQuery(r, []string{"limit", "cursor", "namespace"}, "pods")
+	snap := s.snapshot()
+	snapID := snapshotIDFor(snap)
+	limit, offset, ns, err := s.parseListQuery(r, []string{"limit", "cursor", "namespace"}, "pods", snapID)
 	if err != nil {
 		writeListError(w, err)
 		return
 	}
-	snap := s.snapshot()
 	var items []model.Pod
 	if snap != nil {
 		items = snap.Pods
 	}
 	items = filterPods(items, ns)
-	page, next := s.paginate(items, limit, offset, ns, "pods")
+	page, next := s.paginate(items, limit, offset, ns, "pods", snapID)
 	env := s.envelope(snap)
 	env.Data = model.Pods{Items: page}
 	env.NextCursor = next
@@ -614,18 +624,19 @@ func (s *Server) handlePods(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleServices(w http.ResponseWriter, r *http.Request) {
-	limit, offset, ns, err := s.parseListQuery(r, []string{"limit", "cursor", "namespace"}, "services")
+	snap := s.snapshot()
+	snapID := snapshotIDFor(snap)
+	limit, offset, ns, err := s.parseListQuery(r, []string{"limit", "cursor", "namespace"}, "services", snapID)
 	if err != nil {
 		writeListError(w, err)
 		return
 	}
-	snap := s.snapshot()
 	var items []model.Service
 	if snap != nil {
 		items = snap.Services
 	}
 	items = filterServices(items, ns)
-	page, next := s.paginate(items, limit, offset, ns, "services")
+	page, next := s.paginate(items, limit, offset, ns, "services", snapID)
 	env := s.envelope(snap)
 	env.Data = model.Services{Items: page}
 	env.NextCursor = next
@@ -633,12 +644,13 @@ func (s *Server) handleServices(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleStorage(w http.ResponseWriter, r *http.Request) {
-	limit, offset, ns, err := s.parseListQuery(r, []string{"limit", "cursor", "namespace"}, "storage")
+	snap := s.snapshot()
+	snapID := snapshotIDFor(snap)
+	limit, offset, ns, err := s.parseListQuery(r, []string{"limit", "cursor", "namespace"}, "storage", snapID)
 	if err != nil {
 		writeListError(w, err)
 		return
 	}
-	snap := s.snapshot()
 	var data model.Storage
 	if snap != nil && snap.Storage != nil {
 		data = *snap.Storage
@@ -646,7 +658,7 @@ func (s *Server) handleStorage(w http.ResponseWriter, r *http.Request) {
 		data = model.Storage{Scope: "kubernetes_objects", DrbdDirectHealth: "not_observed", Items: []model.StorageItem{}}
 	}
 	items := filterStorage(data.Items, ns)
-	page, next := s.paginate(items, limit, offset, ns, "storage")
+	page, next := s.paginate(items, limit, offset, ns, "storage", snapID)
 	data.Items = page
 	env := s.envelope(snap)
 	env.Data = data
@@ -701,18 +713,19 @@ func (s *Server) handleDatabase(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleMetrics(w http.ResponseWriter, r *http.Request) {
-	limit, offset, ns, err := s.parseListQuery(r, []string{"limit", "cursor", "namespace"}, "metrics")
+	snap := s.snapshot()
+	snapID := snapshotIDFor(snap)
+	limit, offset, ns, err := s.parseListQuery(r, []string{"limit", "cursor", "namespace"}, "metrics", snapID)
 	if err != nil {
 		writeListError(w, err)
 		return
 	}
-	snap := s.snapshot()
 	var items []model.Metric
 	if snap != nil {
 		items = snap.Metrics
 	}
 	items = filterMetrics(items, ns)
-	page, next := s.paginate(items, limit, offset, ns, "metrics")
+	page, next := s.paginate(items, limit, offset, ns, "metrics", snapID)
 	env := s.envelope(snap)
 	env.Data = model.Metrics{Items: page}
 	env.NextCursor = next
@@ -720,6 +733,8 @@ func (s *Server) handleMetrics(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
+	snap := s.snapshot()
+	snapID := snapshotIDFor(snap)
 	limit := 50
 	offset := 0
 	ns := ""
@@ -777,7 +792,7 @@ func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusBadRequest, "BAD_REQUEST", "invalid query: cursor")
 			return
 		}
-		if cp.SnapshotID != s.snapshotID() || cp.Namespace != ns || cp.Since != sinceStr || cp.Severity != severity {
+		if cp.SnapshotID != snapID || cp.Namespace != ns || cp.Since != sinceStr || cp.Severity != severity {
 			writeError(w, http.StatusBadRequest, "CURSOR_EXPIRED", "cursor expired")
 			return
 		}
@@ -793,12 +808,12 @@ func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
 		// Bounded in-memory fallback: serve the latest collected events instead
 		// of failing closed. auditComplete remains false.
 		storage = "memory-fallback"
-		if snap := s.snapshot(); snap != nil {
+		if snap != nil {
 			events = snap.Events
 		}
 		events = filterEventsInMemory(events, since, severity, ns)
 		var page []model.TimelineEvent
-		page, next = s.paginate(events, limit, offset, ns, "events")
+		page, next = s.paginate(events, limit, offset, ns, "events", snapID)
 		events = page
 	} else {
 		events = make([]model.TimelineEvent, 0, len(rows))
@@ -817,7 +832,7 @@ func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
 			})
 		}
 		if len(events) == limit {
-			c := encodeEventsCursor(s.snapshotID(), ns, sinceStr, severity, storage, offset+limit)
+			c := encodeEventsCursor(snapID, ns, sinceStr, severity, storage, offset+limit)
 			next = &c
 		}
 	}
@@ -830,11 +845,11 @@ func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
 	// For the memory-fallback path, regenerate the next cursor with the correct
 	// backend mode (the paginate() cursor above is endpoint-only).
 	if storage == "memory-fallback" && next != nil {
-		c := encodeEventsCursor(s.snapshotID(), ns, sinceStr, severity, storage, offset+limit)
+		c := encodeEventsCursor(snapID, ns, sinceStr, severity, storage, offset+limit)
 		next = &c
 	}
 	data := model.Events{Storage: storage, AuditComplete: false, Items: events}
-	env := s.envelope(s.snapshot())
+	env := s.envelope(snap)
 	env.Data = data
 	env.NextCursor = next
 	writeJSON(w, http.StatusOK, env)
