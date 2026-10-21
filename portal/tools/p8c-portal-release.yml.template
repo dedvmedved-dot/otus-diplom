@@ -103,6 +103,16 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
+      - name: Verify Go toolchain SHA256 (guaranteed, fail if absent)
+        run: |
+          set -euo pipefail
+          dl=$(find "${RUNNER_TOOL_CACHE:-/opt/hostedtoolcache}" -name "go${{ env.GO_VERSION }}.linux-amd64.tar.gz" 2>/dev/null | head -1 || true)
+          if [ -z "$dl" ]; then
+            curl -sSfL "https://go.dev/dl/go${{ env.GO_VERSION }}.linux-amd64.tar.gz" -o /tmp/go.tar.gz
+            dl=/tmp/go.tar.gz
+          fi
+          echo "${{ env.GO_SHA256 }}  $dl" | sha256sum -c
+
       - name: Build binary (reproducible)
         working-directory: portal
         run: |
@@ -180,21 +190,40 @@ jobs:
             -a ref=${{ github.sha }} \
             "${IMAGE}@${IMAGE_DIGEST}"
 
-      - name: SBOM + provenance attestation (generate + verify)
+      - name: SBOM + provenance attestation (generate + verify both)
         run: |
+          DIGEST_HEX="${IMAGE_DIGEST#sha256:}"
+          cat > /tmp/provenance.json <<EOF
+          {
+            "_type": "https://in-toto.io/Statement/v0.1",
+            "subject": [{"name": "${IMAGE}", "digest": {"sha256": "${DIGEST_HEX}"}}],
+            "predicateType": "https://slsa.dev/provenance/v0.2",
+            "predicate": {
+              "builder": {"id": "https://github.com/${{ github.repository }}/.github/workflows/p8c-portal-release.yml@refs/heads/main"},
+              "buildType": "https://github.com/Attestations/GitHubActionsWorkflow@v1",
+              "invocation": {
+                "configSource": {
+                  "uri": "git+https://github.com/${{ github.repository }}@refs/heads/main",
+                  "digest": {"sha1": "${{ github.sha }}"}}}}}
+          EOF
           cosign attest --yes --type spdxjson --predicate portal/sbom.spdx.json \
             "${IMAGE}@${IMAGE_DIGEST}"
-          cosign attest --yes --type slsaprovenance \
-            --predicate /tmp/build-metadata.json \
+          cosign attest --yes --type slsaprovenance --predicate /tmp/provenance.json \
             "${IMAGE}@${IMAGE_DIGEST}"
           cosign verify-attestation --type spdxjson \
             --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/p8c-portal-release.yml@refs/heads/main" \
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
             "${IMAGE}@${IMAGE_DIGEST}"
+          cosign verify-attestation --type slsaprovenance \
+            --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/p8c-portal-release.yml@refs/heads/main" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            "${IMAGE}@${IMAGE_DIGEST}"
 
-      - name: Upload SBOM + signature as artifacts
+      - name: Upload SBOM + signature + provenance artifacts
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb280c # v4.3.3
         with:
-          name: portal-sbom-signature
+          name: portal-sbom-signature-provenance
           path: |
             portal/sbom.spdx.json
+            /tmp/provenance.json
+            /tmp/build-metadata.json

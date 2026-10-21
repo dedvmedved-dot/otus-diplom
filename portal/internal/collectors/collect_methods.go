@@ -1053,6 +1053,7 @@ func (c *Collector) collectEvents(ctx context.Context, snap *Snapshot, reg *Sour
 			ID: dedup, Source: "kubernetes", SourceTime: st, Severity: sev,
 			ObjectKind: &objKind, Namespace: &ns, ObjectName: &name,
 			ReasonCode: e.Reason, OccurrenceCount: int64(e.Count), Message: "kubernetes event " + e.Reason,
+			SourceUID: string(e.UID), SourceResourceVersion: e.ResourceVersion,
 		})
 	}
 	reg.set(sourceStatus("k8s/events", "ok", now, nil))

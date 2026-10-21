@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"net/http"
 	"strconv"
 	"strings"
@@ -125,27 +126,39 @@ type queryError struct{ field string }
 
 func (e queryError) Error() string { return "invalid query: " + e.field }
 
-// encodeEventsCursor binds an events cursor to snapshot + namespace + since +
-// severity + offset (all sampling filters), not just snapshot/offset.
-func encodeEventsCursor(snapID, ns, since, severity string, offset int) string {
-	raw := snapID + ":" + ns + ":" + since + ":" + severity + ":" + strconv.Itoa(offset)
-	return base64.RawURLEncoding.EncodeToString([]byte(raw))
+// eventsCursorPayload is the JSON-serialized events cursor. JSON avoids any
+// delimiter conflict with RFC3339 timestamps (which contain ':').
+type eventsCursorPayload struct {
+	SnapshotID string `json:"s"`
+	Namespace  string `json:"n"`
+	Since      string `json:"t"` // RFC3339 or ""
+	Severity   string `json:"v"`
+	Backend    string `json:"b"` // postgresql | memory-fallback
+	Offset     int    `json:"o"`
 }
 
-func decodeEventsCursor(cursor string) (snapID, ns, since, severity string, offset int, err error) {
+// encodeEventsCursor binds an events cursor to snapshot + namespace + since +
+// severity + backend + offset (all sampling filters + backend mode).
+func encodeEventsCursor(snapID, ns, since, severity, backend string, offset int) string {
+	b, _ := json.Marshal(eventsCursorPayload{
+		SnapshotID: snapID, Namespace: ns, Since: since, Severity: severity, Backend: backend, Offset: offset,
+	})
+	return base64.RawURLEncoding.EncodeToString(b)
+}
+
+func decodeEventsCursor(cursor string) (eventsCursorPayload, error) {
 	raw, err := base64.RawURLEncoding.DecodeString(cursor)
 	if err != nil {
-		return "", "", "", "", 0, errBadQuery("cursor")
+		return eventsCursorPayload{}, errBadQuery("cursor")
 	}
-	parts := strings.SplitN(string(raw), ":", 5)
-	if len(parts) != 5 {
-		return "", "", "", "", 0, errBadQuery("cursor")
+	var p eventsCursorPayload
+	if err := json.Unmarshal(raw, &p); err != nil {
+		return eventsCursorPayload{}, errBadQuery("cursor")
 	}
-	off, err := strconv.Atoi(parts[4])
-	if err != nil || off < 0 {
-		return "", "", "", "", 0, errBadQuery("cursor")
+	if p.Offset < 0 {
+		return eventsCursorPayload{}, errBadQuery("cursor")
 	}
-	return parts[0], parts[1], parts[2], parts[3], off, nil
+	return p, nil
 }
 
 func errBadQuery(field string) error { return queryError{field: field} }
@@ -753,21 +766,23 @@ func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
 	if since != nil {
 		sinceStr = since.UTC().Format(time.RFC3339)
 	}
+	cursorBackend := ""
 	if v := r.URL.Query().Get("cursor"); v != "" {
 		if len(v) > 512 {
 			writeError(w, http.StatusBadRequest, "BAD_REQUEST", "invalid query: cursor")
 			return
 		}
-		csnap, cns, csince, csev, coff, e := decodeEventsCursor(v)
+		cp, e := decodeEventsCursor(v)
 		if e != nil {
 			writeError(w, http.StatusBadRequest, "BAD_REQUEST", "invalid query: cursor")
 			return
 		}
-		if csnap != s.snapshotID() || cns != ns || csince != sinceStr || csev != severity {
+		if cp.SnapshotID != s.snapshotID() || cp.Namespace != ns || cp.Since != sinceStr || cp.Severity != severity {
 			writeError(w, http.StatusBadRequest, "CURSOR_EXPIRED", "cursor expired")
 			return
 		}
-		offset = coff
+		offset = cp.Offset
+		cursorBackend = cp.Backend
 	}
 
 	rows, err := s.store.ListEvents(r.Context(), since, severity, ns, limit, offset)
@@ -802,9 +817,21 @@ func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
 			})
 		}
 		if len(events) == limit {
-			c := encodeEventsCursor(s.snapshotID(), ns, sinceStr, severity, offset+limit)
+			c := encodeEventsCursor(s.snapshotID(), ns, sinceStr, severity, storage, offset+limit)
 			next = &c
 		}
+	}
+	// Backend-mode binding: a cursor produced on one backend (postgresql vs
+	// memory-fallback) must not be reused on the other (offset semantics differ).
+	if cursorBackend != "" && cursorBackend != storage {
+		writeError(w, http.StatusBadRequest, "CURSOR_EXPIRED", "cursor expired (backend changed)")
+		return
+	}
+	// For the memory-fallback path, regenerate the next cursor with the correct
+	// backend mode (the paginate() cursor above is endpoint-only).
+	if storage == "memory-fallback" && next != nil {
+		c := encodeEventsCursor(s.snapshotID(), ns, sinceStr, severity, storage, offset+limit)
+		next = &c
 	}
 	data := model.Events{Storage: storage, AuditComplete: false, Items: events}
 	env := s.envelope(s.snapshot())

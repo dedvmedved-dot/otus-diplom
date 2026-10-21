@@ -187,6 +187,7 @@ func persistOnce(ctx context.Context, st *store.Store, col *collectors.Collector
 		se := store.TimelineEvent{
 			DedupKey: e.ID, Source: e.Source, Severity: e.Severity, ReasonCode: e.ReasonCode,
 			Occurrences: e.OccurrenceCount, Message: e.Message,
+			SourceUID: e.SourceUID, SourceResourceVersion: e.SourceResourceVersion,
 		}
 		if e.SourceTime != nil {
 			if t, err := time.Parse(time.RFC3339, *e.SourceTime); err == nil {
@@ -212,15 +213,26 @@ func persistOnce(ctx context.Context, st *store.Store, col *collectors.Collector
 	}
 	ps.LagSeconds.Store(0)
 	ps.LastSuccessUnix.Store(time.Now().Unix())
+	// Status transition: recovered if data loss was previously latched.
+	if ps.DataLoss.Swap(false) {
+		ps.RecordTransition("recovered")
+	} else {
+		ps.RecordTransition("ok")
+	}
 }
 
 // markPersistenceFailure records data loss and lag as elapsed seconds since
-// the last successful persistence (not an error counter).
+// the last successful persistence. A value of -1 signals "no successful
+// persistence yet" (defined initial state, not a misleading 0).
 func markPersistenceFailure(ps *collectors.PersistenceState) {
 	ps.DataLoss.Store(true)
-	if last := ps.LastSuccessUnix.Load(); last > 0 {
+	last := ps.LastSuccessUnix.Load()
+	if last == 0 {
+		ps.LagSeconds.Store(-1)
+	} else {
 		ps.LagSeconds.Store(time.Now().Unix() - last)
 	}
+	ps.RecordTransition("failed")
 }
 
 // snapshotHealth derives the batch overall_health from the snapshot (warnings,

@@ -302,6 +302,9 @@ type TimelineEvent struct {
 	ReasonCode      string  `json:"reasonCode"`
 	OccurrenceCount int64   `json:"occurrenceCount"`
 	Message         string  `json:"message"`
+	// Internal persistence identity (NOT serialized to the API response).
+	SourceUID             string `json:"-"`
+	SourceResourceVersion string `json:"-"`
 }
 
 type Events struct {

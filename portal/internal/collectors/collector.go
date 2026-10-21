@@ -91,11 +91,42 @@ type Snapshot struct {
 	events   []model.TimelineEvent
 }
 
-// PersistenceState tracks the bounded persistence loop's lag and data loss.
+// PersistenceState tracks the bounded persistence loop's lag and data loss,
+// plus a bounded in-memory queue of status transitions (failure/recovery).
+type Transition struct {
+	At    time.Time
+	State string // "ok" | "failed" | "recovered"
+}
+
+const maxTransitions = 64
+
 type PersistenceState struct {
 	LagSeconds      atomic.Int64
 	LastSuccessUnix atomic.Int64
 	DataLoss        atomic.Bool
+
+	mu          sync.Mutex
+	transitions []Transition
+}
+
+// RecordTransition appends a bounded status transition (drops the oldest when
+// over the cap). It is a memory-only, non-durable diagnostic view.
+func (ps *PersistenceState) RecordTransition(state string) {
+	ps.mu.Lock()
+	defer ps.mu.Unlock()
+	ps.transitions = append(ps.transitions, Transition{At: time.Now(), State: state})
+	if len(ps.transitions) > maxTransitions {
+		ps.transitions = ps.transitions[len(ps.transitions)-maxTransitions:]
+	}
+}
+
+// Transitions returns a copy of the bounded transition history.
+func (ps *PersistenceState) Transitions() []Transition {
+	ps.mu.Lock()
+	defer ps.mu.Unlock()
+	out := make([]Transition, len(ps.transitions))
+	copy(out, ps.transitions)
+	return out
 }
 
 func (s *Snapshot) addEvent(e model.TimelineEvent) {
