@@ -43,10 +43,11 @@ func contractTestServer() *Server {
 		Storage:     &model.Storage{Scope: "kubernetes_objects", DrbdDirectHealth: "not_observed", Items: []model.StorageItem{}},
 		Backups: &model.Backups{
 			Velero:     model.VeleroBackups{Health: "unknown", Locations: []model.BackupStorageLocation{}, Backups: []model.BackupRecord{}, Restores: []model.BackupRecord{}},
-			Postgresql: model.PostgresBackups{Cluster: "portal-db", ObjectStore: "portal-db-backup", Health: "unknown", ExpectedSchedule: "0 0 2 * * *", ExpectedTarget: "prefer-standby", Backups: []model.BackupRecord{}, Wal: model.Wal{ExpectedArchiveTimeoutSeconds: 300}, Barman: model.BarmanSample{Scope: "single_exporter_sample"}},
+			Postgresql: model.PostgresBackups{Cluster: "portal-db", ObjectStore: "portal-db-backup", Health: "unknown", ExpectedSchedule: "0 0 2 * * *", ExpectedTarget: "prefer-standby", Backups: []model.BackupRecord{}, Wal: model.Wal{State: "unknown", ExpectedArchiveTimeoutSeconds: 300}, Barman: model.BarmanSample{Scope: "single_exporter_sample"}},
 			PolicyGaps: policyGaps(),
 		},
 		Database: &model.Database{Namespace: "portal", Cluster: "portal-db", Health: "unknown",
+			Conditions: []model.Condition{},
 			HistoricalQualification: model.HistoricalQualification{Scope: "historical_P8B_evidence", Date: "2026-10-20", LatestRestore: "PASS", Pitr: "PASS", IsLiveRecoveryTest: false}},
 		Metrics:  []model.Metric{},
 		Sources:  []model.SourceStatus{},

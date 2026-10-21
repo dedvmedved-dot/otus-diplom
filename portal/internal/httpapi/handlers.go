@@ -123,7 +123,30 @@ func decodeCursor(cursor string) (cursorState, error) {
 
 type queryError struct{ field string }
 
-func (q queryError) Error() string { return "invalid query: " + q.field }
+func (e queryError) Error() string { return "invalid query: " + e.field }
+
+// encodeEventsCursor binds an events cursor to snapshot + namespace + since +
+// severity + offset (all sampling filters), not just snapshot/offset.
+func encodeEventsCursor(snapID, ns, since, severity string, offset int) string {
+	raw := snapID + ":" + ns + ":" + since + ":" + severity + ":" + strconv.Itoa(offset)
+	return base64.RawURLEncoding.EncodeToString([]byte(raw))
+}
+
+func decodeEventsCursor(cursor string) (snapID, ns, since, severity string, offset int, err error) {
+	raw, err := base64.RawURLEncoding.DecodeString(cursor)
+	if err != nil {
+		return "", "", "", "", 0, errBadQuery("cursor")
+	}
+	parts := strings.SplitN(string(raw), ":", 5)
+	if len(parts) != 5 {
+		return "", "", "", "", 0, errBadQuery("cursor")
+	}
+	off, err := strconv.Atoi(parts[4])
+	if err != nil || off < 0 {
+		return "", "", "", "", 0, errBadQuery("cursor")
+	}
+	return parts[0], parts[1], parts[2], parts[3], off, nil
+}
 
 func errBadQuery(field string) error { return queryError{field: field} }
 
@@ -630,7 +653,7 @@ func (s *Server) handleBackups(w http.ResponseWriter, r *http.Request) {
 	} else {
 		data = model.Backups{
 			Velero:     model.VeleroBackups{Locations: []model.BackupStorageLocation{}, Backups: []model.BackupRecord{}, Restores: []model.BackupRecord{}, Health: "unknown"},
-			Postgresql: model.PostgresBackups{Cluster: "portal-db", ObjectStore: "portal-db-backup", ExpectedSchedule: "0 0 2 * * *", ExpectedTarget: "prefer-standby", Backups: []model.BackupRecord{}, Wal: model.Wal{ExpectedArchiveTimeoutSeconds: 300}, Barman: model.BarmanSample{Scope: "single_exporter_sample"}, Health: "unknown"},
+			Postgresql: model.PostgresBackups{Cluster: "portal-db", ObjectStore: "portal-db-backup", ExpectedSchedule: "0 0 2 * * *", ExpectedTarget: "prefer-standby", Backups: []model.BackupRecord{}, Wal: model.Wal{State: "unknown", ExpectedArchiveTimeoutSeconds: 300}, Barman: model.BarmanSample{Scope: "single_exporter_sample"}, Health: "unknown"},
 			PolicyGaps: policyGaps(),
 		}
 	}
@@ -711,22 +734,6 @@ func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
 		}
 		ns = v
 	}
-	if v := r.URL.Query().Get("cursor"); v != "" {
-		if len(v) > 512 {
-			writeError(w, http.StatusBadRequest, "BAD_REQUEST", "invalid query: cursor")
-			return
-		}
-		cs, e := decodeCursor(v)
-		if e != nil {
-			writeError(w, http.StatusBadRequest, "BAD_REQUEST", "invalid query: cursor")
-			return
-		}
-		if cs.snapshotID != s.snapshotID() || cs.endpoint != "events" || cs.namespace != ns {
-			writeError(w, http.StatusBadRequest, "CURSOR_EXPIRED", "cursor expired")
-			return
-		}
-		offset = cs.offset
-	}
 	if v := r.URL.Query().Get("since"); v != "" {
 		t, e := time.Parse(time.RFC3339, v)
 		if e != nil {
@@ -741,6 +748,26 @@ func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		severity = v
+	}
+	sinceStr := ""
+	if since != nil {
+		sinceStr = since.UTC().Format(time.RFC3339)
+	}
+	if v := r.URL.Query().Get("cursor"); v != "" {
+		if len(v) > 512 {
+			writeError(w, http.StatusBadRequest, "BAD_REQUEST", "invalid query: cursor")
+			return
+		}
+		csnap, cns, csince, csev, coff, e := decodeEventsCursor(v)
+		if e != nil {
+			writeError(w, http.StatusBadRequest, "BAD_REQUEST", "invalid query: cursor")
+			return
+		}
+		if csnap != s.snapshotID() || cns != ns || csince != sinceStr || csev != severity {
+			writeError(w, http.StatusBadRequest, "CURSOR_EXPIRED", "cursor expired")
+			return
+		}
+		offset = coff
 	}
 
 	rows, err := s.store.ListEvents(r.Context(), since, severity, ns, limit, offset)
@@ -775,7 +802,7 @@ func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
 			})
 		}
 		if len(events) == limit {
-			c := encodeCursor(s.snapshotID(), ns, "events", offset+limit)
+			c := encodeEventsCursor(s.snapshotID(), ns, sinceStr, severity, offset+limit)
 			next = &c
 		}
 	}

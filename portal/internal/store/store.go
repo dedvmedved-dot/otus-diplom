@@ -8,6 +8,7 @@ package store
 import (
 	"context"
 	"crypto/sha256"
+	"crypto/tls"
 	"encoding/hex"
 	"fmt"
 	"strings"
@@ -38,6 +39,13 @@ func New(ctx context.Context, cfg *config.Config) (*Store, error) {
 	pc.MaxConns = int32(cfg.DBPoolMaxConns)
 	pc.MinConns = 0
 	pc.ConnConfig.ConnectTimeout = cfg.DBConnectTimeout
+	// TLS hardening: explicit minimum TLS 1.2 + SNI; the connection string is
+	// fully explicit (host/port/dbname/user/sslmode/sslrootcert), so no PG*
+	// ambient environment overrides are read.
+	if pc.ConnConfig.TLSConfig != nil {
+		pc.ConnConfig.TLSConfig.MinVersion = tls.VersionTLS12
+		pc.ConnConfig.TLSConfig.ServerName = config.DBHost
+	}
 	pool, err := pgxpool.NewWithConfig(ctx, pc)
 	if err != nil {
 		return nil, err

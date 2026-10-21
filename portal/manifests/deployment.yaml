@@ -20,6 +20,8 @@ spec:
     spec:
       serviceAccountName: portal-reader
       automountServiceAccountToken: false
+      imagePullSecrets:
+      - name: portal-registry-pull
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
@@ -157,6 +159,8 @@ spec:
     spec:
       serviceAccountName: portal-migrator
       automountServiceAccountToken: false
+      imagePullSecrets:
+      - name: portal-registry-pull
       restartPolicy: Never
       securityContext:
         runAsNonRoot: true

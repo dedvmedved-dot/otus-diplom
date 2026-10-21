@@ -112,10 +112,10 @@ jobs:
 
       - name: Install rootlesskit + BuildKit (pinned, verified)
         run: |
-          sudo apt-get update && sudo apt-get install -y uidmap
+          sudo apt-get update && sudo apt-get install -y uidmap slirp4netns
           curl -sSfL "https://github.com/rootless-containers/rootlesskit/releases/download/v${ROOTLESSKIT_VERSION}/rootlesskit-x86_64.tar.gz" -o rootlesskit.tar.gz
-          echo "feb79eaae57e61b9ac9840e02f5f15d3e0cd38ab8e8c07ca43926c1d3a9cfa6f  rootlesskit.tar.gz" | sha256sum -c
-          tar -xzf rootlesskit.tar.gz && sudo mv rootlesskit/bin/rootlesskit /usr/local/bin/
+          echo "caafdce18e0959f078b4b478d4f352ebf3d556e373265fc7831f1a6d70219ee0  rootlesskit.tar.gz" | sha256sum -c
+          tar -xzf rootlesskit.tar.gz && sudo mv rootlesskit rootlessctl rootlesskit-docker-proxy /usr/local/bin/
           curl -sSfL "https://github.com/moby/buildkit/releases/download/${BUILDKIT_VERSION}/buildkit-${BUILDKIT_VERSION}.linux-amd64.tar.gz" -o buildkit.tar.gz
           echo "14813b1fb2a40082114e6d386c6fc5e7dd5298176ce7ee1a18bc33e73e109ac3  buildkit.tar.gz" | sha256sum -c
           tar -xzf buildkit.tar.gz && sudo install -m 0755 bin/buildctl bin/buildkitd /usr/local/bin/
@@ -178,6 +178,18 @@ jobs:
             --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/p8c-portal-release.yml@refs/heads/main" \
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
             -a ref=${{ github.sha }} \
+            "${IMAGE}@${IMAGE_DIGEST}"
+
+      - name: SBOM + provenance attestation (generate + verify)
+        run: |
+          cosign attest --yes --type spdxjson --predicate portal/sbom.spdx.json \
+            "${IMAGE}@${IMAGE_DIGEST}"
+          cosign attest --yes --type slsaprovenance \
+            --predicate /tmp/build-metadata.json \
+            "${IMAGE}@${IMAGE_DIGEST}"
+          cosign verify-attestation --type spdxjson \
+            --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/p8c-portal-release.yml@refs/heads/main" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
             "${IMAGE}@${IMAGE_DIGEST}"
 
       - name: Upload SBOM + signature as artifacts

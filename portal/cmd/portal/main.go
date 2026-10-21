@@ -83,13 +83,20 @@ func runServer(cfg *config.Config) {
 
 	srv := httpapi.New(col, st, verifier, cfg, ps)
 
-	// Readiness requires exact migration version + checksum (not just >=1).
+	// Readiness requires exact migration version + checksum (not just >=1),
+	// with a bounded initial retry (the DB may still be starting at boot).
 	var migrationOK atomic.Bool
-	ver, checksum, err := st.CurrentMigrationVersion(ctx)
-	if err == nil && ver == migrations.Version0001 && checksum == migrations.Checksum0001() {
-		migrationOK.Store(true)
-	} else {
-		log.Printf("warning: migration not validated (version=%d err=%v)", ver, err)
+	validateMigration := func() bool {
+		ver, checksum, err := st.CurrentMigrationVersion(ctx)
+		return err == nil && ver == migrations.Version0001 && checksum == migrations.Checksum0001()
+	}
+	for attempt := 1; attempt <= 5; attempt++ {
+		if validateMigration() {
+			migrationOK.Store(true)
+			break
+		}
+		log.Printf("warning: migration not yet validated (attempt %d/5)", attempt)
+		time.Sleep(time.Duration(attempt) * 2 * time.Second)
 	}
 
 	ready := func(w http.ResponseWriter, _ *http.Request) {

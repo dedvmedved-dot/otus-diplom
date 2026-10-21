@@ -31,7 +31,8 @@ var (
 )
 
 const (
-	listPage = 200
+	listPage  = 200
+	listCap   = 500
 	backupCap = 500
 )
 
@@ -156,19 +157,22 @@ func condStatus(core *corev1.Node) (bool, map[corev1.NodeConditionType]corev1.Co
 
 func (c *Collector) collectNodes(ctx context.Context, snap *Snapshot, reg *SourceRegistry) {
 	now := time.Now()
-	list, err := c.clients.typed.CoreV1().Nodes().List(ctx, metav1.ListOptions{Limit: listPage})
+	nodes, truncated, err := listWithContinue(ctx, listPage, listCap, func(opts metav1.ListOptions) ([]corev1.Node, string, error) {
+		l, e := c.clients.typed.CoreV1().Nodes().List(ctx, opts)
+		if e != nil {
+			return nil, "", e
+		}
+		return l.Items, l.Continue, nil
+	})
 	state := "ok"
 	if err != nil {
 		state = "error"
 		snap.setPartial()
-	} else if list.Continue != "" {
+	} else if truncated {
 		snap.setPartial()
 	}
 	reg.set(sourceStatus("k8s/nodes", state, now, err))
-	if err != nil {
-		return
-	}
-	for _, n := range list.Items {
+	for _, n := range nodes {
 		ready, conds := condStatus(&n)
 		nodeConds := make([]model.Condition, 0, len(n.Status.Conditions))
 		for _, cd := range n.Status.Conditions {
@@ -443,7 +447,7 @@ func dsConditions(conds []appsv1.DaemonSetCondition) []model.Condition {
 
 func (c *Collector) collectPods(ctx context.Context, snap *Snapshot, reg *SourceRegistry) {
 	now := time.Now()
-	pods, truncated, err := listWithContinue(ctx, listPage, listPage, func(opts metav1.ListOptions) ([]corev1.Pod, string, error) {
+	pods, truncated, err := listWithContinue(ctx, listPage, listCap, func(opts metav1.ListOptions) ([]corev1.Pod, string, error) {
 		l, e := c.clients.typed.CoreV1().Pods("").List(ctx, opts)
 		if e != nil {
 			return nil, "", e
@@ -484,18 +488,21 @@ func (c *Collector) collectPods(ctx context.Context, snap *Snapshot, reg *Source
 
 func (c *Collector) collectServices(ctx context.Context, snap *Snapshot, reg *SourceRegistry) {
 	now := time.Now()
-	svcs, err := c.clients.typed.CoreV1().Services("").List(ctx, metav1.ListOptions{Limit: listPage})
+	svcs, truncated, err := listWithContinue(ctx, listPage, listCap, func(opts metav1.ListOptions) ([]corev1.Service, string, error) {
+		l, e := c.clients.typed.CoreV1().Services("").List(ctx, opts)
+		if e != nil {
+			return nil, "", e
+		}
+		return l.Items, l.Continue, nil
+	})
 	state := "ok"
 	if err != nil {
 		state = "error"
 		snap.setPartial()
-	} else if svcs.Continue != "" {
+	} else if truncated {
 		snap.setPartial()
 	}
 	reg.set(sourceStatus("k8s/services", state, now, err))
-	if err != nil {
-		return
-	}
 
 	// EndpointSlice ready counts, keyed by "namespace/name".
 	readyByService := map[string]int32{}
@@ -518,7 +525,7 @@ func (c *Collector) collectServices(ctx context.Context, snap *Snapshot, reg *So
 		}
 	}
 
-	for _, s := range svcs.Items {
+	for _, s := range svcs {
 		ports := make([]model.ServicePort, 0, len(s.Spec.Ports))
 		for _, p := range s.Spec.Ports {
 			var name *string
@@ -663,7 +670,7 @@ func (c *Collector) collectBackups(ctx context.Context, snap *Snapshot, reg *Sou
 	pg := model.PostgresBackups{
 		Cluster: "portal-db", ObjectStore: "portal-db-backup",
 		ExpectedSchedule: "0 0 2 * * *", ExpectedTarget: "prefer-standby",
-		Backups: []model.BackupRecord{}, Wal: model.Wal{ExpectedArchiveTimeoutSeconds: 300, MeasuredRpoSeconds: nil},
+		Backups: []model.BackupRecord{}, Wal: model.Wal{State: "unknown", ExpectedArchiveTimeoutSeconds: 300, MeasuredRpoSeconds: nil},
 		Barman: model.BarmanSample{Scope: "single_exporter_sample"},
 	}
 	veleroTruncated, pgTruncated := false, false
