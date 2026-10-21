@@ -7,8 +7,10 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
+	"time"
 )
 
 func loadOpenAPI(t *testing.T) map[string]any {
@@ -130,8 +132,26 @@ func validateAgainstSchema(oa map[string]any, path, name string, schema map[stri
 			}
 		}
 	case "string":
-		if _, ok := val.(string); !ok {
+		s, ok := val.(string)
+		if !ok {
 			errs = append(errs, fmt.Errorf("%s %s: expected string, got %T", path, name, val))
+			return errs
+		}
+		if format, ok := schema["format"].(string); ok && format == "date-time" {
+			if _, e := time.Parse(time.RFC3339, s); e != nil {
+				errs = append(errs, fmt.Errorf("%s %s: invalid date-time %q", path, name, s))
+			}
+		}
+		if pat, ok := schema["pattern"].(string); ok {
+			if re, e := regexp.Compile(pat); e == nil && !re.MatchString(s) {
+				errs = append(errs, fmt.Errorf("%s %s: %q does not match pattern %q", path, name, s, pat))
+			}
+		}
+		if min, ok := schema["minLength"].(float64); ok && float64(len(s)) < min {
+			errs = append(errs, fmt.Errorf("%s %s: length %d < minLength %v", path, name, len(s), min))
+		}
+		if max, ok := schema["maxLength"].(float64); ok && float64(len(s)) > max {
+			errs = append(errs, fmt.Errorf("%s %s: length %d > maxLength %v", path, name, len(s), max))
 		}
 	case "integer":
 		f, ok := val.(float64)

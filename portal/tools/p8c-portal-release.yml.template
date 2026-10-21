@@ -9,8 +9,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
-  id-token: write
 
 env:
   GO_VERSION: "1.27.3"
@@ -84,9 +82,16 @@ jobs:
           node web/fixture-smoke.test.mjs
 
   release:
-    needs: test
     if: github.repository == 'dedvmedved-dot/otus-diplom' && github.ref == 'refs/heads/main'
+    needs: test
     runs-on: ubuntu-24.04
+    # Minimal, job-scoped elevation: only the release job may push packages and
+    # request OIDC for keyless signing. The test job keeps the repo-wide
+    # contents:read and nothing else.
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -144,7 +149,16 @@ jobs:
         run: |
           rootlesskit --net=slirp4netns --copy-up=/etc --copy-up=/run \
             buildkitd --oci-worker-no-process-sandbox --addr unix:///tmp/buildkit.sock > /tmp/buildkitd.log 2>&1 &
-          for i in $(seq 1 30); do buildctl debug workers >/dev/null 2>&1 && break; sleep 1; done
+          READY=0
+          for i in $(seq 1 30); do
+            if buildctl debug workers >/dev/null 2>&1; then READY=1; break; fi
+            sleep 1
+          done
+          if [ "$READY" != "1" ]; then
+            echo "buildkitd worker not ready after 30s; last log lines:"
+            tail -n 20 /tmp/buildkitd.log
+            exit 1
+          fi
           buildctl build \
             --frontend=dockerfile.v0 \
             --opt filename=Containerfile \
