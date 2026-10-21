@@ -1,0 +1,375 @@
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:07.208751+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work/portal
+COMMAND=["go", "test", "-count=1", "-v", "./..."]
+=== RUN   TestSnapshotHealthStates
+--- PASS: TestSnapshotHealthStates (0.00s)
+=== RUN   TestProductionPersistenceFailureRecovery
+--- PASS: TestProductionPersistenceFailureRecovery (0.00s)
+=== RUN   TestProductionQueueOverflowLatchedLoss
+--- PASS: TestProductionQueueOverflowLatchedLoss (0.01s)
+PASS
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/cmd/portal	0.023s
+=== RUN   TestVerifier
+--- PASS: TestVerifier (0.00s)
+=== RUN   TestVerifierRejectsShortVerifier
+--- PASS: TestVerifierRejectsShortVerifier (0.00s)
+PASS
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/auth	0.008s
+=== RUN   TestActualCollectorCategoryBoundaries
+=== RUN   TestActualCollectorCategoryBoundaries/Node/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/Node/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/Node/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/Pod/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/Pod/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/Pod/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/Service/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/Service/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/Service/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/EndpointSlice/discovery.k8s.io/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/EndpointSlice/discovery.k8s.io/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/EndpointSlice/discovery.k8s.io/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/Event/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/Event/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/Event/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/Deployment/apps/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/Deployment/apps/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/Deployment/apps/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/StatefulSet/apps/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/StatefulSet/apps/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/StatefulSet/apps/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/DaemonSet/apps/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/DaemonSet/apps/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/DaemonSet/apps/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/ReplicaSet/apps/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/ReplicaSet/apps/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/ReplicaSet/apps/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/Job/batch/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/Job/batch/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/Job/batch/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/CronJob/batch/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/CronJob/batch/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/CronJob/batch/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/PersistentVolumeClaim/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/PersistentVolumeClaim/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/PersistentVolumeClaim/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/PersistentVolume/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/PersistentVolume/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/PersistentVolume/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/StorageClass/storage.k8s.io/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/StorageClass/storage.k8s.io/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/StorageClass/storage.k8s.io/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/VolumeSnapshot/snapshot.storage.k8s.io/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/VolumeSnapshot/snapshot.storage.k8s.io/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/VolumeSnapshot/snapshot.storage.k8s.io/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/BackupStorageLocation/velero.io/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/BackupStorageLocation/velero.io/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/BackupStorageLocation/velero.io/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/Backup/velero.io/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/Backup/velero.io/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/Backup/velero.io/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/Restore/velero.io/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/Restore/velero.io/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/Restore/velero.io/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/Backup/postgresql.cnpg.io/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/Backup/postgresql.cnpg.io/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/Backup/postgresql.cnpg.io/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/NodeMetrics/metrics.k8s.io/v1beta1/201
+=== RUN   TestActualCollectorCategoryBoundaries/NodeMetrics/metrics.k8s.io/v1beta1/501
+=== RUN   TestActualCollectorCategoryBoundaries/NodeMetrics/metrics.k8s.io/v1beta1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/PodMetrics/metrics.k8s.io/v1beta1/201
+=== RUN   TestActualCollectorCategoryBoundaries/PodMetrics/metrics.k8s.io/v1beta1/501
+=== RUN   TestActualCollectorCategoryBoundaries/PodMetrics/metrics.k8s.io/v1beta1/-1
+--- PASS: TestActualCollectorCategoryBoundaries (1.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Node/v1/201 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Node/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Node/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Pod/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Pod/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Pod/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Service/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Service/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Service/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/EndpointSlice/discovery.k8s.io/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/EndpointSlice/discovery.k8s.io/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/EndpointSlice/discovery.k8s.io/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Event/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Event/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Event/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Deployment/apps/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Deployment/apps/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Deployment/apps/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/StatefulSet/apps/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/StatefulSet/apps/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/StatefulSet/apps/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/DaemonSet/apps/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/DaemonSet/apps/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/DaemonSet/apps/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/ReplicaSet/apps/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/ReplicaSet/apps/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/ReplicaSet/apps/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Job/batch/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Job/batch/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Job/batch/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/CronJob/batch/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/CronJob/batch/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/CronJob/batch/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/PersistentVolumeClaim/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/PersistentVolumeClaim/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/PersistentVolumeClaim/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/PersistentVolume/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/PersistentVolume/v1/501 (0.03s)
+    --- PASS: TestActualCollectorCategoryBoundaries/PersistentVolume/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/StorageClass/storage.k8s.io/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/StorageClass/storage.k8s.io/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/StorageClass/storage.k8s.io/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/VolumeSnapshot/snapshot.storage.k8s.io/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/VolumeSnapshot/snapshot.storage.k8s.io/v1/501 (0.03s)
+    --- PASS: TestActualCollectorCategoryBoundaries/VolumeSnapshot/snapshot.storage.k8s.io/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/BackupStorageLocation/velero.io/v1/201 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/BackupStorageLocation/velero.io/v1/501 (0.03s)
+    --- PASS: TestActualCollectorCategoryBoundaries/BackupStorageLocation/velero.io/v1/-1 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Backup/velero.io/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Backup/velero.io/v1/501 (0.03s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Backup/velero.io/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Restore/velero.io/v1/201 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Restore/velero.io/v1/501 (0.03s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Restore/velero.io/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Backup/postgresql.cnpg.io/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Backup/postgresql.cnpg.io/v1/501 (0.03s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Backup/postgresql.cnpg.io/v1/-1 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/NodeMetrics/metrics.k8s.io/v1beta1/201 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/NodeMetrics/metrics.k8s.io/v1beta1/501 (0.04s)
+    --- PASS: TestActualCollectorCategoryBoundaries/NodeMetrics/metrics.k8s.io/v1beta1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/PodMetrics/metrics.k8s.io/v1beta1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/PodMetrics/metrics.k8s.io/v1beta1/501 (0.03s)
+    --- PASS: TestActualCollectorCategoryBoundaries/PodMetrics/metrics.k8s.io/v1beta1/-1 (0.01s)
+=== RUN   TestListWithContinueFullCycle
+--- PASS: TestListWithContinueFullCycle (0.00s)
+=== RUN   TestListWithContinueSinglePage
+--- PASS: TestListWithContinueSinglePage (0.00s)
+=== RUN   TestListWithContinueError
+--- PASS: TestListWithContinueError (0.00s)
+=== RUN   TestListWithContinueBoundary201
+--- PASS: TestListWithContinueBoundary201 (0.00s)
+=== RUN   TestListWithContinueBoundary501
+--- PASS: TestListWithContinueBoundary501 (0.00s)
+=== RUN   TestExportCollectorDataflow
+    dataflow_fixture_test.go:23: run tools/test-dataflow.sh for collector -> handler -> DOM evidence
+--- SKIP: TestExportCollectorDataflow (0.00s)
+=== RUN   TestParsePrometheusMetrics
+--- PASS: TestParsePrometheusMetrics (0.00s)
+=== RUN   TestMetricValueWithLabels
+--- PASS: TestMetricValueWithLabels (0.00s)
+=== RUN   TestGuardTransportBodyDeadlineReadsBody
+--- PASS: TestGuardTransportBodyDeadlineReadsBody (0.30s)
+=== RUN   TestGuardTransportBodyDeadlineTimeout
+--- PASS: TestGuardTransportBodyDeadlineTimeout (0.60s)
+=== RUN   TestGuardTransportParentCancel
+--- PASS: TestGuardTransportParentCancel (0.50s)
+=== RUN   TestGuardAllowsApprovedPaths
+--- PASS: TestGuardAllowsApprovedPaths (0.00s)
+=== RUN   TestGuardRejectsUnapprovedPaths
+--- PASS: TestGuardRejectsUnapprovedPaths (0.00s)
+=== RUN   TestGuardRejectsWrongHost
+--- PASS: TestGuardRejectsWrongHost (0.00s)
+=== RUN   TestGuardRejectsHostOverride
+--- PASS: TestGuardRejectsHostOverride (0.00s)
+=== RUN   TestGuardRejectsUserinfo
+--- PASS: TestGuardRejectsUserinfo (0.00s)
+=== RUN   TestGuardRejectsEmptyHost
+--- PASS: TestGuardRejectsEmptyHost (0.00s)
+=== RUN   TestGuardRejectsPost
+--- PASS: TestGuardRejectsPost (0.00s)
+=== RUN   TestGuardRejectsRedirect
+--- PASS: TestGuardRejectsRedirect (0.00s)
+=== RUN   TestGuardRejectsInvalidCanonicalAndNamedScope
+--- PASS: TestGuardRejectsInvalidCanonicalAndNamedScope (0.00s)
+PASS
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/collectors	2.444s
+?   	github.com/dedvmedved-dot/otus-diplom/portal/internal/config	[no test files]
+=== RUN   TestCoherentSnapshotUnderSwap
+--- PASS: TestCoherentSnapshotUnderSwap (0.00s)
+=== RUN   TestAllElevenHandlers
+--- PASS: TestAllElevenHandlers (0.00s)
+=== RUN   TestDataShapes
+--- PASS: TestDataShapes (0.00s)
+=== RUN   TestErrorResponses
+--- PASS: TestErrorResponses (0.00s)
+=== RUN   TestExportActualCollectorHandlerResponses
+    dataflow_fixture_test.go:14: run tools/test-dataflow.sh
+--- SKIP: TestExportActualCollectorHandlerResponses (0.00s)
+=== RUN   TestEventsCursorRoundTripRFC3339
+--- PASS: TestEventsCursorRoundTripRFC3339 (0.00s)
+=== RUN   TestEventsMemoryFallbackSecondPage
+--- PASS: TestEventsMemoryFallbackSecondPage (0.00s)
+=== RUN   TestEventViewStableAcrossInsertUpdatePrune
+--- PASS: TestEventViewStableAcrossInsertUpdatePrune (0.00s)
+=== RUN   TestEventViewEvictionAndCap
+--- PASS: TestEventViewEvictionAndCap (0.05s)
+=== RUN   TestEventsSnapshotCapturedOnceIncludingError
+=== RUN   TestEventsSnapshotCapturedOnceIncludingError/?limit=1
+=== RUN   TestEventsSnapshotCapturedOnceIncludingError/?unknown=x
+--- PASS: TestEventsSnapshotCapturedOnceIncludingError (0.00s)
+    --- PASS: TestEventsSnapshotCapturedOnceIncludingError/?limit=1 (0.00s)
+    --- PASS: TestEventsSnapshotCapturedOnceIncludingError/?unknown=x (0.00s)
+=== RUN   TestParseListQueryDefaults
+--- PASS: TestParseListQueryDefaults (0.00s)
+=== RUN   TestParseListQueryLimit
+--- PASS: TestParseListQueryLimit (0.00s)
+=== RUN   TestParseListQueryInvalidLimit
+--- PASS: TestParseListQueryInvalidLimit (0.00s)
+=== RUN   TestParseListQueryUnknownKey
+--- PASS: TestParseListQueryUnknownKey (0.00s)
+=== RUN   TestParseListQueryInvalidNamespace
+--- PASS: TestParseListQueryInvalidNamespace (0.00s)
+=== RUN   TestCursorRoundTrip
+--- PASS: TestCursorRoundTrip (0.00s)
+=== RUN   TestDecodeCursorInvalid
+--- PASS: TestDecodeCursorInvalid (0.00s)
+=== RUN   TestPaginate
+--- PASS: TestPaginate (0.00s)
+=== RUN   TestPaginateExpiredCursor
+--- PASS: TestPaginateExpiredCursor (0.00s)
+=== RUN   TestDNS1123
+--- PASS: TestDNS1123 (0.00s)
+=== RUN   TestSchemaActualStartupStalePartialFailure
+=== RUN   TestSchemaActualStartupStalePartialFailure/startup
+=== RUN   TestSchemaActualStartupStalePartialFailure/stale
+=== RUN   TestSchemaActualStartupStalePartialFailure/unavailable
+=== RUN   TestSchemaActualStartupStalePartialFailure/partial
+=== RUN   TestSchemaActualStartupStalePartialFailure/persistence-failure
+--- PASS: TestSchemaActualStartupStalePartialFailure (0.10s)
+    --- PASS: TestSchemaActualStartupStalePartialFailure/startup (0.02s)
+    --- PASS: TestSchemaActualStartupStalePartialFailure/stale (0.02s)
+    --- PASS: TestSchemaActualStartupStalePartialFailure/unavailable (0.02s)
+    --- PASS: TestSchemaActualStartupStalePartialFailure/partial (0.02s)
+    --- PASS: TestSchemaActualStartupStalePartialFailure/persistence-failure (0.02s)
+=== RUN   TestSchemaDrivenErrorResponses
+=== RUN   TestSchemaDrivenErrorResponses/bad-query
+=== RUN   TestSchemaDrivenErrorResponses/unauthorized
+=== RUN   TestSchemaDrivenErrorResponses/unknown
+=== RUN   TestSchemaDrivenErrorResponses/method
+=== RUN   TestSchemaDrivenErrorResponses/rate
+=== RUN   TestSchemaDrivenErrorResponses/concurrency
+=== RUN   TestSchemaDrivenErrorResponses/cursor
+--- PASS: TestSchemaDrivenErrorResponses (0.00s)
+    --- PASS: TestSchemaDrivenErrorResponses/bad-query (0.00s)
+    --- PASS: TestSchemaDrivenErrorResponses/unauthorized (0.00s)
+    --- PASS: TestSchemaDrivenErrorResponses/unknown (0.00s)
+    --- PASS: TestSchemaDrivenErrorResponses/method (0.00s)
+    --- PASS: TestSchemaDrivenErrorResponses/rate (0.00s)
+    --- PASS: TestSchemaDrivenErrorResponses/concurrency (0.00s)
+    --- PASS: TestSchemaDrivenErrorResponses/cursor (0.00s)
+=== RUN   TestSchemaConstraintNegatives
+--- PASS: TestSchemaConstraintNegatives (0.00s)
+=== RUN   TestPersistenceLagAtResponseAndVisibleLoss
+--- PASS: TestPersistenceLagAtResponseAndVisibleLoss (0.00s)
+=== RUN   TestSchemaDrivenHandlerResponses
+--- PASS: TestSchemaDrivenHandlerResponses (0.02s)
+=== RUN   TestSchemaValidatorRejectsBadResponses
+--- PASS: TestSchemaValidatorRejectsBadResponses (0.01s)
+PASS
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/httpapi	0.214s
+?   	github.com/dedvmedved-dot/otus-diplom/portal/internal/model	[no test files]
+=== RUN   TestFixedTLSConfigAndHandshake
+2026/10/21 12:11:08 http: TLS handshake error from 127.0.0.1:43020: remote error: tls: bad certificate
+2026/10/21 12:11:08 http: TLS handshake error from 127.0.0.1:43032: read tcp 127.0.0.1:41279->127.0.0.1:43032: use of closed network connection
+--- PASS: TestFixedTLSConfigAndHandshake (0.10s)
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGHOST
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGPORT
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGDATABASE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGUSER
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGPASSWORD
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGPASSFILE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGAPPNAME
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGCONNECT_TIMEOUT
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLMODE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLKEY
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLCERT
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLSNI
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLROOTCERT
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLPASSWORD
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLNEGOTIATION
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGTARGETSESSIONATTRS
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSERVICE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSERVICEFILE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGTZ
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGOPTIONS
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGMINPROTOCOLVERSION
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGMAXPROTOCOLVERSION
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGCHANNELBINDING
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGREQUIREAUTH
+--- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGHOST (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGPORT (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGDATABASE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGUSER (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGPASSWORD (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGPASSFILE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGAPPNAME (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGCONNECT_TIMEOUT (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLMODE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLKEY (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLCERT (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLSNI (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLROOTCERT (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLPASSWORD (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLNEGOTIATION (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGTARGETSESSIONATTRS (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSERVICE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSERVICEFILE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGTZ (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGOPTIONS (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGMINPROTOCOLVERSION (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGMAXPROTOCOLVERSION (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGCHANNELBINDING (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGREQUIREAUTH (0.00s)
+PASS
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/store	0.110s
+?   	github.com/dedvmedved-dot/otus-diplom/portal/migrations	[no test files]
+=== RUN   TestCandidatePolicyUnionBothSides
+=== RUN   TestCandidatePolicyUnionBothSides/app-db
+=== RUN   TestCandidatePolicyUnionBothSides/app-metrics
+=== RUN   TestCandidatePolicyUnionBothSides/migrator-db
+=== RUN   TestCandidatePolicyUnionBothSides/migrator-no-metrics
+=== RUN   TestCandidatePolicyUnionBothSides/peer-replication
+=== RUN   TestCandidatePolicyUnionBothSides/peer-manager
+=== RUN   TestCandidatePolicyUnionBothSides/operator-manager
+=== RUN   TestCandidatePolicyUnionBothSides/gateway-backend
+=== RUN   TestCandidatePolicyUnionBothSides/xds
+=== RUN   TestCandidatePolicyUnionBothSides/dns-udp
+=== RUN   TestCandidatePolicyUnionBothSides/dns-tcp
+=== RUN   TestCandidatePolicyUnionBothSides/cross-ns-denied
+=== RUN   TestCandidatePolicyUnionBothSides/wrong-owner-denied
+=== RUN   TestCandidatePolicyUnionBothSides/management-denied
+=== RUN   TestCandidatePolicyUnionBothSides/udp-db-denied
+=== RUN   TestCandidatePolicyUnionBothSides/migrator-api-denied
+=== RUN   TestCandidatePolicyUnionBothSides/app-s3-denied
+=== RUN   TestCandidatePolicyUnionBothSides/db-s3
+--- PASS: TestCandidatePolicyUnionBothSides (0.01s)
+    --- PASS: TestCandidatePolicyUnionBothSides/app-db (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/app-metrics (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/migrator-db (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/migrator-no-metrics (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/peer-replication (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/peer-manager (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/operator-manager (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/gateway-backend (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/xds (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-udp (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-tcp (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/cross-ns-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/wrong-owner-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/management-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/udp-db-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/migrator-api-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/app-s3-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/db-s3 (0.00s)
+PASS
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/networkpolicy	0.012s
+?   	github.com/dedvmedved-dot/otus-diplom/portal/web	[no test files]
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:10.791506+00:00

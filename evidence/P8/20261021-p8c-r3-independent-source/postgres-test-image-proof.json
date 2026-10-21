@@ -1,0 +1,9 @@
+{
+  "utc": "2026-10-21T10:12:49.720413+00:00",
+  "url": "https://registry-1.docker.io/v2/library/postgres/manifests/17.10-bookworm",
+  "digest": "sha256:9b18b78397054fce88a9552e9d5a3ad5bb7fd258c5b3cc1c5028e46373d6ea8f",
+  "Docker-Content-Digest": "sha256:9b18b78397054fce88a9552e9d5a3ad5bb7fd258c5b3cc1c5028e46373d6ea8f",
+  "Content-Type": "application/vnd.oci.image.index.v1+json",
+  "bytes": 6496,
+  "execution": "NOT_EXECUTED: manifest bytes only; no image run"
+}

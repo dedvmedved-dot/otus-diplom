@@ -1,0 +1,221 @@
+[
+  {
+    "check": "01-tool-versions",
+    "command": [
+      "bash",
+      "-c",
+      "go version; node --version; npm --version; python3 --version"
+    ],
+    "cwd": "/workspace/scratch/14185c8f871f/source-work/portal",
+    "start": "2026-10-21T10:10:29.927668+00:00",
+    "end": "2026-10-21T10:10:30.081882+00:00",
+    "exit": 0
+  },
+  {
+    "check": "02-mod-verify",
+    "command": [
+      "go",
+      "mod",
+      "verify"
+    ],
+    "cwd": "/workspace/scratch/14185c8f871f/source-work/portal",
+    "start": "2026-10-21T10:10:30.082215+00:00",
+    "end": "2026-10-21T10:10:30.768253+00:00",
+    "exit": 0
+  },
+  {
+    "check": "03-build",
+    "command": [
+      "go",
+      "build",
+      "-trimpath",
+      "-o",
+      "/workspace/scratch/14185c8f871f/final-portal-binary",
+      "./cmd/portal"
+    ],
+    "cwd": "/workspace/scratch/14185c8f871f/source-work/portal",
+    "start": "2026-10-21T10:10:30.768968+00:00",
+    "end": "2026-10-21T10:11:01.063962+00:00",
+    "exit": 0
+  },
+  {
+    "check": "04-vet",
+    "command": [
+      "go",
+      "vet",
+      "./..."
+    ],
+    "cwd": "/workspace/scratch/14185c8f871f/source-work/portal",
+    "start": "2026-10-21T10:11:01.064334+00:00",
+    "end": "2026-10-21T10:11:07.208220+00:00",
+    "exit": 0
+  },
+  {
+    "check": "05-unit",
+    "command": [
+      "go",
+      "test",
+      "-count=1",
+      "-v",
+      "./..."
+    ],
+    "cwd": "/workspace/scratch/14185c8f871f/source-work/portal",
+    "start": "2026-10-21T10:11:07.208751+00:00",
+    "end": "2026-10-21T10:11:10.791506+00:00",
+    "exit": 0
+  },
+  {
+    "check": "06-race",
+    "command": [
+      "go",
+      "test",
+      "-race",
+      "-count=1",
+      "./..."
+    ],
+    "cwd": "/workspace/scratch/14185c8f871f/source-work/portal",
+    "start": "2026-10-21T10:11:10.792134+00:00",
+    "end": "2026-10-21T10:11:23.801277+00:00",
+    "exit": 0
+  },
+  {
+    "check": "07-integration-vet",
+    "command": [
+      "go",
+      "vet",
+      "-tags",
+      "integration",
+      "./internal/store"
+    ],
+    "cwd": "/workspace/scratch/14185c8f871f/source-work/portal",
+    "start": "2026-10-21T10:11:23.801761+00:00",
+    "end": "2026-10-21T10:11:25.837204+00:00",
+    "exit": 0
+  },
+  {
+    "check": "08-helpers-portal-cwd",
+    "command": [
+      "python3",
+      "tools/test_helpers.py",
+      "-v"
+    ],
+    "cwd": "/workspace/scratch/14185c8f871f/source-work/portal",
+    "start": "2026-10-21T10:11:25.837692+00:00",
+    "end": "2026-10-21T10:11:25.942239+00:00",
+    "exit": 0
+  },
+  {
+    "check": "09-helpers-repo-cwd",
+    "command": [
+      "python3",
+      "portal/tools/test_helpers.py",
+      "-v"
+    ],
+    "cwd": "/workspace/scratch/14185c8f871f/source-work",
+    "start": "2026-10-21T10:11:25.942744+00:00",
+    "end": "2026-10-21T10:11:26.037588+00:00",
+    "exit": 0
+  },
+  {
+    "check": "10-release-checks",
+    "command": [
+      "python3",
+      "tools/test_release.py",
+      "-v"
+    ],
+    "cwd": "/workspace/scratch/14185c8f871f/source-work/portal",
+    "start": "2026-10-21T10:11:26.038464+00:00",
+    "end": "2026-10-21T10:11:26.107735+00:00",
+    "exit": 0
+  },
+  {
+    "check": "11-renderer",
+    "command": [
+      "node",
+      "web/renderer-smoke.test.mjs"
+    ],
+    "cwd": "/workspace/scratch/14185c8f871f/source-work/portal",
+    "start": "2026-10-21T10:11:26.108300+00:00",
+    "end": "2026-10-21T10:11:26.975314+00:00",
+    "exit": 0
+  },
+  {
+    "check": "12-fixtures",
+    "command": [
+      "node",
+      "web/fixture-smoke.test.mjs"
+    ],
+    "cwd": "/workspace/scratch/14185c8f871f/source-work/portal",
+    "start": "2026-10-21T10:11:26.976041+00:00",
+    "end": "2026-10-21T10:11:27.048390+00:00",
+    "exit": 0
+  },
+  {
+    "check": "13-collector-api-dom",
+    "command": [
+      "bash",
+      "tools/test-dataflow.sh"
+    ],
+    "cwd": "/workspace/scratch/14185c8f871f/source-work/portal",
+    "start": "2026-10-21T10:11:27.049302+00:00",
+    "end": "2026-10-21T10:11:29.780207+00:00",
+    "exit": 0
+  },
+  {
+    "check": "14-wasm-sql",
+    "command": [
+      "python3",
+      "/workspace/scratch/14185c8f871f/run_wasm_final.py"
+    ],
+    "cwd": "/workspace/scratch/14185c8f871f",
+    "start": "2026-10-21T10:11:29.780836+00:00",
+    "end": "2026-10-21T10:11:32.884479+00:00",
+    "exit": 0
+  },
+  {
+    "check": "15-workflow-static",
+    "command": [
+      "python3",
+      "/workspace/scratch/14185c8f871f/static_final.py"
+    ],
+    "cwd": "/workspace/scratch/14185c8f871f/source-work",
+    "start": "2026-10-21T10:11:32.885286+00:00",
+    "end": "2026-10-21T10:11:32.970906+00:00",
+    "exit": 0
+  },
+  {
+    "check": "16-secret-scan",
+    "command": [
+      "python3",
+      "/workspace/scratch/14185c8f871f/scan_final.py"
+    ],
+    "cwd": "/workspace/scratch/14185c8f871f/source-work",
+    "start": "2026-10-21T10:11:32.971485+00:00",
+    "end": "2026-10-21T10:11:33.008800+00:00",
+    "exit": 0
+  },
+  {
+    "check": "17-pinned-cosign-predicate",
+    "command": [
+      "go",
+      "run",
+      ".",
+      "predicate.json"
+    ],
+    "cwd": "/workspace/scratch/14185c8f871f/cosign-check",
+    "start": "2026-10-21T10:11:33.009474+00:00",
+    "end": "2026-10-21T10:11:33.288135+00:00",
+    "exit": 0
+  },
+  {
+    "check": "18-cosign-payload-binding",
+    "command": [
+      "python3",
+      "/workspace/scratch/14185c8f871f/cosign_binding_final.py"
+    ],
+    "cwd": "/workspace/scratch/14185c8f871f",
+    "start": "2026-10-21T10:11:33.288767+00:00",
+    "end": "2026-10-21T10:11:33.348324+00:00",
+    "exit": 0
+  }
+]

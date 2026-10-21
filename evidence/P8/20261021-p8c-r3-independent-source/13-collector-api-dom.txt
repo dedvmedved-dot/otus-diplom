@@ -1,0 +1,16 @@
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:27.049302+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work/portal
+COMMAND=["bash", "tools/test-dataflow.sh"]
+=== RUN   TestExportCollectorDataflow
+--- PASS: TestExportCollectorDataflow (0.02s)
+PASS
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/collectors	0.027s
+=== RUN   TestExportActualCollectorHandlerResponses
+--- PASS: TestExportActualCollectorHandlerResponses (0.03s)
+PASS
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/httpapi	0.041s
+collector -> 11 schema-validated handlers -> actual DOM: PASS (synthetic APIs; Barman/WAL/Velero/pressure/metrics/events)
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:29.780207+00:00

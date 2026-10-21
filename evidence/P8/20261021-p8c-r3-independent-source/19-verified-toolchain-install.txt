@@ -1,0 +1,7 @@
+UTC_START=2026-10-21T10:12:07.711446+00:00
+COMMAND=bash portal/tools/install-verified-go.sh
+NONSECRET_INPUTS={"RUNNER_TEMP": "/workspace/scratch/14185c8f871f/toolchain-proof", "GO_VERSION": "1.27.3", "GO_SHA256": "65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40", "GO_ARCHIVE": "/workspace/scratch/14185c8f871f/go1.27.3.tar.gz"}
+/workspace/scratch/14185c8f871f/go1.27.3.tar.gz: OK
+go version go1.27.3 linux/amd64
+EXIT_CODE=0
+5f5eb6d0b2fb6aa0bb5d5f8c5f1c944e0de955c925f0111af92a9d8f79680b5b  /workspace/scratch/14185c8f871f/toolchain-proof/portal-verified-go/bin/go

@@ -1,0 +1,7 @@
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:23.801761+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work/portal
+COMMAND=["go", "vet", "-tags", "integration", "./internal/store"]
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:25.837204+00:00

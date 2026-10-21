@@ -1,0 +1,9 @@
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:32.885286+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work
+COMMAND=["python3", "/workspace/scratch/14185c8f871f/static_final.py"]
+PASS YAML load; 17 shell blocks bash -n; immutable action refs; job-scoped permissions; pinned test image
+NOT_EXECUTED: GitHub expression evaluation, runner BuildKit, push/sign/attest/private verification
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:32.970906+00:00

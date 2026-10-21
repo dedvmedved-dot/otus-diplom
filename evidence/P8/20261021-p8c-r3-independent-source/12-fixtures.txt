@@ -1,0 +1,8 @@
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:26.976041+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work/portal
+COMMAND=["node", "web/fixture-smoke.test.mjs"]
+fixture-smoke: PASS (11 endpoints envelope + data shapes + error shape)
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:27.048390+00:00

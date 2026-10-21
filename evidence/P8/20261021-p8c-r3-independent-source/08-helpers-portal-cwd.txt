@@ -1,0 +1,41 @@
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:25.837692+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work/portal
+COMMAND=["python3", "tools/test_helpers.py", "-v"]
+test_non_tty_raises (__main__.TestNoEchoFailClosed.test_non_tty_raises) ... ok
+test_termios_unavailable_raises (__main__.TestNoEchoFailClosed.test_termios_unavailable_raises) ... ok
+test_input_cancel_and_restore_both_helpers (__main__.TestRealInputAndSubprocessFlow.test_input_cancel_and_restore_both_helpers) ... ok
+test_input_failure_prevents_every_subprocess (__main__.TestRealInputAndSubprocessFlow.test_input_failure_prevents_every_subprocess) ... ok
+test_subprocess_phases_and_non_disclosure (__main__.TestRealInputAndSubprocessFlow.test_subprocess_phases_and_non_disclosure) ... ok
+test_terminal_setup_restore_and_encoding_fail_closed (__main__.TestRealInputAndSubprocessFlow.test_terminal_setup_restore_and_encoding_fail_closed) ... ok
+test_create_timeout_unknown_outcome (__main__.TestRegistryFailClosedCreateOnly.test_create_timeout_unknown_outcome) ... STOP: create timed out — UNKNOWN_OUTCOME. Re-check Secret state (get) before any further action; do not overwrite.
+ok
+test_existing_secret_stops (__main__.TestRegistryFailClosedCreateOnly.test_existing_secret_stops) ... STOP: Secret portal/portal-registry-pull already exists; no overwrite.
+ok
+test_forbidden_probe_stops_before_write (__main__.TestRegistryFailClosedCreateOnly.test_forbidden_probe_stops_before_write) ... STOP: cannot verify Secret state (Forbidden/network/other); no write attempted.
+ok
+test_success_uses_create_only (__main__.TestRegistryFailClosedCreateOnly.test_success_uses_create_only) ... ok
+test_already_exists_race_stops_no_overwrite (__main__.TestUIFailClosedCreateOnly.test_already_exists_race_stops_no_overwrite) ... STOP: create failed (Secret may already exist); no overwrite attempted.
+ok
+test_create_timeout_unknown_outcome (__main__.TestUIFailClosedCreateOnly.test_create_timeout_unknown_outcome) ... STOP: create timed out — UNKNOWN_OUTCOME. Re-check Secret state (get) before any further action; do not overwrite.
+ok
+test_existing_secret_stops (__main__.TestUIFailClosedCreateOnly.test_existing_secret_stops) ... STOP: Secret portal/portal-ui-auth already exists; no implicit rotation.
+ok
+test_forbidden_probe_stops_before_write (__main__.TestUIFailClosedCreateOnly.test_forbidden_probe_stops_before_write) ... STOP: cannot verify Secret state (Forbidden/network/other); no write attempted.
+ok
+test_success_uses_create_only (__main__.TestUIFailClosedCreateOnly.test_success_uses_create_only) ... ok
+test_bad_alphabet (__main__.TestValidatePassword.test_bad_alphabet) ... ok
+test_valid (__main__.TestValidatePassword.test_valid) ... ok
+test_wrong_length (__main__.TestValidatePassword.test_wrong_length) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.020s
+
+OK
+OK: Secret portal/portal-registry-pull provisioned.
+Record name, type, access verification and expiry/rotation responsibility only.
+OK: Secret portal/portal-ui-auth key password-sha256 provisioned.
+Verifier value is NOT printed. Owner retains the password in their password manager.
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:25.942239+00:00

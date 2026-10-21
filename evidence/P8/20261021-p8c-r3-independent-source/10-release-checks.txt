@@ -1,0 +1,16 @@
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:26.038464+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work/portal
+COMMAND=["python3", "tools/test_release.py", "-v"]
+test_digest_and_private_gate_fail_closed (__main__.TestReleaseBindings.test_digest_and_private_gate_fail_closed) ... ok
+test_predicate_and_subject_source_negatives (__main__.TestReleaseBindings.test_predicate_and_subject_source_negatives) ... ok
+test_sbom_exact_payload (__main__.TestReleaseBindings.test_sbom_exact_payload) ... ok
+test_signature_source_digest (__main__.TestReleaseBindings.test_signature_source_digest) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.001s
+
+OK
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:26.107735+00:00

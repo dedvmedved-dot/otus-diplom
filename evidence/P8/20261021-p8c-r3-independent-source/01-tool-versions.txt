@@ -1,0 +1,12 @@
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:10:29.927668+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work/portal
+COMMAND=["bash", "-c", "go version; node --version; npm --version; python3 --version"]
+go version go1.27.3 linux/amd64
+v24.19.0
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+11.9.0
+Python 3.12.14
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:10:30.081882+00:00

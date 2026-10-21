@@ -1,0 +1,8 @@
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:33.288767+00:00
+CWD=/workspace/scratch/14185c8f871f
+COMMAND=["python3", "/workspace/scratch/14185c8f871f/cosign_binding_final.py"]
+PASS actual pinned Cosign GenerateStatement output through strict release payload checker; synthetic image digest/source, NOT cryptographic signature verification
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:33.348324+00:00

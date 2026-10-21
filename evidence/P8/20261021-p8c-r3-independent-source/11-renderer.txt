@@ -1,0 +1,10 @@
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:26.108300+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work/portal
+COMMAND=["node", "web/renderer-smoke.test.mjs"]
+renderer-smoke: PASS (stale-not-green, failed=unavailable, backup-health+Barman/WAL)
+renderer freshness/navigation: PASS (critical preserved, all stale cards non-green, real next/reset request, expired cursor)
+renderer availability: PASS (unavailable/partial/error overview, trusted empty distinct from failure)
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:26.975314+00:00

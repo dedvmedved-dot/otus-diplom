@@ -1,0 +1,7 @@
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:10:30.768968+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work/portal
+COMMAND=["go", "build", "-trimpath", "-o", "/workspace/scratch/14185c8f871f/final-portal-binary", "./cmd/portal"]
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:01.063962+00:00

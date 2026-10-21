@@ -1,0 +1,110 @@
+{
+  "retrievedMain": "17c832c1be518bdc70e300cbbdc2bbee3bfc201c",
+  "userCheckpoint": "d768c2603ec64f6c312e4f0ef24d8f6d2f943959",
+  "architectReviewCommit": "27bd744856b61c35e7c66dbd1ea397d3e86f97ad",
+  "architectReviewBlob": "be886150cfdc4ea8a342a21fdafc46bf7fce1264",
+  "delta": {
+    "base": "d768c2603ec64f6c312e4f0ef24d8f6d2f943959",
+    "head": "17c832c1be518bdc70e300cbbdc2bbee3bfc201c",
+    "status": "ahead",
+    "ahead_by": 3,
+    "behind_by": 0,
+    "files": [
+      {
+        "filename": "evidence/P8/20261021T092824Z-task-p8c-r1-resume-r3-rv-618d677-b/00-closure-matrix.md",
+        "status": "added"
+      },
+      {
+        "filename": "evidence/P8/20261021T092824Z-task-p8c-r1-resume-r3-rv-618d677-b/01-tool-versions.txt",
+        "status": "added"
+      },
+      {
+        "filename": "evidence/P8/20261021T092824Z-task-p8c-r1-resume-r3-rv-618d677-b/raw-transcript.txt",
+        "status": "added"
+      },
+      {
+        "filename": "evidence/P8/20261021T092824Z-task-p8c-r1-resume-r3-rv-618d677-b/result.md",
+        "status": "added"
+      },
+      {
+        "filename": "portal/internal/httpapi/contract_test.go",
+        "status": "modified"
+      },
+      {
+        "filename": "portal/internal/httpapi/events_pagination_test.go",
+        "status": "modified"
+      },
+      {
+        "filename": "portal/internal/httpapi/handlers.go",
+        "status": "modified"
+      },
+      {
+        "filename": "portal/internal/httpapi/schema_test.go",
+        "status": "modified"
+      },
+      {
+        "filename": "portal/internal/httpapi/server.go",
+        "status": "modified"
+      },
+      {
+        "filename": "portal/internal/store/integration_test.go",
+        "status": "modified"
+      },
+      {
+        "filename": "portal/internal/store/store.go",
+        "status": "modified"
+      },
+      {
+        "filename": "portal/tools/p8c-portal-release.yml.template",
+        "status": "modified"
+      }
+    ]
+  },
+  "sourceCommit": "817f0ecef8da1cd756f4b6ab48d61e023764329a",
+  "sourceTree": "36675399a5f85b7fa4b5937ad6ddedde3056232b",
+  "sourceChangedPaths": [
+    "portal/.gitignore",
+    "portal/README.md",
+    "portal/cmd/portal/main.go",
+    "portal/cmd/portal/persistence.go",
+    "portal/cmd/portal/persistence_test.go",
+    "portal/go.mod",
+    "portal/go.sum",
+    "portal/internal/collectors/category_boundary_test.go",
+    "portal/internal/collectors/collect_methods.go",
+    "portal/internal/collectors/collector.go",
+    "portal/internal/collectors/continuation.go",
+    "portal/internal/collectors/continuation_test.go",
+    "portal/internal/collectors/dataflow_fixture_test.go",
+    "portal/internal/collectors/metrics.go",
+    "portal/internal/collectors/transport.go",
+    "portal/internal/collectors/transport_test.go",
+    "portal/internal/httpapi/dataflow_fixture_test.go",
+    "portal/internal/httpapi/event_views.go",
+    "portal/internal/httpapi/events_pagination_test.go",
+    "portal/internal/httpapi/handlers.go",
+    "portal/internal/httpapi/schema_states_test.go",
+    "portal/internal/httpapi/schema_test.go",
+    "portal/internal/httpapi/server.go",
+    "portal/internal/store/integration_test.go",
+    "portal/internal/store/store.go",
+    "portal/internal/store/tls_test.go",
+    "portal/manifests/networkpolicy.yaml",
+    "portal/networkpolicy/PLAN.md",
+    "portal/networkpolicy/flows_test.go",
+    "portal/networkpolicy/inventory.py",
+    "portal/tools/install-verified-go.sh",
+    "portal/tools/p8c-portal-release.yml.template",
+    "portal/tools/provision-registry-pull.py",
+    "portal/tools/provision-ui-auth.py",
+    "portal/tools/release-check.py",
+    "portal/tools/test-dataflow.sh",
+    "portal/tools/test_helpers.py",
+    "portal/tools/test_release.py",
+    "portal/versions.lock",
+    "portal/web/app.js",
+    "portal/web/dataflow-smoke.test.mjs",
+    "portal/web/renderer-smoke.test.mjs"
+  ],
+  "publicationPolicy": "Source parent recovered main; new evidence-only child; branch update force=false with expected_sha lease; no history rewrites or historical evidence changes."
+}

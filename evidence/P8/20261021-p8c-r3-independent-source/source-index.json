@@ -1,0 +1,336 @@
+{
+  "sourceSHA": "817f0ecef8da1cd756f4b6ab48d61e023764329a",
+  "treeSHA": "36675399a5f85b7fa4b5937ad6ddedde3056232b",
+  "files": [
+    {
+      "path": "portal/.gitignore",
+      "sha": "32ed4f26a6aee48b7b3310330af63a4fce3fb74a",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/Containerfile",
+      "sha": "e158e2f77d76a0e775b853c0968b38167fc02078",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/Makefile",
+      "sha": "252ff9456112e2f0b68f47e64defba8a6f48c708",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/README.md",
+      "sha": "e3ca7c3cc3c14e8d09e83b5272b822dc699ef5e0",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/change-allowlist.json",
+      "sha": "ca464720c84bd21ddff0c961371aea4c32270650",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/cmd/portal/main.go",
+      "sha": "d9e8022098f01d777c2fe66e0a13f4742ad04a8f",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/cmd/portal/persistence.go",
+      "sha": "5f719febd02a40074ac09f21b14f5845f355d52c",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/cmd/portal/persistence_test.go",
+      "sha": "9c99f0996e55b6dd00f631a2d4f40b7fd1d2a736",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/go.mod",
+      "sha": "55e30c3b24f40aea195311f1bb53c236d2d7e064",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/go.sum",
+      "sha": "1447b6716fd77a3c3db1baedffd7b0ab111acd5a",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/auth/auth.go",
+      "sha": "62c7a0586895bfe2a03fd8207daf5641dc664f0c",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/auth/auth_test.go",
+      "sha": "1fa925f4ee019caf784b6c094259f7c960395083",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/collectors/category_boundary_test.go",
+      "sha": "6b508cbe42fd017c4b609c55613665faca622a72",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/collectors/collect_methods.go",
+      "sha": "af67e72000545596334b07a0a2ce8413cfc4556a",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/collectors/collector.go",
+      "sha": "d8885a233c5f09b17518af2a4ca4b0f6401c7c51",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/collectors/continuation.go",
+      "sha": "7d1ad07013783a2593c84918f7781cfdfd2606b3",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/collectors/continuation_test.go",
+      "sha": "da5e7bb2c630527020f6d0b9ec13f2cbe27e7bc0",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/collectors/dataflow_fixture_test.go",
+      "sha": "bbb09b3f53e4b09e321ac9bd6d0a5d07556d4a1b",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/collectors/metrics.go",
+      "sha": "73cb6a887f615ee0bcbc1067397e924b1b53a829",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/collectors/metrics_test.go",
+      "sha": "fa9724086f064236b04c6c9fad0ead42f8c2312f",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/collectors/quantities.go",
+      "sha": "41078a76d759492dd2d3f5810469f22c0e70773a",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/collectors/transport.go",
+      "sha": "5aa05a103dc3a91cfae09963a12fac88593fcc40",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/collectors/transport_lifecycle_test.go",
+      "sha": "47b21975b41b92ecf3f5b4204fae7eeaba821498",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/collectors/transport_test.go",
+      "sha": "de185f3ef6adcf058055f4ca80cf95d462f53b5e",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/config/config.go",
+      "sha": "e90a44eca2983f2eee51656ce80fba07674b08dd",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/httpapi/coherent_snapshot_test.go",
+      "sha": "9faa12e1acd075bf587ead0174667f098f1f90ff",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/httpapi/contract_test.go",
+      "sha": "4f8b05d6bac2b2373f3db2b96f821a1f97162d98",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/httpapi/dataflow_fixture_test.go",
+      "sha": "e04caf6c870d1869278ad2dbaaf198eee7ec0ad2",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/httpapi/event_views.go",
+      "sha": "fa84fb51aff3b70d8e393b7061e5ecb83c1ffc22",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/httpapi/events_pagination_test.go",
+      "sha": "a3e18ddc5aaa43824eabd7866a914f7835edef06",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/httpapi/handlers.go",
+      "sha": "e5975b62fadefc538ce4d262dffa392a70eca684",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/httpapi/handlers_test.go",
+      "sha": "d62f5e882f33c6f40fe788624394c18473f8695b",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/httpapi/schema_states_test.go",
+      "sha": "a2626817494591b9581a445eda32d827c31cf890",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/httpapi/schema_test.go",
+      "sha": "b5e7bf0253fa5d3822c45dcb55cc1c28907778cf",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/httpapi/server.go",
+      "sha": "c804bf231fc68bb0cfed1b4a0c058a1b938345d4",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/model/model.go",
+      "sha": "8d144d9e5ef9a05b3b45cf5a9383bfd8639cc3b6",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/store/integration_test.go",
+      "sha": "004227073b943609b046f1fa90c9289755ebe319",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/store/store.go",
+      "sha": "305fd99fa57fc839c726ffb9ed4712b7d4c6a0e5",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/internal/store/tls_test.go",
+      "sha": "747155f1656bfbd2ac003c38dc6161c445b9a554",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/manifests/deployment.yaml",
+      "sha": "2cb27165330fe4b6772af3a06a1940d661efc72f",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/manifests/gateway.yaml",
+      "sha": "1e1f48a3c6d03c4558f4b4c3cca24bc12c22b763",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/manifests/networkpolicy.yaml",
+      "sha": "fccb8432135a18f8b7099e131471a48808df1ed7",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/manifests/rbac.yaml",
+      "sha": "036e90b40a44701c04b145af4c987ae962648477",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/migrations/0001_portal_observations.sql",
+      "sha": "1c18b84a18e48e1b6c1a1ecfe84a9a95412becd5",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/migrations/migrations.go",
+      "sha": "084f9ee38ffb93dcdf2daf671ebcf09de9e9d37d",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/networkpolicy/PLAN.md",
+      "sha": "5956e80015384a5e35b0f68c9cd7a64e7ffbe7ac",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/networkpolicy/flows_test.go",
+      "sha": "14e347c34f9ed01d3c074234bcf194af6d294cb0",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/networkpolicy/inventory.py",
+      "sha": "778d3c31d6aab97b8390f05bda91e5bc8b16f997",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/package-lock.json",
+      "sha": "3eb710ab24253dec425e079579b7c8e76661dd4a",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/package.json",
+      "sha": "13cdf96e90e44ff445e135490ddda729746534d5",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/tools/install-verified-go.sh",
+      "sha": "2b6e0c9a0127ac0a641feef791f017d287719543",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/tools/p8c-portal-release.yml.template",
+      "sha": "0e713e47f7f7a9e940b3113a7481e393aa961f9e",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/tools/provision-registry-pull.py",
+      "sha": "b5ca5e0009db9a5bbfd2852353aaf5ad2043db05",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/tools/provision-ui-auth.py",
+      "sha": "8cff514989f29fdb01f3df1843658933c935d953",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/tools/release-check.py",
+      "sha": "88598da050c07c6475ebcafb793876567c730e87",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/tools/test-dataflow.sh",
+      "sha": "5c42cd0398693fc6fe7343ad238d51b95d7e2170",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/tools/test_helpers.py",
+      "sha": "ee2118eab90ff45d8e8f156d691cd7bbb1d866b0",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/tools/test_release.py",
+      "sha": "cf31c99d9e9d152c8b267007744e19444f7debe9",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/versions.lock",
+      "sha": "5a5853bcfd682858ce20c47c9004afa0a3411ccd",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/web/app.js",
+      "sha": "25ac1236732b5dc9753b2cd3ed67c7c557dc19aa",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/web/dataflow-smoke.test.mjs",
+      "sha": "9122b536c3c733d214c35764452d68336928c2af",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/web/embed.go",
+      "sha": "d95fcfa909cb882e22d5148a2987b99a518b23c7",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/web/fixture-smoke.test.mjs",
+      "sha": "1120f9f931fecb42b244ae830621b88bcf1cd4ed",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/web/index.html",
+      "sha": "2d28a3ab3093a09ef0874ff7d4299a4a0b5840dc",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/web/renderer-smoke.test.mjs",
+      "sha": "c0031be6d6bb3eb738277a11a202807b51a19f68",
+      "mode": "100644"
+    },
+    {
+      "path": "portal/web/style.css",
+      "sha": "70c5af2644ade9075181bedb1f4c04c488c91e0c",
+      "mode": "100644"
+    }
+  ]
+}

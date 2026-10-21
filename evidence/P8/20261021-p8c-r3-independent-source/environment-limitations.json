@@ -1,0 +1,13 @@
+{
+  "UTC": "2026-10-21T10:12:10.796092+00:00",
+  "uid_map": "         0          0          1\n",
+  "commands": {
+    "postgres": null,
+    "initdb": null,
+    "pg_ctl": null,
+    "docker": null,
+    "podman": null,
+    "kubectl": null
+  },
+  "limits": "No authorized cluster surface in this workspace. Native PostgreSQL cannot run as root and this user namespace maps only UID0. No privilege/user-namespace/security bypass attempted. PGlite SQL compatibility does not replace native PG17 or production TLS."
+}

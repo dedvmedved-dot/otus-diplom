@@ -1,0 +1,6 @@
+{
+  "utc": "2026-10-21T10:12:49.720413+00:00",
+  "url": "https://github.com/rootless-containers/rootlesskit/releases/download/v2.3.1/SHA256SUMS",
+  "checksumLine": "caafdce18e0959f078b4b478d4f352ebf3d556e373265fc7831f1a6d70219ee0  rootlesskit-x86_64.tar.gz",
+  "verification": "published SHA matches source pin; no GPG signature verification claimed"
+}

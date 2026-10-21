@@ -1,0 +1,17 @@
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:10.792134+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work/portal
+COMMAND=["go", "test", "-race", "-count=1", "./..."]
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/cmd/portal	1.049s
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/auth	1.018s
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/collectors	9.177s
+?   	github.com/dedvmedved-dot/otus-diplom/portal/internal/config	[no test files]
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/httpapi	2.211s
+?   	github.com/dedvmedved-dot/otus-diplom/portal/internal/model	[no test files]
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/store	1.142s
+?   	github.com/dedvmedved-dot/otus-diplom/portal/migrations	[no test files]
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/networkpolicy	1.089s
+?   	github.com/dedvmedved-dot/otus-diplom/portal/web	[no test files]
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:23.801277+00:00

@@ -1,0 +1,1 @@
+{"buildType": "https://github.com/Attestations/GitHubActionsWorkflow@v1", "builder": {"id": "https://github.com/dedvmedved-dot/otus-diplom/.github/workflows/p8c-portal-release.yml@refs/heads/main"}, "invocation": {"configSource": {"digest": {"sha1": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}, "uri": "git+https://github.com/dedvmedved-dot/otus-diplom@refs/heads/main"}}}

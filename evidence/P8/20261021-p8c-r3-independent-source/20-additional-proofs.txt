@@ -1,0 +1,11 @@
+UTC_START=2026-10-21T10:12:49.720413+00:00
+COMMAND=python3 extra_proofs.py
+PASS published rootlesskit checksum
+PASS public postgres image manifest bytes/hash/header
+COMMAND=npm ls --depth=0
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+pak-portal-web-tests@ /workspace/scratch/14185c8f871f/source-work/portal
+└── jsdom@24.1.3
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:13:13.056327+00:00

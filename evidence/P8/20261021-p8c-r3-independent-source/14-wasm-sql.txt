@@ -1,0 +1,100 @@
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:29.780836+00:00
+CWD=/workspace/scratch/14185c8f871f
+COMMAND=["python3", "/workspace/scratch/14185c8f871f/run_wasm_final.py"]
+{"rows":[{"version":"PostgreSQL 17.5 on aarch64-unknown-linux-gnu, compiled by emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 3.1.74 (1092ec30a3fb1d46b1782ff1b4db5094d3d06ae5), 32-bit","server_version_num":"170005"}],"fields":[{"name":"version","dataTypeID":25},{"name":"server_version_num","dataTypeID":25}],"affectedRows":0}
+ISOLATED_WASM_POSTGRES_READY 127.0.0.1:55432
+COMPATIBILITY_ONLY: WASM PostgreSQL; exec query mode; loopback no TLS; native PG/TLS qualification NOT_EXECUTED
+=== RUN   TestIntegrationInsertBatchIdempotent
+--- PASS: TestIntegrationInsertBatchIdempotent (0.03s)
+=== RUN   TestIntegrationEventDedupAndRecreate
+--- PASS: TestIntegrationEventDedupAndRecreate (0.04s)
+=== RUN   TestIntegrationListEventsKeysetStableUnderInsert
+--- PASS: TestIntegrationListEventsKeysetStableUnderInsert (0.03s)
+=== RUN   TestIntegrationPruneTTL
+--- PASS: TestIntegrationPruneTTL (0.05s)
+=== RUN   TestIntegrationPruneCap
+--- PASS: TestIntegrationPruneCap (0.62s)
+=== RUN   TestIntegrationMigrationNoopAndMismatch
+--- PASS: TestIntegrationMigrationNoopAndMismatch (0.06s)
+=== RUN   TestIntegrationLedgerDrift
+--- PASS: TestIntegrationLedgerDrift (0.02s)
+=== RUN   TestIntegrationVerifySchemaNegative
+--- PASS: TestIntegrationVerifySchemaNegative (0.03s)
+=== RUN   TestIntegrationSchemaTypeAndConstraintDrift
+=== RUN   TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_DROP_COLUMN_object_name
+=== RUN   TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_ALTER_COLUMN_occurrence_count_TYPE_integer
+=== RUN   TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_DROP_CONSTRAINT_timeline_events_dedup_key_key
+=== RUN   TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_DROP_CONSTRAINT_timeline_events_dedup_key_key;_ALTER_TABLE_portal.timeline_events_ADD_UNIQUE(dedup_key,source)
+=== RUN   TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_ALTER_COLUMN_message_DROP_NOT_NULL
+=== RUN   TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.observation_batches_DROP_CONSTRAINT_observation_batches_overall_health_check
+=== RUN   TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.schema_migrations_ALTER_COLUMN_applied_at_DROP_DEFAULT
+--- PASS: TestIntegrationSchemaTypeAndConstraintDrift (0.27s)
+    --- PASS: TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_DROP_COLUMN_object_name (0.05s)
+    --- PASS: TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_ALTER_COLUMN_occurrence_count_TYPE_integer (0.04s)
+    --- PASS: TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_DROP_CONSTRAINT_timeline_events_dedup_key_key (0.04s)
+    --- PASS: TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_DROP_CONSTRAINT_timeline_events_dedup_key_key;_ALTER_TABLE_portal.timeline_events_ADD_UNIQUE(dedup_key,source) (0.05s)
+    --- PASS: TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_ALTER_COLUMN_message_DROP_NOT_NULL (0.03s)
+    --- PASS: TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.observation_batches_DROP_CONSTRAINT_observation_batches_overall_health_check (0.04s)
+    --- PASS: TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.schema_migrations_ALTER_COLUMN_applied_at_DROP_DEFAULT (0.03s)
+=== RUN   TestIntegrationCapturedViewSurvivesInsertUpdatePrune
+--- PASS: TestIntegrationCapturedViewSurvivesInsertUpdatePrune (0.03s)
+=== RUN   TestFixedTLSConfigAndHandshake
+2026/10/21 12:11:32 http: TLS handshake error from 127.0.0.1:56496: remote error: tls: bad certificate
+2026/10/21 12:11:32 http: TLS handshake error from 127.0.0.1:56508: remote error: tls: bad certificate
+--- PASS: TestFixedTLSConfigAndHandshake (0.13s)
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGHOST
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGPORT
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGDATABASE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGUSER
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGPASSWORD
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGPASSFILE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGAPPNAME
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGCONNECT_TIMEOUT
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLMODE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLKEY
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLCERT
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLSNI
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLROOTCERT
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLPASSWORD
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLNEGOTIATION
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGTARGETSESSIONATTRS
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSERVICE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSERVICEFILE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGTZ
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGOPTIONS
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGMINPROTOCOLVERSION
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGMAXPROTOCOLVERSION
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGCHANNELBINDING
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGREQUIREAUTH
+--- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGHOST (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGPORT (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGDATABASE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGUSER (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGPASSWORD (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGPASSFILE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGAPPNAME (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGCONNECT_TIMEOUT (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLMODE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLKEY (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLCERT (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLSNI (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLROOTCERT (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLPASSWORD (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLNEGOTIATION (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGTARGETSESSIONATTRS (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSERVICE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSERVICEFILE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGTZ (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGOPTIONS (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGMINPROTOCOLVERSION (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGMAXPROTOCOLVERSION (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGCHANNELBINDING (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGREQUIREAUTH (0.00s)
+PASS
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/store	1.318s
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:32.884479+00:00

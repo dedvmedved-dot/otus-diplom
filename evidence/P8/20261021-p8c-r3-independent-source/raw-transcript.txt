@@ -1,0 +1,774 @@
+===== 01-tool-versions.txt =====
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:10:29.927668+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work/portal
+COMMAND=["bash", "-c", "go version; node --version; npm --version; python3 --version"]
+go version go1.27.3 linux/amd64
+v24.19.0
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+11.9.0
+Python 3.12.14
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:10:30.081882+00:00
+
+===== 02-mod-verify.txt =====
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:10:30.082215+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work/portal
+COMMAND=["go", "mod", "verify"]
+all modules verified
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:10:30.768253+00:00
+
+===== 03-build.txt =====
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:10:30.768968+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work/portal
+COMMAND=["go", "build", "-trimpath", "-o", "/workspace/scratch/14185c8f871f/final-portal-binary", "./cmd/portal"]
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:01.063962+00:00
+
+===== 04-vet.txt =====
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:01.064334+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work/portal
+COMMAND=["go", "vet", "./..."]
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:07.208220+00:00
+
+===== 05-unit.txt =====
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:07.208751+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work/portal
+COMMAND=["go", "test", "-count=1", "-v", "./..."]
+=== RUN   TestSnapshotHealthStates
+--- PASS: TestSnapshotHealthStates (0.00s)
+=== RUN   TestProductionPersistenceFailureRecovery
+--- PASS: TestProductionPersistenceFailureRecovery (0.00s)
+=== RUN   TestProductionQueueOverflowLatchedLoss
+--- PASS: TestProductionQueueOverflowLatchedLoss (0.01s)
+PASS
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/cmd/portal	0.023s
+=== RUN   TestVerifier
+--- PASS: TestVerifier (0.00s)
+=== RUN   TestVerifierRejectsShortVerifier
+--- PASS: TestVerifierRejectsShortVerifier (0.00s)
+PASS
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/auth	0.008s
+=== RUN   TestActualCollectorCategoryBoundaries
+=== RUN   TestActualCollectorCategoryBoundaries/Node/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/Node/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/Node/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/Pod/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/Pod/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/Pod/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/Service/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/Service/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/Service/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/EndpointSlice/discovery.k8s.io/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/EndpointSlice/discovery.k8s.io/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/EndpointSlice/discovery.k8s.io/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/Event/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/Event/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/Event/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/Deployment/apps/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/Deployment/apps/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/Deployment/apps/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/StatefulSet/apps/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/StatefulSet/apps/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/StatefulSet/apps/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/DaemonSet/apps/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/DaemonSet/apps/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/DaemonSet/apps/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/ReplicaSet/apps/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/ReplicaSet/apps/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/ReplicaSet/apps/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/Job/batch/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/Job/batch/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/Job/batch/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/CronJob/batch/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/CronJob/batch/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/CronJob/batch/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/PersistentVolumeClaim/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/PersistentVolumeClaim/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/PersistentVolumeClaim/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/PersistentVolume/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/PersistentVolume/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/PersistentVolume/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/StorageClass/storage.k8s.io/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/StorageClass/storage.k8s.io/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/StorageClass/storage.k8s.io/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/VolumeSnapshot/snapshot.storage.k8s.io/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/VolumeSnapshot/snapshot.storage.k8s.io/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/VolumeSnapshot/snapshot.storage.k8s.io/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/BackupStorageLocation/velero.io/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/BackupStorageLocation/velero.io/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/BackupStorageLocation/velero.io/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/Backup/velero.io/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/Backup/velero.io/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/Backup/velero.io/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/Restore/velero.io/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/Restore/velero.io/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/Restore/velero.io/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/Backup/postgresql.cnpg.io/v1/201
+=== RUN   TestActualCollectorCategoryBoundaries/Backup/postgresql.cnpg.io/v1/501
+=== RUN   TestActualCollectorCategoryBoundaries/Backup/postgresql.cnpg.io/v1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/NodeMetrics/metrics.k8s.io/v1beta1/201
+=== RUN   TestActualCollectorCategoryBoundaries/NodeMetrics/metrics.k8s.io/v1beta1/501
+=== RUN   TestActualCollectorCategoryBoundaries/NodeMetrics/metrics.k8s.io/v1beta1/-1
+=== RUN   TestActualCollectorCategoryBoundaries/PodMetrics/metrics.k8s.io/v1beta1/201
+=== RUN   TestActualCollectorCategoryBoundaries/PodMetrics/metrics.k8s.io/v1beta1/501
+=== RUN   TestActualCollectorCategoryBoundaries/PodMetrics/metrics.k8s.io/v1beta1/-1
+--- PASS: TestActualCollectorCategoryBoundaries (1.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Node/v1/201 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Node/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Node/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Pod/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Pod/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Pod/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Service/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Service/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Service/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/EndpointSlice/discovery.k8s.io/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/EndpointSlice/discovery.k8s.io/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/EndpointSlice/discovery.k8s.io/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Event/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Event/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Event/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Deployment/apps/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Deployment/apps/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Deployment/apps/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/StatefulSet/apps/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/StatefulSet/apps/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/StatefulSet/apps/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/DaemonSet/apps/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/DaemonSet/apps/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/DaemonSet/apps/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/ReplicaSet/apps/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/ReplicaSet/apps/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/ReplicaSet/apps/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Job/batch/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Job/batch/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Job/batch/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/CronJob/batch/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/CronJob/batch/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/CronJob/batch/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/PersistentVolumeClaim/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/PersistentVolumeClaim/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/PersistentVolumeClaim/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/PersistentVolume/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/PersistentVolume/v1/501 (0.03s)
+    --- PASS: TestActualCollectorCategoryBoundaries/PersistentVolume/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/StorageClass/storage.k8s.io/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/StorageClass/storage.k8s.io/v1/501 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/StorageClass/storage.k8s.io/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/VolumeSnapshot/snapshot.storage.k8s.io/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/VolumeSnapshot/snapshot.storage.k8s.io/v1/501 (0.03s)
+    --- PASS: TestActualCollectorCategoryBoundaries/VolumeSnapshot/snapshot.storage.k8s.io/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/BackupStorageLocation/velero.io/v1/201 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/BackupStorageLocation/velero.io/v1/501 (0.03s)
+    --- PASS: TestActualCollectorCategoryBoundaries/BackupStorageLocation/velero.io/v1/-1 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Backup/velero.io/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Backup/velero.io/v1/501 (0.03s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Backup/velero.io/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Restore/velero.io/v1/201 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Restore/velero.io/v1/501 (0.03s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Restore/velero.io/v1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Backup/postgresql.cnpg.io/v1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Backup/postgresql.cnpg.io/v1/501 (0.03s)
+    --- PASS: TestActualCollectorCategoryBoundaries/Backup/postgresql.cnpg.io/v1/-1 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/NodeMetrics/metrics.k8s.io/v1beta1/201 (0.02s)
+    --- PASS: TestActualCollectorCategoryBoundaries/NodeMetrics/metrics.k8s.io/v1beta1/501 (0.04s)
+    --- PASS: TestActualCollectorCategoryBoundaries/NodeMetrics/metrics.k8s.io/v1beta1/-1 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/PodMetrics/metrics.k8s.io/v1beta1/201 (0.01s)
+    --- PASS: TestActualCollectorCategoryBoundaries/PodMetrics/metrics.k8s.io/v1beta1/501 (0.03s)
+    --- PASS: TestActualCollectorCategoryBoundaries/PodMetrics/metrics.k8s.io/v1beta1/-1 (0.01s)
+=== RUN   TestListWithContinueFullCycle
+--- PASS: TestListWithContinueFullCycle (0.00s)
+=== RUN   TestListWithContinueSinglePage
+--- PASS: TestListWithContinueSinglePage (0.00s)
+=== RUN   TestListWithContinueError
+--- PASS: TestListWithContinueError (0.00s)
+=== RUN   TestListWithContinueBoundary201
+--- PASS: TestListWithContinueBoundary201 (0.00s)
+=== RUN   TestListWithContinueBoundary501
+--- PASS: TestListWithContinueBoundary501 (0.00s)
+=== RUN   TestExportCollectorDataflow
+    dataflow_fixture_test.go:23: run tools/test-dataflow.sh for collector -> handler -> DOM evidence
+--- SKIP: TestExportCollectorDataflow (0.00s)
+=== RUN   TestParsePrometheusMetrics
+--- PASS: TestParsePrometheusMetrics (0.00s)
+=== RUN   TestMetricValueWithLabels
+--- PASS: TestMetricValueWithLabels (0.00s)
+=== RUN   TestGuardTransportBodyDeadlineReadsBody
+--- PASS: TestGuardTransportBodyDeadlineReadsBody (0.30s)
+=== RUN   TestGuardTransportBodyDeadlineTimeout
+--- PASS: TestGuardTransportBodyDeadlineTimeout (0.60s)
+=== RUN   TestGuardTransportParentCancel
+--- PASS: TestGuardTransportParentCancel (0.50s)
+=== RUN   TestGuardAllowsApprovedPaths
+--- PASS: TestGuardAllowsApprovedPaths (0.00s)
+=== RUN   TestGuardRejectsUnapprovedPaths
+--- PASS: TestGuardRejectsUnapprovedPaths (0.00s)
+=== RUN   TestGuardRejectsWrongHost
+--- PASS: TestGuardRejectsWrongHost (0.00s)
+=== RUN   TestGuardRejectsHostOverride
+--- PASS: TestGuardRejectsHostOverride (0.00s)
+=== RUN   TestGuardRejectsUserinfo
+--- PASS: TestGuardRejectsUserinfo (0.00s)
+=== RUN   TestGuardRejectsEmptyHost
+--- PASS: TestGuardRejectsEmptyHost (0.00s)
+=== RUN   TestGuardRejectsPost
+--- PASS: TestGuardRejectsPost (0.00s)
+=== RUN   TestGuardRejectsRedirect
+--- PASS: TestGuardRejectsRedirect (0.00s)
+=== RUN   TestGuardRejectsInvalidCanonicalAndNamedScope
+--- PASS: TestGuardRejectsInvalidCanonicalAndNamedScope (0.00s)
+PASS
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/collectors	2.444s
+?   	github.com/dedvmedved-dot/otus-diplom/portal/internal/config	[no test files]
+=== RUN   TestCoherentSnapshotUnderSwap
+--- PASS: TestCoherentSnapshotUnderSwap (0.00s)
+=== RUN   TestAllElevenHandlers
+--- PASS: TestAllElevenHandlers (0.00s)
+=== RUN   TestDataShapes
+--- PASS: TestDataShapes (0.00s)
+=== RUN   TestErrorResponses
+--- PASS: TestErrorResponses (0.00s)
+=== RUN   TestExportActualCollectorHandlerResponses
+    dataflow_fixture_test.go:14: run tools/test-dataflow.sh
+--- SKIP: TestExportActualCollectorHandlerResponses (0.00s)
+=== RUN   TestEventsCursorRoundTripRFC3339
+--- PASS: TestEventsCursorRoundTripRFC3339 (0.00s)
+=== RUN   TestEventsMemoryFallbackSecondPage
+--- PASS: TestEventsMemoryFallbackSecondPage (0.00s)
+=== RUN   TestEventViewStableAcrossInsertUpdatePrune
+--- PASS: TestEventViewStableAcrossInsertUpdatePrune (0.00s)
+=== RUN   TestEventViewEvictionAndCap
+--- PASS: TestEventViewEvictionAndCap (0.05s)
+=== RUN   TestEventsSnapshotCapturedOnceIncludingError
+=== RUN   TestEventsSnapshotCapturedOnceIncludingError/?limit=1
+=== RUN   TestEventsSnapshotCapturedOnceIncludingError/?unknown=x
+--- PASS: TestEventsSnapshotCapturedOnceIncludingError (0.00s)
+    --- PASS: TestEventsSnapshotCapturedOnceIncludingError/?limit=1 (0.00s)
+    --- PASS: TestEventsSnapshotCapturedOnceIncludingError/?unknown=x (0.00s)
+=== RUN   TestParseListQueryDefaults
+--- PASS: TestParseListQueryDefaults (0.00s)
+=== RUN   TestParseListQueryLimit
+--- PASS: TestParseListQueryLimit (0.00s)
+=== RUN   TestParseListQueryInvalidLimit
+--- PASS: TestParseListQueryInvalidLimit (0.00s)
+=== RUN   TestParseListQueryUnknownKey
+--- PASS: TestParseListQueryUnknownKey (0.00s)
+=== RUN   TestParseListQueryInvalidNamespace
+--- PASS: TestParseListQueryInvalidNamespace (0.00s)
+=== RUN   TestCursorRoundTrip
+--- PASS: TestCursorRoundTrip (0.00s)
+=== RUN   TestDecodeCursorInvalid
+--- PASS: TestDecodeCursorInvalid (0.00s)
+=== RUN   TestPaginate
+--- PASS: TestPaginate (0.00s)
+=== RUN   TestPaginateExpiredCursor
+--- PASS: TestPaginateExpiredCursor (0.00s)
+=== RUN   TestDNS1123
+--- PASS: TestDNS1123 (0.00s)
+=== RUN   TestSchemaActualStartupStalePartialFailure
+=== RUN   TestSchemaActualStartupStalePartialFailure/startup
+=== RUN   TestSchemaActualStartupStalePartialFailure/stale
+=== RUN   TestSchemaActualStartupStalePartialFailure/unavailable
+=== RUN   TestSchemaActualStartupStalePartialFailure/partial
+=== RUN   TestSchemaActualStartupStalePartialFailure/persistence-failure
+--- PASS: TestSchemaActualStartupStalePartialFailure (0.10s)
+    --- PASS: TestSchemaActualStartupStalePartialFailure/startup (0.02s)
+    --- PASS: TestSchemaActualStartupStalePartialFailure/stale (0.02s)
+    --- PASS: TestSchemaActualStartupStalePartialFailure/unavailable (0.02s)
+    --- PASS: TestSchemaActualStartupStalePartialFailure/partial (0.02s)
+    --- PASS: TestSchemaActualStartupStalePartialFailure/persistence-failure (0.02s)
+=== RUN   TestSchemaDrivenErrorResponses
+=== RUN   TestSchemaDrivenErrorResponses/bad-query
+=== RUN   TestSchemaDrivenErrorResponses/unauthorized
+=== RUN   TestSchemaDrivenErrorResponses/unknown
+=== RUN   TestSchemaDrivenErrorResponses/method
+=== RUN   TestSchemaDrivenErrorResponses/rate
+=== RUN   TestSchemaDrivenErrorResponses/concurrency
+=== RUN   TestSchemaDrivenErrorResponses/cursor
+--- PASS: TestSchemaDrivenErrorResponses (0.00s)
+    --- PASS: TestSchemaDrivenErrorResponses/bad-query (0.00s)
+    --- PASS: TestSchemaDrivenErrorResponses/unauthorized (0.00s)
+    --- PASS: TestSchemaDrivenErrorResponses/unknown (0.00s)
+    --- PASS: TestSchemaDrivenErrorResponses/method (0.00s)
+    --- PASS: TestSchemaDrivenErrorResponses/rate (0.00s)
+    --- PASS: TestSchemaDrivenErrorResponses/concurrency (0.00s)
+    --- PASS: TestSchemaDrivenErrorResponses/cursor (0.00s)
+=== RUN   TestSchemaConstraintNegatives
+--- PASS: TestSchemaConstraintNegatives (0.00s)
+=== RUN   TestPersistenceLagAtResponseAndVisibleLoss
+--- PASS: TestPersistenceLagAtResponseAndVisibleLoss (0.00s)
+=== RUN   TestSchemaDrivenHandlerResponses
+--- PASS: TestSchemaDrivenHandlerResponses (0.02s)
+=== RUN   TestSchemaValidatorRejectsBadResponses
+--- PASS: TestSchemaValidatorRejectsBadResponses (0.01s)
+PASS
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/httpapi	0.214s
+?   	github.com/dedvmedved-dot/otus-diplom/portal/internal/model	[no test files]
+=== RUN   TestFixedTLSConfigAndHandshake
+2026/10/21 12:11:08 http: TLS handshake error from 127.0.0.1:43020: remote error: tls: bad certificate
+2026/10/21 12:11:08 http: TLS handshake error from 127.0.0.1:43032: read tcp 127.0.0.1:41279->127.0.0.1:43032: use of closed network connection
+--- PASS: TestFixedTLSConfigAndHandshake (0.10s)
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGHOST
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGPORT
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGDATABASE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGUSER
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGPASSWORD
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGPASSFILE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGAPPNAME
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGCONNECT_TIMEOUT
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLMODE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLKEY
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLCERT
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLSNI
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLROOTCERT
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLPASSWORD
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLNEGOTIATION
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGTARGETSESSIONATTRS
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSERVICE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSERVICEFILE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGTZ
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGOPTIONS
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGMINPROTOCOLVERSION
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGMAXPROTOCOLVERSION
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGCHANNELBINDING
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGREQUIREAUTH
+--- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGHOST (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGPORT (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGDATABASE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGUSER (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGPASSWORD (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGPASSFILE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGAPPNAME (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGCONNECT_TIMEOUT (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLMODE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLKEY (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLCERT (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLSNI (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLROOTCERT (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLPASSWORD (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLNEGOTIATION (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGTARGETSESSIONATTRS (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSERVICE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSERVICEFILE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGTZ (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGOPTIONS (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGMINPROTOCOLVERSION (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGMAXPROTOCOLVERSION (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGCHANNELBINDING (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGREQUIREAUTH (0.00s)
+PASS
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/store	0.110s
+?   	github.com/dedvmedved-dot/otus-diplom/portal/migrations	[no test files]
+=== RUN   TestCandidatePolicyUnionBothSides
+=== RUN   TestCandidatePolicyUnionBothSides/app-db
+=== RUN   TestCandidatePolicyUnionBothSides/app-metrics
+=== RUN   TestCandidatePolicyUnionBothSides/migrator-db
+=== RUN   TestCandidatePolicyUnionBothSides/migrator-no-metrics
+=== RUN   TestCandidatePolicyUnionBothSides/peer-replication
+=== RUN   TestCandidatePolicyUnionBothSides/peer-manager
+=== RUN   TestCandidatePolicyUnionBothSides/operator-manager
+=== RUN   TestCandidatePolicyUnionBothSides/gateway-backend
+=== RUN   TestCandidatePolicyUnionBothSides/xds
+=== RUN   TestCandidatePolicyUnionBothSides/dns-udp
+=== RUN   TestCandidatePolicyUnionBothSides/dns-tcp
+=== RUN   TestCandidatePolicyUnionBothSides/cross-ns-denied
+=== RUN   TestCandidatePolicyUnionBothSides/wrong-owner-denied
+=== RUN   TestCandidatePolicyUnionBothSides/management-denied
+=== RUN   TestCandidatePolicyUnionBothSides/udp-db-denied
+=== RUN   TestCandidatePolicyUnionBothSides/migrator-api-denied
+=== RUN   TestCandidatePolicyUnionBothSides/app-s3-denied
+=== RUN   TestCandidatePolicyUnionBothSides/db-s3
+--- PASS: TestCandidatePolicyUnionBothSides (0.01s)
+    --- PASS: TestCandidatePolicyUnionBothSides/app-db (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/app-metrics (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/migrator-db (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/migrator-no-metrics (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/peer-replication (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/peer-manager (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/operator-manager (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/gateway-backend (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/xds (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-udp (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-tcp (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/cross-ns-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/wrong-owner-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/management-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/udp-db-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/migrator-api-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/app-s3-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/db-s3 (0.00s)
+PASS
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/networkpolicy	0.012s
+?   	github.com/dedvmedved-dot/otus-diplom/portal/web	[no test files]
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:10.791506+00:00
+
+===== 06-race.txt =====
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:10.792134+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work/portal
+COMMAND=["go", "test", "-race", "-count=1", "./..."]
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/cmd/portal	1.049s
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/auth	1.018s
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/collectors	9.177s
+?   	github.com/dedvmedved-dot/otus-diplom/portal/internal/config	[no test files]
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/httpapi	2.211s
+?   	github.com/dedvmedved-dot/otus-diplom/portal/internal/model	[no test files]
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/store	1.142s
+?   	github.com/dedvmedved-dot/otus-diplom/portal/migrations	[no test files]
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/networkpolicy	1.089s
+?   	github.com/dedvmedved-dot/otus-diplom/portal/web	[no test files]
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:23.801277+00:00
+
+===== 07-integration-vet.txt =====
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:23.801761+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work/portal
+COMMAND=["go", "vet", "-tags", "integration", "./internal/store"]
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:25.837204+00:00
+
+===== 08-helpers-portal-cwd.txt =====
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:25.837692+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work/portal
+COMMAND=["python3", "tools/test_helpers.py", "-v"]
+test_non_tty_raises (__main__.TestNoEchoFailClosed.test_non_tty_raises) ... ok
+test_termios_unavailable_raises (__main__.TestNoEchoFailClosed.test_termios_unavailable_raises) ... ok
+test_input_cancel_and_restore_both_helpers (__main__.TestRealInputAndSubprocessFlow.test_input_cancel_and_restore_both_helpers) ... ok
+test_input_failure_prevents_every_subprocess (__main__.TestRealInputAndSubprocessFlow.test_input_failure_prevents_every_subprocess) ... ok
+test_subprocess_phases_and_non_disclosure (__main__.TestRealInputAndSubprocessFlow.test_subprocess_phases_and_non_disclosure) ... ok
+test_terminal_setup_restore_and_encoding_fail_closed (__main__.TestRealInputAndSubprocessFlow.test_terminal_setup_restore_and_encoding_fail_closed) ... ok
+test_create_timeout_unknown_outcome (__main__.TestRegistryFailClosedCreateOnly.test_create_timeout_unknown_outcome) ... STOP: create timed out — UNKNOWN_OUTCOME. Re-check Secret state (get) before any further action; do not overwrite.
+ok
+test_existing_secret_stops (__main__.TestRegistryFailClosedCreateOnly.test_existing_secret_stops) ... STOP: Secret portal/portal-registry-pull already exists; no overwrite.
+ok
+test_forbidden_probe_stops_before_write (__main__.TestRegistryFailClosedCreateOnly.test_forbidden_probe_stops_before_write) ... STOP: cannot verify Secret state (Forbidden/network/other); no write attempted.
+ok
+test_success_uses_create_only (__main__.TestRegistryFailClosedCreateOnly.test_success_uses_create_only) ... ok
+test_already_exists_race_stops_no_overwrite (__main__.TestUIFailClosedCreateOnly.test_already_exists_race_stops_no_overwrite) ... STOP: create failed (Secret may already exist); no overwrite attempted.
+ok
+test_create_timeout_unknown_outcome (__main__.TestUIFailClosedCreateOnly.test_create_timeout_unknown_outcome) ... STOP: create timed out — UNKNOWN_OUTCOME. Re-check Secret state (get) before any further action; do not overwrite.
+ok
+test_existing_secret_stops (__main__.TestUIFailClosedCreateOnly.test_existing_secret_stops) ... STOP: Secret portal/portal-ui-auth already exists; no implicit rotation.
+ok
+test_forbidden_probe_stops_before_write (__main__.TestUIFailClosedCreateOnly.test_forbidden_probe_stops_before_write) ... STOP: cannot verify Secret state (Forbidden/network/other); no write attempted.
+ok
+test_success_uses_create_only (__main__.TestUIFailClosedCreateOnly.test_success_uses_create_only) ... ok
+test_bad_alphabet (__main__.TestValidatePassword.test_bad_alphabet) ... ok
+test_valid (__main__.TestValidatePassword.test_valid) ... ok
+test_wrong_length (__main__.TestValidatePassword.test_wrong_length) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.020s
+
+OK
+OK: Secret portal/portal-registry-pull provisioned.
+Record name, type, access verification and expiry/rotation responsibility only.
+OK: Secret portal/portal-ui-auth key password-sha256 provisioned.
+Verifier value is NOT printed. Owner retains the password in their password manager.
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:25.942239+00:00
+
+===== 09-helpers-repo-cwd.txt =====
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:25.942744+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work
+COMMAND=["python3", "portal/tools/test_helpers.py", "-v"]
+test_non_tty_raises (__main__.TestNoEchoFailClosed.test_non_tty_raises) ... ok
+test_termios_unavailable_raises (__main__.TestNoEchoFailClosed.test_termios_unavailable_raises) ... ok
+test_input_cancel_and_restore_both_helpers (__main__.TestRealInputAndSubprocessFlow.test_input_cancel_and_restore_both_helpers) ... ok
+test_input_failure_prevents_every_subprocess (__main__.TestRealInputAndSubprocessFlow.test_input_failure_prevents_every_subprocess) ... ok
+test_subprocess_phases_and_non_disclosure (__main__.TestRealInputAndSubprocessFlow.test_subprocess_phases_and_non_disclosure) ... ok
+test_terminal_setup_restore_and_encoding_fail_closed (__main__.TestRealInputAndSubprocessFlow.test_terminal_setup_restore_and_encoding_fail_closed) ... ok
+test_create_timeout_unknown_outcome (__main__.TestRegistryFailClosedCreateOnly.test_create_timeout_unknown_outcome) ... STOP: create timed out — UNKNOWN_OUTCOME. Re-check Secret state (get) before any further action; do not overwrite.
+ok
+test_existing_secret_stops (__main__.TestRegistryFailClosedCreateOnly.test_existing_secret_stops) ... STOP: Secret portal/portal-registry-pull already exists; no overwrite.
+ok
+test_forbidden_probe_stops_before_write (__main__.TestRegistryFailClosedCreateOnly.test_forbidden_probe_stops_before_write) ... STOP: cannot verify Secret state (Forbidden/network/other); no write attempted.
+ok
+test_success_uses_create_only (__main__.TestRegistryFailClosedCreateOnly.test_success_uses_create_only) ... ok
+test_already_exists_race_stops_no_overwrite (__main__.TestUIFailClosedCreateOnly.test_already_exists_race_stops_no_overwrite) ... STOP: create failed (Secret may already exist); no overwrite attempted.
+ok
+test_create_timeout_unknown_outcome (__main__.TestUIFailClosedCreateOnly.test_create_timeout_unknown_outcome) ... STOP: create timed out — UNKNOWN_OUTCOME. Re-check Secret state (get) before any further action; do not overwrite.
+ok
+test_existing_secret_stops (__main__.TestUIFailClosedCreateOnly.test_existing_secret_stops) ... STOP: Secret portal/portal-ui-auth already exists; no implicit rotation.
+ok
+test_forbidden_probe_stops_before_write (__main__.TestUIFailClosedCreateOnly.test_forbidden_probe_stops_before_write) ... STOP: cannot verify Secret state (Forbidden/network/other); no write attempted.
+ok
+test_success_uses_create_only (__main__.TestUIFailClosedCreateOnly.test_success_uses_create_only) ... ok
+test_bad_alphabet (__main__.TestValidatePassword.test_bad_alphabet) ... ok
+test_valid (__main__.TestValidatePassword.test_valid) ... ok
+test_wrong_length (__main__.TestValidatePassword.test_wrong_length) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.022s
+
+OK
+OK: Secret portal/portal-registry-pull provisioned.
+Record name, type, access verification and expiry/rotation responsibility only.
+OK: Secret portal/portal-ui-auth key password-sha256 provisioned.
+Verifier value is NOT printed. Owner retains the password in their password manager.
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:26.037588+00:00
+
+===== 10-release-checks.txt =====
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:26.038464+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work/portal
+COMMAND=["python3", "tools/test_release.py", "-v"]
+test_digest_and_private_gate_fail_closed (__main__.TestReleaseBindings.test_digest_and_private_gate_fail_closed) ... ok
+test_predicate_and_subject_source_negatives (__main__.TestReleaseBindings.test_predicate_and_subject_source_negatives) ... ok
+test_sbom_exact_payload (__main__.TestReleaseBindings.test_sbom_exact_payload) ... ok
+test_signature_source_digest (__main__.TestReleaseBindings.test_signature_source_digest) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.001s
+
+OK
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:26.107735+00:00
+
+===== 11-renderer.txt =====
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:26.108300+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work/portal
+COMMAND=["node", "web/renderer-smoke.test.mjs"]
+renderer-smoke: PASS (stale-not-green, failed=unavailable, backup-health+Barman/WAL)
+renderer freshness/navigation: PASS (critical preserved, all stale cards non-green, real next/reset request, expired cursor)
+renderer availability: PASS (unavailable/partial/error overview, trusted empty distinct from failure)
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:26.975314+00:00
+
+===== 12-fixtures.txt =====
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:26.976041+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work/portal
+COMMAND=["node", "web/fixture-smoke.test.mjs"]
+fixture-smoke: PASS (11 endpoints envelope + data shapes + error shape)
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:27.048390+00:00
+
+===== 13-collector-api-dom.txt =====
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:27.049302+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work/portal
+COMMAND=["bash", "tools/test-dataflow.sh"]
+=== RUN   TestExportCollectorDataflow
+--- PASS: TestExportCollectorDataflow (0.02s)
+PASS
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/collectors	0.027s
+=== RUN   TestExportActualCollectorHandlerResponses
+--- PASS: TestExportActualCollectorHandlerResponses (0.03s)
+PASS
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/httpapi	0.041s
+collector -> 11 schema-validated handlers -> actual DOM: PASS (synthetic APIs; Barman/WAL/Velero/pressure/metrics/events)
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:29.780207+00:00
+
+===== 14-wasm-sql.txt =====
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:29.780836+00:00
+CWD=/workspace/scratch/14185c8f871f
+COMMAND=["python3", "/workspace/scratch/14185c8f871f/run_wasm_final.py"]
+{"rows":[{"version":"PostgreSQL 17.5 on aarch64-unknown-linux-gnu, compiled by emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 3.1.74 (1092ec30a3fb1d46b1782ff1b4db5094d3d06ae5), 32-bit","server_version_num":"170005"}],"fields":[{"name":"version","dataTypeID":25},{"name":"server_version_num","dataTypeID":25}],"affectedRows":0}
+ISOLATED_WASM_POSTGRES_READY 127.0.0.1:55432
+COMPATIBILITY_ONLY: WASM PostgreSQL; exec query mode; loopback no TLS; native PG/TLS qualification NOT_EXECUTED
+=== RUN   TestIntegrationInsertBatchIdempotent
+--- PASS: TestIntegrationInsertBatchIdempotent (0.03s)
+=== RUN   TestIntegrationEventDedupAndRecreate
+--- PASS: TestIntegrationEventDedupAndRecreate (0.04s)
+=== RUN   TestIntegrationListEventsKeysetStableUnderInsert
+--- PASS: TestIntegrationListEventsKeysetStableUnderInsert (0.03s)
+=== RUN   TestIntegrationPruneTTL
+--- PASS: TestIntegrationPruneTTL (0.05s)
+=== RUN   TestIntegrationPruneCap
+--- PASS: TestIntegrationPruneCap (0.62s)
+=== RUN   TestIntegrationMigrationNoopAndMismatch
+--- PASS: TestIntegrationMigrationNoopAndMismatch (0.06s)
+=== RUN   TestIntegrationLedgerDrift
+--- PASS: TestIntegrationLedgerDrift (0.02s)
+=== RUN   TestIntegrationVerifySchemaNegative
+--- PASS: TestIntegrationVerifySchemaNegative (0.03s)
+=== RUN   TestIntegrationSchemaTypeAndConstraintDrift
+=== RUN   TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_DROP_COLUMN_object_name
+=== RUN   TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_ALTER_COLUMN_occurrence_count_TYPE_integer
+=== RUN   TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_DROP_CONSTRAINT_timeline_events_dedup_key_key
+=== RUN   TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_DROP_CONSTRAINT_timeline_events_dedup_key_key;_ALTER_TABLE_portal.timeline_events_ADD_UNIQUE(dedup_key,source)
+=== RUN   TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_ALTER_COLUMN_message_DROP_NOT_NULL
+=== RUN   TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.observation_batches_DROP_CONSTRAINT_observation_batches_overall_health_check
+=== RUN   TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.schema_migrations_ALTER_COLUMN_applied_at_DROP_DEFAULT
+--- PASS: TestIntegrationSchemaTypeAndConstraintDrift (0.27s)
+    --- PASS: TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_DROP_COLUMN_object_name (0.05s)
+    --- PASS: TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_ALTER_COLUMN_occurrence_count_TYPE_integer (0.04s)
+    --- PASS: TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_DROP_CONSTRAINT_timeline_events_dedup_key_key (0.04s)
+    --- PASS: TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_DROP_CONSTRAINT_timeline_events_dedup_key_key;_ALTER_TABLE_portal.timeline_events_ADD_UNIQUE(dedup_key,source) (0.05s)
+    --- PASS: TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_ALTER_COLUMN_message_DROP_NOT_NULL (0.03s)
+    --- PASS: TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.observation_batches_DROP_CONSTRAINT_observation_batches_overall_health_check (0.04s)
+    --- PASS: TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.schema_migrations_ALTER_COLUMN_applied_at_DROP_DEFAULT (0.03s)
+=== RUN   TestIntegrationCapturedViewSurvivesInsertUpdatePrune
+--- PASS: TestIntegrationCapturedViewSurvivesInsertUpdatePrune (0.03s)
+=== RUN   TestFixedTLSConfigAndHandshake
+2026/10/21 12:11:32 http: TLS handshake error from 127.0.0.1:56496: remote error: tls: bad certificate
+2026/10/21 12:11:32 http: TLS handshake error from 127.0.0.1:56508: remote error: tls: bad certificate
+--- PASS: TestFixedTLSConfigAndHandshake (0.13s)
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGHOST
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGPORT
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGDATABASE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGUSER
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGPASSWORD
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGPASSFILE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGAPPNAME
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGCONNECT_TIMEOUT
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLMODE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLKEY
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLCERT
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLSNI
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLROOTCERT
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLPASSWORD
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLNEGOTIATION
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGTARGETSESSIONATTRS
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSERVICE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSERVICEFILE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGTZ
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGOPTIONS
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGMINPROTOCOLVERSION
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGMAXPROTOCOLVERSION
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGCHANNELBINDING
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGREQUIREAUTH
+--- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGHOST (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGPORT (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGDATABASE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGUSER (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGPASSWORD (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGPASSFILE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGAPPNAME (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGCONNECT_TIMEOUT (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLMODE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLKEY (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLCERT (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLSNI (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLROOTCERT (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLPASSWORD (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLNEGOTIATION (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGTARGETSESSIONATTRS (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSERVICE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSERVICEFILE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGTZ (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGOPTIONS (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGMINPROTOCOLVERSION (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGMAXPROTOCOLVERSION (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGCHANNELBINDING (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGREQUIREAUTH (0.00s)
+PASS
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/store	1.318s
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:32.884479+00:00
+
+===== 15-workflow-static.txt =====
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:32.885286+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work
+COMMAND=["python3", "/workspace/scratch/14185c8f871f/static_final.py"]
+PASS YAML load; 17 shell blocks bash -n; immutable action refs; job-scoped permissions; pinned test image
+NOT_EXECUTED: GitHub expression evaluation, runner BuildKit, push/sign/attest/private verification
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:32.970906+00:00
+
+===== 16-secret-scan.txt =====
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:32.971485+00:00
+CWD=/workspace/scratch/14185c8f871f/source-work
+COMMAND=["python3", "/workspace/scratch/14185c8f871f/scan_final.py"]
+{
+  "sourceSHA": "817f0ecef8da1cd756f4b6ab48d61e023764329a",
+  "files": 66,
+  "rules": [
+    "private-key",
+    "github-token",
+    "aws-access-key",
+    "credential-url"
+  ],
+  "findings": [],
+  "syntheticAllowlist": [
+    {
+      "path": "portal/tools/p8c-portal-release.yml.template",
+      "kind": "credential-url",
+      "classification": "fixed isolated CI service fixture"
+    }
+  ]
+}
+Heuristic source scan only; not a runtime/registry scan. No credentials were read or provisioned.
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:33.008800+00:00
+
+===== 17-pinned-cosign-predicate.txt =====
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:33.009474+00:00
+CWD=/workspace/scratch/14185c8f871f/cosign-check
+COMMAND=["go", "run", ".", "predicate.json"]
+NOTE: pinned Cosign accepts nested Statement but drops its fields; release-check must reject the empty predicate
+pinned Cosign v3.1.3 GenerateStatement: valid predicate generation PASS; application verifier supplies strict field checks
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:33.288135+00:00
+
+===== 18-cosign-payload-binding.txt =====
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:33.288767+00:00
+CWD=/workspace/scratch/14185c8f871f
+COMMAND=["python3", "/workspace/scratch/14185c8f871f/cosign_binding_final.py"]
+PASS actual pinned Cosign GenerateStatement output through strict release payload checker; synthetic image digest/source, NOT cryptographic signature verification
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:33.348324+00:00
+
+===== 19-verified-toolchain-install.txt =====
+UTC_START=2026-10-21T10:12:07.711446+00:00
+COMMAND=bash portal/tools/install-verified-go.sh
+NONSECRET_INPUTS={"RUNNER_TEMP": "/workspace/scratch/14185c8f871f/toolchain-proof", "GO_VERSION": "1.27.3", "GO_SHA256": "65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40", "GO_ARCHIVE": "/workspace/scratch/14185c8f871f/go1.27.3.tar.gz"}
+/workspace/scratch/14185c8f871f/go1.27.3.tar.gz: OK
+go version go1.27.3 linux/amd64
+EXIT_CODE=0
+5f5eb6d0b2fb6aa0bb5d5f8c5f1c944e0de955c925f0111af92a9d8f79680b5b  /workspace/scratch/14185c8f871f/toolchain-proof/portal-verified-go/bin/go
+
+===== 20-additional-proofs.txt =====
+UTC_START=2026-10-21T10:12:49.720413+00:00
+COMMAND=python3 extra_proofs.py
+PASS published rootlesskit checksum
+PASS public postgres image manifest bytes/hash/header
+COMMAND=npm ls --depth=0
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+pak-portal-web-tests@ /workspace/scratch/14185c8f871f/source-work/portal
+└── jsdom@24.1.3
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:13:13.056327+00:00

@@ -1,0 +1,9 @@
+SOURCE_SHA=817f0ecef8da1cd756f4b6ab48d61e023764329a
+UTC_START=2026-10-21T10:11:33.009474+00:00
+CWD=/workspace/scratch/14185c8f871f/cosign-check
+COMMAND=["go", "run", ".", "predicate.json"]
+NOTE: pinned Cosign accepts nested Statement but drops its fields; release-check must reject the empty predicate
+pinned Cosign v3.1.3 GenerateStatement: valid predicate generation PASS; application verifier supplies strict field checks
+
+EXIT_CODE=0
+UTC_END=2026-10-21T10:11:33.288135+00:00
