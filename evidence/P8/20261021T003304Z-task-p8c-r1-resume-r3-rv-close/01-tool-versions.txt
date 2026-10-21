@@ -1,0 +1,7 @@
+SOURCE_SHA: 014d2339ca38d8ff1159f37dbf6423d786e4cd49
+Ubuntu 24.04.4; Go/Node/Python/psql versions: raw-transcript.txt header.
+PostgreSQL 17 (PGDG) local isolated cluster; test DB portal_test (test-only).
+jsdom 24.1.3 pinned (package.json+lock); node_modules gitignored.
+RootlessKit v2.3.1 sha256 caafdce18e0959f078b4b478d4f352ebf3d556e373265fc7831f1a6d70219ee0 (upstream SHA256SUMS).
+BuildKit v0.34.0 sha256 14813b1fb2a40082114e6d386c6fc5e7dd5298176ce7ee1a18bc33e73e109ac3.
+Cosign v3.1.3 sha256 4629c757b7618056f8ddd7e2625ae9fdd94c0372a65049520bc7d9df9efc7f71.
