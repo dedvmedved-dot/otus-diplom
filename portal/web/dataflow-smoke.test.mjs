@@ -1,0 +1,23 @@
+// Real collector/handler outputs from synthetic APIs; NOT deployed Portal evidence.
+import {JSDOM} from 'jsdom';
+import {readFileSync} from 'node:fs';
+import assert from 'node:assert/strict';
+const fixtures=JSON.parse(readFileSync(process.env.PORTAL_FIXTURE_DIR+'/api-responses.json','utf8'));
+const dom=new JSDOM(readFileSync('web/index.html','utf8'),{runScripts:'outside-only',url:'https://portal.test/'});
+const {window}=dom;
+window.fetch=async url=>({ok:true,status:200,json:async()=>structuredClone(fixtures[new URL(url,window.location.origin).pathname])});
+window.eval(readFileSync('web/app.js','utf8'));
+await window.eval('renderBackups()');
+assert.ok(window.document.getElementById('pg-backup-meta').textContent.includes('firstRecoverabilityPoint=1792469710'));
+assert.ok(window.document.getElementById('pg-backup-meta').textContent.includes('WAL state=healthy'));
+const rows=[...window.document.querySelectorAll('#table-backups tbody tr')];
+assert.ok(rows.length>0);
+for(const row of rows.filter(row=>row.textContent.includes('velero'))) assert.notEqual(row.lastElementChild.textContent,'healthy');
+await window.eval('renderKubernetes()');
+assert.ok(window.document.getElementById('table-nodes').textContent.includes('warning'));
+await window.eval('renderMetrics()');
+assert.ok(window.document.getElementById('table-metrics').textContent.includes('0.25'));
+await window.eval('renderEvents()');
+assert.ok(window.document.getElementById('table-events').textContent.includes('Started'));
+window.close();
+console.log('collector -> 11 schema-validated handlers -> actual DOM: PASS (synthetic APIs; Barman/WAL/Velero/pressure/metrics/events)');

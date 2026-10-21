@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-24.04
     services:
       postgres:
-        image: postgres:17
+        image: postgres:17.10-bookworm@sha256:9b18b78397054fce88a9552e9d5a3ad5bb7fd258c5b3cc1c5028e46373d6ea8f
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: portal_test
@@ -41,45 +41,53 @@ jobs:
           persist-credentials: false
           ref: ${{ github.sha }}
 
-      - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5.4.0
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
-      - name: Verify Go toolchain SHA256 (guaranteed, fail if absent)
-        run: |
-          set -euo pipefail
-          dl=$(find "${RUNNER_TOOL_CACHE:-/opt/hostedtoolcache}" -name "go${{ env.GO_VERSION }}.linux-amd64.tar.gz" 2>/dev/null | head -1 || true)
-          if [ -z "$dl" ]; then
-            curl -sSfL "https://go.dev/dl/go${{ env.GO_VERSION }}.linux-amd64.tar.gz" -o /tmp/go.tar.gz
-            dl=/tmp/go.tar.gz
-          fi
-          echo "${{ env.GO_SHA256 }}  $dl" | sha256sum -c
+      - name: Install verified Go archive
+        run: bash portal/tools/install-verified-go.sh
 
       - name: Go vet + test + race
         working-directory: portal
         run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/test-evidence"
+          go version | tee "$RUNNER_TEMP/test-evidence/go-version.txt"
           go mod download && go mod verify
-          go vet ./...
-          go test -race ./...
+          go vet ./... 2>&1 | tee "$RUNNER_TEMP/test-evidence/vet.txt"
+          go test -count=1 -v ./... 2>&1 | tee "$RUNNER_TEMP/test-evidence/unit.txt"
+          go test -race -count=1 ./... 2>&1 | tee "$RUNNER_TEMP/test-evidence/race.txt"
 
       - name: DB integration tests (isolated postgres:17, FAIL if unset)
         working-directory: portal
         env:
           TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/portal_test
         run: |
+          set -euo pipefail
           test -n "$TEST_DATABASE_URL" || { echo "TEST_DATABASE_URL unset"; exit 1; }
-          go test -tags integration ./internal/store/ -v
+          go test -tags integration -count=1 ./internal/store/ -v 2>&1 | tee "$RUNNER_TEMP/test-evidence/integration.txt"
 
       - name: Helper mock tests (both helpers)
         working-directory: portal
-        run: python3 tools/test_helpers.py -v
+        run: |
+          set -euo pipefail
+          python3 tools/test_helpers.py -v 2>&1 | tee "$RUNNER_TEMP/test-evidence/helpers.txt"
+          python3 tools/test_release.py -v 2>&1 | tee "$RUNNER_TEMP/test-evidence/release-checks.txt"
 
       - name: JS/browser fixture smoke (jsdom renderer + fixture shape)
         working-directory: portal
         run: |
-          npm ci
-          node web/renderer-smoke.test.mjs
-          node web/fixture-smoke.test.mjs
+          set -euo pipefail
+          npm ci --ignore-scripts
+          node --version | tee "$RUNNER_TEMP/test-evidence/node-version.txt"
+          node web/renderer-smoke.test.mjs 2>&1 | tee "$RUNNER_TEMP/test-evidence/renderer.txt"
+          node web/fixture-smoke.test.mjs 2>&1 | tee "$RUNNER_TEMP/test-evidence/fixtures.txt"
+          bash tools/test-dataflow.sh 2>&1 | tee "$RUNNER_TEMP/test-evidence/dataflow.txt"
+
+      - name: Retain test evidence
+        if: always()
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        with:
+          name: portal-source-tests
+          if-no-files-found: error
+          path: ${{ runner.temp }}/test-evidence/
 
   release:
     if: github.repository == 'dedvmedved-dot/otus-diplom' && github.ref == 'refs/heads/main'
@@ -100,33 +108,34 @@ jobs:
 
       - name: Verify clean tree and source provenance
         run: |
+          set -euo pipefail
           git diff --exit-code
           echo "SOURCE_SHA=${{ github.sha }}"
           echo "BUILD_TIME=$(git log -1 --format=%cI --date=iso-strict)"
 
-      - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5.4.0
-        with:
-          go-version: ${{ env.GO_VERSION }}
+      - name: Install verified Go archive
+        run: bash portal/tools/install-verified-go.sh
 
-      - name: Verify Go toolchain SHA256 (guaranteed, fail if absent)
+      - name: Private package prerequisite (before any push)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          dl=$(find "${RUNNER_TOOL_CACHE:-/opt/hostedtoolcache}" -name "go${{ env.GO_VERSION }}.linux-amd64.tar.gz" 2>/dev/null | head -1 || true)
-          if [ -z "$dl" ]; then
-            curl -sSfL "https://go.dev/dl/go${{ env.GO_VERSION }}.linux-amd64.tar.gz" -o /tmp/go.tar.gz
-            dl=/tmp/go.tar.gz
-          fi
-          echo "${{ env.GO_SHA256 }}  $dl" | sha256sum -c
+          mkdir -p "$RUNNER_TEMP/release"
+          python3 portal/tools/release-check.py private > "$RUNNER_TEMP/release/private-before.json"
+          cp "$RUNNER_TEMP/go-version.txt" "$RUNNER_TEMP/go-binary.sha256" "$RUNNER_TEMP/release/"
 
       - name: Build binary (reproducible)
         working-directory: portal
         run: |
+          set -euo pipefail
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath \
             -ldflags "-s -w -X main.sourceRevision=${{ github.sha }} -X main.buildTime=1970-01-01T00:00:00Z" \
             -o portal ./cmd/portal
 
       - name: Install rootlesskit + BuildKit (pinned, verified)
         run: |
+          set -euo pipefail
           sudo apt-get update && sudo apt-get install -y uidmap slirp4netns
           curl -sSfL "https://github.com/rootless-containers/rootlesskit/releases/download/v${ROOTLESSKIT_VERSION}/rootlesskit-x86_64.tar.gz" -o rootlesskit.tar.gz
           echo "caafdce18e0959f078b4b478d4f352ebf3d556e373265fc7831f1a6d70219ee0  rootlesskit.tar.gz" | sha256sum -c
@@ -147,6 +156,8 @@ jobs:
         env:
           BUILDKIT_HOST: unix:///tmp/buildkit.sock
         run: |
+          set -euo pipefail
+          unshare -Ur true || { echo "STOP: runner user namespaces unavailable"; exit 1; }
           rootlesskit --net=slirp4netns --copy-up=/etc --copy-up=/run \
             buildkitd --oci-worker-no-process-sandbox --addr unix:///tmp/buildkit.sock > /tmp/buildkitd.log 2>&1 &
           READY=0
@@ -165,79 +176,78 @@ jobs:
             --local context=. \
             --local dockerfile=. \
             --output type=image,name=${IMAGE}:candidate,push=true \
-            --metadata-file /tmp/build-metadata.json
-          DIGEST=$(python3 -c "import json;print(json.load(open('/tmp/build-metadata.json'))['containerimage.digest'])")
-          test -n "$DIGEST" || { echo "no digest"; exit 1; }
+            --metadata-file "$RUNNER_TEMP/release/build-metadata.json"
+          DIGEST=$(python3 tools/release-check.py digest "$RUNNER_TEMP/release/build-metadata.json")
           echo "IMAGE_DIGEST=${DIGEST}" >> "$GITHUB_ENV"
+
+      - name: Verify registry bytes and private visibility after push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 portal/tools/release-check.py registry "$IMAGE_DIGEST" > "$RUNNER_TEMP/release/registry.json"
+          python3 portal/tools/release-check.py private > "$RUNNER_TEMP/release/private-after.json"
 
       - name: Install Syft + generate final-image SBOM
         run: |
+          set -euo pipefail
           curl -sSfL "https://github.com/anchore/syft/releases/download/v${SYFT_VERSION}/syft_${SYFT_VERSION}_linux_amd64.tar.gz" -o syft.tar.gz
           echo "bb65249542db5fedeeb4d3f9b018b75e7264dbfbbb10486f044581a92f90490d  syft.tar.gz" | sha256sum -c
           tar -xzf syft.tar.gz && sudo mv syft /usr/local/bin/
-          syft "${IMAGE}@${IMAGE_DIGEST}" -o spdx-json=portal/sbom.spdx.json
+          syft "${IMAGE}@${IMAGE_DIGEST}" -o spdx-json="$RUNNER_TEMP/release/sbom.spdx.json"
 
       - name: Install Trivy + scan final image (binary + OCI)
         run: |
+          set -euo pipefail
           curl -sSfL "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz" -o trivy.tar.gz
           echo "e24b1c51293c1b15e4ba8d45bbc7891ba053f90278ec2698f3562c993e145fe7  trivy.tar.gz" | sha256sum -c
           tar -xzf trivy.tar.gz && sudo mv trivy /usr/local/bin/
-          trivy fs --exit-code 1 --severity HIGH,CRITICAL --no-progress portal/portal
-          trivy image --exit-code 1 --severity HIGH,CRITICAL --no-progress "${IMAGE}@${IMAGE_DIGEST}"
+          trivy fs --exit-code 1 --severity HIGH,CRITICAL --format json --output "$RUNNER_TEMP/release/scan-binary.json" --no-progress portal/portal
+          trivy image --exit-code 1 --severity HIGH,CRITICAL --format json --output "$RUNNER_TEMP/release/scan-image.json" --no-progress "${IMAGE}@${IMAGE_DIGEST}"
 
       - name: Install Cosign (exact pinned version)
         run: |
+          set -euo pipefail
           curl -sSfL "https://github.com/sigstore/cosign/releases/download/v${COSIGN_VERSION}/cosign-linux-amd64" -o cosign
           echo "4629c757b7618056f8ddd7e2625ae9fdd94c0372a65049520bc7d9df9efc7f71  cosign" | sha256sum -c
           chmod +x cosign && sudo mv cosign /usr/local/bin/
 
       - name: Sign keyless + verify exact identity/issuer/source
         run: |
+          set -euo pipefail
           cosign sign --yes \
             -a repo=${{ github.repository }} \
             -a workflow=${{ github.workflow }} \
             -a ref=${{ github.sha }} \
-            "${IMAGE}@${IMAGE_DIGEST}"
+            "${IMAGE}@${IMAGE_DIGEST}" > "$RUNNER_TEMP/release/sign.txt" 2>&1
           cosign verify \
             --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/p8c-portal-release.yml@refs/heads/main" \
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
             -a ref=${{ github.sha }} \
-            "${IMAGE}@${IMAGE_DIGEST}"
+            "${IMAGE}@${IMAGE_DIGEST}" > "$RUNNER_TEMP/release/signature.json"
 
       - name: SBOM + provenance attestation (generate + verify both)
         run: |
-          DIGEST_HEX="${IMAGE_DIGEST#sha256:}"
-          # cosign --type slsaprovenance expects the SLSA PROVENANCE predicate
-          # (top-level builder/buildType/invocation); GenerateStatement wraps it
-          # into the in-toto Statement itself.
-          cat > /tmp/provenance.json <<EOF
-          {
-            "builder": {"id": "https://github.com/${{ github.repository }}/.github/workflows/p8c-portal-release.yml@refs/heads/main"},
-            "buildType": "https://github.com/Attestations/GitHubActionsWorkflow@v1",
-            "invocation": {
-              "configSource": {
-                "uri": "git+https://github.com/${{ github.repository }}@refs/heads/main",
-                "digest": {"sha1": "${{ github.sha }}"}}}
-          }
-          EOF
-          cosign attest --yes --type spdxjson --predicate portal/sbom.spdx.json \
-            "${IMAGE}@${IMAGE_DIGEST}"
-          cosign attest --yes --type slsaprovenance --predicate /tmp/provenance.json \
-            "${IMAGE}@${IMAGE_DIGEST}"
+          set -euo pipefail
+          python3 portal/tools/release-check.py predicate "${{ github.sha }}" > "$RUNNER_TEMP/release/provenance.json"
+          cosign attest --yes --type spdxjson --predicate "$RUNNER_TEMP/release/sbom.spdx.json" \
+            "${IMAGE}@${IMAGE_DIGEST}" > "$RUNNER_TEMP/release/attest-sbom.txt" 2>&1
+          cosign attest --yes --type slsaprovenance --predicate "$RUNNER_TEMP/release/provenance.json" \
+            "${IMAGE}@${IMAGE_DIGEST}" > "$RUNNER_TEMP/release/attest-provenance.txt" 2>&1
           cosign verify-attestation --type spdxjson \
             --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/p8c-portal-release.yml@refs/heads/main" \
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
-            "${IMAGE}@${IMAGE_DIGEST}"
+            "${IMAGE}@${IMAGE_DIGEST}" > "$RUNNER_TEMP/release/attestation-sbom.jsonl"
           cosign verify-attestation --type slsaprovenance \
             --certificate-identity "https://github.com/${{ github.repository }}/.github/workflows/p8c-portal-release.yml@refs/heads/main" \
             --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
-            "${IMAGE}@${IMAGE_DIGEST}"
+            "${IMAGE}@${IMAGE_DIGEST}" > "$RUNNER_TEMP/release/attestation-provenance.jsonl"
+          python3 portal/tools/release-check.py verified "$RUNNER_TEMP/release" "$IMAGE_DIGEST" "${{ github.sha }}" > "$RUNNER_TEMP/release/verification.json"
 
       - name: Upload SBOM + signature + provenance artifacts
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb280c # v4.3.3
+        if: always()
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
           name: portal-sbom-signature-provenance
-          path: |
-            portal/sbom.spdx.json
-            /tmp/provenance.json
-            /tmp/build-metadata.json
+          if-no-files-found: error
+          path: ${{ runner.temp }}/release/

@@ -2,6 +2,7 @@ package collectors
 
 import (
 	"context"
+	"fmt"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -13,7 +14,11 @@ import (
 func listWithContinue[T any](ctx context.Context, pageSize, cap int, listFn func(opts metav1.ListOptions) (items []T, cont string, err error)) ([]T, bool, error) {
 	out := make([]T, 0, pageSize)
 	opts := metav1.ListOptions{Limit: int64(pageSize)}
+	seen := map[string]bool{}
 	for {
+		if err := ctx.Err(); err != nil {
+			return out, true, err
+		}
 		items, cont, err := listFn(opts)
 		if err != nil {
 			return out, cont != "", err
@@ -30,6 +35,10 @@ func listWithContinue[T any](ctx context.Context, pageSize, cap int, listFn func
 		if len(out) >= cap {
 			return out, true, nil
 		}
+		if seen[cont] {
+			return out, true, fmt.Errorf("repeated continuation token")
+		}
+		seen[cont] = true
 		opts.Continue = cont
 	}
 }

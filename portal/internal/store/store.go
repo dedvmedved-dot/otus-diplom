@@ -11,6 +11,8 @@ import (
 	"crypto/tls"
 	"encoding/hex"
 	"fmt"
+	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -27,30 +29,44 @@ type Store struct {
 // New connects to the application database using the fixed DB contract.
 // The password is supplied via config (secretKeyRef env) and never logged.
 func New(ctx context.Context, cfg *config.Config) (*Store, error) {
-	connStr := fmt.Sprintf(
-		"host=%s port=%d dbname=%s user=%s sslmode=%s sslrootcert=%s",
-		config.DBHost, config.DBPort, config.DBName, config.DBUser, config.DBSSLMode, cfg.DBCACertFile,
-	)
-	pc, err := pgxpool.ParseConfig(connStr)
+	pc, err := poolConfig(cfg)
 	if err != nil {
 		return nil, err
-	}
-	pc.ConnConfig.Password = cfg.DBPassword
-	pc.MaxConns = int32(cfg.DBPoolMaxConns)
-	pc.MinConns = 0
-	pc.ConnConfig.ConnectTimeout = cfg.DBConnectTimeout
-	// TLS hardening: explicit minimum TLS 1.2 + SNI; the connection string is
-	// fully explicit (host/port/dbname/user/sslmode/sslrootcert), so no PG*
-	// ambient environment overrides are read.
-	if pc.ConnConfig.TLSConfig != nil {
-		pc.ConnConfig.TLSConfig.MinVersion = tls.VersionTLS12
-		pc.ConnConfig.TLSConfig.ServerName = config.DBHost
 	}
 	pool, err := pgxpool.NewWithConfig(ctx, pc)
 	if err != nil {
 		return nil, err
 	}
 	return &Store{pool: pool}, nil
+}
+
+// poolConfig rejects ambient PG routing, service-file, TLS and session options
+// before pgx parses anything. An explicit URL avoids keyword-string injection.
+func poolConfig(cfg *config.Config) (*pgxpool.Config, error) {
+	for _, entry := range os.Environ() {
+		key, value, _ := strings.Cut(entry, "=")
+		if strings.HasPrefix(key, "PG") && value != "" {
+			return nil, fmt.Errorf("ambient PG configuration forbidden")
+		}
+	}
+	u := url.URL{Scheme: "postgresql", Host: fmt.Sprintf("%s:%d", config.DBHost, config.DBPort), Path: "/" + config.DBName, User: url.UserPassword(config.DBUser, "placeholder")}
+	q := url.Values{"sslmode": {config.DBSSLMode}, "sslrootcert": {cfg.DBCACertFile}, "sslcert": {""}, "sslkey": {""}, "passfile": {"/dev/null"}, "sslsni": {"1"}, "target_session_attrs": {"read-write"}}
+	u.RawQuery = q.Encode()
+	pc, err := pgxpool.ParseConfig(u.String())
+	if err != nil {
+		return nil, fmt.Errorf("invalid fixed DB TLS configuration")
+	}
+	if pc.ConnConfig.TLSConfig == nil || pc.ConnConfig.TLSConfig.InsecureSkipVerify || len(pc.ConnConfig.Fallbacks) != 0 {
+		return nil, fmt.Errorf("DB TLS verification or fallback contract violated")
+	}
+	pc.ConnConfig.Password = cfg.DBPassword
+	pc.ConnConfig.TLSConfig.MinVersion = tls.VersionTLS12
+	pc.ConnConfig.TLSConfig.ServerName = config.DBHost
+	pc.ConnConfig.RuntimeParams = map[string]string{"search_path": "portal,pg_catalog", "application_name": "pak-portal"}
+	pc.ConnConfig.ConnectTimeout = cfg.DBConnectTimeout
+	pc.MaxConns = int32(cfg.DBPoolMaxConns)
+	pc.MinConns = 0
+	return pc, nil
 }
 
 // Close releases the pool.
@@ -151,71 +167,108 @@ func (s *Store) CurrentMigrationVersion(ctx context.Context) (int64, string, err
 func (s *Store) VerifySchema(ctx context.Context) error {
 	cctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	checks := []struct{ table, column string }{
-		{"portal.observation_batches", "id"},
-		{"portal.observation_batches", "observed_at"},
-		{"portal.observation_batches", "recorded_at"},
-		{"portal.observation_batches", "source_revision"},
-		{"portal.observation_batches", "overall_health"},
-		{"portal.observation_batches", "partial"},
-		{"portal.observation_batches", "summary"},
-		{"portal.timeline_events", "id"},
-		{"portal.timeline_events", "dedup_key"},
-		{"portal.timeline_events", "source"},
-		{"portal.timeline_events", "source_uid"},
-		{"portal.timeline_events", "source_resource_version"},
-		{"portal.timeline_events", "source_time"},
-		{"portal.timeline_events", "ingested_at"},
-		{"portal.timeline_events", "severity"},
-		{"portal.timeline_events", "object_kind"},
-		{"portal.timeline_events", "object_namespace"},
-		{"portal.timeline_events", "object_name"},
-		{"portal.timeline_events", "reason_code"},
-		{"portal.timeline_events", "occurrence_count"},
-		{"portal.timeline_events", "message"},
+	// pg_catalog types include varchar limits; nullability/defaults and identity
+	// are part of the write/read contract, not merely column existence.
+	expected := map[string]map[string]string{
+		"schema_migrations":   {"version": "bigint!", "checksum": "text!", "applied_at": "timestamp with time zone!", "source_revision": "text!"},
+		"observation_batches": {"id": "uuid!", "observed_at": "timestamp with time zone!", "recorded_at": "timestamp with time zone!", "source_revision": "text!", "overall_health": "text!", "partial": "boolean!", "summary": "jsonb!"},
+		"timeline_events":     {"id": "bigint!", "dedup_key": "character varying(180)!", "source": "character varying(32)!", "source_uid": "character varying(80)", "source_resource_version": "character varying(80)", "source_time": "timestamp with time zone", "ingested_at": "timestamp with time zone!", "severity": "character varying(16)!", "object_kind": "character varying(80)", "object_namespace": "character varying(63)", "object_name": "character varying(253)", "reason_code": "character varying(80)!", "occurrence_count": "bigint!", "message": "character varying(1024)!"},
 	}
-	for _, c := range checks {
-		q := fmt.Sprintf("SELECT %s FROM %s LIMIT 0", c.column, c.table)
-		if _, err := s.pool.Exec(cctx, q); err != nil {
-			return fmt.Errorf("schema structure %s.%s: %w", c.table, c.column, err)
+	for table, columns := range expected {
+		rows, err := s.pool.Query(cctx, `SELECT a.attname, format_type(a.atttypid,a.atttypmod), a.attnotnull, a.attidentity::text,
+   COALESCE(pg_get_expr(d.adbin,d.adrelid),'') FROM pg_attribute a
+   JOIN pg_class c ON c.oid=a.attrelid JOIN pg_namespace n ON n.oid=c.relnamespace
+   LEFT JOIN pg_attrdef d ON d.adrelid=a.attrelid AND d.adnum=a.attnum
+   WHERE n.nspname='portal' AND c.relname=$1 AND a.attnum>0 AND NOT a.attisdropped`, table)
+		if err != nil {
+			return fmt.Errorf("schema catalog unavailable")
+		}
+		got := map[string]string{}
+		for rows.Next() {
+			var name, typ, identity, def string
+			var notnull bool
+			if err := rows.Scan(&name, &typ, &notnull, &identity, &def); err != nil {
+				rows.Close()
+				return fmt.Errorf("schema catalog unreadable")
+			}
+			if notnull {
+				typ += "!"
+			}
+			got[name] = typ
+			if table == "timeline_events" && name == "id" && identity != "a" {
+				rows.Close()
+				return fmt.Errorf("schema identity mismatch")
+			}
+			if name == "ingested_at" || name == "recorded_at" || name == "applied_at" {
+				if def != "CURRENT_TIMESTAMP" {
+					rows.Close()
+					return fmt.Errorf("schema timestamp default mismatch")
+				}
+			}
+			if name == "occurrence_count" && def != "1" {
+				rows.Close()
+				return fmt.Errorf("schema count default mismatch")
+			}
+		}
+		err = rows.Err()
+		rows.Close()
+		if err != nil {
+			return fmt.Errorf("schema catalog read failed")
+		}
+		for name, typ := range columns {
+			if got[name] != typ {
+				return fmt.Errorf("schema column mismatch: %s.%s", table, name)
+			}
 		}
 	}
-	// Type checks: SELECT col LIMIT 0 does not catch an incompatible column type
-	// (e.g. int8 vs text). Verify the expected information_schema data_type.
-	typeChecks := []struct{ column, wantType string }{
-		{"id", "bigint"},
-		{"dedup_key", "character varying"},
-		{"source_time", "timestamp with time zone"},
-		{"ingested_at", "timestamp with time zone"},
-		{"occurrence_count", "bigint"},
+	required := map[string][]string{
+		"schema_migrations":   {"PRIMARY KEY (version)", "CHECK (version > 0)", "CHECK (checksum ~ '^[0-9a-f]{64}$')", "CHECK (source_revision ~ '^[0-9a-f]{40}$')"},
+		"observation_batches": {"PRIMARY KEY (id)", "CHECK (source_revision ~ '^[0-9a-f]{40}$')", "CHECK (overall_health = ANY (ARRAY['healthy','warning','critical','unknown']))", "CHECK (jsonb_typeof(summary) = 'object' AND octet_length(summary::text) <= 65536)"},
+		"timeline_events":     {"PRIMARY KEY (id)", "UNIQUE (dedup_key)", "CHECK (source = ANY (ARRAY['kubernetes','portal-status']))", "CHECK (severity = ANY (ARRAY['normal','warning','critical']))", "CHECK (occurrence_count > 0)"},
 	}
-	for _, tc := range typeChecks {
-		var dt string
-		if err := s.pool.QueryRow(cctx,
-			`SELECT data_type FROM information_schema.columns
-			 WHERE table_schema='portal' AND table_name='timeline_events' AND column_name=$1`,
-			tc.column).Scan(&dt); err != nil {
-			return fmt.Errorf("schema type timeline_events.%s: %w", tc.column, err)
+	for table, defs := range required {
+		rows, err := s.pool.Query(cctx, `SELECT pg_get_constraintdef(c.oid) FROM pg_constraint c
+   JOIN pg_class t ON t.oid=c.conrelid JOIN pg_namespace n ON n.oid=t.relnamespace
+   WHERE n.nspname='portal' AND t.relname=$1 AND c.convalidated AND NOT c.condeferrable`, table)
+		if err != nil {
+			return fmt.Errorf("schema constraints unavailable")
 		}
-		if dt != tc.wantType {
-			return fmt.Errorf("schema type timeline_events.%s: want %s got %s", tc.column, tc.wantType, dt)
+		got := map[string]bool{}
+		for rows.Next() {
+			var def string
+			if err := rows.Scan(&def); err != nil {
+				rows.Close()
+				return fmt.Errorf("schema constraints unreadable")
+			}
+			got[normalizeConstraint(def)] = true
+		}
+		err = rows.Err()
+		rows.Close()
+		if err != nil {
+			return fmt.Errorf("schema constraints read failed")
+		}
+		for _, def := range defs {
+			if !got[normalizeConstraint(def)] {
+				return fmt.Errorf("schema constraint mismatch: %s", table)
+			}
 		}
 	}
-	// Constraint checks: dedup_key must have a UNIQUE constraint (identity for
-	// the upsert ON CONFLICT (dedup_key)).
-	var n int
-	if err := s.pool.QueryRow(cctx,
-		`SELECT count(*) FROM information_schema.table_constraints tc
-		 JOIN information_schema.key_column_usage kcu
-		   ON tc.constraint_name = kcu.constraint_name AND tc.constraint_schema = kcu.constraint_schema
-		 WHERE tc.constraint_schema='portal' AND tc.table_name='timeline_events'
-		   AND tc.constraint_type='UNIQUE' AND kcu.column_name='dedup_key'`).Scan(&n); err != nil {
-		return fmt.Errorf("schema constraint check: %w", err)
-	}
-	if n == 0 {
-		return fmt.Errorf("schema constraint: timeline_events.dedup_key UNIQUE missing")
-	}
+
 	return nil
+}
+
+// PostgreSQL deparses implicit text casts and redundant parentheses. Compare
+// complete normalized expressions (not constraint names or substring matches).
+func normalizeConstraint(s string) string {
+	s = strings.ReplaceAll(s, "::text[]", "")
+	s = strings.ReplaceAll(s, "::text", "")
+	s = strings.ReplaceAll(s, "::character varying", "")
+	return strings.Map(func(r rune) rune {
+		if r == ' ' || r == '\n' || r == '\t' || r == '(' || r == ')' {
+			return -1
+		}
+		return r
+	}, s)
 }
 
 // ChecksumFile returns the hex SHA-256 of the given bytes.

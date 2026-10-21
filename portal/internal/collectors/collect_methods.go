@@ -194,9 +194,9 @@ func (c *Collector) collectNodes(ctx context.Context, snap *Snapshot, reg *Sourc
 		snap.Nodes = append(snap.Nodes, model.Node{
 			Name: n.Name, UID: string(n.UID), Ready: string(readyStatus(ready)),
 			Health: nodeHealth(ready, conds), Conditions: nodeConds,
-			CapacityCpuCores:      parseCpuCores(n.Status.Capacity.Cpu().String()),
-			AllocatableCpuCores:   parseCpuCores(n.Status.Allocatable.Cpu().String()),
-			CapacityMemoryBytes:   parseMemoryBytes(n.Status.Capacity.Memory().String()),
+			CapacityCpuCores:       parseCpuCores(n.Status.Capacity.Cpu().String()),
+			AllocatableCpuCores:    parseCpuCores(n.Status.Allocatable.Cpu().String()),
+			CapacityMemoryBytes:    parseMemoryBytes(n.Status.Capacity.Memory().String()),
 			AllocatableMemoryBytes: parseMemoryBytes(n.Status.Allocatable.Memory().String()),
 		})
 	}
@@ -465,7 +465,7 @@ func (c *Collector) collectPods(ctx context.Context, snap *Snapshot, reg *Source
 		}
 		snap.Pods = append(snap.Pods, model.Pod{
 			Name: p.Name, Namespace: p.Namespace, UID: string(p.UID), NodeName: nodeName,
-			Phase: string(p.Status.Phase), ReadyContainers: int32(ready), TotalContainers: int32(total),
+			Phase: normalizedPodPhase(p.Status.Phase), ReadyContainers: int32(ready), TotalContainers: int32(total),
 			RestartCount: restarts, Health: podHealth(p.Status.Phase, ready, total),
 		})
 	}
@@ -501,9 +501,12 @@ func (c *Collector) collectServices(ctx context.Context, snap *Snapshot, reg *So
 		return l.Items, l.Continue, nil
 	})
 	if serr != nil {
+		snap.setPartial()
+		reg.set(sourceStatus("k8s/endpointslices", "error", now, serr))
 		snap.addWarning(model.Warning{Code: "ENDPOINTSLICES_UNAVAILABLE", Severity: "warning",
 			Message: "endpointslices read failed; readyEndpoints unknown", Source: "k8s/endpointslices"})
 	} else {
+		reg.set(sourceStatus("k8s/endpointslices", "ok", now, nil))
 		if slicesTruncated {
 			snap.setPartial()
 		}
@@ -536,7 +539,7 @@ func (c *Collector) collectServices(ctx context.Context, snap *Snapshot, reg *So
 			ready = &v
 		}
 		h := "unknown"
-		if ready != nil {
+		if ready != nil && !slicesTruncated && serr == nil {
 			if *ready > 0 {
 				h = "healthy"
 			} else {
@@ -633,6 +636,7 @@ func (c *Collector) collectStorage(ctx context.Context, snap *Snapshot, reg *Sou
 		return l.Items, l.GetContinue(), nil
 	})
 	if err != nil {
+		partial = true
 		code := classifyError(err)
 		reg.set(model.SourceStatus{ID: "k8s/volumesnapshots", State: "error", ErrorCode: &code,
 			ObservedAt: nowPtr(), AgeSeconds: f64p(0)})
@@ -1023,8 +1027,6 @@ func (c *Collector) collectDatabase(ctx context.Context, snap *Snapshot, reg *So
 			IsLiveRecoveryTest: false,
 		},
 	}
-	_ = walState
-	_ = archCond
 	// Cross-collector handoff to Backups.Postgresql.Wal (consumed in finalize).
 	snap.WalState = walState
 	if archCond != nil {
@@ -1071,6 +1073,7 @@ func (c *Collector) collectMetrics(ctx context.Context, snap *Snapshot, reg *Sou
 	})
 	if err != nil {
 		reg.set(sourceStatus("k8s/podmetrics", "error", now, err))
+		snap.setPartial()
 	} else {
 		if pmTruncated {
 			snap.setPartial()
@@ -1150,9 +1153,9 @@ func (c *Collector) collectEvents(ctx context.Context, snap *Snapshot, reg *Sour
 		ns := e.Namespace
 		name := e.InvolvedObject.Name
 		snap.addEvent(model.TimelineEvent{
-			ID: dedup, Source: "kubernetes", SourceTime: st, Severity: sev,
+			ID: dedup, Source: "kubernetes", SourceTime: st, IngestedAt: now.UTC().Format(time.RFC3339), Severity: sev,
 			ObjectKind: &objKind, Namespace: &ns, ObjectName: &name,
-			ReasonCode: e.Reason, OccurrenceCount: int64(e.Count), Message: "kubernetes event " + e.Reason,
+			ReasonCode: e.Reason, OccurrenceCount: max(1, int64(e.Count)), Message: "kubernetes event " + e.Reason,
 			SourceUID: string(e.UID), SourceResourceVersion: e.ResourceVersion,
 		})
 	}
@@ -1171,4 +1174,13 @@ func strPtrOrNil(s string) *string {
 		return nil
 	}
 	return &s
+}
+
+func normalizedPodPhase(phase corev1.PodPhase) string {
+	switch phase {
+	case corev1.PodPending, corev1.PodRunning, corev1.PodSucceeded, corev1.PodFailed:
+		return string(phase)
+	default:
+		return "Unknown"
+	}
 }

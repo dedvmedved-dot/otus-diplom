@@ -3,7 +3,9 @@
 # (1) p8c-cnpg-existing-flows  (2) baseline  (3) portal/migrator/dataplane flows.
 # Rollback = delete only these new objects.
 #
-# Verified inventory (2026-10-20, read-only, cmd transcripts in evidence):
+# Candidate inventory only. RV-02 raw live inventory/DNAT/monitoring proof
+# remains BLOCKED; this file is NOT APPROVED FOR APPLY. See networkpolicy/PLAN.md.
+# Historical source assumptions (not a fresh runtime inventory):
 #   CNPG portal-db: labels cnpg.io/cluster=portal-db, cnpg.io/podRole=instance;
 #     ports postgres 5432, metrics 9187, instance-manager 8000.
 #   Services: portal-db-r/ro/rw (5432).
@@ -157,6 +159,7 @@ spec:
       podSelector:
         matchLabels:
           gateway.envoyproxy.io/owning-gateway-name: portal-gateway
+          gateway.envoyproxy.io/owning-gateway-namespace: portal
     ports:
     - port: 8080
   egress:
@@ -231,6 +234,7 @@ spec:
   podSelector:
     matchLabels:
       gateway.envoyproxy.io/owning-gateway-name: portal-gateway
+      gateway.envoyproxy.io/owning-gateway-namespace: portal
   policyTypes: [Egress]
   egress:
   # xDS to Envoy Gateway control-plane (required for dataplane config).
@@ -265,3 +269,4 @@ spec:
       protocol: UDP
     - port: 53
       protocol: TCP
+

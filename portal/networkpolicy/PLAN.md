@@ -2,15 +2,15 @@
 
 Live policy rollout is deferred until supply-chain (R3) and auth/pull (R4)
 preconditions are ready (per D1/R2: "не вводить live policies без необходимости
-deploy"). This document records the verified inventory + planned objects.
+deploy"). This document records candidate flows and known source facts. It does not certify the live inventory.
 
-## Verified inventory (R0, read-only)
+## Historical inventory claims — fresh raw proof required
 
 - No NetworkPolicy exists cluster-wide (`kubectl get networkpolicy -A` -> none).
   portal namespace and envoy-gateway-system have NO default-deny baseline.
 - Existing workloads/controllers in portal: CNPG operator (cnpg-system),
   postgres cluster portal-db (3 pods + barman-cloud sidecars), Barman plugin
-  controller (barman-cloud), Velero (velero namespace: 4 deploy + node-agent),
+  controller (cnpg-system; repository manifest confirmed), Velero (velero namespace: 4 deploy + node-agent),
   cert-manager (cert-manager ns), Envoy Gateway controller (envoy-gateway-system),
   MetalLB speaker/controller (metallb-system).
 - DNS: CoreDNS kube-dns (kube-system), TCP/UDP 53.
@@ -44,7 +44,7 @@ deploy"). This document records the verified inventory + planned objects.
 ## Planned new objects (created at deploy, after R3/R4)
 
 1. `p8c-cnpg-existing-flows` (NetPol, portal) — FIRST policy selecting existing
-   CNPG pods; one object containing the FULL verified ingress+egress allowlist
+   CNPG pods; one object containing the complete ingress+egress allowlist ONLY AFTER inventory closure
    (DNS, API, S3, replication, operator, monitoring, Portal/migrator). No
    separate DNS-only policy before it; no temporary allow-all.
 2. `baseline-default-deny-all` + `baseline-allow-dns-egress` (portal) — after
@@ -64,3 +64,52 @@ deploy"). This document records the verified inventory + planned objects.
   before external traffic is admitted to the new dataplane.
 - Rollback: delete only policies listed above (return to the observed
   no-policy baseline); never mutate existing controller/CNPG/Velero specs.
+
+
+## RV-02 inventory gate — BLOCKED, not approved for apply
+
+Source correction (2026-10-21): immutable main `17c832c1be518bdc70e300cbbdc2bbee3bfc201c`,
+`manifests/barman-cloud/v0.13.0/plugin-barman-cloud-v0.13.0-digest-pinned.yaml`
+Deployment `cnpg-system/barman-cloud`, selector `app=barman-cloud`, container
+port TCP9090. The prior `barman-cloud` namespace statement was wrong. A source
+manifest is not proof of actual peer traffic. In particular inventory must resolve
+CNPG/operator/instance-manager/plugin TCP9090 interactions before any CNPG isolation;
+do not infer a flow from a declared port or assume controller->DB5432 suffices.
+Gateway candidates now match BOTH owning name `portal-gateway` and namespace `portal`.
+
+Required safe raw read-only evidence (UTC start/end, command, exit, selected fields):
+
+| Flow | Required observation | Current proof |
+|---|---|---|
+| CNPG peers 5432/8000 | portal Pods labels/ports + Service targetPorts/EndpointSlices | historical claims; fresh raw missing |
+| operator/plugin | cnpg-system Pods labels/ports, selected Service endpoints; controller API configuration for plugin and reconcile paths | source Barman namespace/port only; runtime missing |
+| DNS53 TCP/UDP | kube-dns Service/EndpointSlices + CoreDNS Pod labels | fresh raw missing |
+| Kubernetes API | default/kubernetes Service and EndpointSlices, API Node addresses, CNI mode and documented service DNAT enforcement point | missing; existing /24 candidate is NOT approved |
+| S3 TLS443 | canonical ObjectStore endpoint plus permitted read-only routing facts | historical claim; runtime path missing |
+| monitoring9187 | API discovery of ServiceMonitor/PodMonitor; served resources and selectors; Prometheus Pod namespace/labels | missing; absence NOT established |
+| Portal/migrator | candidate Deployment/Job labels and ports (repository) | offline both-side tests; not runtime |
+| Envoy xDS18000/backend8080/listener | GatewayClass/EnvoyProxy source configuration, controller and eventual dataplane labels, Service targetPorts, owning namespace | candidate/offline only |
+| baseline union | all existing policies and all portal namespace workload identities | fresh raw missing |
+
+Use `inventory.py --context <approved-context> --output <new-evidence-dir>` on the
+already authorized Hermes environment. It only issues fixed `kubectl get` reads
+with safe projections; no exec, writes, secrets, full Pod specs or env dumps.
+Missing command/access/API produces a failure record, never an empty/absent proof.
+The generated JSONL covers object identity and endpoints. It cannot prove packet
+DNAT enforcement by itself: attach existing CNI configuration/documentation and
+read-only observed path evidence. Do not run traffic/failure tests or add broad
+CIDRs to overcome missing facts. No P4/P8A/P8B qualification reruns.
+
+Offline `go test ./networkpolicy` checks the current candidate union on both
+sides, name+namespace isolation, ports, protocols, migrator labels and denial of
+unrelated clients. This is not CNI/runtime validation and does not close missing
+monitoring/API/plugin inventory. Reconcile every row above with raw refs before
+requesting the later apply gate.
+
+D1 exact rollback inventory (only objects newly created by the future rollout):
+portal/{p8c-cnpg-existing-flows,baseline-default-deny-all,baseline-allow-dns-egress,
+p8c-portal-flows,p8c-migrator-flows}; envoy-gateway-system/p8c-portal-dataplane-flows.
+Record preexisting names/UIDs before rollout. If any name already exists STOP;
+never delete a preexisting policy. Each phase requires CNPG Ready3/3, archiving,
+BSL, DNS/API/operator/monitoring status reads; degradation stops the rollout and
+rolls back only UIDs created by that rollout. Rollback execution remains gated.

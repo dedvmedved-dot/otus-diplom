@@ -75,17 +75,19 @@ def read_secret_noecho(prompt: str) -> str:
             if c in ("\n", "\r"):
                 break
             chars.append(c)
+            if len(chars) > 4096:
+                raise NoEchoError("input exceeds allowed length")
         sys.stderr.write("\n")
         sys.stderr.flush()
         if eof:
             raise NoEchoError("input ended (EOF) before completion")
-    except (OSError, ValueError) as e:
+    except (termios.error, OSError, ValueError, UnicodeError) as e:
         raise NoEchoError("no-echo read failed") from e
     finally:
         try:
             termios.tcsetattr(fd, termios.TCSADRAIN, old)
-        except (termios.error, OSError, ValueError):
-            pass
+        except (termios.error, OSError, ValueError) as e:
+            raise NoEchoError("terminal restore failed; stop before provisioning") from e
     return "".join(chars)
 
 
@@ -165,3 +167,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+

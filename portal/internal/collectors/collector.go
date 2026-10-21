@@ -111,9 +111,11 @@ type PersistenceState struct {
 	LagSeconds      atomic.Int64
 	LastSuccessUnix atomic.Int64
 	DataLoss        atomic.Bool
+	Failed          atomic.Bool
 
 	mu          sync.Mutex
 	transitions []Transition
+	fallback    []model.TimelineEvent
 }
 
 // RecordTransition appends a bounded status transition (drops the oldest when
@@ -121,6 +123,9 @@ type PersistenceState struct {
 func (ps *PersistenceState) RecordTransition(state string) {
 	ps.mu.Lock()
 	defer ps.mu.Unlock()
+	if len(ps.transitions) > 0 && ps.transitions[len(ps.transitions)-1].State == state {
+		return
+	}
 	ps.transitions = append(ps.transitions, Transition{At: time.Now(), State: state})
 	if len(ps.transitions) > MaxTransitions {
 		ps.transitions = ps.transitions[len(ps.transitions)-MaxTransitions:]
@@ -134,6 +139,18 @@ func (ps *PersistenceState) Transitions() []Transition {
 	out := make([]Transition, len(ps.transitions))
 	copy(out, ps.transitions)
 	return out
+}
+
+// Fallback is a bounded copy of pending events, including status transitions.
+func (ps *PersistenceState) SetFallback(events []model.TimelineEvent) {
+	ps.mu.Lock()
+	defer ps.mu.Unlock()
+	ps.fallback = append([]model.TimelineEvent(nil), events...)
+}
+func (ps *PersistenceState) Fallback() []model.TimelineEvent {
+	ps.mu.Lock()
+	defer ps.mu.Unlock()
+	return append([]model.TimelineEvent(nil), ps.fallback...)
 }
 
 func (s *Snapshot) addEvent(e model.TimelineEvent) {
@@ -161,6 +178,12 @@ func (s *Snapshot) finalize() {
 	s.Events = append([]model.TimelineEvent(nil), s.events...)
 	s.mu.Unlock()
 
+	for i := range s.Workloads {
+		if s.Workloads[i].Conditions == nil {
+			s.Workloads[i].Conditions = []model.Condition{}
+		}
+	}
+
 	// Cross-collector dataflow: Barman sample (collectBarmanMetrics) and WAL
 	// state/condition (collectDatabase) must land in the Backups domain that the
 	// /backups handler actually serves. collectBackups only reserves empty
@@ -168,6 +191,9 @@ func (s *Snapshot) finalize() {
 	if s.Backups != nil {
 		if s.Barman != nil {
 			s.Backups.Postgresql.Barman = *s.Barman
+		}
+		if s.WalState == "" {
+			s.WalState = "unknown"
 		}
 		s.Backups.Postgresql.Wal.State = s.WalState
 		if s.WalArchivingCondition != nil {

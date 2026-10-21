@@ -3,12 +3,15 @@
 // Package store integration tests run against an isolated, disposable
 // PostgreSQL 17 (local cluster or CI postgres:17 service). They are NOT part of
 // `go test ./...`; run with:
-//   TEST_DATABASE_URL=postgres://... go test -tags integration ./internal/store/
+//
+//	TEST_DATABASE_URL=postgres://... go test -tags integration ./internal/store/
+//
 // The suite FAILS (not skips) if TEST_DATABASE_URL is unset.
 package store
 
 import (
 	"context"
+	urlpkg "net/url"
 	"os"
 	"strings"
 	"testing"
@@ -26,12 +29,31 @@ func integrationPool(t *testing.T) *pgxpool.Pool {
 	if url == "" {
 		t.Fatal("TEST_DATABASE_URL is unset; integration tests require an isolated PostgreSQL 17")
 	}
+	parsed, parseErr := urlpkg.Parse(url)
+	if parseErr != nil || (parsed.Hostname() != "127.0.0.1" && parsed.Hostname() != "localhost" && parsed.Hostname() != "::1") {
+		t.Fatal("integration DB must be isolated on loopback")
+	}
+	compat := os.Getenv("PORTAL_TEST_PGLITE_COMPAT") == "1"
+	if parsed.Path != "/portal_test" && !(compat && parsed.Path == "/postgres") {
+		t.Fatal("integration DB must be named portal_test")
+	}
 	ctx := context.Background()
 	pool, err := pgxpool.New(ctx, url)
 	if err != nil {
 		t.Fatalf("connect: %v", err)
 	}
 	t.Cleanup(pool.Close)
+	var version int
+	var description string
+	if err := pool.QueryRow(ctx, "select current_setting('server_version_num')::int,version()").Scan(&version, &description); err != nil {
+		t.Fatal("isolated PostgreSQL version probe failed")
+	}
+	if version/10000 != 17 {
+		t.Fatal("integration requires PostgreSQL major 17")
+	}
+	if compat && !strings.Contains(description, "emcc") {
+		t.Fatal("compatibility mode only permits identified WebAssembly PostgreSQL")
+	}
 	return pool
 }
 
@@ -248,5 +270,69 @@ func TestIntegrationVerifySchemaNegative(t *testing.T) {
 	}
 	if err := s.VerifySchema(ctx); err == nil {
 		t.Fatal("expected VerifySchema to fail with missing timeline_events table")
+	}
+}
+
+func TestIntegrationSchemaTypeAndConstraintDrift(t *testing.T) {
+	for _, ddl := range []string{
+		`ALTER TABLE portal.timeline_events DROP COLUMN object_name`,
+		`ALTER TABLE portal.timeline_events ALTER COLUMN occurrence_count TYPE integer`,
+		`ALTER TABLE portal.timeline_events DROP CONSTRAINT timeline_events_dedup_key_key`,
+		`ALTER TABLE portal.timeline_events DROP CONSTRAINT timeline_events_dedup_key_key; ALTER TABLE portal.timeline_events ADD UNIQUE(dedup_key,source)`,
+		`ALTER TABLE portal.timeline_events ALTER COLUMN message DROP NOT NULL`,
+		`ALTER TABLE portal.observation_batches DROP CONSTRAINT observation_batches_overall_health_check`,
+		`ALTER TABLE portal.schema_migrations ALTER COLUMN applied_at DROP DEFAULT`,
+	} {
+		t.Run(ddl, func(t *testing.T) {
+			pool, s := freshSchema(t)
+			ctx := context.Background()
+			if err := s.VerifySchema(ctx); err != nil {
+				t.Fatalf("actual migration rejected: %v", err)
+			}
+			if _, err := pool.Exec(ctx, ddl); err != nil {
+				t.Fatal(err)
+			}
+			if _, _, err := s.CurrentMigrationVersion(ctx); err != nil {
+				t.Fatal("ledger damaged")
+			}
+			if err := s.VerifySchema(ctx); err == nil {
+				t.Fatal("schema drift accepted")
+			}
+		})
+	}
+}
+
+func TestIntegrationCapturedViewSurvivesInsertUpdatePrune(t *testing.T) {
+	pool, s := freshSchema(t)
+	ctx := context.Background()
+	now := time.Now()
+	for _, id := range []string{"a", "b", "c"} {
+		if err := s.UpsertEvent(ctx, TimelineEvent{DedupKey: id, Source: "kubernetes", SourceTime: &now, Severity: "normal", ReasonCode: "Fixture", Occurrences: 1, Message: "before"}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	// A single SELECT materializes the bounded view used by the HTTP layer.
+	view, err := s.ListEvents(ctx, &now, "normal", "", 501, 0)
+	if err != nil || len(view) != 3 {
+		t.Fatalf("view: %v %v", len(view), err)
+	}
+	if err := s.UpsertEvent(ctx, TimelineEvent{DedupKey: "a", Source: "kubernetes", SourceTime: &now, Severity: "critical", ReasonCode: "Fixture", Occurrences: 2, Message: "after"}); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.UpsertEvent(ctx, TimelineEvent{DedupKey: "d", Source: "kubernetes", SourceTime: &now, Severity: "normal", ReasonCode: "Fixture", Occurrences: 1, Message: "new"}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `UPDATE portal.timeline_events SET ingested_at=now()-interval '8 days' WHERE dedup_key='b'`); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Prune(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if view[0].ID != "c" || view[1].ID != "b" || view[2].ID != "a" || view[2].Severity != "normal" || view[2].Message != "before" {
+		t.Fatal("materialized page membership/values changed")
+	}
+	live, err := s.ListEvents(ctx, nil, "", "", 501, 0)
+	if err != nil || len(live) != 3 {
+		t.Fatalf("live changes: %v %v", len(live), err)
 	}
 }

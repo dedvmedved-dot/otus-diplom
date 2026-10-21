@@ -155,88 +155,18 @@ func runServer(cfg *config.Config) {
 func runPersistence(ctx context.Context, st *store.Store, col *collectors.Collector, cfg *config.Config, ps *collectors.PersistenceState) {
 	ticker := time.NewTicker(cfg.CollectInterval)
 	defer ticker.Stop()
-	var pruneCounter int
-	for {
+	engine := newPersister(ps)
+	for cycle := 1; ; cycle++ {
 		select {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			persistOnce(ctx, st, col, cfg, ps)
-			pruneCounter++
-			if pruneCounter%60 == 0 {
-				if err := st.Prune(ctx); err != nil {
-					ps.DataLoss.Store(true)
-				}
+			engine.once(ctx, st, col, cfg)
+			if cycle%60 == 0 {
+				engine.cleanup(ctx, st)
 			}
 		}
 	}
-}
-
-func persistOnce(ctx context.Context, st *store.Store, col *collectors.Collector, cfg *config.Config, ps *collectors.PersistenceState) {
-	snap := col.Latest()
-	if snap == nil {
-		return
-	}
-	summary := buildSummaryJSON(snap)
-	health := snapshotHealth(snap)
-	// Deterministic identity: same snapshot -> same batch id, idempotent via
-	// INSERT ... ON CONFLICT DO NOTHING (no duplicate batches on retry).
-	id := newUUIDDeterministic(snap.CollectedAt)
-	if err := st.InsertBatch(ctx, id, snap.CollectedAt, cfg.SourceRevision, health, snap.Partial, summary); err != nil {
-		markPersistenceFailure(ps)
-		return
-	}
-	writeFailed := false
-	for _, e := range snap.Events {
-		se := store.TimelineEvent{
-			DedupKey: e.ID, Source: e.Source, Severity: e.Severity, ReasonCode: e.ReasonCode,
-			Occurrences: e.OccurrenceCount, Message: e.Message,
-			SourceUID: e.SourceUID, SourceResourceVersion: e.SourceResourceVersion,
-		}
-		if e.SourceTime != nil {
-			if t, err := time.Parse(time.RFC3339, *e.SourceTime); err == nil {
-				se.SourceTime = &t
-			}
-		}
-		if e.ObjectKind != nil {
-			se.ObjectKind = *e.ObjectKind
-		}
-		if e.Namespace != nil {
-			se.ObjectNamespace = *e.Namespace
-		}
-		if e.ObjectName != nil {
-			se.ObjectName = *e.ObjectName
-		}
-		if err := st.UpsertEvent(ctx, se); err != nil {
-			writeFailed = true
-		}
-	}
-	if writeFailed {
-		markPersistenceFailure(ps)
-		return
-	}
-	ps.LagSeconds.Store(0)
-	ps.LastSuccessUnix.Store(time.Now().Unix())
-	// Status transition: recovered if data loss was previously latched.
-	if ps.DataLoss.Swap(false) {
-		ps.RecordTransition("recovered")
-	} else {
-		ps.RecordTransition("ok")
-	}
-}
-
-// markPersistenceFailure records data loss and lag as elapsed seconds since
-// the last successful persistence. A value of -1 signals "no successful
-// persistence yet" (defined initial state, not a misleading 0).
-func markPersistenceFailure(ps *collectors.PersistenceState) {
-	ps.DataLoss.Store(true)
-	last := ps.LastSuccessUnix.Load()
-	if last == 0 {
-		ps.LagSeconds.Store(-1)
-	} else {
-		ps.LagSeconds.Store(time.Now().Unix() - last)
-	}
-	ps.RecordTransition("failed")
 }
 
 // snapshotHealth derives the batch overall_health from the snapshot (warnings,

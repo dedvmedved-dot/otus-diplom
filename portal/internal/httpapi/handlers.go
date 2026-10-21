@@ -141,15 +141,20 @@ type eventsCursorPayload struct {
 	Severity   string `json:"v"`
 	Backend    string `json:"b"` // postgresql | memory-fallback
 	Offset     int    `json:"o"` // memory-fallback page offset
+	ViewID     string `json:"i,omitempty"`
 	AfterID    int64  `json:"a"` // postgresql keyset (id < AfterID)
 }
 
 // encodeEventsCursor binds an events cursor to snapshot + namespace + since +
 // severity + backend + offset (memory) + afterID (postgresql keyset).
-func encodeEventsCursor(snapID, ns, since, severity, backend string, offset int, afterID int64) string {
+func encodeEventsCursor(snapID, ns, since, severity, backend string, offset int, afterID int64, viewID ...string) string {
+	view := ""
+	if len(viewID) > 0 {
+		view = viewID[0]
+	}
 	b, _ := json.Marshal(eventsCursorPayload{
 		SnapshotID: snapID, Namespace: ns, Since: since, Severity: severity, Backend: backend,
-		Offset: offset, AfterID: afterID,
+		Offset: offset, AfterID: afterID, ViewID: view,
 	})
 	return base64.RawURLEncoding.EncodeToString(b)
 }
@@ -298,13 +303,18 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 
 	var lag *float64
 	if s.ps != nil {
-		v := float64(s.ps.LagSeconds.Load())
-		// Negative sentinel means "no successful persistence yet": report null
-		// (the OpenAPI type is number|null, minimum 0), never a negative number.
-		if v >= 0 {
+		if last := s.ps.LastSuccessUnix.Load(); last > 0 {
+			v := float64(time.Now().Unix() - last)
+			if v < 0 {
+				v = 0
+			}
 			lag = &v
 		}
+		if s.ps.Failed.Load() || s.ps.DataLoss.Load() {
+			status = "warning"
+		}
 	}
+	status = effectiveSnapshotHealth(status, snap)
 	dataLoss := false
 	if s.ps != nil {
 		dataLoss = s.ps.DataLoss.Load()
@@ -382,11 +392,18 @@ func (s *Server) handleSummary(w http.ResponseWriter, r *http.Request) {
 
 	overall := aggregateSummaryHealth(counts, snap, dbHealth)
 	subsystems := buildSubsystems(snap, dbHealth)
+	alerts := append([]model.Warning{}, warningsOrEmpty(snap)...)
+	if s.ps != nil && (s.ps.Failed.Load() || s.ps.DataLoss.Load()) {
+		if overall != "critical" {
+			overall = "warning"
+		}
+		alerts = append(alerts, model.Warning{Code: "PERSISTENCE_INCOMPLETE", Severity: "warning", Source: "portal/persistence", Message: "Persistence is delayed or history was lost; timeline is not a complete audit"})
+	}
 	data := model.Summary{
 		Overall:    overall,
 		Counts:     counts,
 		Subsystems: subsystems,
-		Alerts:     warningsOrEmpty(snap),
+		Alerts:     alerts,
 		Coverage:   "mvp-read-only-kubernetes-view",
 	}
 	env := s.envelope(snap)
@@ -471,7 +488,29 @@ func buildSubsystems(snap *collectors.Snapshot, dbHealth string) []model.Subsyst
 	subs = append(subs, model.Subsystem{ID: "postgresql-backup", Health: subsystemPGBackupHealth(snap), Scope: "cnpg_barman", ObservedAt: ts, Message: "postgresql backup/WAL"})
 	subs = append(subs, model.Subsystem{ID: "application-db", Health: dbHealth, Scope: "portal_app_db", ObservedAt: ts, Message: "portal application schema"})
 	subs = append(subs, model.Subsystem{ID: "metrics", Health: subsystemMetricsHealth(snap), Scope: "metrics_server", ObservedAt: ts, Message: "metrics server samples"})
+	for i := range subs {
+		if subs[i].ID != "application-db" {
+			subs[i].Health = effectiveSnapshotHealth(subs[i].Health, snap)
+		}
+	}
 	return subs
+}
+
+// Historical critical conditions remain critical. Missing/stale/partial coverage
+// cannot produce a healthy current status.
+func effectiveSnapshotHealth(health string, snap *collectors.Snapshot) string {
+	if health == "critical" {
+		return health
+	}
+	if snap == nil || snap.CollectedAt.IsZero() || time.Since(snap.CollectedAt) > 5*time.Minute {
+		return "unknown"
+	}
+	if snap.Partial || time.Since(snap.CollectedAt) > 90*time.Second {
+		if health == "healthy" {
+			return "warning"
+		}
+	}
+	return health
 }
 
 func nowPtrString() *string { t := time.Now().UTC().Format(time.RFC3339); return &t }
@@ -704,7 +743,7 @@ func (s *Server) handleDatabase(w http.ResponseWriter, r *http.Request) {
 		data = *snap.Database
 	} else {
 		data = model.Database{Namespace: "portal", Cluster: "portal-db", Health: "unknown",
-			Conditions: []model.Condition{},
+			Conditions:              []model.Condition{},
 			HistoricalQualification: model.HistoricalQualification{Scope: "historical_P8B_evidence", Date: "2026-10-20", LatestRestore: "PASS", Pitr: "PASS", IsLiveRecoveryTest: false}}
 	}
 	// application DB connectivity reflects the Portal's own store connection.
@@ -743,7 +782,7 @@ func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
 	snapID := snapshotIDFor(snap)
 	limit := 50
 	offset := 0
-	afterID := int64(0)
+	viewID := ""
 	ns := ""
 	var since *time.Time
 	severity := ""
@@ -804,61 +843,83 @@ func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		offset = cp.Offset
-		afterID = cp.AfterID
+		viewID = cp.ViewID
 		cursorBackend = cp.Backend
 	}
 
-	rows, err := s.store.ListEvents(r.Context(), since, severity, ns, limit, afterID)
+	// First page captures a bounded result of ONE PostgreSQL SELECT (MVCC),
+	// including row values and membership. Later pages never reselect that view.
+	// An immutable id keyset alone cannot freeze mutable severity/since filters.
+	queryLimit := 501
+	if cursorBackend != "" {
+		queryLimit = 1
+	} // availability probe only, never used as page data
+	rows, err := s.store.ListEvents(r.Context(), since, severity, ns, queryLimit, 0)
 	storage := "postgresql"
-	var events []model.TimelineEvent
-	var next *string
 	if err != nil {
-		// Bounded in-memory fallback: serve the latest collected events instead
-		// of failing closed. auditComplete remains false.
 		storage = "memory-fallback"
-		if snap != nil {
-			events = snap.Events
+	}
+	if cursorBackend != "" && cursorBackend != storage {
+		writeError(w, 400, "CURSOR_EXPIRED", "cursor expired (backend changed)")
+		return
+	}
+	var view eventView
+	if cursorBackend != "" {
+		var ok bool
+		view, ok = s.readEventView(viewID, snapID, ns, sinceStr, severity, storage)
+		if !ok {
+			writeError(w, 400, "CURSOR_EXPIRED", "cursor view expired")
+			return
 		}
-		events = filterEventsInMemory(events, since, severity, ns)
-		var page []model.TimelineEvent
-		page, next = s.paginate(events, limit, offset, ns, "events", snapID)
-		events = page
 	} else {
-		events = make([]model.TimelineEvent, 0, len(rows))
-		for _, row := range rows {
-			var st *string
-			if row.SourceTime != nil {
-				v := row.SourceTime.UTC().Format(time.RFC3339)
-				st = &v
+		events := []model.TimelineEvent{}
+		if err == nil {
+			events = eventRows(rows)
+		} else {
+			if s.ps != nil {
+				events = append(events, s.ps.Fallback()...)
 			}
-			events = append(events, model.TimelineEvent{
-				ID: row.ID, Source: row.Source, SourceTime: st,
-				IngestedAt: row.IngestedAt.UTC().Format(time.RFC3339), Severity: row.Severity,
-				ObjectKind: row.ObjectKind, Namespace: row.ObjectNS,
-				ObjectName: row.ObjectName, ReasonCode: row.ReasonCode,
-				OccurrenceCount: row.Occurrences, Message: row.Message,
-			})
+			if snap != nil {
+				events = append(events, snap.Events...)
+			}
+			events = filterEventsInMemory(events, since, severity, ns)
+			seen := map[string]bool{}
+			unique := []model.TimelineEvent{}
+			for _, e := range events {
+				if seen[e.ID] {
+					continue
+				}
+				seen[e.ID] = true
+				if e.IngestedAt == "" && snap != nil {
+					e.IngestedAt = snap.CollectedAt.UTC().Format(time.RFC3339)
+				}
+				unique = append(unique, e)
+			}
+			events = unique
 		}
-		if len(events) == limit && len(rows) > 0 {
-			lastSeq := rows[len(rows)-1].Seq
-			c := encodeEventsCursor(snapID, ns, sinceStr, severity, storage, 0, lastSeq)
+		view = eventView{snapshot: snapID, namespace: ns, since: sinceStr, severity: severity, backend: storage, events: events, created: time.Now(), partial: len(events) > 500}
+		if len(view.events) > 500 {
+			view.events = view.events[:500]
+		}
+		viewID = s.saveEventView(view)
+	}
+	var next *string
+	events := []model.TimelineEvent{}
+	if offset < len(view.events) {
+		end := offset + limit
+		if end > len(view.events) {
+			end = len(view.events)
+		}
+		events = view.events[offset:end]
+		if end < len(view.events) {
+			c := encodeEventsCursor(snapID, ns, sinceStr, severity, storage, end, 0, viewID)
 			next = &c
 		}
 	}
-	// Backend-mode binding: a cursor produced on one backend (postgresql vs
-	// memory-fallback) must not be reused on the other (offset/keyset semantics differ).
-	if cursorBackend != "" && cursorBackend != storage {
-		writeError(w, http.StatusBadRequest, "CURSOR_EXPIRED", "cursor expired (backend changed)")
-		return
-	}
-	// For the memory-fallback path, regenerate the next cursor with the correct
-	// backend mode (the paginate() cursor above is endpoint-only).
-	if storage == "memory-fallback" && next != nil {
-		c := encodeEventsCursor(snapID, ns, sinceStr, severity, storage, offset+limit, 0)
-		next = &c
-	}
+
 	data := model.Events{Storage: storage, AuditComplete: false, Items: events}
 	env := s.envelope(snap)
+	env.Partial = env.Partial || view.partial || storage == "memory-fallback"
 	env.Data = data
 	env.NextCursor = next
 	writeJSON(w, http.StatusOK, env)

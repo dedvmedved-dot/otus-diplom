@@ -19,37 +19,35 @@ var (
 	errRedirect        = errors.New("transport guard: redirect not permitted")
 )
 
-// Approved collection paths. The guard is an EXACT allowlist: any resource not
-// listed here, any namespace/name shape outside the approved grammar, or any
-// subresource segment is rejected. RBAC remains the primary boundary.
-var approvedCoreResources = map[string]bool{
-	"nodes": true, "pods": true, "services": true,
-	"persistentvolumeclaims": true, "persistentvolumes": true,
-	"events": true,
-}
-
-// key = "group/version/resource".
-var approvedGroupResources = map[string]bool{
-	"storage.k8s.io/v1/storageclasses":            true,
-	"discovery.k8s.io/v1/endpointslices":          true,
-	"apps/v1/deployments":                         true,
-	"apps/v1/statefulsets":                        true,
-	"apps/v1/daemonsets":                          true,
-	"apps/v1/replicasets":                         true,
-	"batch/v1/jobs":                               true,
-	"batch/v1/cronjobs":                           true,
-	"snapshot.storage.k8s.io/v1/volumesnapshots":  true,
-	"metrics.k8s.io/v1beta1/nodes":                true,
-	"metrics.k8s.io/v1beta1/pods":                 true,
-	"postgresql.cnpg.io/v1/clusters":              true,
-	"postgresql.cnpg.io/v1/scheduledbackups":      true,
-	"postgresql.cnpg.io/v1/backups":               true,
-	"barmancloud.cnpg.io/v1/objectstores":         true,
-	"velero.io/v1/backupstoragelocations":         true,
-	"velero.io/v1/backups":                        true,
-	"velero.io/v1/restores":                       true,
-	"gateway.networking.k8s.io/v1/gateways":       true,
-	"gateway.networking.k8s.io/v1/httproutes":     true,
+// Exact paths actually consumed by the read-only collectors. Namespace-scoped
+// privileged domains have no wildcard names or namespaces.
+var approvedPaths = map[string]bool{
+	"/api/v1/nodes":                                                    true,
+	"/api/v1/pods":                                                     true,
+	"/api/v1/services":                                                 true,
+	"/api/v1/persistentvolumeclaims":                                   true,
+	"/api/v1/persistentvolumes":                                        true,
+	"/api/v1/events":                                                   true,
+	"/apis/storage.k8s.io/v1/storageclasses":                           true,
+	"/apis/discovery.k8s.io/v1/endpointslices":                         true,
+	"/apis/apps/v1/deployments":                                        true,
+	"/apis/apps/v1/statefulsets":                                       true,
+	"/apis/apps/v1/daemonsets":                                         true,
+	"/apis/apps/v1/replicasets":                                        true,
+	"/apis/batch/v1/jobs":                                              true,
+	"/apis/batch/v1/cronjobs":                                          true,
+	"/apis/snapshot.storage.k8s.io/v1/volumesnapshots":                 true,
+	"/apis/metrics.k8s.io/v1beta1/nodes":                               true,
+	"/apis/metrics.k8s.io/v1beta1/pods":                                true,
+	"/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db": true,
+	"/apis/postgresql.cnpg.io/v1/namespaces/portal/scheduledbackups/portal-db-daily": true,
+	"/apis/postgresql.cnpg.io/v1/namespaces/portal/backups":                          true,
+	"/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup":   true,
+	"/apis/velero.io/v1/namespaces/velero/backupstoragelocations":                    true,
+	"/apis/velero.io/v1/namespaces/velero/backups":                                   true,
+	"/apis/velero.io/v1/namespaces/velero/restores":                                  true,
+	"/apis/gateway.networking.k8s.io/v1/namespaces/portal/gateways/portal-gateway":   true,
+	"/apis/gateway.networking.k8s.io/v1/namespaces/portal/httproutes/portal":         true,
 }
 
 // transportDeadline is the per-request deadline. Overridable in tests only.
@@ -67,11 +65,8 @@ func newGuardTransport(base http.RoundTripper, apiURL string) *guardTransport {
 	}
 	host := ""
 	scheme := "https"
-	if u, err := url.Parse(apiURL); err == nil {
+	if u, err := url.Parse(apiURL); err == nil && u.Scheme == "https" && u.Hostname() != "" && u.User == nil && u.Path == "" && u.RawQuery == "" && u.Fragment == "" {
 		host = u.Host
-		if u.Scheme != "" {
-			scheme = u.Scheme
-		}
 	}
 	return &guardTransport{base: base, apiHost: host, scheme: scheme}
 }
@@ -96,7 +91,7 @@ func (g *guardTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	if req.Host != "" && !strings.EqualFold(req.Host, g.apiHost) {
 		return nil, errForbiddenHost
 	}
-	if !pathAllowed(req.URL.Path) {
+	if req.URL.RawPath != "" || !pathAllowed(req.URL.Path) {
 		return nil, errForbiddenPath
 	}
 	// Per-request deadline (5s) inside the 20s collection cycle. The deadline
@@ -149,47 +144,4 @@ func isRedirect(code int) bool {
 
 // pathAllowed enforces the exact approved path grammar. Unknown resources,
 // subresources, and namespaces/names outside the grammar are rejected.
-func pathAllowed(path string) bool {
-	if path == "" || path[0] != '/' {
-		return false
-	}
-	segs := strings.Split(strings.Trim(path, "/"), "/")
-
-	if len(segs) >= 2 && segs[0] == "api" && segs[1] == "v1" {
-		rest := segs[2:]
-		if len(rest) >= 1 && rest[0] == "namespaces" {
-			if len(rest) < 3 || !approvedCoreResources[rest[2]] {
-				return false
-			}
-			return len(rest) <= 4 // /api/v1/namespaces/{ns}/{res}[/{name}]
-		}
-		if len(rest) >= 1 && approvedCoreResources[rest[0]] {
-			return len(rest) <= 2 // /api/v1/{res}[/{name}]
-		}
-		return false
-	}
-
-	if len(segs) >= 3 && segs[0] == "apis" {
-		groupVer := segs[1] + "/" + segs[2]
-		rest := segs[3:]
-		var res string
-		if len(rest) >= 1 && rest[0] == "namespaces" {
-			if len(rest) < 3 {
-				return false
-			}
-			res = rest[2]
-			if len(rest) > 4 {
-				return false // subresource
-			}
-		} else if len(rest) >= 1 {
-			res = rest[0]
-			if len(rest) > 2 {
-				return false
-			}
-		} else {
-			return false
-		}
-		return approvedGroupResources[groupVer+"/"+res]
-	}
-	return false
-}
+func pathAllowed(path string) bool { return approvedPaths[path] }

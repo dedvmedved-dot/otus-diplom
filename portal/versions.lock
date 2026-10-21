@@ -14,6 +14,8 @@ application:
   pgx_commit: "5e583fa7aabfa88b796292f849fc9d7d75ac159d"
 
 tools:
+  rootlesskit: "v2.3.1"
+  rootlesskit_asset_sha256: "caafdce18e0959f078b4b478d4f352ebf3d556e373265fc7831f1a6d70219ee0"
   buildkit: "v0.34.0"
   buildkit_asset_sha256: "14813b1fb2a40082114e6d386c6fc5e7dd5298176ce7ee1a18bc33e73e109ac3"
   syft: "v1.55.0"
@@ -33,3 +35,13 @@ notes:
   - "go_archive_sha256 verified on build host 2026-10-20 (sha256sum match)."
   - "k8s.io/client-go v0.36.2 go.mod requires go >= 1.26; pgx v5.11.0 requires go >= 1.25; Go 1.27.3 exceeds both."
   - "Tool release metadata/sha256 recorded from source-verification.json (bytes+signature verification is G2)."
+
+
+test_dependencies:
+  jsonschema: "github.com/santhosh-tekuri/jsonschema/v6@v6.0.3"
+  postgres_image: "docker.io/library/postgres:17.10-bookworm@sha256:9b18b78397054fce88a9552e9d5a3ad5bb7fd258c5b3cc1c5028e46373d6ea8f"
+  postgres_digest_proof: "registry manifest bytes sha256 + Docker-Content-Digest; 2026-10-21"
+actions:
+  checkout: "11bd71901bbe5b1630ceea73d27597364c9af683"
+  login: "9780b0c442fbb1117ed29e0efdff1e18412f7567"
+  upload_artifact: "65462800fd760344b1a7b4382951275a0abb4808"

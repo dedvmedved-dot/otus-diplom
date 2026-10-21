@@ -2,6 +2,53 @@
 // Maps the approved OpenAPI contract: envelopes carry data.items / data.overall
 // / structured warnings / backup domains / events. No hardcoded "healthy".
 const API = '/api/v1';
+const pages = new Map();
+const pageErrors = new Map();
+const tableQueries = {
+  'table-nodes': ['nodes', 'kubernetes'], 'table-pods': ['pods', 'kubernetes'],
+  'table-workloads': ['workloads', 'kubernetes'], 'table-services': ['services', 'kubernetes'],
+  'table-storage': ['storage', 'storage'], 'table-metrics': ['metrics', 'metrics'],
+  'table-events': ['events?limit=200', 'events'],
+};
+
+function effectiveHealth(health, source) {
+  if (health === 'critical') return 'critical';
+  if (!source || source.freshness === 'unavailable') return 'unknown';
+  if (source.freshness === 'stale' || source.partial) return health === 'unknown' ? 'unknown' : 'warning';
+  return healthClass(health);
+}
+
+function renderPager(id, source) {
+  const config = tableQueries[id];
+  if (!config) return;
+  const key = `${API}/${config[0]}`;
+  let controls = document.getElementById(id + '-navigation');
+  if (!controls) {
+    controls = document.createElement('div');
+    controls.id = id + '-navigation';
+    document.getElementById(id).after(controls);
+  }
+  controls.replaceChildren();
+  const note = document.createElement('span');
+  note.textContent = pageErrors.get(key) || (!source ? 'источник недоступен' :
+    `данные: ${source.freshness}${source.partial ? '; неполное покрытие' : ''}`);
+  controls.append(note);
+  for (const [label, cursor, enabled] of [
+    ['Первая страница', null, pages.has(key) || pageErrors.has(key)],
+    ['Следующая страница', source?.nextCursor, !!source?.nextCursor],
+  ]) {
+    const button = document.createElement('button');
+    button.type = 'button'; button.textContent = label; button.disabled = !enabled;
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      if (cursor) pages.set(key, cursor); else pages.delete(key);
+      pageErrors.delete(key);
+      await renderers[config[1]]();
+    });
+    controls.append(button);
+  }
+}
+
 
 function escapeHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -19,18 +66,25 @@ function pill(text, kind) {
 // snapshot must NOT stay green even if its last health was "healthy".
 function setOverall(health, freshness) {
   const el = document.getElementById('overall-status');
-  const effective = (freshness === 'stale' || freshness === 'unavailable') ? 'warning' : health;
+  const effective = effectiveHealth(health, {freshness});
   el.className = 'status ' + healthClass(effective);
-  document.getElementById('overall-text').textContent = health || '—';
+  document.getElementById('overall-text').textContent = effective;
   const f = document.getElementById('freshness');
   f.textContent = 'обновление: ' + (freshness || '—');
   f.classList.toggle('stale', freshness === 'stale' || freshness === 'unavailable');
 }
 
 async function getJSON(path) {
-  const r = await fetch(path, { headers: { Accept: 'application/json' } });
+  const url = new URL(path, window.location.origin);
+  if (pages.has(path)) url.searchParams.set('cursor', pages.get(path));
+  const r = await fetch(url.pathname + url.search, { headers: { Accept: 'application/json' } });
   if (r.status === 401) { document.getElementById('overall-text').textContent = 'unauthenticated'; throw new Error('unauthenticated'); }
-  if (!r.ok) throw new Error(`${path}: HTTP ${r.status}`);
+  if (!r.ok) {
+    const error = await r.json().catch(() => ({}));
+    pageErrors.set(path, error.code === 'CURSOR_EXPIRED' ? 'Страница устарела — откройте первую страницу' : 'источник недоступен');
+    throw new Error('request failed');
+  }
+  pageErrors.delete(path);
   return r.json();
 }
 
@@ -39,6 +93,7 @@ async function getJSON(path) {
 function rowsToTable(elId, headers, rows, source) {
   const el = document.getElementById(elId);
   if (!el) return;
+  renderPager(elId, source);
   if (source === null || source === undefined) {
     el.innerHTML = '<p class="empty warning">источник недоступен</p>';
     return;
@@ -46,13 +101,11 @@ function rowsToTable(elId, headers, rows, source) {
   const head = '<thead><tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr></thead>';
   const body = '<tbody>' + rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('') + '</tbody>';
   el.innerHTML = rows.length ? head + body : '<p class="empty">Нет данных</p>';
-}
-
-function cursorNote(source) {
-  if (source && source.nextCursor) {
-    return '<div class="note">есть следующая страница (nextCursor)</div>';
+  if (effectiveHealth('healthy', source) !== 'healthy') {
+    el.querySelectorAll('.healthy').forEach(item => {
+      item.classList.remove('healthy'); item.classList.add(effectiveHealth('healthy', source));
+    });
   }
-  return '';
 }
 
 function storageHealth(d) {
@@ -90,11 +143,16 @@ async function renderOverview() {
     ['Storage (k8s view)', `${c.pvcBound ?? '—'}/${c.pvcObserved ?? '—'}`, `pvc bound/observed; DRBD ${st.drbdDirectHealth ?? 'not_observed'}`, stHealth],
     ['Pods', `${c.podsReady ?? '—'}/${c.podsObserved ?? '—'}`, 'ready/observed', c.podsObserved != null && c.podsReady === c.podsObserved ? 'healthy' : 'unknown'],
   ];
-  document.getElementById('cards').innerHTML = cards.map(([t, v, sub, kind]) =>
-    `<div class="card ${kind}"><h3>${t}</h3><div class="value">${escapeHtml(v)}</div><div class="sub">${escapeHtml(sub)}</div></div>`
+  document.getElementById('cards').innerHTML = cards.map(([t, v, sub, kind], index) =>
+    `<div class="card ${effectiveHealth(kind, [summary, database, backups, backups, storage, summary][index])}"><h3>${t}</h3><div class="value">${escapeHtml(v)}</div><div class="sub">${escapeHtml(sub)}</div></div>`
   ).join('');
 
-  const alerts = s.alerts || [];
+  const alerts = [...(s.alerts || [])];
+  for (const [name, result] of [['summary', summary], ['database', database], ['backups', backups], ['storage', storage], ['events', events]]) {
+    if (!result || result.freshness !== 'fresh' || result.partial) {
+      alerts.push({severity: 'warning', source: name, message: !result ? 'источник недоступен' : `данные ${result.freshness}; покрытие ${result.partial ? 'неполное' : 'устарело'}`});
+    }
+  }
   document.getElementById('alerts').innerHTML = alerts.length
     ? alerts.map(a => `<li>[${escapeHtml(a.severity)}] ${escapeHtml(a.message)} <span class="muted">(${escapeHtml(a.source)})</span></li>`).join('')
     : (summary ? '<li class="empty">нет предупреждений</li>' : '<li class="empty warning">источник недоступен — предупреждения неизвестны</li>');
@@ -173,7 +231,7 @@ async function renderDatabase() {
       <tr><th>Primary</th><td>${escapeHtml(d.primaryName ?? '—')}</td></tr>
       <tr><th>Replicas</th><td>${escapeHtml(String(d.replicasObserved ?? '—'))}${d.replicasInferred ? ' (inferred)' : ''}</td></tr>
       <tr><th>Phase</th><td>${escapeHtml(d.phase ?? '—')}</td></tr>
-      <tr><th>Health</th><td>${pill(d.health, healthClass(d.health))}</td></tr>
+      <tr><th>Health</th><td>${pill(d.health, effectiveHealth(d.health, db))}</td></tr>
       <tr><th>Application DB</th><td>${d.applicationDbConnected ? 'connected' : 'disconnected'}</td></tr>
     </tbody></table>`;
 }
@@ -188,10 +246,7 @@ async function renderEvents() {
   const e = await getJSON(`${API}/events?limit=200`).catch(() => null);
   const d = e?.data || {};
   const rows = (d.items || []).map(ev => [escapeHtml(ev.ingestedAt), escapeHtml(ev.source), pill(ev.severity, ev.severity === 'critical' ? 'critical' : ev.severity === 'warning' ? 'warning' : 'muted'), escapeHtml(ev.objectName ?? '—'), escapeHtml(ev.reasonCode), escapeHtml(String(ev.occurrenceCount)), escapeHtml(ev.message)]);
-  document.getElementById('table-events').innerHTML =
-    (e === null ? '<p class="empty warning">события недоступны</p>' : '') +
-    (rows.length ? '<thead><tr>' + ['Ingested','Source','Severity','Object','Reason','Count','Message'].map(h => `<th>${h}</th>`).join('') + '</tr></thead><tbody>' + rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('') + '</tbody>' : (e === null ? '' : '<p class="empty">событий нет</p>')) +
-    cursorNote(e);
+  rowsToTable('table-events', ['Ingested','Source','Severity','Object','Reason','Count','Message'], rows, e);
 }
 
 const renderers = {
@@ -213,3 +268,4 @@ function activateTab(name) {
 document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => activateTab(t.dataset.tab)));
 setInterval(() => { const a = document.querySelector('.tab.active')?.dataset?.tab; if (a) renderers[a]?.().catch(() => {}); }, 15000);
 renderOverview().catch(() => {});
+

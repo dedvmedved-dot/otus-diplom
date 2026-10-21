@@ -34,13 +34,15 @@ type Store interface {
 
 // Server holds the wired dependencies for the HTTP layer.
 type Server struct {
-	collector SnapshotProvider
-	store     Store
-	verifier  *auth.Verifier
-	cfg       *config.Config
-	ps        *collectors.PersistenceState
-	rate      *tokenBucket
-	sem       chan struct{}
+	collector  SnapshotProvider
+	store      Store
+	verifier   *auth.Verifier
+	cfg        *config.Config
+	ps         *collectors.PersistenceState
+	eventMu    sync.Mutex
+	eventViews map[string]eventView
+	rate       *tokenBucket
+	sem        chan struct{}
 }
 
 // New builds a Server.

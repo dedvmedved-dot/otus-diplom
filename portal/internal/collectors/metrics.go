@@ -25,6 +25,7 @@ func (c *Collector) collectBarmanMetrics(ctx context.Context, snap *Snapshot, re
 	now := time.Now()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.metricsURL, nil)
 	if err != nil {
+		snap.setPartial()
 		reg.set(sourceStatus("barman/metrics", "error", now, err))
 		return
 	}
@@ -36,22 +37,26 @@ func (c *Collector) collectBarmanMetrics(ctx context.Context, snap *Snapshot, re
 	}
 	resp, err := client.Do(req)
 	if err != nil {
+		snap.setPartial()
 		reg.set(sourceStatus("barman/metrics", "error", now, err))
 		return
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
+		snap.setPartial()
 		reg.set(sourceStatus("barman/metrics", "error", now, errBadStatus(resp.StatusCode)))
 		return
 	}
 	body, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
 	if err != nil {
+		snap.setPartial()
 		reg.set(sourceStatus("barman/metrics", "error", now, err))
 		return
 	}
 	vals := map[string]string{}
 	parsePrometheusMetrics(string(body), vals)
 	if len(vals) == 0 {
+		snap.setPartial()
 		reg.set(sourceStatus("barman/metrics", "error", now, errNoMetrics()))
 		return
 	}

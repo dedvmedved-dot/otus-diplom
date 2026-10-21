@@ -2,6 +2,7 @@ package collectors
 
 import (
 	"context"
+	"strconv"
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -91,9 +92,9 @@ func TestListWithContinueBoundary501(t *testing.T) {
 		call++
 		if call <= 2 {
 			page := make([]string, 200)
-			return page, "cont", nil
+			return page, "cont-" + strconv.Itoa(call), nil
 		}
-		return make([]string, 200), "cont", nil // third page exceeds cap
+		return make([]string, 101), "", nil // total 501; last page exceeds cap
 	})
 	if err != nil {
 		t.Fatalf("err: %v", err)

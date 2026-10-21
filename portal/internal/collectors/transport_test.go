@@ -16,30 +16,9 @@ func okBase() http.RoundTripper {
 }
 
 func TestGuardAllowsApprovedPaths(t *testing.T) {
-	paths := []string{
-		"/api/v1/nodes",
-		"/api/v1/nodes/node-01",
-		"/api/v1/pods",
-		"/api/v1/namespaces/portal/pods",
-		"/api/v1/namespaces/portal/services/portal-db-rw",
-		"/api/v1/persistentvolumeclaims",
-		"/api/v1/events",
-		"/apis/discovery.k8s.io/v1/endpointslices",
-		"/apis/discovery.k8s.io/v1/namespaces/portal/endpointslices",
-		"/apis/apps/v1/deployments",
-		"/apis/apps/v1/namespaces/portal/statefulsets",
-		"/apis/batch/v1/jobs",
-		"/apis/batch/v1/cronjobs",
-		"/apis/storage.k8s.io/v1/storageclasses",
-		"/apis/snapshot.storage.k8s.io/v1/volumesnapshots",
-		"/apis/metrics.k8s.io/v1beta1/nodes",
-		"/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters",
-		"/apis/postgresql.cnpg.io/v1/namespaces/portal/scheduledbackups",
-		"/apis/postgresql.cnpg.io/v1/namespaces/portal/backups",
-		"/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores",
-		"/apis/velero.io/v1/backupstoragelocations",
-		"/apis/velero.io/v1/backups",
-		"/apis/gateway.networking.k8s.io/v1/gateways",
+	paths := make([]string, 0, len(approvedPaths))
+	for path := range approvedPaths {
+		paths = append(paths, path)
 	}
 	g := newGuardTransport(okBase(), "https://10.0.0.1:6443")
 	for _, p := range paths {
@@ -52,17 +31,17 @@ func TestGuardAllowsApprovedPaths(t *testing.T) {
 
 func TestGuardRejectsUnapprovedPaths(t *testing.T) {
 	paths := []string{
-		"/api/v1/configmaps",                          // unapproved core resource
-		"/api/v1/endpointslices",                      // wrong: endpointslices is a grouped resource
-		"/api/v1/secrets",                             // secrets
-		"/api/v1/namespaces/portal/secrets",           // secrets in namespace
-		"/api/v1/serviceaccounts/portal/token",        // token subresource
-		"/api/v1/namespaces/portal/pods/x/log",        // log subresource
-		"/api/v1/namespaces/portal/pods/x/exec",       // exec subresource
-		"/apis/rbac.authorization.k8s.io/v1/roles",    // unapproved GVR
+		"/api/v1/configmaps",                                   // unapproved core resource
+		"/api/v1/endpointslices",                               // wrong: endpointslices is a grouped resource
+		"/api/v1/secrets",                                      // secrets
+		"/api/v1/namespaces/portal/secrets",                    // secrets in namespace
+		"/api/v1/serviceaccounts/portal/token",                 // token subresource
+		"/api/v1/namespaces/portal/pods/x/log",                 // log subresource
+		"/api/v1/namespaces/portal/pods/x/exec",                // exec subresource
+		"/apis/rbac.authorization.k8s.io/v1/roles",             // unapproved GVR
 		"/apis/apps/v1/namespaces/portal/deployments/x/status", // status subresource
-		"/apis/core/v1/nodes",                         // wrong group
-		"/api/v1/namespaces/portal/pods/x/proxy",      // proxy
+		"/apis/core/v1/nodes",                                  // wrong group
+		"/api/v1/namespaces/portal/pods/x/proxy",               // proxy
 	}
 	g := newGuardTransport(okBase(), "https://10.0.0.1:6443")
 	for _, p := range paths {
@@ -122,5 +101,20 @@ func TestGuardRejectsRedirect(t *testing.T) {
 	req, _ := http.NewRequest("GET", "https://10.0.0.1:6443/api/v1/nodes", nil)
 	if _, err := g.RoundTrip(req); err != errRedirect {
 		t.Fatalf("expected errRedirect, got %v", err)
+	}
+}
+
+func TestGuardRejectsInvalidCanonicalAndNamedScope(t *testing.T) {
+	for _, canonical := range []string{"http://10.0.0.1:6443", "https://user@10.0.0.1:6443", "https://10.0.0.1:6443/prefix", "https://10.0.0.1:6443?q=1", "://"} {
+		req, _ := http.NewRequest("GET", "https://10.0.0.1:6443/api/v1/nodes", nil)
+		if _, err := newGuardTransport(okBase(), canonical).RoundTrip(req); err == nil {
+			t.Fatalf("accepted %s", canonical)
+		}
+	}
+	for _, path := range []string{"/api/v1/nodes/other", "/apis/postgresql.cnpg.io/v1/namespaces/other/clusters/portal-db", "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/other", "/api/v1/%6eodes", "/api/v1/nodes/", "/apis/velero.io/v1/backups"} {
+		req, _ := http.NewRequest("GET", "https://10.0.0.1:6443"+path, nil)
+		if _, err := newGuardTransport(okBase(), "https://10.0.0.1:6443").RoundTrip(req); err == nil {
+			t.Fatalf("accepted %s", path)
+		}
 	}
 }
