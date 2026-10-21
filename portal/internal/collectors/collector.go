@@ -98,7 +98,8 @@ type Transition struct {
 	State string // "ok" | "failed" | "recovered"
 }
 
-const maxTransitions = 64
+// MaxTransitions bounds the in-memory status-transition queue.
+const MaxTransitions = 64
 
 type PersistenceState struct {
 	LagSeconds      atomic.Int64
@@ -115,8 +116,8 @@ func (ps *PersistenceState) RecordTransition(state string) {
 	ps.mu.Lock()
 	defer ps.mu.Unlock()
 	ps.transitions = append(ps.transitions, Transition{At: time.Now(), State: state})
-	if len(ps.transitions) > maxTransitions {
-		ps.transitions = ps.transitions[len(ps.transitions)-maxTransitions:]
+	if len(ps.transitions) > MaxTransitions {
+		ps.transitions = ps.transitions[len(ps.transitions)-MaxTransitions:]
 	}
 }
 

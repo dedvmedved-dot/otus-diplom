@@ -88,7 +88,11 @@ func runServer(cfg *config.Config) {
 	var migrationOK atomic.Bool
 	validateMigration := func() bool {
 		ver, checksum, err := st.CurrentMigrationVersion(ctx)
-		return err == nil && ver == migrations.Version0001 && checksum == migrations.Checksum0001()
+		if err != nil || ver != migrations.Version0001 || checksum != migrations.Checksum0001() {
+			return false
+		}
+		// Expected table/column structure must also be present.
+		return st.VerifySchema(ctx) == nil
 	}
 	for attempt := 1; attempt <= 5; attempt++ {
 		if validateMigration() {

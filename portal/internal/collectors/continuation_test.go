@@ -64,3 +64,44 @@ func TestListWithContinueError(t *testing.T) {
 		t.Fatal("expected truncated=true (partial result)")
 	}
 }
+
+func TestListWithContinueBoundary201(t *testing.T) {
+	// 201 items across 2 pages (200 + 1); cap 500 -> full 201, not truncated.
+	call := 0
+	items, truncated, err := listWithContinue(context.Background(), 200, 500, func(opts metav1.ListOptions) ([]string, string, error) {
+		call++
+		if call == 1 {
+			page := make([]string, 200)
+			return page, "cont-1", nil
+		}
+		return []string{"last"}, "", nil
+	})
+	if err != nil || truncated {
+		t.Fatalf("err=%v truncated=%v", err, truncated)
+	}
+	if len(items) != 201 {
+		t.Fatalf("expected 201 items, got %d", len(items))
+	}
+}
+
+func TestListWithContinueBoundary501(t *testing.T) {
+	// 501 items -> capped at 500, truncated=true.
+	call := 0
+	items, truncated, err := listWithContinue(context.Background(), 200, 500, func(opts metav1.ListOptions) ([]string, string, error) {
+		call++
+		if call <= 2 {
+			page := make([]string, 200)
+			return page, "cont", nil
+		}
+		return make([]string, 200), "cont", nil // third page exceeds cap
+	})
+	if err != nil {
+		t.Fatalf("err: %v", err)
+	}
+	if !truncated {
+		t.Fatal("expected truncated=true")
+	}
+	if len(items) != 500 {
+		t.Fatalf("expected 500 (cap), got %d", len(items))
+	}
+}

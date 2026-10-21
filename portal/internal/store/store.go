@@ -145,6 +145,40 @@ func (s *Store) CurrentMigrationVersion(ctx context.Context) (int64, string, err
 	return v, c, nil
 }
 
+// VerifySchema checks the expected application table structure (the columns
+// the persistence/read paths depend on). It does not validate ledger contents
+// and does not touch infrastructure/probe tables.
+func (s *Store) VerifySchema(ctx context.Context) error {
+	cctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	checks := []struct{ table, column string }{
+		{"portal.observation_batches", "id"},
+		{"portal.observation_batches", "observed_at"},
+		{"portal.observation_batches", "recorded_at"},
+		{"portal.observation_batches", "source_revision"},
+		{"portal.observation_batches", "overall_health"},
+		{"portal.observation_batches", "partial"},
+		{"portal.observation_batches", "summary"},
+		{"portal.timeline_events", "dedup_key"},
+		{"portal.timeline_events", "source"},
+		{"portal.timeline_events", "source_uid"},
+		{"portal.timeline_events", "source_resource_version"},
+		{"portal.timeline_events", "source_time"},
+		{"portal.timeline_events", "ingested_at"},
+		{"portal.timeline_events", "severity"},
+		{"portal.timeline_events", "reason_code"},
+		{"portal.timeline_events", "occurrence_count"},
+		{"portal.timeline_events", "message"},
+	}
+	for _, c := range checks {
+		q := fmt.Sprintf("SELECT %s FROM %s LIMIT 0", c.column, c.table)
+		if _, err := s.pool.Exec(cctx, q); err != nil {
+			return fmt.Errorf("schema structure %s.%s: %w", c.table, c.column, err)
+		}
+	}
+	return nil
+}
+
 // ChecksumFile returns the hex SHA-256 of the given bytes.
 func ChecksumFile(b []byte) string {
 	s := sha256.Sum256(b)

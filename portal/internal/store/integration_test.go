@@ -185,3 +185,20 @@ func TestIntegrationLedgerDrift(t *testing.T) {
 		t.Fatal("expected drift error on corrupted ledger checksum")
 	}
 }
+
+func TestIntegrationVerifySchemaNegative(t *testing.T) {
+	pool, s := freshSchema(t)
+	ctx := context.Background()
+	// Drop an application table while the ledger stays correct: readiness
+	// (VerifySchema) must fail even though the ledger version matches.
+	if _, err := pool.Exec(ctx, `DROP TABLE portal.timeline_events`); err != nil {
+		t.Fatalf("drop table: %v", err)
+	}
+	ver, checksum, err := s.CurrentMigrationVersion(ctx)
+	if err != nil || ver != migrations.Version0001 || checksum == "" {
+		t.Fatalf("ledger should be intact: ver=%d checksum=%q err=%v", ver, checksum, err)
+	}
+	if err := s.VerifySchema(ctx); err == nil {
+		t.Fatal("expected VerifySchema to fail with missing timeline_events table")
+	}
+}

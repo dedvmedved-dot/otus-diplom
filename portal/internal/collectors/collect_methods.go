@@ -7,6 +7,8 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	discoveryv1 "k8s.io/api/discovery/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -214,22 +216,22 @@ func (c *Collector) collectWorkloads(ctx context.Context, snap *Snapshot, reg *S
 	now := time.Now()
 	var errAll error
 	partial := false
-	appendFrom := func(kind string, f func() ([]model.Workload, error)) {
-		items, err := f()
+	appendFrom := func(kind string, f func(opts metav1.ListOptions) ([]model.Workload, string, error)) {
+		items, truncated, err := listWithContinue(ctx, listPage, listCap, f)
 		if err != nil {
 			errAll = err
 			return
 		}
+		if truncated {
+			partial = true
+		}
 		snap.Workloads = append(snap.Workloads, items...)
 	}
 
-	appendFrom("Deployment", func() ([]model.Workload, error) {
-		l, err := c.clients.typed.AppsV1().Deployments("").List(ctx, metav1.ListOptions{Limit: listPage})
+	appendFrom("Deployment", func(opts metav1.ListOptions) ([]model.Workload, string, error) {
+		l, err := c.clients.typed.AppsV1().Deployments("").List(ctx, opts)
 		if err != nil {
-			return nil, err
-		}
-		if l.Continue != "" {
-			partial = true
+			return nil, "", err
 		}
 		out := make([]model.Workload, 0, len(l.Items))
 		for _, d := range l.Items {
@@ -251,15 +253,12 @@ func (c *Collector) collectWorkloads(ctx context.Context, snap *Snapshot, reg *S
 			out = append(out, model.Workload{Name: d.Name, Namespace: d.Namespace, UID: string(d.UID), Kind: "Deployment",
 				Health: h, Desired: &desired, Ready: &ready, Conditions: deployConditions(d.Status.Conditions)})
 		}
-		return out, nil
+		return out, l.Continue, nil
 	})
-	appendFrom("StatefulSet", func() ([]model.Workload, error) {
-		l, err := c.clients.typed.AppsV1().StatefulSets("").List(ctx, metav1.ListOptions{Limit: listPage})
+	appendFrom("StatefulSet", func(opts metav1.ListOptions) ([]model.Workload, string, error) {
+		l, err := c.clients.typed.AppsV1().StatefulSets("").List(ctx, opts)
 		if err != nil {
-			return nil, err
-		}
-		if l.Continue != "" {
-			partial = true
+			return nil, "", err
 		}
 		out := make([]model.Workload, 0, len(l.Items))
 		for _, s := range l.Items {
@@ -281,15 +280,12 @@ func (c *Collector) collectWorkloads(ctx context.Context, snap *Snapshot, reg *S
 			out = append(out, model.Workload{Name: s.Name, Namespace: s.Namespace, UID: string(s.UID), Kind: "StatefulSet",
 				Health: h, Desired: &desired, Ready: &ready, Conditions: stsConditions(s.Status.Conditions)})
 		}
-		return out, nil
+		return out, l.Continue, nil
 	})
-	appendFrom("DaemonSet", func() ([]model.Workload, error) {
-		l, err := c.clients.typed.AppsV1().DaemonSets("").List(ctx, metav1.ListOptions{Limit: listPage})
+	appendFrom("DaemonSet", func(opts metav1.ListOptions) ([]model.Workload, string, error) {
+		l, err := c.clients.typed.AppsV1().DaemonSets("").List(ctx, opts)
 		if err != nil {
-			return nil, err
-		}
-		if l.Continue != "" {
-			partial = true
+			return nil, "", err
 		}
 		out := make([]model.Workload, 0, len(l.Items))
 		for _, d := range l.Items {
@@ -308,15 +304,12 @@ func (c *Collector) collectWorkloads(ctx context.Context, snap *Snapshot, reg *S
 			out = append(out, model.Workload{Name: d.Name, Namespace: d.Namespace, UID: string(d.UID), Kind: "DaemonSet",
 				Health: h, Desired: &desired, Ready: &ready, Conditions: dsConditions(d.Status.Conditions)})
 		}
-		return out, nil
+		return out, l.Continue, nil
 	})
-	appendFrom("ReplicaSet", func() ([]model.Workload, error) {
-		l, err := c.clients.typed.AppsV1().ReplicaSets("").List(ctx, metav1.ListOptions{Limit: listPage})
+	appendFrom("ReplicaSet", func(opts metav1.ListOptions) ([]model.Workload, string, error) {
+		l, err := c.clients.typed.AppsV1().ReplicaSets("").List(ctx, opts)
 		if err != nil {
-			return nil, err
-		}
-		if l.Continue != "" {
-			partial = true
+			return nil, "", err
 		}
 		out := make([]model.Workload, 0, len(l.Items))
 		for _, r := range l.Items {
@@ -336,15 +329,12 @@ func (c *Collector) collectWorkloads(ctx context.Context, snap *Snapshot, reg *S
 			out = append(out, model.Workload{Name: r.Name, Namespace: r.Namespace, UID: string(r.UID), Kind: "ReplicaSet",
 				Health: h, Desired: &desired, Ready: &ready})
 		}
-		return out, nil
+		return out, l.Continue, nil
 	})
-	appendFrom("Job", func() ([]model.Workload, error) {
-		l, err := c.clients.typed.BatchV1().Jobs("").List(ctx, metav1.ListOptions{Limit: listPage})
+	appendFrom("Job", func(opts metav1.ListOptions) ([]model.Workload, string, error) {
+		l, err := c.clients.typed.BatchV1().Jobs("").List(ctx, opts)
 		if err != nil {
-			return nil, err
-		}
-		if l.Continue != "" {
-			partial = true
+			return nil, "", err
 		}
 		out := make([]model.Workload, 0, len(l.Items))
 		for _, j := range l.Items {
@@ -363,15 +353,12 @@ func (c *Collector) collectWorkloads(ctx context.Context, snap *Snapshot, reg *S
 			out = append(out, model.Workload{Name: j.Name, Namespace: j.Namespace, UID: string(j.UID), Kind: "Job",
 				Health: h, Active: &active, Succeeded: &succeeded, Failed: &failed})
 		}
-		return out, nil
+		return out, l.Continue, nil
 	})
-	appendFrom("CronJob", func() ([]model.Workload, error) {
-		l, err := c.clients.typed.BatchV1().CronJobs("").List(ctx, metav1.ListOptions{Limit: listPage})
+	appendFrom("CronJob", func(opts metav1.ListOptions) ([]model.Workload, string, error) {
+		l, err := c.clients.typed.BatchV1().CronJobs("").List(ctx, opts)
 		if err != nil {
-			return nil, err
-		}
-		if l.Continue != "" {
-			partial = true
+			return nil, "", err
 		}
 		out := make([]model.Workload, 0, len(l.Items))
 		for _, cj := range l.Items {
@@ -386,7 +373,7 @@ func (c *Collector) collectWorkloads(ctx context.Context, snap *Snapshot, reg *S
 			out = append(out, model.Workload{Name: cj.Name, Namespace: cj.Namespace, UID: string(cj.UID), Kind: "CronJob",
 				Health: h, Suspended: &suspended})
 		}
-		return out, nil
+		return out, l.Continue, nil
 	})
 
 	if partial {
@@ -506,12 +493,18 @@ func (c *Collector) collectServices(ctx context.Context, snap *Snapshot, reg *So
 
 	// EndpointSlice ready counts, keyed by "namespace/name".
 	readyByService := map[string]int32{}
-	slices, serr := c.clients.typed.DiscoveryV1().EndpointSlices("").List(ctx, metav1.ListOptions{Limit: listPage})
+	slices, _, serr := listWithContinue(ctx, listPage, listCap, func(opts metav1.ListOptions) ([]discoveryv1.EndpointSlice, string, error) {
+		l, e := c.clients.typed.DiscoveryV1().EndpointSlices("").List(ctx, opts)
+		if e != nil {
+			return nil, "", e
+		}
+		return l.Items, l.Continue, nil
+	})
 	if serr != nil {
 		snap.addWarning(model.Warning{Code: "ENDPOINTSLICES_UNAVAILABLE", Severity: "warning",
 			Message: "endpointslices read failed; readyEndpoints unknown", Source: "k8s/endpointslices"})
 	} else {
-		for _, es := range slices.Items {
+		for _, es := range slices {
 			svcName := es.Labels["kubernetes.io/service-name"]
 			if svcName == "" {
 				continue
@@ -562,14 +555,20 @@ func (c *Collector) collectStorage(ctx context.Context, snap *Snapshot, reg *Sou
 	partial := false
 	var errAll error
 
-	pvcs, err := c.clients.typed.CoreV1().PersistentVolumeClaims("").List(ctx, metav1.ListOptions{Limit: listPage})
+	pvcs, truncatedPVC, err := listWithContinue(ctx, listPage, listCap, func(opts metav1.ListOptions) ([]corev1.PersistentVolumeClaim, string, error) {
+		l, e := c.clients.typed.CoreV1().PersistentVolumeClaims("").List(ctx, opts)
+		if e != nil {
+			return nil, "", e
+		}
+		return l.Items, l.Continue, nil
+	})
 	if err != nil {
 		errAll = err
 	} else {
-		if pvcs.Continue != "" {
+		if truncatedPVC {
 			partial = true
 		}
-		for _, p := range pvcs.Items {
+		for _, p := range pvcs {
 			ns := p.Namespace
 			phase := string(p.Status.Phase)
 			var sc *string
@@ -584,14 +583,20 @@ func (c *Collector) collectStorage(ctx context.Context, snap *Snapshot, reg *Sou
 		}
 	}
 
-	pvs, err := c.clients.typed.CoreV1().PersistentVolumes().List(ctx, metav1.ListOptions{Limit: listPage})
+	pvs, truncatedPV, err := listWithContinue(ctx, listPage, listCap, func(opts metav1.ListOptions) ([]corev1.PersistentVolume, string, error) {
+		l, e := c.clients.typed.CoreV1().PersistentVolumes().List(ctx, opts)
+		if e != nil {
+			return nil, "", e
+		}
+		return l.Items, l.Continue, nil
+	})
 	if err != nil {
 		errAll = err
 	} else {
-		if pvs.Continue != "" {
+		if truncatedPV {
 			partial = true
 		}
-		for _, p := range pvs.Items {
+		for _, p := range pvs {
 			phase := string(p.Status.Phase)
 			cap := parseMemoryBytes(p.Spec.Capacity.Storage().String())
 			items = append(items, model.StorageItem{Kind: "PersistentVolume", Name: p.Name, UID: string(p.UID),
@@ -599,28 +604,40 @@ func (c *Collector) collectStorage(ctx context.Context, snap *Snapshot, reg *Sou
 		}
 	}
 
-	scs, err := c.clients.typed.StorageV1().StorageClasses().List(ctx, metav1.ListOptions{Limit: listPage})
+	scs, truncatedSC, err := listWithContinue(ctx, listPage, listCap, func(opts metav1.ListOptions) ([]storagev1.StorageClass, string, error) {
+		l, e := c.clients.typed.StorageV1().StorageClasses().List(ctx, opts)
+		if e != nil {
+			return nil, "", e
+		}
+		return l.Items, l.Continue, nil
+	})
 	if err != nil {
 		errAll = err
 	} else {
-		if scs.Continue != "" {
+		if truncatedSC {
 			partial = true
 		}
-		for _, sc := range scs.Items {
+		for _, sc := range scs {
 			items = append(items, model.StorageItem{Kind: "StorageClass", Name: sc.Name, UID: string(sc.UID), Health: "unknown"})
 		}
 	}
 
-	snaps, err := c.clients.dynamic.Resource(gvrVolumeSnapshot).List(ctx, metav1.ListOptions{Limit: listPage})
+	snaps, truncatedSnap, err := listWithContinue(ctx, listPage, listCap, func(opts metav1.ListOptions) ([]unstructured.Unstructured, string, error) {
+		l, e := c.clients.dynamic.Resource(gvrVolumeSnapshot).List(ctx, opts)
+		if e != nil {
+			return nil, "", e
+		}
+		return l.Items, l.GetContinue(), nil
+	})
 	if err != nil {
 		code := classifyError(err)
 		reg.set(model.SourceStatus{ID: "k8s/volumesnapshots", State: "error", ErrorCode: &code,
 			ObservedAt: nowPtr(), AgeSeconds: f64p(0)})
 	} else {
-		if snaps.GetContinue() != "" {
+		if truncatedSnap {
 			partial = true
 		}
-		for _, vs := range snaps.Items {
+		for _, vs := range snaps {
 			ns := vs.GetNamespace()
 			var ready *bool
 			if r, found, _ := unstructured.NestedBool(vs.Object, "status", "readyToUse"); found {
@@ -677,11 +694,18 @@ func (c *Collector) collectBackups(ctx context.Context, snap *Snapshot, reg *Sou
 	var veleroErr, pgErr error
 
 	// Velero BSL
-	if l, err := c.clients.dynamic.Resource(gvrVeleroBSL).Namespace(velNS).List(ctx, metav1.ListOptions{Limit: listPage}); err != nil {
+	bsl, _, err := listWithContinue(ctx, listPage, listCap, func(opts metav1.ListOptions) ([]unstructured.Unstructured, string, error) {
+		l, e := c.clients.dynamic.Resource(gvrVeleroBSL).Namespace(velNS).List(ctx, opts)
+		if e != nil {
+			return nil, "", e
+		}
+		return l.Items, l.GetContinue(), nil
+	})
+	if err != nil {
 		veleroErr = err
 		reg.set(sourceStatus("velero/bsl", "error", now, err))
 	} else {
-		for _, b := range l.Items {
+		for _, b := range bsl {
 			phase, _, _ := unstructured.NestedString(b.Object, "status", "phase")
 			var lvt *string
 			if v, found, _ := unstructured.NestedString(b.Object, "status", "lastValidationTime"); found {
@@ -696,42 +720,60 @@ func (c *Collector) collectBackups(ctx context.Context, snap *Snapshot, reg *Sou
 	}
 
 	// Velero backups
-	if l, err := c.clients.dynamic.Resource(gvrVeleroBackup).Namespace(velNS).List(ctx, metav1.ListOptions{Limit: backupCap}); err != nil {
+	if backups, trunc, err := listWithContinue(ctx, listPage, backupCap, func(opts metav1.ListOptions) ([]unstructured.Unstructured, string, error) {
+		l, e := c.clients.dynamic.Resource(gvrVeleroBackup).Namespace(velNS).List(ctx, opts)
+		if e != nil {
+			return nil, "", e
+		}
+		return l.Items, l.GetContinue(), nil
+	}); err != nil {
 		veleroErr = err
 		reg.set(sourceStatus("velero/backups", "error", now, err))
 	} else {
-		if l.GetContinue() != "" {
+		if trunc {
 			veleroTruncated = true
 		}
-		for _, b := range l.Items {
+		for _, b := range backups {
 			velero.Backups = append(velero.Backups, backupRecordFrom(b.Object))
 		}
 		reg.set(sourceStatus("velero/backups", "ok", now, nil))
 	}
 
 	// Velero restores
-	if l, err := c.clients.dynamic.Resource(gvrVeleroRestore).Namespace(velNS).List(ctx, metav1.ListOptions{Limit: backupCap}); err != nil {
+	if restores, trunc, err := listWithContinue(ctx, listPage, backupCap, func(opts metav1.ListOptions) ([]unstructured.Unstructured, string, error) {
+		l, e := c.clients.dynamic.Resource(gvrVeleroRestore).Namespace(velNS).List(ctx, opts)
+		if e != nil {
+			return nil, "", e
+		}
+		return l.Items, l.GetContinue(), nil
+	}); err != nil {
 		veleroErr = err
 		reg.set(sourceStatus("velero/restores", "error", now, err))
 	} else {
-		if l.GetContinue() != "" {
+		if trunc {
 			veleroTruncated = true
 		}
-		for _, b := range l.Items {
+		for _, b := range restores {
 			velero.Restores = append(velero.Restores, backupRecordFrom(b.Object))
 		}
 		reg.set(sourceStatus("velero/restores", "ok", now, nil))
 	}
 
 	// CNPG backups
-	if l, err := c.clients.dynamic.Resource(gvrCNPGBackup).Namespace("portal").List(ctx, metav1.ListOptions{Limit: backupCap}); err != nil {
+	if cbackups, trunc, err := listWithContinue(ctx, listPage, backupCap, func(opts metav1.ListOptions) ([]unstructured.Unstructured, string, error) {
+		l, e := c.clients.dynamic.Resource(gvrCNPGBackup).Namespace("portal").List(ctx, opts)
+		if e != nil {
+			return nil, "", e
+		}
+		return l.Items, l.GetContinue(), nil
+	}); err != nil {
 		pgErr = err
 		reg.set(sourceStatus("cnpg/backups", "error", now, err))
 	} else {
-		if l.GetContinue() != "" {
+		if trunc {
 			pgTruncated = true
 		}
-		for _, b := range l.Items {
+		for _, b := range cbackups {
 			rec := backupRecordFrom(b.Object)
 			pg.Backups = append(pg.Backups, rec)
 			if rec.Phase != nil && (*rec.Phase == "completed" || *rec.Phase == "Completed") && rec.CompletedAt != nil {
@@ -961,12 +1003,18 @@ func (c *Collector) collectDatabase(ctx context.Context, snap *Snapshot, reg *So
 
 func (c *Collector) collectMetrics(ctx context.Context, snap *Snapshot, reg *SourceRegistry) {
 	now := time.Now()
-	nm, err := c.clients.dynamic.Resource(gvrNodeMetrics).List(ctx, metav1.ListOptions{Limit: listPage})
+	nm, _, err := listWithContinue(ctx, listPage, listCap, func(opts metav1.ListOptions) ([]unstructured.Unstructured, string, error) {
+		l, e := c.clients.dynamic.Resource(gvrNodeMetrics).List(ctx, opts)
+		if e != nil {
+			return nil, "", e
+		}
+		return l.Items, l.GetContinue(), nil
+	})
 	if err != nil {
 		reg.set(sourceStatus("k8s/metrics", "error", now, err))
 		return
 	}
-	for _, n := range nm.Items {
+	for _, n := range nm {
 		ts, _, _ := unstructured.NestedString(n.Object, "timestamp")
 		window, _, _ := unstructured.NestedInt64(n.Object, "window")
 		cpuStr, _, _ := unstructured.NestedString(n.Object, "usage", "cpu")
@@ -977,11 +1025,17 @@ func (c *Collector) collectMetrics(ctx context.Context, snap *Snapshot, reg *Sou
 		})
 	}
 
-	pm, err := c.clients.dynamic.Resource(gvrPodMetrics).List(ctx, metav1.ListOptions{Limit: listPage})
+	pm, _, err := listWithContinue(ctx, listPage, listCap, func(opts metav1.ListOptions) ([]unstructured.Unstructured, string, error) {
+		l, e := c.clients.dynamic.Resource(gvrPodMetrics).List(ctx, opts)
+		if e != nil {
+			return nil, "", e
+		}
+		return l.Items, l.GetContinue(), nil
+	})
 	if err != nil {
 		reg.set(sourceStatus("k8s/podmetrics", "error", now, err))
 	} else {
-		for _, p := range pm.Items {
+		for _, p := range pm {
 			ts, _, _ := unstructured.NestedString(p.Object, "timestamp")
 			window, _, _ := unstructured.NestedInt64(p.Object, "window")
 			var cpuMillis, memBytes int64
@@ -1021,16 +1075,22 @@ func (c *Collector) collectMetrics(ctx context.Context, snap *Snapshot, reg *Sou
 // Raw event messages are NOT stored; only bounded allowlisted templates.
 func (c *Collector) collectEvents(ctx context.Context, snap *Snapshot, reg *SourceRegistry) {
 	now := time.Now()
-	list, err := c.clients.typed.CoreV1().Events("").List(ctx, metav1.ListOptions{Limit: listPage})
+	list, truncatedEv, err := listWithContinue(ctx, listPage, listCap, func(opts metav1.ListOptions) ([]corev1.Event, string, error) {
+		l, e := c.clients.typed.CoreV1().Events("").List(ctx, opts)
+		if e != nil {
+			return nil, "", e
+		}
+		return l.Items, l.Continue, nil
+	})
 	if err != nil {
 		reg.set(sourceStatus("k8s/events", "error", now, err))
 		snap.setPartial()
 		return
 	}
-	if list.Continue != "" {
+	if truncatedEv {
 		snap.setPartial()
 	}
-	for _, e := range list.Items {
+	for _, e := range list {
 		sev := "normal"
 		if e.Type == corev1.EventTypeWarning {
 			sev = "warning"
