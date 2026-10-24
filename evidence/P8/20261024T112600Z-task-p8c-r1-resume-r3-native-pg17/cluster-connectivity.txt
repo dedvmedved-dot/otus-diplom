@@ -1,0 +1,9 @@
+=== kubectl: ABSENT
+=== kubeconfig /etc/kubernetes/admin.conf: ABSENT
+=== kubeconfig ~/.kube/config: ABSENT
+=== tun0: 192.168.99.164/32
+=== PAK GW 192.168.194.1: REACHABLE
+=== node-01 172.30.140.101:22: CLOSED/UNREACHABLE
+=== node-02 172.30.140.102:22: CLOSED/UNREACHABLE
+=== node-03 172.30.140.103:22: CLOSED/UNREACHABLE
+=== node-03 mgmt 192.168.194.39:22: OPEN
