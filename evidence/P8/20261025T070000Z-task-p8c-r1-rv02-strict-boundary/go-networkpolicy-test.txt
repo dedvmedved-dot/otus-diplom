@@ -1,0 +1,1 @@
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/networkpolicy	0.015s
