@@ -24,3 +24,23 @@ No exec, traffic tests, namespace scans, generic ConfigMap dumps or secrets.
 - Future Portal objects (Gateway/dataplane/Portal pods) are PLANNED; not created.
 - A single inventory.jsonl resolves config/status facts only; it does not close
   any UNKNOWN row by itself — each row closes on review of its specific record.
+
+## Two-phase discovery → approved projection plan (INV-04 remainder)
+
+Phase 1 (base, already in inventory.py) discovers WHICH optional/versioned APIs
+are served. Phase 2 is a separate targeted read whose projection schema is
+reviewed against the DISCOVERED version BEFORE it runs — never guessed.
+
+| Domain | Phase-1 discovery | Phase-2 targeted read (conditional) | Non-secret projected fields | STOP condition |
+|---|---|---|---|---|
+| CNI/proxy mode | `--raw /apis` (served groups) + node annotations are NOT collected; `get nodes` name/addresses/podCIDRs only | CNI config only via the CNI's OWN read-only status/ConfigMap allowlist AFTER provider is identified (e.g. Calico `ippools`/`nodes` status, Cilium `ciliumnodes` status); kube-proxy mode via `get ds kube-proxy -n kube-system -o jsonpath` name/labels only (no args/config dump) | provider kind, proxy mode (iptables/ipvs), dataplane mode, non-secret status fields | unknown provider → STOP, record UNKNOWN |
+| CNI-specific policy | `--raw /apis` presence of `projectcalico.org/v3` / `cilium.io/v2` | list the CNI policy CRD (`networkpolicies`/`ciliumnetworkpolicies`) projected to selector/rules only (same allowlist as k8s NetworkPolicy) | selector, ingress/egress peers+ports | CRD absent → API_NOT_SERVED recorded, not failure |
+| Barman plugin mapping | `get clusters.postgresql.cnpg.io -A` (projected: barmanObjectStoreName + spec.backup) | `get objectstores.barmancloud.cnpg.io -A` (projected) + the cluster→objectstore name link; plugin Deployment/Service in cnpg-system (`get deploy barman-cloud -n cnpg-system` + `get svc`) | objectStore name, endpointURL/destinationPath (sanitized), plugin pod labels/ports, Service selector+targetPort | link not established by name match → UNKNOWN, do NOT assume legacy 5432 |
+| Monitoring scrape identity | `get servicemonitors`/`get podmonitors` + `--raw /apis/monitoring.coreos.com/v1` | if CRDs absent, check alternative scrapers: Prometheus operator pod namespace/labels (`get pods -A` projected labels) + any `prometheus` CR | selector/namespaceSelector/port/path, Prometheus pod identity | no scraper found → "monitoring absent" ONLY with this scoped proof |
+| Gateway/Envoy param refs | `get gatewayclasses` (controllerName) + `get envoyproxies` (conditions) | GatewayClass.spec.parametersRef (name/namespace/kind only — no embedded config) + EnvoyProxy.spec (only provider/telemetry/logging toggles, NO bootstrap YAML) | parametersRef name/namespace/kind, safe boolean/level fields | embedded bootstrap/config → omit, do not dump |
+
+Every Phase-2 read is a fixed GET/LIST with a pre-reviewed field allowlist; a
+field whose safe schema is unknown until discovery requires a SEPARATE targeted
+read definition + review after discovery (an executable dependency, never a
+permission to dump arbitrary config).
+

@@ -97,6 +97,41 @@ class TestAllowlistProjection(unittest.TestCase):
             "https://h:443/p")
         self.assertEqual(inv.sanitize_url("not-a-url"), "not-a-url")
 
+    def test_sanitize_url_malformed_port_omits(self):
+        out = inv.sanitize_url(f"https://user:{CANARY}@host.invalid:bad/?token={CANARY}")
+        self.assertIsNone(out)
+
+    def test_sanitize_url_uppercase_scheme(self):
+        out = inv.sanitize_url(f"HTTPS://user:{CANARY}@host.invalid/?token={CANARY}")
+        self.assertNotIn(CANARY, out)
+        self.assertTrue(out.startswith("https://host.invalid"))
+
+    def test_destination_path_sanitized(self):
+        item = {"metadata": {"name": "os", "labels": {}},
+                "spec": {"data": {"destinationPath": f"s3://user:{CANARY}@bucket.invalid/path?token={CANARY}"}}}
+        out = self._project("objectstores.barmancloud.cnpg.io", item)
+        self.assertNotIn(CANARY, json.dumps(out))
+        self.assertEqual(out[0]["spec"]["data"]["destinationPath"], "s3://bucket.invalid/path")
+
+    def test_endport_preserved(self):
+        item = {"metadata": {"name": "np", "labels": {}},
+                "spec": {"ingress": [{"ports": [{"protocol": "TCP", "port": 8000, "endPort": 8010}]}]}}
+        out = self._project("networkpolicies.networking.k8s.io", item)
+        self.assertEqual(out[0]["spec"]["ingress"][0]["ports"][0]["endPort"], 8010)
+
+    def test_empty_object_rejected(self):
+        with self.assertRaises(ValueError):
+            inv.project_list("networkpolicies.networking.k8s.io", "{}")
+
+    def test_empty_items_list_ok(self):
+        out = json.loads(inv.project_list("networkpolicies.networking.k8s.io", json.dumps({"items": []})))
+        self.assertEqual(out, [])
+
+    def test_nested_bad_metadata_rejected(self):
+        with self.assertRaises(ValueError):
+            inv.project_list("networkpolicies.networking.k8s.io",
+                             json.dumps({"items": [{"metadata": "bad-shape", "spec": {}}]}))
+
 
 class TestClassify(unittest.TestCase):
     def test_parse_error(self):
@@ -111,6 +146,8 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(inv.classify(1, "connection refused", False), "CONNECTION")
     def test_generic(self):
         self.assertEqual(inv.classify(1, "x", False), "GET_FAILED")
+    def test_deadline_timeout(self):
+        self.assertEqual(inv.classify(1, "context deadline exceeded", False), "TIMEOUT")
     def test_success(self):
         self.assertIsNone(inv.classify(0, "", False))
 
@@ -196,6 +233,42 @@ class TestMain(unittest.TestCase):
         self.assertIn('--raw', disc[0]['argv'])
         # recorded argv equals the actual invocation (first 3 + tail)
         self.assertEqual(seen[0], rows[0]['argv'])
+
+    def test_no_direct_stdout_collects_annotations_or_secrets(self):
+        for argv_tail, resource in inv.COMMANDS:
+            jp = ' '.join(argv_tail)
+            if resource is None:
+                self.assertNotIn('.metadata.annotations', jp, f"unsafe field in {argv_tail}")
+                self.assertNotIn('.spec.template', jp, f"pod template in {argv_tail}")
+                self.assertNotIn('env', jp, f"env in {argv_tail}")
+
+    def test_nested_bad_metadata_via_main(self):
+        outputs = []
+        for argv_tail, resource in inv.COMMANDS:
+            if resource == 'networkpolicies.networking.k8s.io':
+                outputs.append(_FakeResult(0, json.dumps({"items": [{"metadata": "bad", "spec": {}}]}), ""))
+            elif resource is not None:
+                outputs.append(_FakeResult(0, json.dumps({"items": []}), ""))
+            else:
+                outputs.append(_FakeResult(0, "", ""))
+        code, outdir, _ = self._run(outputs)
+        self.assertNotEqual(code, 0)
+        rows = [json.loads(x) for x in open(os.path.join(outdir, "inventory.jsonl"))]
+        self.assertTrue(any(r["category"] == "PARSE_ERROR" for r in rows))
+
+    def test_valid_fixture_every_projector(self):
+        fixtures = {
+            'networkpolicies.networking.k8s.io': {"metadata": {"name": "n", "labels": {}}, "spec": {"podSelector": {"matchLabels": {"a": "b"}}, "policyTypes": ["Ingress"]}},
+            'gatewayclasses.gateway.networking.k8s.io': {"metadata": {"name": "g", "labels": {}}, "spec": {"controllerName": "x"}},
+            'gateways.gateway.networking.k8s.io': {"metadata": {"name": "g", "labels": {}}, "spec": {"gatewayClassName": "eg", "listeners": []}},
+            'envoyproxies.gateway.envoyproxy.io': {"metadata": {"name": "e", "labels": {}}},
+            'clusters.postgresql.cnpg.io': {"metadata": {"name": "c", "labels": {}}, "spec": {}},
+            'objectstores.barmancloud.cnpg.io': {"metadata": {"name": "o", "labels": {}}, "spec": {"data": {}}},
+        }
+        for resource, item in fixtures.items():
+            out = inv.project_list(resource, json.dumps({"items": [item]}))
+            self.assertIsInstance(json.loads(out), list)
+            self.assertNotIn(CANARY, out)
 
     def test_no_kubectl_blocks_no_output(self):
         tmp = tempfile.mkdtemp()
