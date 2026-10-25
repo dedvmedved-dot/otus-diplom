@@ -1,0 +1,27 @@
+# P8C RV-02 — recovery + source/worktree state (G0)
+
+RECOVERY_MAIN_SHA: c750dd710898962acfd465ca2b3ff92f82ea2f9a
+origin/main at recovery: c750dd710898962acfd465ca2b3ff92f82ea2f9a
+Delta from a8e32cb (previous evidence HEAD):
+  c750dd7 docs: authorize scoped P8C RV-02 read-only inventory closure
+Worktree dirty at start: 0
+
+## File SHAs (git blob) at recovery
+5956e80015384a5e35b0f68c9cd7a64e7ffbe7ac  portal/networkpolicy/PLAN.md
+778d3c31d6aab97b8390f05bda91e5bc8b16f997  portal/networkpolicy/inventory.py  (pre-change)
+14e347c34f9ed01d3c074234bcf194af6d294cb0  portal/networkpolicy/flows_test.go
+fccb8432135a18f8b7099e131471a48808df1ed7  portal/manifests/networkpolicy.yaml
+2cb27165330fe4b6772af3a06a1940d661efc72f  portal/manifests/deployment.yaml
+
+## This package's changed/new source files (final SHAs)
+1a02efea4742c332406d713e3d94d893afaaf577  portal/networkpolicy/inventory.py
+7ca3aa9c2297199016d037434f819cc7a06d68bb  portal/networkpolicy/inventory_test.py
+d41c315f5092747620bcb5366bb80898978940e7  portal/networkpolicy/flow-matrix.md
+761560945b312cccad267a857c6d7ea979c9f2be  portal/networkpolicy/gaps.md
+c0b9d43967d897ac6e84dd34a00cafdcf3f2407e  portal/networkpolicy/operator-handoff.md
+14e347c34f9ed01d3c074234bcf194af6d294cb0  portal/networkpolicy/flows_test.go (unchanged)
+fccb8432135a18f8b7099e131471a48808df1ed7  portal/manifests/networkpolicy.yaml (unchanged)
+
+## Scope check
+Allowed: portal/networkpolicy/**, portal/manifests/networkpolicy.yaml, new evidence.
+No backend/UI/DB/RBAC change. Application runtime source 817f0ece… unchanged.

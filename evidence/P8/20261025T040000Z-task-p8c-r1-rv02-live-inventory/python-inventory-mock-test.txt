@@ -1,0 +1,16 @@
+test_api_not_served (__main__.TestClassify.test_api_not_served) ... ok
+test_connection (__main__.TestClassify.test_connection) ... ok
+test_forbidden (__main__.TestClassify.test_forbidden) ... ok
+test_generic_failure (__main__.TestClassify.test_generic_failure) ... ok
+test_success_is_none (__main__.TestClassify.test_success_is_none) ... ok
+test_timeout (__main__.TestClassify.test_timeout) ... ok
+test_all_success_writes_jsonl_exit0 (__main__.TestMain.test_all_success_writes_jsonl_exit0) ... ok
+test_failure_exit1 (__main__.TestMain.test_failure_exit1) ... ok
+test_full_object_projection_on_write (__main__.TestMain.test_full_object_projection_on_write) ... ok
+test_no_kubectl_blocks (__main__.TestMain.test_no_kubectl_blocks) ... ok
+test_strips_managed_fields_and_annotations (__main__.TestProjection.test_strips_managed_fields_and_annotations) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.007s
+
+OK

@@ -1,0 +1,40 @@
+=== RUN   TestCandidatePolicyUnionBothSides
+=== RUN   TestCandidatePolicyUnionBothSides/app-db
+=== RUN   TestCandidatePolicyUnionBothSides/app-metrics
+=== RUN   TestCandidatePolicyUnionBothSides/migrator-db
+=== RUN   TestCandidatePolicyUnionBothSides/migrator-no-metrics
+=== RUN   TestCandidatePolicyUnionBothSides/peer-replication
+=== RUN   TestCandidatePolicyUnionBothSides/peer-manager
+=== RUN   TestCandidatePolicyUnionBothSides/operator-manager
+=== RUN   TestCandidatePolicyUnionBothSides/gateway-backend
+=== RUN   TestCandidatePolicyUnionBothSides/xds
+=== RUN   TestCandidatePolicyUnionBothSides/dns-udp
+=== RUN   TestCandidatePolicyUnionBothSides/dns-tcp
+=== RUN   TestCandidatePolicyUnionBothSides/cross-ns-denied
+=== RUN   TestCandidatePolicyUnionBothSides/wrong-owner-denied
+=== RUN   TestCandidatePolicyUnionBothSides/management-denied
+=== RUN   TestCandidatePolicyUnionBothSides/udp-db-denied
+=== RUN   TestCandidatePolicyUnionBothSides/migrator-api-denied
+=== RUN   TestCandidatePolicyUnionBothSides/app-s3-denied
+=== RUN   TestCandidatePolicyUnionBothSides/db-s3
+--- PASS: TestCandidatePolicyUnionBothSides (0.01s)
+    --- PASS: TestCandidatePolicyUnionBothSides/app-db (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/app-metrics (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/migrator-db (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/migrator-no-metrics (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/peer-replication (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/peer-manager (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/operator-manager (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/gateway-backend (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/xds (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-udp (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-tcp (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/cross-ns-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/wrong-owner-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/management-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/udp-db-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/migrator-api-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/app-s3-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/db-s3 (0.00s)
+PASS
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/networkpolicy	0.025s
