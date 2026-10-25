@@ -94,8 +94,8 @@ class TestAllowlistProjection(unittest.TestCase):
     def test_sanitize_url(self):
         self.assertEqual(
             inv.sanitize_url(f"https://user:{CANARY}@h:443/p?q={CANARY}#f"),
-            "https://h:443/p")
-        self.assertEqual(inv.sanitize_url("not-a-url"), "not-a-url")
+            "https://h:443")
+        self.assertIsNone(inv.sanitize_url("not-a-url"))
 
     def test_sanitize_url_malformed_port_omits(self):
         out = inv.sanitize_url(f"https://user:{CANARY}@host.invalid:bad/?token={CANARY}")
@@ -103,15 +103,26 @@ class TestAllowlistProjection(unittest.TestCase):
 
     def test_sanitize_url_uppercase_scheme(self):
         out = inv.sanitize_url(f"HTTPS://user:{CANARY}@host.invalid/?token={CANARY}")
-        self.assertNotIn(CANARY, out)
-        self.assertTrue(out.startswith("https://host.invalid"))
+        self.assertEqual(out, "https://host.invalid")
+
+    def test_sanitize_url_unsupported_scheme_omits(self):
+        self.assertIsNone(inv.sanitize_url(f"ftp://user:{CANARY}@host.invalid/?token={CANARY}"))
+
+    def test_sanitize_url_wrong_type_omits(self):
+        self.assertIsNone(inv.sanitize_url({"credential": CANARY}))
+
+    def test_sanitize_url_path_dropped(self):
+        self.assertEqual(inv.sanitize_url(f"https://host.invalid/{CANARY}"), "https://host.invalid")
+
+    def test_sanitize_url_ipv6(self):
+        self.assertEqual(inv.sanitize_url("https://[2001:db8::1]:9000/"), "https://[2001:db8::1]:9000")
 
     def test_destination_path_sanitized(self):
         item = {"metadata": {"name": "os", "labels": {}},
                 "spec": {"data": {"destinationPath": f"s3://user:{CANARY}@bucket.invalid/path?token={CANARY}"}}}
         out = self._project("objectstores.barmancloud.cnpg.io", item)
         self.assertNotIn(CANARY, json.dumps(out))
-        self.assertEqual(out[0]["spec"]["data"]["destinationPath"], "s3://bucket.invalid/path")
+        self.assertEqual(out[0]["spec"]["data"]["destinationPath"], "s3://bucket.invalid")
 
     def test_endport_preserved(self):
         item = {"metadata": {"name": "np", "labels": {}},
@@ -131,6 +142,33 @@ class TestAllowlistProjection(unittest.TestCase):
         with self.assertRaises(ValueError):
             inv.project_list("networkpolicies.networking.k8s.io",
                              json.dumps({"items": [{"metadata": "bad-shape", "spec": {}}]}))
+
+    def test_bad_spec_rejected(self):
+        with self.assertRaises(ValueError):
+            inv.project_list("clusters.postgresql.cnpg.io",
+                             json.dumps({"items": [{"metadata": {"name": "c"}, "spec": "bad"}]}))
+
+    def test_wrong_kind_rejected(self):
+        with self.assertRaises(ValueError):
+            inv.project_list("networkpolicies.networking.k8s.io",
+                             json.dumps({"items": [{"kind": "Secret", "metadata": {"name": "x"}, "spec": {}}]}))
+
+    def test_missing_identity_rejected(self):
+        with self.assertRaises(ValueError):
+            inv.project_list("networkpolicies.networking.k8s.io",
+                             json.dumps({"items": [{"metadata": {}, "spec": {}}]}))
+
+    def test_bad_match_expressions_rejected(self):
+        with self.assertRaises(ValueError):
+            inv.project_list("networkpolicies.networking.k8s.io",
+                             json.dumps({"items": [{"metadata": {"name": "x"},
+                                                    "spec": {"podSelector": {"matchExpressions": {"credential": CANARY}}}}]}))
+
+    def test_bad_endport_rejected(self):
+        with self.assertRaises(ValueError):
+            inv.project_list("networkpolicies.networking.k8s.io",
+                             json.dumps({"items": [{"metadata": {"name": "x"},
+                                                    "spec": {"ingress": [{"ports": [{"port": 8000, "endPort": {"credential": CANARY}}]}]}}]}))
 
 
 class TestClassify(unittest.TestCase):
@@ -269,6 +307,50 @@ class TestMain(unittest.TestCase):
             out = inv.project_list(resource, json.dumps({"items": [item]}))
             self.assertIsInstance(json.loads(out), list)
             self.assertNotIn(CANARY, out)
+
+    def test_bad_spec_via_main(self):
+        outputs = []
+        for argv_tail, resource in inv.COMMANDS:
+            if resource == 'clusters.postgresql.cnpg.io':
+                outputs.append(_FakeResult(0, json.dumps({"items": [{"metadata": {"name": "c"}, "spec": "bad"}]}), ""))
+            elif resource is not None:
+                outputs.append(_FakeResult(0, json.dumps({"items": []}), ""))
+            else:
+                outputs.append(_FakeResult(0, "", ""))
+        code, outdir, _ = self._run(outputs)
+        self.assertNotEqual(code, 0)
+        content = open(os.path.join(outdir, "inventory.jsonl")).read()
+        rows = [json.loads(x) for x in content.splitlines()]
+        self.assertTrue(any(r["category"] == "PARSE_ERROR" for r in rows))
+        self.assertNotIn("AttributeError", content)
+
+    def test_subprocess_timeout_via_main(self):
+        tmp = tempfile.mkdtemp()
+        outdir = os.path.join(tmp, "inv")
+        def fake_run(argv, **kw):
+            raise subprocess.TimeoutExpired(argv, 20)
+        with mock.patch.object(shutil, "which", return_value="/usr/bin/kubectl"), \
+             mock.patch.object(subprocess, "run", side_effect=fake_run), \
+             mock.patch.object(inv.sys, "argv", ["inventory.py", "--context", "c", "--output", outdir]):
+            code = inv.main()
+        self.assertNotEqual(code, 0)
+        rows = [json.loads(x) for x in open(os.path.join(outdir, "inventory.jsonl"))]
+        self.assertTrue(all(r["category"] == "TIMEOUT" for r in rows))
+        self.assertTrue(all(r["output"] == "" for r in rows))
+
+    def test_subprocess_oserror_via_main(self):
+        tmp = tempfile.mkdtemp()
+        outdir = os.path.join(tmp, "inv")
+        def fake_run(argv, **kw):
+            raise OSError("boom")
+        with mock.patch.object(shutil, "which", return_value="/usr/bin/kubectl"), \
+             mock.patch.object(subprocess, "run", side_effect=fake_run), \
+             mock.patch.object(inv.sys, "argv", ["inventory.py", "--context", "c", "--output", outdir]):
+            code = inv.main()
+        self.assertNotEqual(code, 0)
+        rows = [json.loads(x) for x in open(os.path.join(outdir, "inventory.jsonl"))]
+        self.assertTrue(all(r["category"] == "GET_FAILED" for r in rows))
+        self.assertTrue(all(r["output"] == "" for r in rows))
 
     def test_no_kubectl_blocks_no_output(self):
         tmp = tempfile.mkdtemp()

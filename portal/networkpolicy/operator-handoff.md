@@ -8,10 +8,10 @@ non-secret result.
 
 ## Exact reviewed artifact (pinned, literal)
 - Script: `portal/networkpolicy/inventory.py`
-- Git blob SHA-1: `a39aca5c8f7c614cb8990339de1d84430a935800`
-- File SHA-256: `b6f6b1d2d6ea909ce72268fbd3d85d391551da9a3e073e532220c2fb60959fc5`
+- Git blob SHA-1: `3def89382087d3c202037fcc906fa13287254867`
+- File SHA-256: `c735214f0570c32ff87c25c78453c350d04a05749886e0e87f40fec9be4851a9`
 - Offline mock tests: `portal/networkpolicy/inventory_test.py`
-  (git blob `1a49577f02d3dab317125b2f624630524d85cec0`, SHA-256 `221daddb…`); 27/27 PASS.
+  (git blob `eb28cb5e1575a39e7c26e5e46dc99f936e4f30f7`, SHA-256 `05abd669…`); 39/39 PASS.
 - Immutable source commit/reference is recorded in the delivery report (not a
   computed expression).
 
@@ -30,11 +30,13 @@ python3 portal/networkpolicy/inventory.py \
   15s request timeout and a 20s per-command cap.
 - Full objects (NetworkPolicy / GatewayClass / Gateway / EnvoyProxy / CNPG Cluster /
   ObjectStore) are projected to an explicit per-kind field allowlist: identity,
-  labels, selectors, ports, endpoints, and safe conditions only. Arbitrary
-  spec/status fields, embedded pod templates, env, inline config and credentials
-  never enter the output. URL facts keep only scheme/host[:port]/path (userinfo,
-  query and fragment removed). ObjectStore endpoints are sanitized; only the
-  secret-ref NAME is kept (never content).
+  labels, selectors, ports, endpoints, and safe conditions only. Kind/name and
+  every nested field type are validated; arbitrary spec/status fields, embedded
+  pod templates, env, inline config and credentials never enter the output. URL
+  facts keep origin only (scheme://host[:port]); unsupported scheme/type, bad
+  authority/port and non-string values are omitted (never raw); IPv6 brackets are
+  preserved. ObjectStore endpointURL/destinationPath are origin-sanitized; only
+  the secret-ref NAME is kept (never content).
 - Malformed JSON or wrong object shape fails closed (PARSE_ERROR, empty output,
   nonzero exit) — no raw-body fallback.
 - Records per-command: UTC start/end, exact argv (including `--raw`), exit code,
@@ -45,7 +47,7 @@ python3 portal/networkpolicy/inventory.py \
 - The base inventory resolves: existing workload identities/labels, Services/
   EndpointSlices, namespace labels, NetworkPolicy union, Gateway/EnvoyProxy
   object conditions, CNPG Cluster/ObjectStore declared config, PodMonitor/
-  ServiceMonitor discovery, and node CNI annotations.
+  ServiceMonitor discovery, and node name/addresses/podCIDRs (no annotations).
 - It does NOT prove observed traffic, packet DNAT enforcement, or CNI behavior.
   The eight UNKNOWN gaps (Barman plugin direction, API DNAT, monitoring scrape
   identity, DNS, S3 routing, Envoy ownership, baseline union, CNI semantics) are

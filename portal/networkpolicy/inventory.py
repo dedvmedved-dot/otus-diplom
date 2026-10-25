@@ -2,13 +2,13 @@
 """P8C RV-02 — read-only inventory collector (allowlist-projected).
 
 Issues ONLY fixed `kubectl get` / `--raw` discovery reads. Full objects are
-projected to an explicit per-kind field allowlist (identity/labels/selectors/
-ports/endpoints/conditions) — arbitrary spec/status fields, embedded pod
-templates, env, inline config and credentials never enter evidence. URL facts
-retain only scheme/host[:port]/path (userinfo/query/fragment removed).
+projected to an explicit per-kind field allowlist; arbitrary spec/status fields,
+pod templates, env, inline config and credentials never enter evidence. URL
+fields are strict: only origin (scheme://host[:port]) is kept, unsupported
+scheme/type/authority/port is omitted (None), never the raw value.
 
 Malformed or wrong-shape JSON fails closed (PARSE_ERROR, empty output, nonzero
-exit) — no raw-body fallback. Errors are classified into safe categories.
+exit). Every used field is type-validated before projection.
 
 Run in the authorized operator session:
   python3 portal/networkpolicy/inventory.py --context "<approved>" --output "<new-dir>"
@@ -22,17 +22,17 @@ import subprocess
 import sys
 from urllib.parse import urlsplit
 
-# --- safe URL + field sanitizers ------------------------------------------------
+# --- strict URL sanitizer --------------------------------------------------------
 
 def sanitize_url(v):
-    """Return a sanitized scheme://host[:port][/path] string, or None when the
-    value is malformed or its scheme is not in the allowed set. Never returns
-    the original when it may carry userinfo/query/fragment/credentials."""
+    """Strict URL-field sanitizer. Returns origin-only scheme://host[:port] with
+    IPv6 brackets preserved, or None for unsupported scheme / non-string / bad
+    authority / bad port. Never returns the raw value; path/query/fragment and
+    userinfo are always dropped."""
+    if v is None:
+        return None
     if not isinstance(v, str):
-        return v
-    low = v.lower()
-    if not low.startswith(('http://', 'https://', 's3://', 'tcp://', 'udp://')):
-        return v  # not a URL-like value; passed through verbatim (caller decides)
+        return None
     try:
         p = urlsplit(v)
         scheme = (p.scheme or '').lower()
@@ -41,14 +41,16 @@ def sanitize_url(v):
         host = p.hostname or ''
         if not host:
             return None
+        if ':' in host:
+            host = f"[{host}]"
         if p.port is not None:
             host = f"{host}:{p.port}"
-        # IPv6 authority: hostname already excludes brackets; preserve via host:port.
-        path = p.path or ''
-        return f"{scheme}://{host}{path}"
+        return f"{scheme}://{host}"
     except (ValueError, TypeError):
         return None
 
+
+# --- typed field helpers ----------------------------------------------------------
 
 def _dict(v, field):
     if v is None:
@@ -58,12 +60,26 @@ def _dict(v, field):
     return v
 
 
+def _require_kind(obj, expected):
+    k = obj.get('kind')
+    if k is not None and k != expected:
+        raise ValueError(f'kind {k!r} does not match resource {expected}')
+
+
+def _require_name(md, field):
+    name = md.get('name')
+    if not isinstance(name, str) or not name:
+        raise ValueError(field + '.name required')
+    return name
+
+
 def _meta(obj):
     md = _dict(obj.get('metadata'), 'metadata')
+    _require_name(md, 'metadata')
     return {
         'name': md.get('name'),
         'namespace': md.get('namespace'),
-        'labels': {k: sanitize_url(v) for k, v in _dict(md.get('labels'), 'metadata.labels').items()},
+        'labels': {k: v for k, v in _dict(md.get('labels'), 'metadata.labels').items()},
     }
 
 
@@ -83,8 +99,15 @@ def _conditions(status):
 
 def _selector(sel):
     sel = _dict(sel, 'selector')
+    me = sel.get('matchExpressions')
+    if me is not None:
+        if not isinstance(me, list):
+            raise ValueError('matchExpressions not a list')
+        for e in me:
+            if not isinstance(e, dict):
+                raise ValueError('matchExpression not an object')
     return {'matchLabels': _dict(sel.get('matchLabels'), 'matchLabels'),
-            'matchExpressions': sel.get('matchExpressions') or []}
+            'matchExpressions': me or []}
 
 
 def _peer(p):
@@ -103,8 +126,11 @@ def _peer(p):
 def _port(p):
     p = _dict(p, 'port')
     out = {'port': p.get('port'), 'protocol': p.get('protocol')}
-    if p.get('endPort') is not None:
-        out['endPort'] = p['endPort']
+    ep = p.get('endPort')
+    if ep is not None:
+        if not isinstance(ep, int) or isinstance(ep, bool):
+            raise ValueError('endPort not an integer')
+        out['endPort'] = ep
     return out
 
 
@@ -127,10 +153,11 @@ def _rule(r):
     return out
 
 
-# --- per-kind projectors (explicit allowlists, no spec/status passthrough) -------
+# --- per-kind projectors (explicit allowlists) ------------------------------------
 
 def project_networkpolicy(obj):
-    spec = obj.get('spec') or {}
+    _require_kind(obj, 'NetworkPolicy')
+    spec = _dict(obj.get('spec'), 'spec')
     return {'kind': 'NetworkPolicy', 'metadata': _meta(obj), 'spec': {
         'podSelector': _selector(spec.get('podSelector')),
         'policyTypes': spec.get('policyTypes') or [],
@@ -140,18 +167,20 @@ def project_networkpolicy(obj):
 
 
 def project_gatewayclass(obj):
-    spec = obj.get('spec') or {}
+    _require_kind(obj, 'GatewayClass')
+    spec = _dict(obj.get('spec'), 'spec')
     return {'kind': 'GatewayClass', 'metadata': _meta(obj), 'spec': {
         'controllerName': spec.get('controllerName'),
     }}
 
 
 def project_gateway(obj):
-    spec = obj.get('spec') or {}
+    _require_kind(obj, 'Gateway')
+    spec = _dict(obj.get('spec'), 'spec')
     listeners = []
     for l in (spec.get('listeners') or []):
         if not isinstance(l, dict):
-            continue
+            raise ValueError('listener not an object')
         listeners.append({'name': l.get('name'), 'port': l.get('port'), 'protocol': l.get('protocol')})
     return {'kind': 'Gateway', 'metadata': _meta(obj), 'spec': {
         'gatewayClassName': spec.get('gatewayClassName'), 'listeners': listeners,
@@ -159,30 +188,35 @@ def project_gateway(obj):
 
 
 def project_envoyproxy(obj):
+    _require_kind(obj, 'EnvoyProxy')
     return {'kind': 'EnvoyProxy', 'metadata': _meta(obj),
             'status': {'conditions': _conditions(obj.get('status'))}}
 
 
 def project_cnpg_cluster(obj):
-    spec = obj.get('spec') or {}
-    backup = (spec.get('backup') or {})
-    barman = backup.get('barmanObjectStore') or {}
+    _require_kind(obj, 'Cluster')
+    spec = _dict(obj.get('spec'), 'spec')
+    backup = _dict(spec.get('backup'), 'spec.backup')
+    barman = _dict(backup.get('barmanObjectStore'), 'spec.backup.barmanObjectStore')
+    monitoring = _dict(spec.get('monitoring'), 'spec.monitoring')
     return {'kind': 'Cluster', 'metadata': _meta(obj), 'spec': {
         'instances': spec.get('instances'),
-        'storageSize': (spec.get('storage') or {}).get('size'),
-        'walStorageSize': (spec.get('walStorage') or {}).get('size'),
+        'storageSize': _dict(spec.get('storage'), 'spec.storage').get('size'),
+        'walStorageSize': _dict(spec.get('walStorage'), 'spec.walStorage').get('size'),
         'barmanObjectStoreName': barman.get('name'),
-        'monitoring': (spec.get('monitoring') or {}).get('enablePodMonitor'),
+        'monitoring': monitoring.get('enablePodMonitor'),
     }, 'status': {
-        'phase': (obj.get('status') or {}).get('phase'),
-        'readyInstances': (obj.get('status') or {}).get('readyInstances'),
+        'phase': _dict(obj.get('status'), 'status').get('phase'),
+        'readyInstances': _dict(obj.get('status'), 'status').get('readyInstances'),
         'conditions': _conditions(obj.get('status')),
     }}
 
 
 def project_objectstore(obj):
-    data = (obj.get('spec') or {}).get('data') or {}
-    s3 = data.get('s3Credentials') or {}
+    _require_kind(obj, 'ObjectStore')
+    spec = _dict(obj.get('spec'), 'spec')
+    data = _dict(spec.get('data'), 'spec.data')
+    s3 = _dict(data.get('s3Credentials'), 'spec.data.s3Credentials')
     return {'kind': 'ObjectStore', 'metadata': _meta(obj), 'spec': {'data': {
         'destinationPath': sanitize_url(data.get('destinationPath')),
         'endpointURL': sanitize_url(data.get('endpointURL')),
@@ -190,6 +224,15 @@ def project_objectstore(obj):
         's3CredentialsName': s3.get('name'),
     }}}
 
+
+KIND_BY_RESOURCE = {
+    'networkpolicies.networking.k8s.io': 'NetworkPolicy',
+    'gatewayclasses.gateway.networking.k8s.io': 'GatewayClass',
+    'gateways.gateway.networking.k8s.io': 'Gateway',
+    'envoyproxies.gateway.envoyproxy.io': 'EnvoyProxy',
+    'clusters.postgresql.cnpg.io': 'Cluster',
+    'objectstores.barmancloud.cnpg.io': 'ObjectStore',
+}
 
 FULL_OBJECT_PROJECTORS = {
     'networkpolicies.networking.k8s.io': project_networkpolicy,
@@ -204,9 +247,10 @@ FULL_OBJECT_PROJECTORS = {
 def project_list(resource, raw_json):
     """Parse a kubectl -o json LIST, validate shape, project each item.
 
-    A collection GET always returns an object with an `items` list; an absent/
-    non-list `items` or a non-object item is a PARSE_ERROR (never a fabricated
-    empty/single-object success). An empty `items: []` is legitimate."""
+    A collection GET returns an object with an `items` list; absent/non-list
+    items, a non-object item, wrong kind or invalid nested field shape is a
+    PARSE_ERROR (never a fabricated empty/single-object success). Empty items
+    list is legitimate."""
     data = json.loads(raw_json)  # raises JSONDecodeError -> PARSE_ERROR upstream
     if not isinstance(data, dict):
         raise ValueError('expected object, got ' + type(data).__name__)
@@ -214,10 +258,12 @@ def project_list(resource, raw_json):
     if not isinstance(items, list):
         raise ValueError('expected items list, got ' + type(items).__name__)
     projector = FULL_OBJECT_PROJECTORS[resource]
+    expected_kind = KIND_BY_RESOURCE[resource]
     projected = []
     for it in items:
         if not isinstance(it, dict):
             raise ValueError('item not an object')
+        _require_kind(it, expected_kind)
         projected.append(projector(it))
     return json.dumps(projected)
 
@@ -230,7 +276,6 @@ ENDPOINTS = '{range .items[*]}{.metadata.namespace}{"\\t"}{.metadata.name}{"\\t"
 NAMESPACES = '{range .items[*]}{.metadata.name}{"\\t"}{.metadata.labels}{"\\n"}{end}'
 PODMONITOR = '{range .items[*]}{.metadata.namespace}{"\\t"}{.metadata.name}{"\\t"}{.spec.selector}{"\\t"}{.spec.namespaceSelector}{"\\t"}{range .spec.podMetricsEndpoints[*]}{.port}{":"}{.path}{";"}{end}{"\\n"}{end}'
 
-# (resource, projectable?) — projectable resources are parsed + allowlist-projected.
 FULL_OBJECT_RESOURCES = [
     ('networkpolicies.networking.k8s.io', '-A'),
     ('gatewayclasses.gateway.networking.k8s.io', ''),
@@ -239,8 +284,6 @@ FULL_OBJECT_RESOURCES = [
     ('clusters.postgresql.cnpg.io', '-A'),
     ('objectstores.barmancloud.cnpg.io', '-A'),
 ]
-
-COMMANDS = []  # built below: list of (argv, resource-or-None)
 
 
 def _build_commands():
