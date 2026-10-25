@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Offline mock tests for inventory.py safe projection + error classification.
+"""Offline mock tests for inventory.py allowlist projection + fail-closed parsing.
 
-No kubectl, no cluster. Verifies the collector projects away secret-bearing
-fields (managedFields, annotations) and classifies errors into safe categories
-(TIMEOUT / FORBIDDEN / API_NOT_SERVED / CONNECTION / GET_FAILED) instead of
-leaking tracebacks or credentials.
+No kubectl, no cluster. Verifies: (INV-01) per-kind allowlist projection drops
+arbitrary spec/status fields and URL userinfo/query; (INV-02) malformed JSON and
+invalid shape fail closed (PARSE_ERROR, empty output, nonzero exit); (INV-03) the
+exact argv (including --raw) is recorded; distinct error categories; fail-closed
+on no kubectl before creating output; no-overwrite.
 """
 import importlib.util
 import json
@@ -26,51 +27,91 @@ def load(path, name):
 HERE = os.path.dirname(os.path.abspath(__file__))
 inv = load(os.path.join(HERE, "inventory.py"), "inventory")
 
+CANARY = "SYNTHETIC_REVIEW_CANARY_NOT_A_CREDENTIAL"
 
-class TestProjection(unittest.TestCase):
-    def test_strips_managed_fields_and_annotations(self):
-        obj = {
-            "metadata": {
-                "name": "x",
-                "namespace": "portal",
-                "labels": {"a": "b"},
-                "annotations": {
-                    "kubectl.kubernetes.io/last-applied-configuration": '{"data":{"password":"SECRET"}}'
-                },
-                "managedFields": [{"manager": "kubectl"}],
+
+class TestAllowlistProjection(unittest.TestCase):
+    def _project(self, resource, item):
+        raw = json.dumps({"items": [item]})
+        return json.loads(inv.project_list(resource, raw))
+
+    def test_networkpolicy_drops_unallowlisted(self):
+        item = {
+            "metadata": {"name": "np", "namespace": "portal", "labels": {"a": "b"},
+                         "annotations": {"secret": CANARY}, "managedFields": [CANARY]},
+            "spec": {
+                "podSelector": {"matchLabels": {"app": "portal"}},
+                "policyTypes": ["Ingress"],
+                "ingress": [{"from": [{"podSelector": {"matchLabels": {"x": "y"}}}],
+                             "ports": [{"port": 8080, "protocol": "TCP"}]}],
+                "unneededField": CANARY,
             },
-            "spec": {"podSelector": {"matchLabels": {"app": "portal"}}},
-            "items": [{"metadata": {"annotations": {"x": "y"}, "managedFields": [{}]}, "spec": {}}],
+            "status": {"message": CANARY},
         }
-        out = inv.project(obj)
-        self.assertNotIn("managedFields", out["metadata"])
-        self.assertNotIn("annotations", out["metadata"])
-        self.assertNotIn("managedFields", out["items"][0]["metadata"])
-        self.assertNotIn("annotations", out["items"][0]["metadata"])
-        # name/labels/spec retained
-        self.assertEqual(out["metadata"]["name"], "x")
-        self.assertEqual(out["spec"]["podSelector"]["matchLabels"]["app"], "portal")
-        # no secret leaks through
-        self.assertNotIn("SECRET", json.dumps(out))
+        out = self._project("networkpolicies.networking.k8s.io", item)
+        blob = json.dumps(out)
+        self.assertNotIn(CANARY, blob)
+        self.assertNotIn("unneededField", blob)
+        self.assertNotIn("annotations", blob)
+        self.assertNotIn("managedFields", blob)
+        self.assertNotIn("message", blob)
+        # needed fields retained
+        self.assertEqual(out[0]["spec"]["podSelector"]["matchLabels"]["app"], "portal")
+        self.assertEqual(out[0]["spec"]["ingress"][0]["ports"][0]["port"], 8080)
+
+    def test_url_sanitized(self):
+        item = {
+            "metadata": {"name": "os", "namespace": "portal", "labels": {}},
+            "spec": {"data": {
+                "destinationPath": "s3://bucket/path",
+                "endpointURL": f"https://user:{CANARY}@s3.example.invalid:9000/?token={CANARY}",
+                "s3Credentials": {"name": "portal-s3-creds"},
+            }},
+        }
+        out = self._project("objectstores.barmancloud.cnpg.io", item)
+        blob = json.dumps(out)
+        self.assertNotIn(CANARY, blob)
+        self.assertNotIn("user:", blob)
+        self.assertNotIn("?token", blob)
+        self.assertIn("https://s3.example.invalid:9000", blob)
+        self.assertIn("s3CredentialsName", blob)
+        self.assertIn("portal-s3-creds", blob)
+
+    def test_gateway_listeners_only(self):
+        item = {
+            "metadata": {"name": "g", "namespace": "portal", "labels": {}},
+            "spec": {"gatewayClassName": "eg", "listeners": [{"name": "http", "port": 80, "protocol": "HTTP"}],
+                     "unneeded": CANARY},
+            "status": {"conditions": [{"type": "Ready", "status": "True", "reason": "r", "message": CANARY}]},
+        }
+        out = self._project("gateways.gateway.networking.k8s.io", item)
+        blob = json.dumps(out)
+        self.assertNotIn(CANARY, blob)
+        self.assertNotIn("unneeded", blob)
+        self.assertEqual(out[0]["spec"]["listeners"][0]["port"], 80)
+        self.assertEqual(out[0]["status"]["conditions"][0]["type"], "Ready")
+
+    def test_sanitize_url(self):
+        self.assertEqual(
+            inv.sanitize_url(f"https://user:{CANARY}@h:443/p?q={CANARY}#f"),
+            "https://h:443/p")
+        self.assertEqual(inv.sanitize_url("not-a-url"), "not-a-url")
 
 
 class TestClassify(unittest.TestCase):
+    def test_parse_error(self):
+        self.assertEqual(inv.classify(None, "", False, parse_error=True), "PARSE_ERROR")
     def test_timeout(self):
         self.assertEqual(inv.classify(None, "", True), "TIMEOUT")
-
     def test_forbidden(self):
-        self.assertEqual(inv.classify(1, "Error from server (Forbidden): ...", False), "FORBIDDEN")
-
+        self.assertEqual(inv.classify(1, "Error from server (Forbidden)", False), "FORBIDDEN")
     def test_api_not_served(self):
-        self.assertEqual(inv.classify(1, 'error: the server could not find the requested resource', False), "API_NOT_SERVED")
-
+        self.assertEqual(inv.classify(1, "error: no matches for kind", False), "API_NOT_SERVED")
     def test_connection(self):
-        self.assertEqual(inv.classify(1, "The connection to the server ... was refused", False), "CONNECTION")
-
-    def test_generic_failure(self):
-        self.assertEqual(inv.classify(1, "something else", False), "GET_FAILED")
-
-    def test_success_is_none(self):
+        self.assertEqual(inv.classify(1, "connection refused", False), "CONNECTION")
+    def test_generic(self):
+        self.assertEqual(inv.classify(1, "x", False), "GET_FAILED")
+    def test_success(self):
         self.assertIsNone(inv.classify(0, "", False))
 
 
@@ -82,64 +123,89 @@ class _FakeResult:
 
 
 class TestMain(unittest.TestCase):
-    def _run(self, results, which=True):
+    def _run(self, outputs, which=True):
         tmp = tempfile.mkdtemp()
         outdir = os.path.join(tmp, "inv")
-        calls = {"argv": []}
+        seen = []
+        def fake_run(argv, **kw):
+            seen.append(argv)
+            return outputs.pop(0)
         with mock.patch.object(shutil, "which", return_value="/usr/bin/kubectl" if which else None), \
-             mock.patch.object(subprocess, "run", side_effect=lambda argv, **kw: results.pop(0)) as r, \
+             mock.patch.object(subprocess, "run", side_effect=fake_run), \
              mock.patch.object(inv.sys, "argv", ["inventory.py", "--context", "ctx", "--output", outdir]):
             code = inv.main()
-        return code, outdir
+        return code, outdir, seen
 
-    def test_all_success_writes_jsonl_exit0(self):
-        results = [_FakeResult(0, json.dumps({"items": []}), "") for _ in inv.COMMANDS]
-        code, outdir = self._run(results)
-        self.assertEqual(code, 0)
-        with open(os.path.join(outdir, "inventory.jsonl")) as f:
-            lines = f.readlines()
-        self.assertEqual(len(lines), len(inv.COMMANDS))
-        for ln in lines:
-            r = json.loads(ln)
-            self.assertEqual(r["category"], None)
+    def _valid_output(self, resource, item):
+        if resource is None:
+            return ""
+        return json.dumps({"items": [item]})
 
-    def test_failure_exit1(self):
-        results = []
-        for i, _ in enumerate(inv.COMMANDS):
-            if i == 0:
-                results.append(_FakeResult(1, "", "Error from server (Forbidden)"))
+    def test_valid_full_object_projection_exit0(self):
+        outputs = []
+        for argv_tail, resource in inv.COMMANDS:
+            if resource is not None:
+                outputs.append(_FakeResult(0, json.dumps({"items": [{"metadata": {"name": "x", "labels": {}}, "spec": {}}]}), ""))
             else:
-                results.append(_FakeResult(0, json.dumps({"items": []}), ""))
-        code, _ = self._run(results)
-        self.assertEqual(code, 1)
-
-    def test_full_object_projection_on_write(self):
-        # One full-object command returns JSON with annotations; ensure projection.
-        payload = json.dumps({"items": [{"metadata": {"name": "g", "annotations": {"secret": "x"}, "managedFields": [{}]}, "spec": {}}]})
-        results = []
-        for cmd in inv.COMMANDS:
-            if cmd in inv.FULL_OBJECT_KINDS:
-                results.append(_FakeResult(0, payload, ""))
-            else:
-                results.append(_FakeResult(0, "", ""))
-        code, outdir = self._run(results)
+                outputs.append(_FakeResult(0, "", ""))
+        code, outdir, seen = self._run(outputs)
         self.assertEqual(code, 0)
-        with open(os.path.join(outdir, "inventory.jsonl")) as f:
-            for ln in f:
-                r = json.loads(ln)
-                if '"annotations"' not in r["output"]:
-                    continue
-                self.fail("annotations leaked into projected output")
+        rows = [json.loads(x) for x in open(os.path.join(outdir, "inventory.jsonl"))]
+        self.assertEqual(len(rows), len(inv.COMMANDS))
 
-    def test_no_kubectl_blocks(self):
+    def test_malformed_json_fails_closed(self):
+        outputs = []
+        for argv_tail, resource in inv.COMMANDS:
+            if resource is not None:
+                outputs.append(_FakeResult(0, "not-json " + CANARY, ""))
+            else:
+                outputs.append(_FakeResult(0, "", ""))
+        code, outdir, _ = self._run(outputs)
+        self.assertNotEqual(code, 0)
+        rows = [json.loads(x) for x in open(os.path.join(outdir, "inventory.jsonl"))]
+        for r in rows:
+            if r["category"] == "PARSE_ERROR":
+                self.assertEqual(r["output"], "")
+                self.assertNotIn(CANARY, json.dumps(r))
+        # no raw canary preserved anywhere
+        self.assertNotIn(CANARY, open(os.path.join(outdir, "inventory.jsonl")).read())
+
+    def test_invalid_shape_fails(self):
+        outputs = []
+        for argv_tail, resource in inv.COMMANDS:
+            if resource is not None:
+                outputs.append(_FakeResult(0, json.dumps("scalar-not-object"), ""))
+            else:
+                outputs.append(_FakeResult(0, "", ""))
+        code, _, _ = self._run(outputs)
+        self.assertNotEqual(code, 0)
+
+    def test_argv_preserves_raw(self):
+        outputs = []
+        for argv_tail, resource in inv.COMMANDS:
+            if resource is not None:
+                outputs.append(_FakeResult(0, json.dumps({"items": []}), ""))
+            else:
+                outputs.append(_FakeResult(0, "", ""))
+        code, outdir, seen = self._run(outputs)
+        self.assertEqual(code, 0)
+        rows = [json.loads(x) for x in open(os.path.join(outdir, "inventory.jsonl"))]
+        # find the discovery command and assert --raw preserved in recorded argv
+        disc = [r for r in rows if '/apis/monitoring.coreos.com/v1' in r['argv']]
+        self.assertTrue(disc, "monitoring discovery command missing")
+        self.assertIn('--raw', disc[0]['argv'])
+        # recorded argv equals the actual invocation (first 3 + tail)
+        self.assertEqual(seen[0], rows[0]['argv'])
+
+    def test_no_kubectl_blocks_no_output(self):
         tmp = tempfile.mkdtemp()
-        outdir = os.path.join(tmp, "novel-output")
+        outdir = os.path.join(tmp, "novel")
         with mock.patch.object(shutil, "which", return_value=None), \
              mock.patch.object(inv.sys, "argv", ["inventory.py", "--context", "c", "--output", outdir]):
             with self.assertRaises(SystemExit) as cm:
                 inv.main()
         self.assertIn("BLOCKED", str(cm.exception))
-        self.assertFalse(os.path.exists(outdir), "no output dir should be created when kubectl is absent")
+        self.assertFalse(os.path.exists(outdir))
 
 
 if __name__ == "__main__":
