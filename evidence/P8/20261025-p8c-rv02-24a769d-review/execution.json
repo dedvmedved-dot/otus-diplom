@@ -1,0 +1,26 @@
+{
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "runs": [
+    {
+      "startUTC": "2026-10-25T10:51:14.447209+00:00",
+      "argv": [
+        "python3",
+        "inventory_test.py",
+        "-v"
+      ],
+      "exit": 0,
+      "output": "test_gateway_listeners_only (__main__.TestAllowlistProjection.test_gateway_listeners_only) ... ok\ntest_networkpolicy_drops_unallowlisted (__main__.TestAllowlistProjection.test_networkpolicy_drops_unallowlisted) ... ok\ntest_sanitize_url (__main__.TestAllowlistProjection.test_sanitize_url) ... ok\ntest_url_sanitized (__main__.TestAllowlistProjection.test_url_sanitized) ... ok\ntest_api_not_served (__main__.TestClassify.test_api_not_served) ... ok\ntest_connection (__main__.TestClassify.test_connection) ... ok\ntest_forbidden (__main__.TestClassify.test_forbidden) ... ok\ntest_generic (__main__.TestClassify.test_generic) ... ok\ntest_parse_error (__main__.TestClassify.test_parse_error) ... ok\ntest_success (__main__.TestClassify.test_success) ... ok\ntest_timeout (__main__.TestClassify.test_timeout) ... ok\ntest_argv_preserves_raw (__main__.TestMain.test_argv_preserves_raw) ... /workspace/scratch/14185c8f871f/rv02-24a769d-review/inventory_test.py:192: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp07z8174k/inv/inventory.jsonl' mode='r' encoding='UTF-8'>\n  rows = [json.loads(x) for x in open(os.path.join(outdir, \"inventory.jsonl\"))]\nResourceWarning: Enable tracemalloc to get the object allocation traceback\nok\ntest_invalid_shape_fails (__main__.TestMain.test_invalid_shape_fails) ... ok\ntest_malformed_json_fails_closed (__main__.TestMain.test_malformed_json_fails_closed) ... /workspace/scratch/14185c8f871f/rv02-24a769d-review/inventory_test.py:165: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmprhr8ai5j/inv/inventory.jsonl' mode='r' encoding='UTF-8'>\n  rows = [json.loads(x) for x in open(os.path.join(outdir, \"inventory.jsonl\"))]\nResourceWarning: Enable tracemalloc to get the object allocation traceback\n/workspace/scratch/14185c8f871f/rv02-24a769d-review/inventory_test.py:171: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmprhr8ai5j/inv/inventory.jsonl' mode='r' encoding='UTF-8'>\n  self.assertNotIn(CANARY, open(os.path.join(outdir, \"inventory.jsonl\")).read())\nResourceWarning: Enable tracemalloc to get the object allocation traceback\nok\ntest_no_kubectl_blocks_no_output (__main__.TestMain.test_no_kubectl_blocks_no_output) ... ok\ntest_valid_full_object_projection_exit0 (__main__.TestMain.test_valid_full_object_projection_exit0) ... /workspace/scratch/14185c8f871f/rv02-24a769d-review/inventory_test.py:153: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpfgs1cqaq/inv/inventory.jsonl' mode='r' encoding='UTF-8'>\n  rows = [json.loads(x) for x in open(os.path.join(outdir, \"inventory.jsonl\"))]\nResourceWarning: Enable tracemalloc to get the object allocation traceback\nok\n\n----------------------------------------------------------------------\nRan 16 tests in 0.011s\n\nOK\n",
+      "endUTC": "2026-10-25T10:51:14.529713+00:00"
+    },
+    {
+      "startUTC": "2026-10-25T10:51:14.529729+00:00",
+      "argv": [
+        "python3",
+        "reproduce.py"
+      ],
+      "exit": 0,
+      "output": "{\n  \"sourceBlob\": \"d13d3dbce427f4ab88bcbc07e77c2a43611e6e7b\",\n  \"sourceSHA256\": \"b706526718a58ae6c360005c9f06cb2e46dc90ae086077e6e289118aef01abdc\",\n  \"node_annotations_successfully_written\": {\n    \"exit\": 0,\n    \"canaryInOutput\": true\n  },\n  \"malformed_endpoint_returns_raw\": true,\n  \"uppercase_scheme_returns_raw\": true,\n  \"destination_path_credentials_preserved\": true,\n  \"empty_object_accepted\": [\n    {\n      \"kind\": \"NetworkPolicy\",\n      \"metadata\": {\n        \"name\": null,\n        \"namespace\": null,\n        \"labels\": {}\n      },\n      \"spec\": {\n        \"podSelector\": {},\n        \"policyTypes\": [],\n        \"ingress\": [],\n        \"egress\": []\n      }\n    }\n  ],\n  \"nested_bad_metadata\": {\n    \"exit\": null,\n    \"uncaught\": \"AttributeError\",\n    \"parseErrorRecorded\": false\n  },\n  \"networkpolicy_endPort_lost\": true,\n  \"kubectl_deadline_category\": \"CONNECTION\"\n}\n",
+      "endUTC": "2026-10-25T10:51:14.606308+00:00"
+    }
+  ]
+}
