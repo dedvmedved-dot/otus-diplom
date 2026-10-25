@@ -1,0 +1,23 @@
+[
+  {
+    "startUTC": "2026-10-25T10:18:49.351653+00:00",
+    "argv": [
+      "python3",
+      "inventory_test.py",
+      "-v"
+    ],
+    "exit": 0,
+    "output": "test_api_not_served (__main__.TestClassify.test_api_not_served) ... ok\ntest_connection (__main__.TestClassify.test_connection) ... ok\ntest_forbidden (__main__.TestClassify.test_forbidden) ... ok\ntest_generic_failure (__main__.TestClassify.test_generic_failure) ... ok\ntest_success_is_none (__main__.TestClassify.test_success_is_none) ... ok\ntest_timeout (__main__.TestClassify.test_timeout) ... ok\ntest_all_success_writes_jsonl_exit0 (__main__.TestMain.test_all_success_writes_jsonl_exit0) ... ok\ntest_failure_exit1 (__main__.TestMain.test_failure_exit1) ... ok\ntest_full_object_projection_on_write (__main__.TestMain.test_full_object_projection_on_write) ... ok\ntest_no_kubectl_blocks (__main__.TestMain.test_no_kubectl_blocks) ... ok\ntest_strips_managed_fields_and_annotations (__main__.TestProjection.test_strips_managed_fields_and_annotations) ... ok\n\n----------------------------------------------------------------------\nRan 11 tests in 0.004s\n\nOK\n",
+    "endUTC": "2026-10-25T10:18:49.430506+00:00"
+  },
+  {
+    "startUTC": "2026-10-25T10:18:49.430524+00:00",
+    "argv": [
+      "python3",
+      "reproduce.py"
+    ],
+    "exit": 0,
+    "output": "{\n  \"sourceBlob\": \"1a02efea4742c332406d713e3d94d893afaaf577\",\n  \"projection_preserves_unallowlisted_fields\": true,\n  \"invalid_json_exit\": 0,\n  \"invalid_json_raw_preserved\": true,\n  \"actual_command_has_raw\": true,\n  \"logged_discovery_command_has_raw\": false\n}\n",
+    "endUTC": "2026-10-25T10:18:49.504572+00:00"
+  }
+]
