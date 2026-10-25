@@ -1,0 +1,47 @@
+test_destination_path_sanitized (__main__.TestAllowlistProjection.test_destination_path_sanitized) ... ok
+test_empty_items_list_ok (__main__.TestAllowlistProjection.test_empty_items_list_ok) ... ok
+test_empty_object_rejected (__main__.TestAllowlistProjection.test_empty_object_rejected) ... ok
+test_endport_preserved (__main__.TestAllowlistProjection.test_endport_preserved) ... ok
+test_gateway_listeners_only (__main__.TestAllowlistProjection.test_gateway_listeners_only) ... ok
+test_nested_bad_metadata_rejected (__main__.TestAllowlistProjection.test_nested_bad_metadata_rejected) ... ok
+test_networkpolicy_drops_unallowlisted (__main__.TestAllowlistProjection.test_networkpolicy_drops_unallowlisted) ... ok
+test_sanitize_url (__main__.TestAllowlistProjection.test_sanitize_url) ... ok
+test_sanitize_url_malformed_port_omits (__main__.TestAllowlistProjection.test_sanitize_url_malformed_port_omits) ... ok
+test_sanitize_url_uppercase_scheme (__main__.TestAllowlistProjection.test_sanitize_url_uppercase_scheme) ... ok
+test_url_sanitized (__main__.TestAllowlistProjection.test_url_sanitized) ... ok
+test_api_not_served (__main__.TestClassify.test_api_not_served) ... ok
+test_connection (__main__.TestClassify.test_connection) ... ok
+test_deadline_timeout (__main__.TestClassify.test_deadline_timeout) ... ok
+test_forbidden (__main__.TestClassify.test_forbidden) ... ok
+test_generic (__main__.TestClassify.test_generic) ... ok
+test_parse_error (__main__.TestClassify.test_parse_error) ... ok
+test_success (__main__.TestClassify.test_success) ... ok
+test_timeout (__main__.TestClassify.test_timeout) ... ok
+test_argv_preserves_raw (__main__.TestMain.test_argv_preserves_raw) ... /root/otus-diplom/portal/networkpolicy/inventory_test.py:229: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpgoeag3ew/inv/inventory.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(x) for x in open(os.path.join(outdir, "inventory.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_invalid_shape_fails (__main__.TestMain.test_invalid_shape_fails) ... ok
+test_malformed_json_fails_closed (__main__.TestMain.test_malformed_json_fails_closed) ... /root/otus-diplom/portal/networkpolicy/inventory_test.py:202: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp11ao7kt_/inv/inventory.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(x) for x in open(os.path.join(outdir, "inventory.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/networkpolicy/inventory_test.py:208: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp11ao7kt_/inv/inventory.jsonl' mode='r' encoding='UTF-8'>
+  self.assertNotIn(CANARY, open(os.path.join(outdir, "inventory.jsonl")).read())
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_nested_bad_metadata_via_main (__main__.TestMain.test_nested_bad_metadata_via_main) ... /root/otus-diplom/portal/networkpolicy/inventory_test.py:256: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpgkb1mt4p/inv/inventory.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(x) for x in open(os.path.join(outdir, "inventory.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_no_direct_stdout_collects_annotations_or_secrets (__main__.TestMain.test_no_direct_stdout_collects_annotations_or_secrets) ... ok
+test_no_kubectl_blocks_no_output (__main__.TestMain.test_no_kubectl_blocks_no_output) ... ok
+test_valid_fixture_every_projector (__main__.TestMain.test_valid_fixture_every_projector) ... ok
+test_valid_full_object_projection_exit0 (__main__.TestMain.test_valid_full_object_projection_exit0) ... /root/otus-diplom/portal/networkpolicy/inventory_test.py:190: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpce6tsnmg/inv/inventory.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(x) for x in open(os.path.join(outdir, "inventory.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+
+----------------------------------------------------------------------
+Ran 27 tests in 0.022s
+
+OK
