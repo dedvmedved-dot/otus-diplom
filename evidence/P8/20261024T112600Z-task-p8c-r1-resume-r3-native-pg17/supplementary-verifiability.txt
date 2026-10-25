@@ -1,0 +1,122 @@
+===== supplementary evidence 2026-10-25T03:25:47Z =====
+--- GIT SHA + portal/ unchanged ---
+HEAD=8be55c55c53e0041a180263a5ef23e21f96e3150
+origin/main=8be55c55c53e0041a180263a5ef23e21f96e3150
+GIT_STATUS_PORTAL:
+GIT_DIFF_STAT_PORTAL (should be empty):
+GIT_DIFF_HEAD_STAT_PORTAL (vs HEAD, should be empty):
+--- TOOLCHAIN ---
+go=go version go1.27.3 linux/amd64
+GOTOOLCHAIN=local
+go env GOVERSION=go1.27.3
+--- POSTGRES SERVER IDENTITY (isolated loopback portal_test) ---
+PostgreSQL 17.11 (Ubuntu 17.11-1.pgdg24.04+2) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0, 64-bit
+170011
+--- NATIVE PG17 INTEGRATION (isolated rerun) ---
+START_UTC=2026-10-25T03:25:48Z
+=== RUN   TestIntegrationInsertBatchIdempotent
+--- PASS: TestIntegrationInsertBatchIdempotent (0.05s)
+=== RUN   TestIntegrationEventDedupAndRecreate
+--- PASS: TestIntegrationEventDedupAndRecreate (0.07s)
+=== RUN   TestIntegrationListEventsKeysetStableUnderInsert
+--- PASS: TestIntegrationListEventsKeysetStableUnderInsert (0.06s)
+=== RUN   TestIntegrationPruneTTL
+--- PASS: TestIntegrationPruneTTL (0.07s)
+=== RUN   TestIntegrationPruneCap
+--- PASS: TestIntegrationPruneCap (0.39s)
+=== RUN   TestIntegrationMigrationNoopAndMismatch
+--- PASS: TestIntegrationMigrationNoopAndMismatch (0.04s)
+=== RUN   TestIntegrationLedgerDrift
+--- PASS: TestIntegrationLedgerDrift (0.04s)
+=== RUN   TestIntegrationVerifySchemaNegative
+--- PASS: TestIntegrationVerifySchemaNegative (0.05s)
+=== RUN   TestIntegrationSchemaTypeAndConstraintDrift
+=== RUN   TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_DROP_COLUMN_object_name
+=== RUN   TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_ALTER_COLUMN_occurrence_count_TYPE_integer
+=== RUN   TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_DROP_CONSTRAINT_timeline_events_dedup_key_key
+=== RUN   TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_DROP_CONSTRAINT_timeline_events_dedup_key_key;_ALTER_TABLE_portal.timeline_events_ADD_UNIQUE(dedup_key,source)
+=== RUN   TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_ALTER_COLUMN_message_DROP_NOT_NULL
+=== RUN   TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.observation_batches_DROP_CONSTRAINT_observation_batches_overall_health_check
+=== RUN   TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.schema_migrations_ALTER_COLUMN_applied_at_DROP_DEFAULT
+--- PASS: TestIntegrationSchemaTypeAndConstraintDrift (0.33s)
+    --- PASS: TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_DROP_COLUMN_object_name (0.05s)
+    --- PASS: TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_ALTER_COLUMN_occurrence_count_TYPE_integer (0.04s)
+    --- PASS: TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_DROP_CONSTRAINT_timeline_events_dedup_key_key (0.04s)
+    --- PASS: TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_DROP_CONSTRAINT_timeline_events_dedup_key_key;_ALTER_TABLE_portal.timeline_events_ADD_UNIQUE(dedup_key,source) (0.04s)
+    --- PASS: TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.timeline_events_ALTER_COLUMN_message_DROP_NOT_NULL (0.04s)
+    --- PASS: TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.observation_batches_DROP_CONSTRAINT_observation_batches_overall_health_check (0.05s)
+    --- PASS: TestIntegrationSchemaTypeAndConstraintDrift/ALTER_TABLE_portal.schema_migrations_ALTER_COLUMN_applied_at_DROP_DEFAULT (0.06s)
+=== RUN   TestIntegrationCapturedViewSurvivesInsertUpdatePrune
+--- PASS: TestIntegrationCapturedViewSurvivesInsertUpdatePrune (0.06s)
+=== RUN   TestFixedTLSConfigAndHandshake
+2026/10/25 03:25:50 http: TLS handshake error from 127.0.0.1:39878: remote error: tls: bad certificate
+2026/10/25 03:25:50 http: TLS handshake error from 127.0.0.1:39882: remote error: tls: bad certificate
+--- PASS: TestFixedTLSConfigAndHandshake (0.09s)
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGHOST
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGPORT
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGDATABASE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGUSER
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGPASSWORD
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGPASSFILE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGAPPNAME
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGCONNECT_TIMEOUT
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLMODE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLKEY
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLCERT
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLSNI
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLROOTCERT
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLPASSWORD
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLNEGOTIATION
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGTARGETSESSIONATTRS
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSERVICE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGSERVICEFILE
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGTZ
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGOPTIONS
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGMINPROTOCOLVERSION
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGMAXPROTOCOLVERSION
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGCHANNELBINDING
+=== RUN   TestAllAmbientPGOverridesRejectedBeforeParsing/PGREQUIREAUTH
+--- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGHOST (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGPORT (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGDATABASE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGUSER (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGPASSWORD (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGPASSFILE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGAPPNAME (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGCONNECT_TIMEOUT (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLMODE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLKEY (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLCERT (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLSNI (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLROOTCERT (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLPASSWORD (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSSLNEGOTIATION (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGTARGETSESSIONATTRS (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSERVICE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGSERVICEFILE (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGTZ (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGOPTIONS (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGMINPROTOCOLVERSION (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGMAXPROTOCOLVERSION (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGCHANNELBINDING (0.00s)
+    --- PASS: TestAllAmbientPGOverridesRejectedBeforeParsing/PGREQUIREAUTH (0.00s)
+PASS
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/internal/store	1.242s
+END_UTC=2026-10-25T03:25:50Z
+EXIT_CODE=0
+--- NETWORK CONNECTIVITY RAW (read-only probes; timeout != closed) ---
+kubectl: ABSENT
+kubeconfig /etc/kubernetes/admin.conf: ABSENT
+kubeconfig ~/.kube/config: ABSENT
+--- TCP/22 172.30.140.101 ---
+timeout/unreachable (exit=124)
+--- TCP/22 172.30.140.102 ---
+timeout/unreachable (exit=124)
+--- TCP/22 172.30.140.103 ---
+timeout/unreachable (exit=124)
+--- node-03 mgmt 192.168.194.39:22 ---
+OPEN
+--- PAK GW 192.168.194.1 ---
+rtt min/avg/max/mdev = 50.131/50.131/50.131/0.000 ms
