@@ -1,44 +1,37 @@
-# P8C RV-02 — gaps (post live-inventory)
+# P8C RV-02 — gaps (reconciled, LI-01..03 corrected)
 
-Base evidence: `evidence/P8/20261026T173244Z-p8c-rv02-live-inventory/inventory.jsonl` (15 records).
-Status after reconciliation: RESOLVED / PARTIAL / UNKNOWN / NOT_FOUND.
+Base evidence: `evidence/P8/20261026T173244Z-p8c-rv02-live-inventory/inventory.jsonl`.
 
-1. BAR-5432 — **UNKNOWN**. Observed: barman-cloud pod+svc in cnpg-system TCP 9090
-   (R1,R2). Cluster `portal-db` conditions ContinuousArchiving + LastBackupSucceeded
-   True (R9) → backup active. But the plugin→DB(5432) direction and the actual S3
-   endpoint are NOT captured: the base projection extracts only
-   `spec.backup.barmanObjectStore.name` (null, R9) and ObjectStore `spec.data.*`
-   (all null, R10). The inline backup endpoint/s3Credentials reference lives in the
-   Cluster `spec.backup.barmanObjectStore` body, which is not projected. Phase-2.
+1. BAR-5432 — **UNKNOWN (direction)**. OBSERVED: barman-cloud pluginName
+   `barman-cloud.cloudnative-pg.io`, svc 9090, eps 10.244.190.49, Pod
+   barman-cloud-fddd984d8-ckw25 (R1,R2,R3). Cluster conditions archiving+backup True
+   (R9). Still UNKNOWN: plugin→DB(5432) vs →S3(443) direction and sidecar path
+   (R1 projects containers, not initContainers). Phase-2 (supplemental P2-C1/C2).
 
-2. API-6443 — **PARTIAL**. `default/kubernetes` Service 10.96.0.1:443→targetPort 6443
-   (R2). Node InternalIPs 172.30.140.101/102/103 (R15). Still UNKNOWN: kube-apiserver
-   EndpointSlice addresses + Calico DNAT/enforcement point. Phase-2.
+2. API-6443 — **PARTIAL**. `default/kubernetes` 10.96.0.1:443→6443 (R2) + EndpointSlice
+   addresses 172.30.140.101/102/103:6443 ready=true (R3). UNKNOWN: Calico DNAT /
+   enforcement point. (Addresses already collected — no re-collect.)
 
-3. MON-9187 — **NOT FOUND (surveyed sources)**. `monitoring.coreos.com` NOT served
-   (R11,R12,R13 = API_NOT_SERVED). No Prometheus/Grafana pod (R1); only metrics-server
-   (R1,R2). Cluster monitoring=false (R9). CNPG pods expose 9187 but no scraper is
-   observed. "Not found in surveyed sources" ≠ proven absent cluster-wide.
+3. MON-9187 — **NOT FOUND (surveyed sources)**. monitoring.coreos.com not served
+   (R11-13); no Prometheus/Grafana pod; only metrics-server (R1,R2). CNPG 9187 exposed,
+   no scraper. Not proven-absent cluster-wide.
 
-4. DNS-53 — **RESOLVED**. kube-dns Service 10.96.0.10, UDP+TCP 53 (+metrics 9153) in
-   kube-system (R2).
+4. DNS-53 — **RESOLVED**. kube-dns 10.96.0.10:53 UDP+TCP; eps 10.244.254.65/.66 ready (R2,R3).
 
-5. S3-443 — **UNKNOWN**. ObjectStore `portal-db-backup` projected endpointURL/
-   destinationPath/s3CredentialsName all null (R10). Backup works (R9 conditions) but
-   the canonical endpoint is not in the projected fields (inline config / secret-ref).
-   Phase-2.
+5. S3-443 — **UNKNOWN (live)**. Source (objectstore-portal-db.yaml) defines
+   `spec.configuration.endpointURL = https://s3-backup.demo-pak.test` + destinationPath
+   `s3://portal-postgres-backup/` + secret refs. Base collector read `spec.data` (wrong
+   path) → R10 nulls are NOT_COLLECTED_AT_CORRECT_PATH. Live value requires supplemental
+   `spec.configuration` projection (P2-C1).
 
-6. ENV-* — **RESOLVED (NOT_CREATED)**. GatewayClass `eg` present (R6); Gateways `[]`
-   (R7); EnvoyProxies `[]` (R8). Control-plane envoy-gateway pod+svc present (R1,R2).
-   Dataplane/Gateway objects not created → NOT_CREATED_EXPECTED.
+6. ENV-* — **RESOLVED (NOT_CREATED)**. GatewayClass `eg` (R6); Gateways [] (R7);
+   EnvoyProxies [] (R8). Control-plane envoy-gateway present (R1,R2). Dataplane NOT_CREATED.
 
-7. BASELINE — **RESOLVED**. `networkpolicies.networking.k8s.io -A` = `[]` (R5) → no
-   existing k8s NetworkPolicy. Namespaces catalogued (R4): cert-manager, cnpg-system,
-   default, envoy-gateway-system, kube-node-lease, kube-public, kube-system,
-   metallb-system, piraeus-datastore, portal, velero. (Calico-specific policies are
-   separate — Phase-2.)
+7. BASELINE — **PARTIAL→UNKNOWN**. K8S_NETWORKPOLICY_LIST=EMPTY (R5). But R14 serves
+   `crd.projectcalico.org/v1` AND `policy.networking.k8s.io/v1alpha2` → Calico
+   NetworkPolicy/GlobalNetworkPolicy + other policy CRDs may exist. EFFECTIVE_POLICY_UNION=UNKNOWN.
+   Phase-2 (P2-C3/C4 + P2-D2). Namespaces catalogued (R4).
 
-8. CNI semantics — **PARTIAL**. CNI = Calico (API group `crd.projectcalico.org` served,
-   R14); node podCIDRs 10.244.0/1/2.0/24 (R15). Still UNKNOWN: Calico mode
-   (iptables/eBPF), Calico NetworkPolicy/GlobalNetworkPolicy, DNAT enforcement point.
-   Phase-2.
+8. CNI semantics — **PARTIAL**. Calico present (`crd.projectcalico.org` R14); actual
+   pod IPs 10.244.184/190/254.* ≠ node podCIDRs 10.244.0/1/2.0/24 (R15) — podCIDR is not
+   an IP allowlist. UNKNOWN: Calico version/mode (iptables/eBPF), policy precedence. Phase-2 (P2-D1).
