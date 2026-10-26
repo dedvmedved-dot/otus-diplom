@@ -5,10 +5,16 @@ exact script bytes below, base collection only, in an already authorized operato
 session. Acceptance gate:
 `docs/architecture/P8C_RV02_ACCEPTANCE_b805dff_20261026.md`.
 
-Hermes has NO reachable authorized kubectl context (kubectl and kubeconfig are
-absent on the host; PAK nodes are not reachable over SSH). Per the task, do not
-create access, scan, or bypass via BMC. An operator with an existing authorized
-session runs this pinned package and returns only the sanitized non-secret result.
+Access update (Owner report, 2026-10-26): node-01 is reached by IP
+192.168.194.38 as root from the operator host skhome01 through Office VPN tun1;
+the reported route is 192.168.194.0/24 dev tun1. No SSH alias node-01 is assumed.
+Owner reports hostname=node-01, Python3.11.2, kubectl client v1.36.2 and an
+existing /etc/kubernetes/admin.conf on that node. These live observations are
+Owner-reported, not an independent Architect runtime check. The lack of kubectl
+on the separate Hermes host does not invalidate this operator path.
+Use the existing authorized operator session. No new credentials, accounts,
+cluster permissions, VPN routes or access bypass are authorized.
+See docs/architecture/P8C_RV02_OPERATOR_ACCESS_UPDATE_20261026.md.
 
 ## Exact reviewed artifact (pinned, literal)
 - Source commit: `9a98b385c5a484b0a8f79086b432b8b72289ccee`
