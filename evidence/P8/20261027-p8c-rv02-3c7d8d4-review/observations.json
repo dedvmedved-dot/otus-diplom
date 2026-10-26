@@ -1,0 +1,395 @@
+{
+  "review_head": "3c7d8d44dff9e4cb4397ec85eed76d6b7148fa79",
+  "source_sha": "1b50e4da8e48f4fbae45f2fddd4763910cf8a33c",
+  "hashes": {
+    "supplemental.py": {
+      "sha256": "2a3bd6df606cb1b7cfe6ee383adf16d3160db339a38b7ccd4060344703fb7de2",
+      "git_blob": "14ec155b39670063e6ab49369d9d6e39a4b287a0"
+    },
+    "supplemental_test.py": {
+      "sha256": "24a3e2a527a1e8a94d65fdbd06a499cdfbd004ee85087c64dc4171948bc1d9a9",
+      "git_blob": "48da9d3378eedffdab370504108c915616d1ab41"
+    }
+  },
+  "observations": {
+    "closed_wrong_group": {
+      "rc": 1,
+      "calls": [
+        "D1",
+        "D2",
+        "C1",
+        "C2",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": "PARSE_ERROR",
+        "D2": null,
+        "C1": null,
+        "C2": null,
+        "C3": "BLOCKED_NOT_EXECUTED",
+        "C4": "BLOCKED_NOT_EXECUTED",
+        "C5": "BLOCKED_NOT_EXECUTED",
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "closed_forbidden": {
+      "rc": 1,
+      "calls": [
+        "D1",
+        "D2",
+        "C1",
+        "C2",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": "FORBIDDEN",
+        "D2": null,
+        "C1": null,
+        "C2": null,
+        "C3": "BLOCKED_NOT_EXECUTED",
+        "C4": "BLOCKED_NOT_EXECUTED",
+        "C5": "BLOCKED_NOT_EXECUTED",
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "closed_timeout": {
+      "rc": 1,
+      "calls": [
+        "D1",
+        "D2",
+        "C1",
+        "C2",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": "TIMEOUT",
+        "D2": null,
+        "C1": null,
+        "C2": null,
+        "C3": "BLOCKED_NOT_EXECUTED",
+        "C4": "BLOCKED_NOT_EXECUTED",
+        "C5": "BLOCKED_NOT_EXECUTED",
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "closed_non_json": {
+      "rc": 1,
+      "calls": [
+        "D1",
+        "D2",
+        "C1",
+        "C2",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": "PARSE_ERROR",
+        "D2": null,
+        "C1": null,
+        "C2": null,
+        "C3": "BLOCKED_NOT_EXECUTED",
+        "C4": "BLOCKED_NOT_EXECUTED",
+        "C5": "BLOCKED_NOT_EXECUTED",
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "wrong_scope": {
+      "rc": 0,
+      "calls": [
+        "D1",
+        "D2",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": null,
+        "D2": null,
+        "C1": null,
+        "C2": null,
+        "C3": null,
+        "C4": null,
+        "C5": null,
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "missing_list_verb": {
+      "rc": 0,
+      "calls": [
+        "D1",
+        "D2",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": null,
+        "D2": null,
+        "C1": null,
+        "C2": null,
+        "C3": null,
+        "C4": null,
+        "C5": null,
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "wrong_resource_kind": {
+      "rc": 0,
+      "calls": [
+        "D1",
+        "D2",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": null,
+        "D2": null,
+        "C1": null,
+        "C2": null,
+        "C3": null,
+        "C4": null,
+        "C5": null,
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "missing_felix_resource": {
+      "rc": 0,
+      "calls": [
+        "D1",
+        "D2",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": null,
+        "D2": null,
+        "C1": null,
+        "C2": null,
+        "C3": null,
+        "C4": null,
+        "C5": null,
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "policy_api_served_no_projection_or_unsupported_stop": {
+      "rc": 0,
+      "calls": [
+        "D1",
+        "D2",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": null,
+        "D2": null,
+        "C1": null,
+        "C2": null,
+        "C3": null,
+        "C4": null,
+        "C5": null,
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "service_accounts_raw_member_leak": {
+      "rc": 0,
+      "calls": [
+        "D1",
+        "D2",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": null,
+        "D2": null,
+        "C1": null,
+        "C2": null,
+        "C3": null,
+        "C4": null,
+        "C5": null,
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": true
+    },
+    "pod_port_leaf_leak": {
+      "rc": 0,
+      "calls": [
+        "D1",
+        "D2",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": null,
+        "D2": null,
+        "C1": null,
+        "C2": null,
+        "C3": null,
+        "C4": null,
+        "C5": null,
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": true
+    },
+    "tier_and_notSelector_silent_loss": {
+      "identical_outputs": true,
+      "rc": 0,
+      "category": null
+    },
+    "schema_valid_numeric_protocol_rejected": "ingress.protocol not a string",
+    "status_image_ids_lost": {
+      "regular": null,
+      "init": null
+    },
+    "malformed_containers_silently_dropped": {
+      "rc": 0,
+      "calls": [
+        "D1",
+        "D2",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": null,
+        "D2": null,
+        "C1": null,
+        "C2": null,
+        "C3": null,
+        "C4": null,
+        "C5": null,
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "pod_wrong_kind_empty_namespace_accepted": {
+      "rc": 0,
+      "calls": [
+        "D1",
+        "D2",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": null,
+        "D2": null,
+        "C1": null,
+        "C2": null,
+        "C3": null,
+        "C4": null,
+        "C5": null,
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "named_get_identity_not_bound": {
+      "rc": 0,
+      "calls": [
+        "D1",
+        "D2",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": null,
+        "D2": null,
+        "C1": null,
+        "C2": null,
+        "C3": null,
+        "C4": null,
+        "C5": null,
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "no_runtime_version_dependency": {
+      "reads": [
+        "D1",
+        "D2",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "S1",
+        "S2"
+      ],
+      "calico_identity_read": false,
+      "software_identity_gate": false
+    }
+  },
+  "result": "PARTIAL_FIXES_CONFIRMED_AND_REMAINING_DEFECTS_REPRODUCED",
+  "cluster_calls": 0
+}

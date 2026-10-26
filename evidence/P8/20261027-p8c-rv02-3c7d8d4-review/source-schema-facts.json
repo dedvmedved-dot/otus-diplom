@@ -1,0 +1,21 @@
+{
+  "repository_ref": "3c7d8d44dff9e4cb4397ec85eed76d6b7148fa79",
+  "path": "ansible/playbooks/files/calico-v3.32.0.yaml",
+  "git_blob": "21ea9b4b163305ea479bc7708965104465ffc716",
+  "scope": "Repository source schema, NOT verification of runtime Calico version",
+  "facts": {
+    "networkpolicy": {
+      "serviceAccounts": "properties names: array<string>, selector: string",
+      "source.notSelector": "string",
+      "spec.tier": "string, default default",
+      "rule.protocol": "integer or string"
+    },
+    "felixconfiguration": {
+      "dataplane": "no property found in this source schema",
+      "bpfEnabled": "boolean",
+      "nftablesMode": "enum Disabled/Enabled/Auto; default Auto",
+      "iptablesBackend": "present",
+      "nodeSelector": "present"
+    }
+  }
+}
