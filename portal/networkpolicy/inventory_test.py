@@ -48,8 +48,18 @@ SPECS = {
 }
 
 
+API_VERSIONS = {
+    "NetworkPolicy": "networking.k8s.io/v1",
+    "GatewayClass": "gateway.networking.k8s.io/v1",
+    "Gateway": "gateway.networking.k8s.io/v1",
+    "EnvoyProxy": "gateway.envoyproxy.io/v1alpha1",
+    "Cluster": "postgresql.cnpg.io/v1",
+    "ObjectStore": "barmancloud.cnpg.io/v1",
+}
+
+
 def fixture(kind):
-    return {"apiVersion": "fixture/v1", "kind": kind,
+    return {"apiVersion": API_VERSIONS[kind], "kind": kind,
             "metadata": {"name": "example", "namespace": "portal", "labels": {"app": "portal"}},
             "spec": copy.deepcopy(SPECS[kind]),
             "status": {"phase": "Ready", "readyInstances": 3,
@@ -155,6 +165,20 @@ class TestProjection(unittest.TestCase):
             self.assertIsInstance(out, list)
             self.assertEqual(out[0]["metadata"]["name"], "example")
             self.assertNotIn(CANARY, json.dumps(out))
+        # per-kind projected facts (not only name)
+        np_out = project("networkpolicies.networking.k8s.io", fixture("NetworkPolicy"))[0]
+        self.assertEqual(np_out["spec"]["ingress"][0]["ports"][0]["endPort"], 8010)
+        self.assertEqual(np_out["spec"]["ingress"][0]["from"][0]["ipBlock"]["cidr"], "10.0.0.0/24")
+        gc_out = project("gatewayclasses.gateway.networking.k8s.io", fixture("GatewayClass"))[0]
+        self.assertEqual(gc_out["spec"]["controllerName"], "gateway.envoyproxy.io/gatewayclass-controller")
+        gw_out = project("gateways.gateway.networking.k8s.io", fixture("Gateway"))[0]
+        self.assertEqual(gw_out["spec"]["listeners"][0]["port"], 80)
+        cl_out = project("clusters.postgresql.cnpg.io", fixture("Cluster"))[0]
+        self.assertEqual(cl_out["spec"]["instances"], 3)
+        self.assertEqual(cl_out["spec"]["storageSize"], "10Gi")
+        os_out = project("objectstores.barmancloud.cnpg.io", fixture("ObjectStore"))[0]
+        self.assertEqual(os_out["spec"]["data"]["endpointURL"], "https://s3.example.invalid:9000")
+        self.assertEqual(os_out["spec"]["data"]["s3CredentialsName"], "ref")
 
 
 class TestClassify(unittest.TestCase):
@@ -372,6 +396,81 @@ class TestMalformedLeaves(unittest.TestCase):
             self.assertEqual(rows[0]["category"], "PARSE_ERROR", f"{resource}:{path}")
             self.assertEqual(rows[0]["output"], "", f"{resource}:{path}")
             self.assertNotIn(CANARY, rows[0]["output"], f"{resource}:{path}")
+
+
+REMAINING_REJECT = [
+    ("networkpolicies.networking.k8s.io", "spec.ingress", False),
+    ("networkpolicies.networking.k8s.io", "spec.egress", {}),
+    ("gateways.gateway.networking.k8s.io", "spec.listeners", ""),
+    ("networkpolicies.networking.k8s.io", "spec.ingress", [None]),
+    ("networkpolicies.networking.k8s.io", "spec.ingress", [{"from": [None]}]),
+    ("networkpolicies.networking.k8s.io", "spec.podSelector", None),
+    ("networkpolicies.networking.k8s.io", "metadata.name", ""),
+    ("networkpolicies.networking.k8s.io", "metadata.namespace", None),
+    ("networkpolicies.networking.k8s.io", "spec.podSelector.matchExpressions", [{"key": "app", "values": ["portal"]}]),
+    ("envoyproxies.gateway.envoyproxy.io", "status.conditions", [{"type": "Ready"}]),
+    ("networkpolicies.networking.k8s.io", "spec.ingress.0.ports", [{"port": "http", "endPort": 8080}]),
+    ("networkpolicies.networking.k8s.io", "spec.ingress.0.ports", [{"endPort": 8080}]),
+]
+
+
+class TestRemaining(unittest.TestCase):
+    def _run_item(self, resource, item):
+        tmp = tempfile.mkdtemp()
+        outdir = os.path.join(tmp, "out")
+        command = (["get", resource, "-A", "-o", "json"], resource)
+        result = subprocess.CompletedProcess([], 0, json.dumps({"items": [item]}), "")
+        with mock.patch.object(inv, "COMMANDS", [command]), \
+             mock.patch.object(shutil, "which", return_value="/mock/kubectl"), \
+             mock.patch.object(subprocess, "run", return_value=result), \
+             mock.patch.object(inv.sys, "argv", ["inventory.py", "--context", "mock", "--output", outdir]):
+            code = inv.main()
+        rows = [json.loads(s) for s in (Path(outdir) / "inventory.jsonl").read_text().splitlines()]
+        return code, rows
+
+    def test_tc_cases_rejected(self):
+        for resource, path, value in REMAINING_REJECT:
+            kind = KIND_BY_RESOURCE[resource]
+            item = fixture(kind)
+            assign(item, path, value)
+            code, rows = self._run_item(resource, item)
+            self.assertNotEqual(code, 0, f"{resource}:{path}={value!r}")
+            self.assertEqual(rows[0]["category"], "PARSE_ERROR", f"{resource}:{path}={value!r}")
+            self.assertEqual(rows[0]["output"], "", f"{resource}:{path}={value!r}")
+
+    def test_positive_empty_rule_and_selector(self):
+        item = fixture("NetworkPolicy")
+        item["spec"]["podSelector"] = {}          # explicit empty selector (select all)
+        item["spec"]["ingress"] = []              # legitimate empty list
+        code, rows = self._run_item("networkpolicies.networking.k8s.io", item)
+        self.assertEqual(code, 0)
+        self.assertEqual(rows[0]["category"], None)
+
+    def test_positive_cluster_scoped_identity(self):
+        item = fixture("GatewayClass")
+        del item["metadata"]["namespace"]         # cluster-scoped may omit namespace
+        code, rows = self._run_item("gatewayclasses.gateway.networking.k8s.io", item)
+        self.assertEqual(code, 0)
+
+    def test_positive_named_port_without_range(self):
+        item = fixture("NetworkPolicy")
+        item["spec"]["ingress"] = [{"ports": [{"port": "http", "protocol": "TCP"}]}]
+        code, rows = self._run_item("networkpolicies.networking.k8s.io", item)
+        self.assertEqual(code, 0)
+        self.assertIn("http", rows[0]["output"])
+
+    def test_positive_numeric_range(self):
+        item = fixture("NetworkPolicy")
+        item["spec"]["ingress"] = [{"ports": [{"port": 8000, "endPort": 8010, "protocol": "TCP"}]}]
+        code, rows = self._run_item("networkpolicies.networking.k8s.io", item)
+        self.assertEqual(code, 0)
+        self.assertIn("8010", rows[0]["output"])
+
+    def test_positive_absent_status(self):
+        item = fixture("EnvoyProxy")
+        del item["status"]
+        code, rows = self._run_item("envoyproxies.gateway.envoyproxy.io", item)
+        self.assertEqual(code, 0)
 
 
 if __name__ == "__main__":

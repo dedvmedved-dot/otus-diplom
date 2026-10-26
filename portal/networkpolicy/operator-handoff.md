@@ -8,10 +8,10 @@ non-secret result.
 
 ## Exact reviewed artifact (pinned, literal)
 - Script: `portal/networkpolicy/inventory.py`
-- Git blob SHA-1: `e8c7adc06860f4ec7b60bde487247fa8d5f4577b`
-- File SHA-256: `afb9a38010a5787612c88bb84a8fe4968e3d8f95b83e19eb163189656a99123d`
+- Git blob SHA-1: `5f0e2450358bfd9b08b542f013be5a914b9195a4`
+- File SHA-256: `7806f494bcee93f31eb2cb0348d2cd8f7cbbf5743261336226a251643d8988a2`
 - Offline mock tests: `portal/networkpolicy/inventory_test.py`
-  (git blob `be4083321f3509aac2f257bc06c7694a5e63e65c`, SHA-256 `fe8efe57…`); 36/36 PASS.
+  (git blob `be985eb78a1b7f437d154a40b3564cab99243d07`, SHA-256 `6354b829…`); 42/42 PASS.
 - Immutable source commit/reference is recorded in the delivery report (not a
   computed expression).
 

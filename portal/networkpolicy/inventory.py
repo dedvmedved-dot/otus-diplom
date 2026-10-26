@@ -63,6 +63,29 @@ def _dict(v, field):
     return v
 
 
+def _dict_req(v, field):
+    """Required object: null/absent is not an empty object."""
+    if not isinstance(v, dict):
+        raise ValueError(field + ' not an object')
+    return v
+
+
+def _list_or_empty(v, field):
+    """Optional list: None -> []; any other non-list (false/0/''/{}) -> error."""
+    if v is None:
+        return []
+    if not isinstance(v, list):
+        raise ValueError(field + ' not a list')
+    return v
+
+
+def _nonempty_str(v, field, allow_none=False):
+    s = _str(v, field, allow_none=allow_none)
+    if s is not None and s == '':
+        raise ValueError(field + ' must be nonempty')
+    return s
+
+
 def _str(v, field, allow_none=False):
     if v is None:
         if allow_none:
@@ -120,9 +143,11 @@ def _str_list(v, field):
     return v
 
 
-def _enum(v, field, allowed):
+def _enum(v, field, allowed, allow_none=False):
     if v is None:
-        return None
+        if allow_none:
+            return None
+        raise ValueError(field + ' required')
     if not isinstance(v, str) or v not in allowed:
         raise ValueError(field + ' invalid enum value')
     return v
@@ -134,11 +159,13 @@ def _require_kind(obj, expected):
         raise ValueError(f'kind {k!r} does not match resource {expected}')
 
 
-def _meta(obj):
+def _meta(obj, namespaced=True):
     md = _dict(obj.get('metadata'), 'metadata')
-    name = _str(md.get('name'), 'metadata.name')
+    name = _nonempty_str(md.get('name'), 'metadata.name')
     ns = md.get('namespace')
-    if ns is not None:
+    if namespaced:
+        ns = _nonempty_str(ns, 'metadata.namespace')
+    elif ns is not None:
         ns = _str(ns, 'metadata.namespace')
     labels = _str_map(md.get('labels'), 'metadata.labels')
     return {'name': name, 'namespace': ns, 'labels': labels}
@@ -162,8 +189,13 @@ def _conditions(status):
     return out
 
 
-def _selector(sel):
-    sel = _dict(sel, 'selector')
+def _selector(sel, required=False):
+    if sel is None:
+        if required:
+            raise ValueError('selector required')
+        return {'matchLabels': {}, 'matchExpressions': []}
+    if not isinstance(sel, dict):
+        raise ValueError('selector not an object')
     me = sel.get('matchExpressions')
     match_expressions = []
     if me is not None:
@@ -183,14 +215,14 @@ def _selector(sel):
 
 
 def _peer(p):
-    p = _dict(p, 'peer')
+    p = _dict_req(p, 'peer')
     out = {}
     if 'podSelector' in p:
         out['podSelector'] = _selector(p['podSelector'])
     if 'namespaceSelector' in p:
         out['namespaceSelector'] = _selector(p['namespaceSelector'])
     if 'ipBlock' in p:
-        ib = _dict(p['ipBlock'], 'ipBlock')
+        ib = _dict_req(p['ipBlock'], 'ipBlock')
         out['ipBlock'] = {
             'cidr': _str(ib.get('cidr'), 'ipBlock.cidr'),
             'except': _str_list(ib.get('except'), 'ipBlock.except'),
@@ -209,15 +241,17 @@ def _port_value(v, field):
 
 
 def _port(p):
-    p = _dict(p, 'port')
+    p = _dict_req(p, 'port')
     port = p.get('port')
     if port is not None:
         port = _port_value(port, 'port')
-    protocol = _enum(p.get('protocol'), 'protocol', ('TCP', 'UDP', 'SCTP'))
+    protocol = _enum(p.get('protocol'), 'protocol', ('TCP', 'UDP', 'SCTP'), allow_none=True)
     ep = p.get('endPort')
     if ep is not None:
         ep = _int(ep, 'endPort', lo=1, hi=65535)
-        if isinstance(port, int) and ep < port:
+        if not isinstance(port, int):
+            raise ValueError('endPort requires numeric port')
+        if ep < port:
             raise ValueError('endPort < port')
     out = {'port': port, 'protocol': protocol}
     if ep is not None:
@@ -226,7 +260,7 @@ def _port(p):
 
 
 def _rule(r):
-    r = _dict(r, 'rule')
+    r = _dict_req(r, 'rule')
     out = {}
     if 'ports' in r:
         ports = r['ports']
@@ -248,43 +282,46 @@ def _rule(r):
 
 def project_networkpolicy(obj):
     _require_kind(obj, 'NetworkPolicy')
-    spec = _dict(obj.get('spec'), 'spec')
+    spec = _dict_req(obj.get('spec'), 'spec')
     pt = spec.get('policyTypes')
     if pt is not None:
         pt = _str_list(pt, 'policyTypes')
         for t in pt:
             _enum(t, 'policyTypes item', ('Ingress', 'Egress'))
+    ingress = _list_or_empty(spec.get('ingress'), 'ingress')
+    egress = _list_or_empty(spec.get('egress'), 'egress')
     return {'kind': 'NetworkPolicy', 'metadata': _meta(obj), 'spec': {
-        'podSelector': _selector(spec.get('podSelector')),
+        'podSelector': _selector(spec.get('podSelector'), required=True),
         'policyTypes': pt or [],
-        'ingress': [_rule(x) for x in (spec.get('ingress') or [])],
-        'egress': [_rule(x) for x in (spec.get('egress') or [])],
+        'ingress': [_rule(x) for x in ingress],
+        'egress': [_rule(x) for x in egress],
     }}
 
 
 def project_gatewayclass(obj):
     _require_kind(obj, 'GatewayClass')
-    spec = _dict(obj.get('spec'), 'spec')
-    return {'kind': 'GatewayClass', 'metadata': _meta(obj), 'spec': {
+    spec = _dict_req(obj.get('spec'), 'spec')
+    return {'kind': 'GatewayClass', 'metadata': _meta(obj, namespaced=False), 'spec': {
         'controllerName': _str(spec.get('controllerName'), 'controllerName'),
     }}
 
 
 def project_gateway(obj):
     _require_kind(obj, 'Gateway')
-    spec = _dict(obj.get('spec'), 'spec')
-    listeners = []
-    for l in (spec.get('listeners') or []):
+    spec = _dict_req(obj.get('spec'), 'spec')
+    listeners = _list_or_empty(spec.get('listeners'), 'listeners')
+    projected_listeners = []
+    for l in listeners:
         if not isinstance(l, dict):
             raise ValueError('listener not an object')
-        listeners.append({
+        projected_listeners.append({
             'name': _str(l.get('name'), 'listener.name'),
             'port': _int(l.get('port'), 'listener.port', lo=1, hi=65535),
             'protocol': _str(l.get('protocol'), 'listener.protocol'),
         })
     return {'kind': 'Gateway', 'metadata': _meta(obj), 'spec': {
         'gatewayClassName': _str(spec.get('gatewayClassName'), 'gatewayClassName'),
-        'listeners': listeners,
+        'listeners': projected_listeners,
     }, 'status': {'conditions': _conditions(obj.get('status'))}}
 
 
@@ -296,7 +333,7 @@ def project_envoyproxy(obj):
 
 def project_cnpg_cluster(obj):
     _require_kind(obj, 'Cluster')
-    spec = _dict(obj.get('spec'), 'spec')
+    spec = _dict_req(obj.get('spec'), 'spec')
     backup = _dict(spec.get('backup'), 'spec.backup')
     barman = _dict(backup.get('barmanObjectStore'), 'spec.backup.barmanObjectStore')
     monitoring = _dict(spec.get('monitoring'), 'spec.monitoring')
@@ -318,7 +355,7 @@ def project_cnpg_cluster(obj):
 
 def project_objectstore(obj):
     _require_kind(obj, 'ObjectStore')
-    spec = _dict(obj.get('spec'), 'spec')
+    spec = _dict_req(obj.get('spec'), 'spec')
     data = _dict(spec.get('data'), 'spec.data')
     s3 = _dict(data.get('s3Credentials'), 'spec.data.s3Credentials')
     return {'kind': 'ObjectStore', 'metadata': _meta(obj), 'spec': {'data': {
