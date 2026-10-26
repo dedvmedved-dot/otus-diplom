@@ -1,0 +1,47 @@
+test_discovery_forbidden_blocks (__main__.TestDiscoveryGate.test_discovery_forbidden_blocks) ... /root/otus-diplom/portal/networkpolicy/supplemental_test.py:97: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpcvhvcskq/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_discovery_timeout_blocks (__main__.TestDiscoveryGate.test_discovery_timeout_blocks) ... /root/otus-diplom/portal/networkpolicy/supplemental_test.py:97: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp06b0qban/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_extra_discovery_member_dropped (__main__.TestDiscoveryGate.test_extra_discovery_member_dropped) ... /root/otus-diplom/portal/networkpolicy/supplemental_test.py:97: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpzuetsrce/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_non_json_discovery_rejected (__main__.TestDiscoveryGate.test_non_json_discovery_rejected) ... /root/otus-diplom/portal/networkpolicy/supplemental_test.py:97: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmptmvyjtlh/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_valid_discovery_runs_all (__main__.TestDiscoveryGate.test_valid_discovery_runs_all) ... /root/otus-diplom/portal/networkpolicy/supplemental_test.py:97: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpk87i2vu7/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_wrong_discovery_blocks_dependents (__main__.TestDiscoveryGate.test_wrong_discovery_blocks_dependents) ... /root/otus-diplom/portal/networkpolicy/supplemental_test.py:97: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp5tx9ppe5/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_no_kubectl (__main__.TestNoOverwriteNoKubectl.test_no_kubectl) ... ok
+test_no_overwrite (__main__.TestNoOverwriteNoKubectl.test_no_overwrite) ... /root/otus-diplom/portal/networkpolicy/supplemental_test.py:221: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpaurdm4x4/exists/supplemental.jsonl' mode='w' encoding='UTF-8'>
+  open(os.path.join(dest, "supplemental.jsonl"), "w").write("KEEP")
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_cluster_plugins (__main__.TestProjectors.test_cluster_plugins) ... ok
+test_empty_namespace_rejected (__main__.TestProjectors.test_empty_namespace_rejected) ... ok
+test_false_secret_ref_rejected (__main__.TestProjectors.test_false_secret_ref_rejected) ... ok
+test_felix (__main__.TestProjectors.test_felix) ... ok
+test_gnp_cluster_scoped_valid (__main__.TestProjectors.test_gnp_cluster_scoped_valid) ... ok
+test_malformed_items_rejected (__main__.TestProjectors.test_malformed_items_rejected) ... ok
+test_missing_spec_rejected (__main__.TestProjectors.test_missing_spec_rejected) ... ok
+test_objectstore_configuration (__main__.TestProjectors.test_objectstore_configuration) ... ok
+test_pod_identity (__main__.TestProjectors.test_pod_identity) ... ok
+test_policy_nested_metadata_dropped (__main__.TestProjectors.test_policy_nested_metadata_dropped) ... ok
+test_policy_scalar_canary_rejected (__main__.TestProjectors.test_policy_scalar_canary_rejected) ... ok
+test_policy_valid (__main__.TestProjectors.test_policy_valid) ... ok
+test_wrong_api_version_rejected (__main__.TestProjectors.test_wrong_api_version_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 21 tests in 0.017s
+
+OK
