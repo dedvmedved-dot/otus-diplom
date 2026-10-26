@@ -1,0 +1,121 @@
+{
+  "reviewed_head": "e80ff8dc17cfbce611322c195278d7c715281b24",
+  "source_sha": "2c3114a0f814274c3992b79d7955d21ae0030c98",
+  "hashes": {
+    "supplemental.py": {
+      "sha256": "aff795960eabc3349058a16de40a47ef36d5ad87eb8b0fc84bf0b7478a7ee13b",
+      "git_blob": "fa01e29697df225cc258d571facbefa1a8b9a412"
+    },
+    "supplemental_test.py": {
+      "sha256": "d216038cfee11bc040fb71c40252a52513316fdd8e0ff80bb8d7a816e49a2697",
+      "git_blob": "046f08b2c6b132f7a9b30b345d83f0238bc7051e"
+    }
+  },
+  "observations": {
+    "wrong_discovery_identity": {
+      "rc": 0,
+      "calls": 6,
+      "config_calls": 4,
+      "categories": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "canary_retained": false,
+      "first_output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"wrong.invalid/v9\", \"resources\": []}"
+    },
+    "discovery_forbidden": {
+      "rc": 1,
+      "calls": 6,
+      "config_calls": 4,
+      "categories": [
+        "FORBIDDEN",
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "canary_retained": false,
+      "first_output": ""
+    },
+    "discovery_timeout": {
+      "rc": 1,
+      "calls": 6,
+      "config_calls": 4,
+      "categories": [
+        "TIMEOUT",
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "canary_retained": false,
+      "first_output": ""
+    },
+    "non_json_discovery": {
+      "rc": 0,
+      "calls": 6,
+      "config_calls": 4,
+      "categories": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "canary_retained": true,
+      "first_output": "not JSON SYNTHETIC_PHASE2_CANARY_NOT_A_SECRET"
+    },
+    "extra_discovery_member": {
+      "rc": 0,
+      "calls": 6,
+      "config_calls": 4,
+      "categories": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "canary_retained": true,
+      "first_output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"crd.projectcalico.org/v1\", \"resources\": [], \"unexpected\": \"SYNTHETIC_PHASE2_CANARY_NOT_A_SECRET\"}"
+    },
+    "untyped_policy_fields": {
+      "selector": {
+        "accepted": true,
+        "canary_retained": true
+      },
+      "order": {
+        "accepted": true,
+        "canary_retained": true
+      },
+      "ingress": {
+        "accepted": true,
+        "canary_retained": true
+      },
+      "egress": {
+        "accepted": true,
+        "canary_retained": true
+      },
+      "types": {
+        "accepted": true,
+        "canary_retained": true
+      }
+    },
+    "valid_cluster_scoped_gnp": "metadata.namespace required",
+    "malformed_items_silently_dropped": "[]",
+    "wrong_object_api_version": "accepted",
+    "false_secret_ref": "accepted_as_null",
+    "missing_required_spec": "accepted_as_empty_configuration",
+    "empty_namespace": "accepted"
+  },
+  "cluster_calls": 0,
+  "result": "DEFECTS_REPRODUCED; NOT_APPROVED_FOR_LIVE"
+}
