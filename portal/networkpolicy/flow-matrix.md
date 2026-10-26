@@ -6,7 +6,7 @@ Base evidence: `evidence/P8/20261026T173244Z-p8c-rv02-live-inventory/inventory.j
 
 | FLOW-ID | Source | Destination | proto:port | purpose | proof | policy rule |
 |---|---|---|---|---|---|---|
-| REP-5432 | portal: cnpg.io/cluster=portal-db, podRole=instance | portal: same | TCP 5432 | replication | OBSERVED_CONFIG (R1 pods 5432; R3 eps 10.244.184.22/.254.108/.190.50) | p8c-cnpg-existing-flows |
+| REP-5432 | portal: cnpg.io/cluster=portal-db, cnpg.io/podRole=instance | portal: same | TCP 5432 | replication | OBSERVED_CONFIG (R1 pods 5432; R3 eps 10.244.184.22/.254.108/.190.50) | p8c-cnpg-existing-flows |
 | IM-8000 | portal: cnpg.io/cluster=portal-db | portal: same | TCP 8000 | instance-manager | OBSERVED_CONFIG (R1 port 8000) | p8c-cnpg-existing-flows |
 | OP-IM-8000 | cnpg-system: app.kubernetes.io/name=cloudnative-pg | portal: cnpg.io/cluster=portal-db | TCP 8000 | operator | OBSERVED_CONFIG (R1 operator) + VERSIONED_DESIGN | p8c-cnpg-existing-flows ingress |
 | BAR-5432 | cnpg-system plugin `barman-cloud.cloudnative-pg.io` (R3) | portal DB / S3 | 9090 svc / 5432 db / S3 443 | Barman plugin | OBSERVED: pluginName + svc 9090 + eps 10.244.190.49 (R2,R3); direction DB/S3 UNKNOWN | p8c-cnpg-existing-flows ingress |

@@ -24,12 +24,29 @@ Phase 1 (base, above) discovers WHICH optional/versioned APIs are served. Phase 
 is a SEPARATE targeted read whose projection schema must be defined AND reviewed
 against the DISCOVERED version BEFORE it runs — never guessed, never executed now.
 
-| Domain | Phase-1 discovery | Phase-2 (conditional, NOT_DEFINED until version confirmed) | Non-secret projected fields (to be defined) | STOP / status |
+## Phase-2 supplemental collector (implemented, OFFLINE-ONLY — NOT approved to run)
+
+The two-phase plan below is now implemented as `supplemental.py` (with
+`supplemental_test.py`, 21/21). PHASE2_LIVE_READS_APPROVED=NO until exact-script
+Architect approval. Key corrections vs the earlier NOT_DEFINED plan:
+- ObjectStore endpoint is `spec.configuration` (NOT `spec.data`) — projected
+  endpointURL/destinationPath origin-only + secret-ref name/key only.
+- CNPG plugin mapping is `spec.plugins[].parameters.barmanObjectName` (NOT
+  `spec.backup.barmanObjectStore.name`).
+- Discovery is a GATE: Calico `crd.projectcalico.org/v1` (D1) must match the
+  reviewed groupVersion/resources before Calico policy/mode reads run; otherwise
+  dependent reads emit BLOCKED_NOT_EXECUTED (no subprocess call).
+- Calico policy/globalpolicy projected selector/order/action/entity(nets,ports)/
+  types + host effects only; arbitrary metadata/env dropped; unsupported semantic
+  fields are not silently discarded from completeness claims.
+
+| Domain | Discovery read (D#) | Conditional config read (C#/S#) | Projected fields | FLOW-ID |
 |---|---|---|---|---|
-| CNI/proxy mode | `--raw /apis` + node name/addresses/podCIDRs (no annotations) | CNI's OWN read-only status/CRD allowlist AFTER provider is identified; kube-proxy DaemonSet name/labels are identity-only and do NOT establish proxy mode | provider kind, proxy mode — fields defined per discovered version | unknown provider → STOP/UNKNOWN; proxy mode NOT inferred from name/labels |
-| CNI-specific policy | `--raw /apis` presence of `projectcalico.org/v3` / `cilium.io/v2` | list CNI policy CRD with a version-specific projection | NOT_DEFINED — k8s NetworkPolicy allowlist is NOT assumed identical | CRD absent → API_NOT_SERVED; otherwise a separate projection definition is required |
-| Barman plugin mapping | `get clusters…` (barmanObjectStoreName) + `get objectstores…` (projected) | cluster plugin identity/parameters → ObjectStore reference → plugin Service/port, each projected per version | plugin name, ObjectStore ref, Service selector/targetPort | link not established → UNKNOWN; legacy name match is NOT assumed |
-| Monitoring (alternative scrapers) | ServiceMonitor/PodMonitor + `--raw /apis` | if CRDs absent, conditional read of Prometheus operator pod identity + any `prometheus` CR | selector/namespace/port/path, Prometheus pod identity | "not found in surveyed sources" is the only absence claim; full absence stays UNKNOWN |
+| CNI/policy (Calico) | P2-D1 `/apis/crd.projectcalico.org/v1` (validated) | P2-C3 NetworkPolicy, P2-C4 GlobalNetworkPolicy, P2-C5 FelixConfiguration | selector/order/action/entity/nets/ports/types + host effects + mode(bpfEnabled/dataplane) | CNI semantics, BASELINE |
+| policy.networking.k8s.io | P2-D2 `/apis/policy.networking.k8s.io/v1alpha2` (validated) | (reviewed projection per discovered relevant kind, or STOP/UNKNOWN) | kind-specific | BASELINE |
+| Barman plugin mapping | — (bound to reviewed apiVersion) | P2-C1 ObjectStore (spec.configuration), P2-C2 Cluster (spec.plugins) | endpoint origin, secret-ref name/key, plugin name/barmanObjectName/isWALArchiver | BAR-5432, S3-443 |
+| Barman sidecar identity | — | P2-S1 pods -n portal -l cnpg.io/cluster=portal-db, P2-S2 pods -n cnpg-system -l app=barman-cloud | initContainers/containers name/image/imageID/ports/restartPolicy (no env/args) | BAR-5432 |
+| Monitoring (alternative scrapers) | ServiceMonitor/PodMonitor already checked (base R11-13 = API_NOT_SERVED) | no Prometheus Operator/pod observed; no further read | "not found in surveyed sources" | MON-9187 |
 | Gateway/Envoy param refs | `get gatewayclasses` (controllerName) + `get envoyproxies` (conditions) | GatewayClass.parametersRef + EnvoyProxy.spec fields as a conditional read requiring exact version/field definition | parametersRef name/namespace/kind; EnvoyProxy safe fields TBD per version | embedded bootstrap/config → omitted; NOT executable until defined |
 
 ## Explicit limits
