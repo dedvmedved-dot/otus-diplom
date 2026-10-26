@@ -1,0 +1,23 @@
+test_categories (__main__.TestClassify.test_categories) ... ok
+test_plugin_mapping (__main__.TestClusterPlugins.test_plugin_mapping) ... ok
+test_no_kubectl (__main__.TestMain.test_no_kubectl) ... ok
+test_no_overwrite (__main__.TestMain.test_no_overwrite) ... /root/otus-diplom/portal/networkpolicy/supplemental_test.py:171: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpkyxmo_d8/exists/supplemental.jsonl' mode='w' encoding='UTF-8'>
+  open(os.path.join(dest, "supplemental.jsonl"), "w").write("KEEP")
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/networkpolicy/supplemental_test.py:178: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpkyxmo_d8/exists/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  self.assertEqual(open(os.path.join(dest, "supplemental.jsonl")).read(), "KEEP")
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_valid_and_malformed (__main__.TestMain.test_valid_and_malformed) ... /root/otus-diplom/portal/networkpolicy/supplemental_test.py:134: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmppw0g0m51/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_configuration_path (__main__.TestObjectStoreConfiguration.test_configuration_path) ... ok
+test_spec_data_path_ignored (__main__.TestObjectStoreConfiguration.test_spec_data_path_ignored) ... ok
+test_strict (__main__.TestOriginOnly.test_strict) ... ok
+test_no_annotations_env (__main__.TestPolicySelectorOnly.test_no_annotations_env) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.008s
+
+OK
