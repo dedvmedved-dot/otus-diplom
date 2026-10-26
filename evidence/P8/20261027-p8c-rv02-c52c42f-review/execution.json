@@ -1,0 +1,34 @@
+{
+  "reviewed_head": "c52c42f661748a7aa55ee19d096aecc03f7944ed",
+  "inventory_sha256": "bc692fc80634fc7eeda6f5d5cc564101ca4b391974a37b5185e1baeef4044f41",
+  "bytes": 49675,
+  "records": 15,
+  "ok": 12,
+  "api_not_served": 3,
+  "other_errors": 0,
+  "start": "2026-10-26T17:32:44.610365+00:00",
+  "end": "2026-10-26T17:32:47.465398+00:00",
+  "inventory_exit_preserved": 1,
+  "script_sha256": "7806f494bcee93f31eb2cb0348d2cd8f7cbbf5743261336226a251643d8988a2",
+  "api_endpoints_already_observed": [
+    "172.30.140.101:6443",
+    "172.30.140.102:6443",
+    "172.30.140.103:6443"
+  ],
+  "dns_endpoints_already_observed": [
+    "10.244.254.65",
+    "10.244.254.66"
+  ],
+  "additional_policy_group_served": "policy.networking.k8s.io",
+  "heuristic_secret_scan": {
+    "private_key": 0,
+    "bearer": 0,
+    "aws_key": 0,
+    "url_userinfo": 0,
+    "credential_assignment": 0
+  },
+  "scan_limit": "Pattern checks plus bounded content review; not proof of universal secret absence.",
+  "runtime_executed_by_reviewer": false,
+  "version_and_host_hash_execution": "Operator-attested in result.md; standalone raw version/hash transcript not present in this package.",
+  "result": "PASS_FOR_LISTED_OFFLINE_ARTIFACT_CHECKS"
+}
