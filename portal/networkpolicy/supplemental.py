@@ -431,15 +431,18 @@ def project_pod_identity(obj, expect_ns=None):
 
 # (id, phase, argv_tail, resource_key, deps, shape, expect_name)
 # shape: 'list' or 'single'
+# Config reads C1-C5 pin the requested API version via fixed --raw paths
+# (no -o json; no preferred-version lookup). D1/D2 discovery validates the served
+# groupVersion; I1/S1/S2 are independent core-v1 identity reads (pods, unversioned core).
 READ_CONTRACT = [
     ('D1', 'discover', ['get', '--raw', '/apis/crd.projectcalico.org/v1'], 'calico', [], 'single', None),
     ('D2', 'discover', ['get', '--raw', '/apis/policy.networking.k8s.io/v1alpha2'], 'policy', [], 'single', None),
     ('I1', 'config', ['get', 'pods', '-n', 'kube-system', '-l', 'k8s-app=calico-node', '-o', 'json'], 'identity', [], 'list', None),
-    ('C1', 'config', ['get', 'objectstores.barmancloud.cnpg.io', '-n', 'portal', 'portal-db-backup', '-o', 'json'], 'objectstore', [], 'single', 'portal-db-backup'),
-    ('C2', 'config', ['get', 'clusters.postgresql.cnpg.io', '-n', 'portal', 'portal-db', '-o', 'json'], 'cluster', [], 'single', 'portal-db'),
-    ('C3', 'config', ['get', 'networkpolicies.crd.projectcalico.org', '-A', '-o', 'json'], 'calico_np', ['D1', 'I1'], 'list', None),
-    ('C4', 'config', ['get', 'globalnetworkpolicies.crd.projectcalico.org', '-o', 'json'], 'calico_gnp', ['D1', 'I1'], 'list', None),
-    ('C5', 'config', ['get', 'felixconfigurations.crd.projectcalico.org', 'default', '-o', 'json'], 'felix', ['D1', 'I1'], 'single', 'default'),
+    ('C1', 'config', ['get', '--raw', '/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup'], 'objectstore', [], 'single', 'portal-db-backup'),
+    ('C2', 'config', ['get', '--raw', '/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db'], 'cluster', [], 'single', 'portal-db'),
+    ('C3', 'config', ['get', '--raw', '/apis/crd.projectcalico.org/v1/networkpolicies'], 'calico_np', ['D1', 'I1'], 'list', None),
+    ('C4', 'config', ['get', '--raw', '/apis/crd.projectcalico.org/v1/globalnetworkpolicies'], 'calico_gnp', ['D1', 'I1'], 'list', None),
+    ('C5', 'config', ['get', '--raw', '/apis/crd.projectcalico.org/v1/felixconfigurations/default'], 'felix', ['D1', 'I1'], 'single', 'default'),
     ('S1', 'config', ['get', 'pods', '-n', 'portal', '-l', 'cnpg.io/cluster=portal-db', '-o', 'json'], 'sidecar', [], 'list', None),
     ('S2', 'config', ['get', 'pods', '-n', 'cnpg-system', '-l', 'app=barman-cloud', '-o', 'json'], 'plugin', [], 'list', None),
 ]

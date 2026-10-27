@@ -336,6 +336,18 @@ class TestRemainingSP(unittest.TestCase):
             c3 = [r for r in rows if r["id"] == "C3"][0]
             self.assertEqual(c3["category"], "UNSUPPORTED", key)
 
+    def test_literal_api_paths(self):
+        expected = {
+            'C1': ['get', '--raw', '/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup'],
+            'C2': ['get', '--raw', '/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db'],
+            'C3': ['get', '--raw', '/apis/crd.projectcalico.org/v1/networkpolicies'],
+            'C4': ['get', '--raw', '/apis/crd.projectcalico.org/v1/globalnetworkpolicies'],
+            'C5': ['get', '--raw', '/apis/crd.projectcalico.org/v1/felixconfigurations/default'],
+        }
+        contract = {rid: tail for rid, _, tail, _, _, _, _ in inv.READ_CONTRACT}
+        for rid, tail in expected.items():
+            self.assertEqual(contract[rid], tail, rid)
+
     def test_global_policy_fields_preserved(self):
         g = copy.deepcopy(GNP)
         g["spec"].update(namespaceSelector="team == 'restricted'", applyOnForward=True, doNotTrack=True, preDNAT=True)
