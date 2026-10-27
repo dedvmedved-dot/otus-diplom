@@ -51,9 +51,17 @@ GNP = {"apiVersion": "crd.projectcalico.org/v1", "kind": "GlobalNetworkPolicy",
 FELIX = {"apiVersion": "crd.projectcalico.org/v1", "kind": "FelixConfiguration",
          "metadata": {"name": "default"}, "spec": {"bpfEnabled": False, "nftablesMode": "Auto"}}
 POD = {"apiVersion": "v1", "kind": "Pod", "metadata": {"name": "calico-node-abc", "namespace": "kube-system"},
-       "spec": {"initContainers": [], "containers": [{"name": "calico-node", "image": "calico/node:v3.32.0",
+       "spec": {"initContainers": [], "containers": [{"name": "calico-node", "image": "quay.io/calico/node:v3.32.0",
                "ports": [{"containerPort": 9090, "name": "calico-typha"}]}]},
        "status": {"containerStatuses": [{"name": "calico-node", "imageID": "containerd://sha256:" + "a" * 64}]}}
+POD_PORTAL = {"apiVersion": "v1", "kind": "Pod", "metadata": {"name": "portal-db-1", "namespace": "portal"},
+       "spec": {"initContainers": [], "containers": [{"name": "postgres", "image": "ghcr.io/cloudnative-pg/postgresql:17.4",
+               "ports": [{"containerPort": 5432, "name": "postgresql"}]}]},
+       "status": {"containerStatuses": [{"name": "postgres", "imageID": "containerd://sha256:" + "d" * 64}]}}
+POD_CNPG = {"apiVersion": "v1", "kind": "Pod", "metadata": {"name": "barman-cloud-xyz", "namespace": "cnpg-system"},
+       "spec": {"initContainers": [], "containers": [{"name": "barman-cloud", "image": "ghcr.io/cloudnative-pg/barman-cloud:0.13.0",
+               "ports": [{"containerPort": 9090, "name": "http"}]}]},
+       "status": {"containerStatuses": [{"name": "barman-cloud", "imageID": "containerd://sha256:" + "e" * 64}]}}
 
 CMDS = {tuple(tail): rid for rid, _, tail, _, _, _, _ in inv.READ_CONTRACT}
 
@@ -72,7 +80,7 @@ def run(overrides=None):
         "D1": R(0, json.dumps(CALICO_DISC)), "D2": R(0, json.dumps(POLICY_DISC)),
         "I1": R(0, enc(POD)), "C1": R(0, single(OS)), "C2": R(0, single(CL)),
         "C3": R(0, enc(NP)), "C4": R(0, enc(GNP)), "C5": R(0, single(FELIX)),
-        "S1": R(0, enc(POD)), "S2": R(0, enc(POD)),
+        "S1": R(0, enc(POD_PORTAL)), "S2": R(0, enc(POD_CNPG)),
     }
     tmp = tempfile.mkdtemp()
     outdir = os.path.join(tmp, "out")
@@ -272,6 +280,57 @@ class TestRemainingSP(unittest.TestCase):
         rc, calls, _ = run({"I1": R(0, enc(bad))})
         self.assertNotEqual(rc, 0)
         self.assertNotIn("C3", calls)
+
+
+    def test_identity_exact_contract(self):
+        pin = "quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a"
+        p = copy.deepcopy(POD); p["spec"]["containers"][0]["image"] = pin
+        p["status"]["containerStatuses"][0]["imageID"] = "containerd://sha256:" + "f" * 64
+        rc, calls, _ = run({"I1": R(0, enc(p))})
+        self.assertEqual(rc, 0); self.assertIn("C3", calls)
+        p2 = copy.deepcopy(POD); p2["spec"]["containers"][0]["image"] = "unreviewed.example/calico/node:v3.32.0"
+        rc, calls, _ = run({"I1": R(0, enc(p2))})
+        self.assertNotEqual(rc, 0); self.assertNotIn("C3", calls)
+        p3 = copy.deepcopy(POD); p3["spec"]["containers"][0]["image"] = "calico/node:v3.320.999"
+        rc, _, _ = run({"I1": R(0, enc(p3))}); self.assertNotEqual(rc, 0)
+        p4 = copy.deepcopy(POD); p4["status"]["containerStatuses"][0]["imageID"] = "not-a-runtime-digest"
+        rc, _, _ = run({"I1": R(0, enc(p4))}); self.assertNotEqual(rc, 0)
+        p5 = copy.deepcopy(POD); p5["status"]["containerStatuses"][0]["imageID"] = "containerd://sha256:" + "b" * 64
+        rc, _, _ = run({"I1": R(0, json.dumps({"items": [POD, p5]}))}); self.assertNotEqual(rc, 0)
+        p6 = copy.deepcopy(POD); p6["metadata"]["namespace"] = "other"
+        rc, _, _ = run({"I1": R(0, enc(p6))}); self.assertNotEqual(rc, 0)
+        other = copy.deepcopy(POD); other["spec"]["containers"] = [{"name": "other", "image": "unreviewed.example/other:v1"}]
+        other.pop("status")
+        rc, _, _ = run({"I1": R(0, json.dumps({"items": [POD, other]}))}); self.assertNotEqual(rc, 0)
+
+    def test_icmp_namespace_selector_preserved(self):
+        base = copy.deepcopy(NP); base["spec"]["ingress"][0]["protocol"] = "ICMP"
+        changed = copy.deepcopy(base); changed["spec"]["ingress"][0]["icmp"] = {"type": 8}
+        a = json.loads(inv.project_config("calico_np", enc(base), "list", None))[0]
+        b = json.loads(inv.project_config("calico_np", enc(changed), "list", None))[0]
+        self.assertNotEqual(json.dumps(a, sort_keys=True), json.dumps(b, sort_keys=True))
+        self.assertEqual(b["spec"]["ingress"][0]["icmp"]["type"], 8)
+        gnp = copy.deepcopy(GNP); gnp["spec"]["namespaceSelector"] = "team == 'restricted'"
+        g = json.loads(inv.project_config("calico_gnp", enc(gnp), "list", None))[0]
+        self.assertEqual(g["spec"]["namespaceSelector"], "team == 'restricted'")
+
+    def test_scoped_list_namespace_rejected(self):
+        for rid in ("S1", "S2"):
+            bad = copy.deepcopy(POD); bad["metadata"]["namespace"] = "other"
+            rc, _, _ = run({rid: R(0, enc(bad))})
+            self.assertNotEqual(rc, 0, rid)
+
+    def test_http_paths_malformed_rejected(self):
+        for val in (False, 0, {}, [None]):
+            bad = copy.deepcopy(NP); bad["spec"]["ingress"][0]["http"] = {"paths": val}
+            with self.assertRaises(ValueError):
+                inv.project_config("calico_np", enc(bad), "list", None)
+
+    def test_container_port_range_rejected(self):
+        for val in (-1, 65536):
+            bad = copy.deepcopy(POD); bad["spec"]["containers"][0]["ports"][0]["containerPort"] = val
+            with self.assertRaises(ValueError):
+                inv.project_config("identity", enc(bad), "list", None)
 
 
 if __name__ == "__main__":

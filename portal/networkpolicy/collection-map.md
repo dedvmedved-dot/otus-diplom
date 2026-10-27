@@ -27,7 +27,7 @@ against the DISCOVERED version BEFORE it runs — never guessed, never executed 
 ## Phase-2 supplemental collector (implemented, OFFLINE-ONLY — NOT approved to run)
 
 The two-phase plan below is now implemented as `supplemental.py` (with
-`supplemental_test.py`, 21/21). PHASE2_LIVE_READS_APPROVED=NO until exact-script
+`supplemental_test.py`, 28/28). PHASE2_LIVE_READS_APPROVED=NO until exact-script
 Architect approval. Key corrections vs the earlier NOT_DEFINED plan:
 - ObjectStore endpoint is `spec.configuration` (NOT `spec.data`) — projected
   endpointURL/destinationPath origin-only + secret-ref name/key only.
@@ -42,7 +42,7 @@ Architect approval. Key corrections vs the earlier NOT_DEFINED plan:
 
 | Domain | Discovery read (D#) | Conditional config read (C#/S#) | Projected fields | FLOW-ID |
 |---|---|---|---|---|
-| CNI/policy (Calico) | P2-D1 `/apis/crd.projectcalico.org/v1` (validated) | P2-C3 NetworkPolicy, P2-C4 GlobalNetworkPolicy, P2-C5 FelixConfiguration | selector/order/action/entity/nets/ports/types + host effects + mode(bpfEnabled/dataplane) | CNI semantics, BASELINE |
+| CNI/policy (Calico) | P2-D1 `/apis/crd.projectcalico.org/v1` (validated) + P2-I1 calico-node pod identity | P2-C3 NetworkPolicy, P2-C4 GlobalNetworkPolicy, P2-C5 FelixConfiguration | selector/order/action/entity/nets/ports/types + icmp/http/tier + host effects + mode(bpfEnabled/nftablesMode/iptablesBackend) | CNI semantics, BASELINE |
 | policy.networking.k8s.io | P2-D2 `/apis/policy.networking.k8s.io/v1alpha2` (validated) | (reviewed projection per discovered relevant kind, or STOP/UNKNOWN) | kind-specific | BASELINE |
 | Barman plugin mapping | — (bound to reviewed apiVersion) | P2-C1 ObjectStore (spec.configuration), P2-C2 Cluster (spec.plugins) | endpoint origin, secret-ref name/key, plugin name/barmanObjectName/isWALArchiver | BAR-5432, S3-443 |
 | Barman sidecar identity | — | P2-S1 pods -n portal -l cnpg.io/cluster=portal-db, P2-S2 pods -n cnpg-system -l app=barman-cloud | initContainers/containers name/image/imageID/ports/restartPolicy (no env/args) | BAR-5432 |

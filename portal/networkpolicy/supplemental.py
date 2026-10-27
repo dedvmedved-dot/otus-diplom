@@ -270,18 +270,41 @@ def _ip_version(v, field):
     return v
 
 
+def _int_range(v, field, lo, hi, allow_none=False):
+    if v is None:
+        if allow_none:
+            return None
+        raise ValueError(field + ' required')
+    if isinstance(v, bool) or not isinstance(v, int) or not (lo <= v <= hi):
+        raise ValueError(field + f' not in {lo}..{hi}')
+    return v
+
+
+def _icmp(v, field):
+    if v is None:
+        return None
+    d = _dict_req(v, field)
+    return {'type': _int_range(d.get('type'), field + '.type', 0, 254, allow_none=True),
+            'code': _int_range(d.get('code'), field + '.code', 0, 255, allow_none=True)}
+
+
 def _http(v, field):
     if v is None:
         return None
     d = _dict_req(v, field)
-    paths = []
-    for p in (d.get('paths') or []):
+    paths = d.get('paths')
+    if paths is None:
+        paths = []
+    if not isinstance(paths, list):
+        raise ValueError(field + '.paths not a list')
+    out_paths = []
+    for p in paths:
         if not isinstance(p, dict):
             raise ValueError(field + '.paths item not object')
-        paths.append({'exact': _str(p.get('exact'), field + '.exact', allow_none=True),
-                      'prefix': _str(p.get('prefix'), field + '.prefix', allow_none=True)})
+        out_paths.append({'exact': _str(p.get('exact'), field + '.exact', allow_none=True),
+                          'prefix': _str(p.get('prefix'), field + '.prefix', allow_none=True)})
     return {'methods': _str_list(d.get('methods'), field + '.methods'),
-            'paths': paths}
+            'paths': out_paths}
 
 
 def _policy_rule(r, field):
@@ -290,6 +313,8 @@ def _policy_rule(r, field):
            'protocol': _proto(r.get('protocol'), field + '.protocol'),
            'notProtocol': _proto(r.get('notProtocol'), field + '.notProtocol'),
            'ipVersion': _ip_version(r.get('ipVersion'), field + '.ipVersion'),
+           'icmp': _icmp(r.get('icmp'), field + '.icmp'),
+           'notICMP': _icmp(r.get('notICMP'), field + '.notICMP'),
            'http': _http(r.get('http'), field + '.http')}
     if 'source' in r:
         out['source'] = _policy_entity(r['source'], field + '.source')
@@ -319,6 +344,7 @@ def project_calico_policy(obj, kind, namespaced):
     if not namespaced:
         for f in ('applyOnForward', 'doNotTrack', 'preDNAT'):
             out['spec'][f] = _bool(spec.get(f), f, allow_none=True)
+        out['spec']['namespaceSelector'] = _str(spec.get('namespaceSelector'), 'namespaceSelector', allow_none=True)
     return out
 
 
@@ -345,16 +371,18 @@ def _container_ports(v, field):
         if not isinstance(p, dict):
             raise ValueError(field + ' port not an object')
         cp = p.get('containerPort')
-        if isinstance(cp, bool) or not isinstance(cp, int):
-            raise ValueError(field + '.containerPort not an integer')
+        if isinstance(cp, bool) or not isinstance(cp, int) or not (1 <= cp <= 65535):
+            raise ValueError(field + '.containerPort not in 1..65535')
         out.append({'containerPort': cp,
                     'name': _str(p.get('name'), field + '.name', allow_none=True)})
     return out
 
 
-def project_pod_identity(obj):
+def project_pod_identity(obj, expect_ns=None):
     _require(obj, 'Pod', 'v1')
     md = _meta(obj, namespaced=True)
+    if expect_ns is not None and md['namespace'] != expect_ns:
+        raise ValueError(f"pod namespace {md['namespace']!r} != {expect_ns}")
     spec = _dict_req(obj.get('spec'), 'spec')
     status = _dict(obj.get('status'), 'status')
     status_by = {}
@@ -419,9 +447,19 @@ DISCOVERY_EXPECT = {
 
 SUPPORTED_POLICY_KINDS = set()  # no policy.networking.k8s.io kinds are reviewed yet
 
-# Calico runtime identity: supported software = calico/node v3.32.x (source pin
-# ansible/playbooks/files/calico-v3.32.0.yaml), with a present runtime imageID.
-SUPPORTED_CALICO_NODE = re.compile(r'calico/node:.*v3\.32')
+NS_EXPECT = {'identity': 'kube-system', 'sidecar': 'portal', 'plugin': 'cnpg-system'}
+
+# Calico runtime identity: exact finite contract grounded in the repository pin
+# ansible/playbooks/files/calico-v3.32.0.yaml — the daemonset image is
+# quay.io/calico/node@sha256:f4fafd8... (digest ref) or the same-image tag v3.32.0.
+# A runtime imageID must be a valid containerd/docker digest, and must be
+# consistent across every selected calico-node pod (platform-child digests of a
+# multi-platform manifest are NOT assumed equivalent without verification).
+CALICO_IMAGE_REFS = {
+    'quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a',
+    'quay.io/calico/node:v3.32.0',
+}
+IMAGE_ID_RE = re.compile(r'^(containerd|docker-pullable|docker)://sha256:[0-9a-f]{64}$')
 
 
 class UnsupportedDiscovery(Exception):
@@ -432,20 +470,24 @@ class UnsupportedDiscovery(Exception):
 def verify_calico_identity(pods):
     if not pods:
         raise ValueError('no calico-node pods')
-    found = 0
+    image_ids = set()
     for pod in pods:
-        for c in pod.get('containers', []):
-            name = c.get('name') or ''
-            image = c.get('image') or ''
-            if 'calico-node' in name or 'calico/node' in image:
-                found += 1
-                if not SUPPORTED_CALICO_NODE.search(image):
-                    raise ValueError(f'unsupported calico image {image!r}')
-                if not c.get('imageID'):
-                    raise ValueError('missing imageID for calico-node')
-    if found == 0:
-        raise ValueError('no calico-node container found')
-    return found
+        containers = pod.get('containers', [])
+        calico = [c for c in containers
+                  if 'calico-node' in (c.get('name') or '') or 'calico/node' in (c.get('image') or '')]
+        if not calico:
+            raise ValueError('pod without calico-node identity')
+        for c in calico:
+            image = c.get('image')
+            if image not in CALICO_IMAGE_REFS:
+                raise ValueError(f'unsupported calico image {image!r}')
+            iid = c.get('imageID')
+            if not iid or not IMAGE_ID_RE.match(iid):
+                raise ValueError(f'invalid imageID {iid!r}')
+            image_ids.add(iid)
+    if len(image_ids) != 1:
+        raise ValueError('inconsistent runtime imageIDs across calico-node pods')
+    return len(pods)
 
 PROJECTORS = {
     'identity': project_pod_identity,
@@ -482,6 +524,7 @@ def project_config(resource_key, raw, shape, expect_name):
     else:
         items = _list(raw)
     proj = PROJECTORS[resource_key]
+    expect_ns = NS_EXPECT.get(resource_key)
     out = []
     for it in items:
         if not isinstance(it, dict):
@@ -490,6 +533,8 @@ def project_config(resource_key, raw, shape, expect_name):
             out.append(project_objectstore(it, expect_name))
         elif resource_key == 'cluster':
             out.append(project_cluster(it, expect_name))
+        elif resource_key in ('identity', 'sidecar', 'plugin'):
+            out.append(project_pod_identity(it, expect_ns))
         else:
             out.append(proj(it))
     return json.dumps(out)

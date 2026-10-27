@@ -6,7 +6,7 @@ Base evidence: `evidence/P8/20261026T173244Z-p8c-rv02-live-inventory/inventory.j
    `barman-cloud.cloudnative-pg.io`, svc 9090, eps 10.244.190.49, Pod
    barman-cloud-fddd984d8-ckw25 (R1,R2,R3). Cluster conditions archiving+backup True
    (R9). Still UNKNOWN: plugin→DB(5432) vs →S3(443) direction and sidecar path
-   (R1 projects containers, not initContainers). Phase-2 (supplemental P2-C1/C2).
+   (R1 projects containers, not initContainers). Phase-2 (supplemental S1/S2 pod identity).
 
 2. API-6443 — **PARTIAL**. `default/kubernetes` 10.96.0.1:443→6443 (R2) + EndpointSlice
    addresses 172.30.140.101/102/103:6443 ready=true (R3). UNKNOWN: Calico DNAT /
@@ -34,4 +34,4 @@ Base evidence: `evidence/P8/20261026T173244Z-p8c-rv02-live-inventory/inventory.j
 
 8. CNI semantics — **PARTIAL**. Calico present (`crd.projectcalico.org` R14); actual
    pod IPs 10.244.184/190/254.* ≠ node podCIDRs 10.244.0/1/2.0/24 (R15) — podCIDR is not
-   an IP allowlist. UNKNOWN: Calico version/mode (iptables/eBPF), policy precedence. Phase-2 (P2-D1).
+   an IP allowlist. UNKNOWN: Calico version/mode (iptables/eBPF), policy precedence. Phase-2 (I1 identity + C5 FelixConfiguration).
