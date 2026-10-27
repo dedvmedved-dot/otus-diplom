@@ -1,0 +1,108 @@
+{
+  "reviewed_main": "e592b57f82accc6587baf04cf3c9d9d1a3da866d",
+  "source": "212e31c946bef3ee0a5ff2ce0a5481eb7c838fb8",
+  "compare": {
+    "repository_full_name": "dedvmedved-dot/otus-diplom",
+    "base": "5f314b28b338a765ab6e012eca5656724c7bc665",
+    "head": "e592b57f82accc6587baf04cf3c9d9d1a3da866d",
+    "status": "ahead",
+    "ahead_by": 2,
+    "behind_by": 0,
+    "total_commits": 2,
+    "too_large": null,
+    "base_commit": {
+      "sha": "5f314b28b338a765ab6e012eca5656724c7bc665",
+      "url": "https://api.github.com/repos/dedvmedved-dot/otus-diplom/commits/5f314b28b338a765ab6e012eca5656724c7bc665",
+      "html_url": "https://github.com/dedvmedved-dot/otus-diplom/commit/5f314b28b338a765ab6e012eca5656724c7bc665"
+    },
+    "merge_base_commit": {
+      "sha": "5f314b28b338a765ab6e012eca5656724c7bc665",
+      "url": "https://api.github.com/repos/dedvmedved-dot/otus-diplom/commits/5f314b28b338a765ab6e012eca5656724c7bc665",
+      "html_url": "https://github.com/dedvmedved-dot/otus-diplom/commit/5f314b28b338a765ab6e012eca5656724c7bc665"
+    },
+    "files": [
+      {
+        "filename": "evidence/P8/20261027T040000Z-p8c-rv02-r1-r5/result.md",
+        "status": "added",
+        "additions": 30,
+        "deletions": 0,
+        "changes": 30,
+        "previous_filename": null
+      },
+      {
+        "filename": "evidence/P8/20261027T040000Z-p8c-rv02-r1-r5/secret-scan.txt",
+        "status": "added",
+        "additions": 3,
+        "deletions": 0,
+        "changes": 3,
+        "previous_filename": null
+      },
+      {
+        "filename": "evidence/P8/20261027T040000Z-p8c-rv02-r1-r5/supplemental-test.txt",
+        "status": "added",
+        "additions": 89,
+        "deletions": 0,
+        "changes": 89,
+        "previous_filename": null
+      },
+      {
+        "filename": "portal/networkpolicy/collection-map.md",
+        "status": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "changes": 4,
+        "previous_filename": null
+      },
+      {
+        "filename": "portal/networkpolicy/gaps.md",
+        "status": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "changes": 4,
+        "previous_filename": null
+      },
+      {
+        "filename": "portal/networkpolicy/supplemental.py",
+        "status": "modified",
+        "additions": 69,
+        "deletions": 24,
+        "changes": 93,
+        "previous_filename": null
+      },
+      {
+        "filename": "portal/networkpolicy/supplemental_test.py",
+        "status": "modified",
+        "additions": 61,
+        "deletions": 2,
+        "changes": 63,
+        "previous_filename": null
+      }
+    ]
+  },
+  "files": {
+    "portal/networkpolicy/supplemental.py": {
+      "blob": "c89087f6e06deb0c9d0111c627671e7dfc5d4e7a"
+    },
+    "portal/networkpolicy/supplemental_test.py": {
+      "blob": "10edaeb181c0221d5d1ffd6c1280744efffccbad"
+    },
+    "portal/networkpolicy/PLAN.md": {
+      "blob": "0ac40a5262f9b1cd9eb6606e31399b8c31f0d59b"
+    },
+    "portal/networkpolicy/flow-matrix.md": {
+      "blob": "1e67c0eeb21f53fc51fcabc71eada77e312fe5ea"
+    },
+    "portal/networkpolicy/collection-map.md": {
+      "blob": "d0e47d79f3a9660b526aedff47fd2338bcace8e7"
+    },
+    "portal/networkpolicy/gaps.md": {
+      "blob": "78ffc99c19dfcfef60b15110ca626c46f9f6ecc2"
+    }
+  },
+  "calico_source": {
+    "path": "ansible/playbooks/files/calico-v3.32.0.yaml",
+    "blob": "21ea9b4b163305ea479bc7708965104465ffc716",
+    "image": "quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+    "limit": "Source pin, not runtime identity proof"
+  }
+}
