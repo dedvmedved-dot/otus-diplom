@@ -1,0 +1,33 @@
+{
+  "reviewed_commit": "832591b8735dd8dfef0523cf8e0432d840125468",
+  "checksum_matches": {
+    "result/supplemental.jsonl": "02e872e7b82918380c89e8f3a2bf74dc039bd48ea6ee167c0f64d477debe642c",
+    "version.json": "654727c38c005845601c0f7897a4aae7e38df231d3cde68b534ccd8ba3731ab5",
+    "script-check.txt": "b2bc46c1881fce326723a6bdd114760b6f1c7bf5d27d750446ba497e94355bed",
+    "run-manifest.txt": "52f0ef99753227b2ab9a17d2b81428697384fc69ac3f5f077d18d901f18a6f78"
+  },
+  "script_sha256": "69dac4747856e5f88ac4666e884fe1263777ca5cb64b197741a4b370c093aa4c",
+  "records": 10,
+  "categories": {
+    "OK": 5,
+    "UNSUPPORTED": 2,
+    "BLOCKED_NOT_EXECUTED": 3
+  },
+  "executed_record_argv": 7,
+  "blocked_record_argv": 3,
+  "manifest_and_versions": "PASS",
+  "timestamps": "PASS (manifest second precision)",
+  "identity_reproduction": "invalid imageID 'sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65'",
+  "calico_runtime_image_ids": [
+    "sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65"
+  ],
+  "digest_relationship": "UNPROVEN",
+  "secret_review": "No secret values observed in safe projections; targeted indicators absent; not a universal guarantee",
+  "live_operations_by_reviewer": 0,
+  "one_run_budget": "CONSUMED; no repeat authorized",
+  "limitations": [
+    "repository artifacts do not independently prove absence of other executions",
+    "ssh-keyscan alone does not authenticate a host key; prior trust verification not evidenced",
+    "credential-file use reported; non-use of previously disclosed credential not independently evidenced"
+  ]
+}

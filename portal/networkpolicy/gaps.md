@@ -22,10 +22,11 @@ Base evidence: `evidence/P8/20261026T173244Z-p8c-rv02-live-inventory/inventory.j
 
 4. DNS-53 — **RESOLVED**. kube-dns 10.96.0.10:53 UDP+TCP; eps 10.244.254.65/.66 ready (R2,R3).
 
-5. S3-443 — **RESOLVED (live endpoint)**. Phase-2 C1 live read: `spec.configuration.endpointURL`
+5. S3-443 — **PARTIAL (endpoint configuration observed)**. Phase-2 C1 live read: `spec.configuration.endpointURL`
    = `https://s3-backup.demo-pak.test` (origin-only), destinationPath
    `s3://portal-postgres-backup`; secret refs `portal-barman-s3-credentials` (keys only,
    no values). Port 443 implied by https; actual traffic/backup path still UNKNOWN.
+   URL path is dropped by projection; bucket suffix/prefix is NOT_COLLECTED.
 
 6. ENV-* — **RESOLVED (NOT_CREATED)**. GatewayClass `eg` (R6); Gateways [] (R7);
    EnvoyProxies [] (R8). Control-plane envoy-gateway present (R1,R2). Dataplane NOT_CREATED.
@@ -33,8 +34,9 @@ Base evidence: `evidence/P8/20261026T173244Z-p8c-rv02-live-inventory/inventory.j
 7. BASELINE — **PARTIAL→UNKNOWN**. K8S_NETWORKPOLICY_LIST=EMPTY (R5). But R14 serves
    `crd.projectcalico.org/v1` AND `policy.networking.k8s.io/v1alpha2` → Calico
    NetworkPolicy/GlobalNetworkPolicy + other policy CRDs may exist. EFFECTIVE_POLICY_UNION=UNKNOWN.
-   Phase-2 C3/C4/D2 can add bounded configuration facts, but not HostEndpoint/Tier
-   membership or a complete policy-engine evaluation. Namespaces catalogued (R4).
+   Phase-2 D2 observes ClusterNetworkPolicy discovery (UNSUPPORTED); C3/C4/C5
+   are BLOCKED_NOT_EXECUTED. No policy object presence/absence, HostEndpoint/Tier
+   membership or complete policy-engine evaluation is established. Namespaces catalogued (R4).
 
 8. CNI semantics — **PARTIAL**. Calico present (`crd.projectcalico.org` R14); actual
    pod IPs 10.244.184/190/254.* ≠ node podCIDRs 10.244.0/1/2.0/24 (R15) — podCIDR is not
@@ -45,3 +47,15 @@ Base evidence: `evidence/P8/20261026T173244Z-p8c-rv02-live-inventory/inventory.j
 
 Source/documentary preparation closure does not close these live gaps or authorize
 additional collection. PHASE2_LIVE_READS_APPROVED=NO; NETPOL_APPROVED_FOR_APPLY=NO.
+
+## Phase-2 review 832591b
+
+Artifact: evidence/P8/20261027T140000Z-p8c-rv02-phase2-live/result/supplemental.jsonl.
+Review/task: docs/architecture/P8C_RV02_REVIEW_832591b_20261027.md.
+I1 imageID sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65
+is bare and rejected by the pinned parser before digest comparison. Its relationship to
+pinned f4fafd8... remains UNPROVEN; platform-child/config classification is not established.
+Three matching image tags and ebpf-bootstrap names do not prove effective CNI mode.
+Access-method provenance is NOT_FULLY_EVIDENCED; existing operator records may clarify
+host-key authentication and non-use of previously disclosed credentials without new login.
+ONE_RUN_BUDGET=CONSUMED. Only source-only follow-up task is authorized; no new cluster reads.
