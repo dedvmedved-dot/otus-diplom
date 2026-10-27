@@ -4,7 +4,13 @@ Live policy rollout is deferred until supply-chain (R3) and auth/pull (R4)
 preconditions are ready (per D1/R2: "не вводить live policies без необходимости
 deploy"). This document records candidate flows and known source facts. It does not certify the live inventory.
 
-## Historical inventory claims — fresh raw proof required
+Current authority after 7970620: supplemental-design.md, coverage-matrix.md,
+flow-matrix.md and gaps.md distinguish source design, observed base facts and UNKNOWN.
+The historical bullets/rollout sequence below are not execution instructions.
+Base inventory is already executed and is not to be rerun. Phase-2 live, apply,
+rollback, CI and production gates remain CLOSED. Candidate policy YAML is unchanged.
+
+## Historical inventory claims — superseded where contradicted by the reconciled evidence
 
 - No NetworkPolicy exists cluster-wide (`kubectl get networkpolicy -A` -> none).
   portal namespace and envoy-gateway-system have NO default-deny baseline.
@@ -31,7 +37,7 @@ deploy"). This document records candidate flows and known source facts. It does 
 |---|---|---|---|
 | CNPG pod (peer) | CNPG pod | 5432/8000 | replication / instance-manager |
 | CNPG operator (cnpg-system) | CNPG pod | 8000 | reconcile/switchover |
-| Barman plugin (cnpg-system, ref spec.plugins[].parameters.barmanObjectName) | CNPG pod / S3 (172.30.143.10:443) | svc 9090 observed; direction DB/S3 UNKNOWN | backup/WAL archiver (plugin flow UNVERIFIED) |
+| CNPG operator → plugin control Service; separate instance sidecar | barman-cloud control endpoint; separate ObjectStore target | control TCP9090; sidecar local IPC/live S3 routing unresolved | roles separated in supplemental-design.md §4; no controller→DB5432 permission inferred |
 | Portal pod | CNPG pod | 5432/9187 | app DB / metrics scrape |
 | Migrator Job | CNPG pod | 5432 | schema bootstrap |
 | CNPG pod | DNS (kube-system) | 53 | resolution |
@@ -91,14 +97,13 @@ Required safe raw read-only evidence (UTC start/end, command, exit, selected fie
 | Envoy xDS18000/backend8080/listener | GatewayClass/EnvoyProxy source configuration, controller and eventual dataplane labels, Service targetPorts, owning namespace | control-plane OBSERVED (R1/R2 18000); GatewayClass eg (R6); dataplane NOT_CREATED (R7/R8) |
 | baseline union | all existing policies and all portal namespace workload identities | K8S netpol EMPTY (R5); EFFECTIVE union UNKNOWN (Calico + policy.networking.k8s.io served R14) |
 
-Use `inventory.py --context <approved-context> --output <new-evidence-dir>` on the
-already authorized Hermes environment. It only issues fixed `kubectl get` reads
-with safe projections; no exec, writes, secrets, full Pod specs or env dumps.
-Missing command/access/API produces a failure record, never an empty/absent proof.
-The generated JSONL covers object identity and endpoints. It cannot prove packet
-DNAT enforcement by itself: attach existing CNI configuration/documentation and
-read-only observed path evidence. Do not run traffic/failure tests or add broad
-CIDRs to overcome missing facts. No P4/P8A/P8B qualification reruns.
+The approved base inventory has already been executed; its 15-record artifact is
+preserved with aggregate EXIT=1. Do not repeat it. The separate supplemental
+collector is source-reviewed but has no operator execution approval. A later
+exact-script handoff gate must specify the ten reads, hashes, permitted context,
+output handling and STOP behavior. It must preserve all current UNKNOWN limits.
+No traffic/failure tests, broad CIDR workarounds or new ConfigMap/host reads are
+authorized. Source evidence cannot itself prove runtime DNAT/enforcement.
 
 Offline `go test ./networkpolicy` checks the current candidate union on both
 sides, name+namespace isolation, ports, protocols, migrator labels and denial of

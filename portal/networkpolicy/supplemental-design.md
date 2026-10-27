@@ -1,6 +1,7 @@
 # P8C RV-02 — supplemental collector design (R4-B, bounded)
 
-Date: 2026-10-27. OFFLINE source design; PHASE2_LIVE_READS_APPROVED=NO.
+Date: 2026-10-27. Architect documentary reconciliation after 7970620.
+OFFLINE source design; PHASE2_LIVE_READS_APPROVED=NO.
 References: `manifests/barman-cloud/v0.13.0/plugin-barman-cloud-v0.13.0-release.yaml`,
 `manifests/barman-cloud/v0.13.0/objectstore-portal-db.yaml`,
 `manifests/cnpg/v1.30.1/portal-db-cluster.yaml`,
@@ -30,19 +31,45 @@ C1 → `project_objectstore`; C2 → `project_cluster`; C3/C4 → `project_calic
 C5 → `project_felix`. Typed leaves via `_str/_nonempty/_bool/_num/_int_range/_enum/
 _str_list/_dict/_dict_req/_proto/_ip_version/_icmp/_http/_ports_typed/_sa/_services`.
 
-Required vs optional: a field is **required** when the helper is called with
-`allow_none=False` (or `_dict_req`/`_nonempty`); **optional** when `allow_none=True`.
-Required-object nesting uses `_dict_req`; optional object uses `_dict` (absent → `{}`).
-Normalization: `origin_only()` strips URL userinfo/path/query from endpointURL and
-destinationPath; secret refs project name/key only (never values).
+Required/optional behavior is defined by the reviewed code at
+b623afb2fa9fd624e3e1ff418adeb9c71b1074df (supplemental.py blob
+ad2edaa92de59f657599190842fa7fe68373b582), not by a guessed universal schema:
+- Scalar helpers reject wrong types; `allow_none=True` explicitly permits absent/null.
+  `_nonempty` also checks empty strings; its own allow_none argument still matters.
+- `_dict_req` requires an object; `_dict` maps absent/null to an empty object.
+  `_str_list`, `_ports_typed` and `_container_ports` map absent/null to an empty list.
+- `project_discovery` requires APIResourceList, groupVersion and a resources list;
+  resource name/kind/namespaced have typed checks; verbs normalizes through
+  `_str_list`. D1 then enforces DISCOVERY_EXPECT; D2 classifies unsupported kinds.
+- `project_pod_identity` requires Pod/v1, name, requested namespace and spec object.
+  Init/regular container lists are optional; present containers require names.
+  Image/imageID/restartPolicy are nullable strings; imageID is joined from status.
+  Present container ports require integer 1..65535. I1 additionally applies the
+  exact admission contract; S1/S2 only collect identity.
+- `project_objectstore` requires named portal identity, spec and configuration.
+  Endpoint origins are normalized by `origin_only`; missing/invalid origins become
+  null, not proof that no live endpoint exists. Present S3 refs require name; key
+  is nullable in this bounded projection. Only reference names/keys are emitted.
+- `project_cluster` requires named portal identity and spec; absent plugins become
+  an empty list. Present plugins require string name; isWALArchiver,
+  barmanObjectName and imageName are nullable typed values.
+- `project_calico_policy` requires exact kind/API/scope and spec; NP_SPEC_ALLOWED,
+  GNP_SPEC_ALLOWED and nested RULE/ENTITY/HTTP/HTTP_PATH/ICMP/SA/SERVICES_ALLOWED
+  are the finite semantic contracts. Unknown semantic fields cause UNSUPPORTED.
+  Known metadata/performanceHints are dropped. Nullable scalars and absent lists
+  normalize only as implemented by the named helpers; this is not full CRD validation.
+- `project_felix` requires FelixConfiguration/v1, name default and spec;
+  bpfEnabled is nullable bool, nftablesMode nullable enum Disabled/Enabled/Auto,
+  iptablesBackend/nodeSelector nullable strings. It does not calculate effective mode.
 
-Dispositions (distinct categories): missing required field / malformed JSON or type →
-**PARSE_ERROR** (empty output, no raw); unknown semantic key → **UnsupportedField** →
-UNSUPPORTED; unsupported policy kind → **UnsupportedDiscovery** → UNSUPPORTED; valid-but-
-unbound identity → **UnsupportedIdentity** → UNSUPPORTED (safe projected identity
-retained); kubectl non-zero → TIMEOUT / FORBIDDEN / API_NOT_SERVED / CONNECTION /
-GET_FAILED via `classify()`. `metadata`/`performanceHints` are known non-semantic and
-deliberately dropped.
+Dispositions: missing required field, malformed JSON/type or wrong identity binding
+gives PARSE_ERROR and empty output. UnsupportedField gives UNSUPPORTED without raw
+object output. UnsupportedDiscovery and UnsupportedIdentity retain only the completed
+safe projection. Unsupported I1 blocks C3/C4/C5 with zero calls. Subprocess failures
+retain distinct TIMEOUT/FORBIDDEN/API_NOT_SERVED/CONNECTION/GET_FAILED categories;
+unmet dependencies produce BLOCKED_NOT_EXECUTED. Any failure/unsupported/blocked row
+makes the aggregate result nonzero. Raw stdout/stderr and arbitrary exception text
+are never written. Read argv is fixed by READ_CONTRACT; no new read is authorized.
 
 ## 2. Digest identity (supported comparison mode)
 Supported image references: `quay.io/calico/node@sha256:f4fafd8…` (repository pin,
@@ -54,21 +81,47 @@ projected identity retained, C3/C4/C5 blocked. Malformed JSON/types → PARSE_ER
 Live verification of a platform-child digest relationship is UNKNOWN and out of scope.
 
 ## 3. Felix precedence and host/global/tier scope
-Source: `ansible/playbooks/files/calico-v3.32.0.yaml` FelixConfiguration CRD — a
-cluster-scoped CR named `default`; schema fields include bpfEnabled, nftablesMode,
-iptablesBackend and **nodeSelector**. Precedence model: the cluster-default
-`default` resource provides the base configuration; `spec.nodeSelector` scopes a
-configuration to matching nodes (node-scoped override), and legacy per-node
-annotations may also override. The bounded collector reads **only** the `default`
-resource (C5), so node-scoped FelixConfiguration, node annotations, and environment
-overrides are NOT read — effective per-node mode and the resulting policy-enforcement
-union are UNKNOWN and are not inferred from the default alone. No additional reads are
-added; uncollected live configuration is marked UNKNOWN.
+
+Exact-version primary source:
+[Calico v3.32.0 config_params.go](https://github.com/projectcalico/calico/blob/eb1cf57823a1dd8d25c48b82fd023ea9e3e17996/felix/config/config_params.go),
+blob 72676f76f3bdd5f592e29313c712b159db0bcd2e, Source/SourcesInDescendingOrder/resolve.
+The configured priority is environment, configuration file, per-host datastore,
+selector-scoped datastore, global datastore, then built-in defaults. InternalOverride
+is an additional highest-priority implementation mechanism, not a new user read.
+The resolver also respects local-only parameters; a datastore value cannot override
+that restriction.
+
+The repository Calico manifest, blob 21ea9b4b163305ea479bc7708965104465ffc716,
+FelixConfiguration schema `spec.nodeSelector.description`, establishes:
+- `default` is global and cannot use nodeSelector.
+- `node.<nodename>` is per-node and cannot use nodeSelector.
+- Other names can use nodeSelector. If several selectors match, the oldest matching
+  object is selected, with a warning. This selector conflict rule is distinct from
+  the configuration source priority above.
+
+C5 reads only default. It does not read per-node/selector-scoped configurations,
+Felix configuration files, process environment or internal overrides. Therefore the
+effective per-node mode remains UNKNOWN. The earlier generic annotation-override
+claim is withdrawn: no such precedence source was established for this contract.
+The projector retaining a nullable nodeSelector does not make that field valid on
+a real default object; this collector is not an admission validator.
+
+C3 projects namespaced policies; C4 projects GlobalNetworkPolicy and its supported
+host-related flags, selectors and tier reference. Neither read collects HostEndpoint
+or Tier objects, resolves selector membership or evaluates a policy engine.
+Consequently global-policy configuration is observable, but host-policy applicability,
+tier ordering and EFFECTIVE_POLICY_UNION remain UNKNOWN. These are explicit coverage
+limits; adding HostEndpoint/Tier/config/env reads is not authorized.
 
 ## 4. Barman directed-flow (pinned v0.13.0)
-Per CNPG barman-cloud plugin docs 0.13.0 (concepts/usage: backup/WAL operations execute
-in per-instance sidecars — primary or selected standby) and the repository manifests,
-four distinct components:
+Primary design reference: [Barman plugin 0.13.0 concepts](https://cloudnative-pg.io/plugin-barman-cloud/docs/0.13.0/concepts/),
+section Backup of a Postgres Cluster: backup/WAL execution is in the per-instance
+sidecar on the primary or selected standby. Configuration mapping is documented in
+[0.13.0 usage](https://cloudnative-pg.io/plugin-barman-cloud/docs/0.13.0/usage/).
+Repository references: release manifest blob 4fa292cd8f89808d96f6d90af826afd31afa29ec,
+ObjectStore blob 07709428317922b7789a7b6c22bf9b88b5dc9a03, Cluster blob
+e60a92353194fda60f34dacb56273ed7048af14c. These are source configuration, not new live reads.
+Four distinct components:
 
 - **CNPG controller/operator** (cnpg-system `cnpg-controller-manager`) — reconciles the
   Cluster CR; invokes the plugin. Observed identity R1.
@@ -76,9 +129,10 @@ four distinct components:
   plugin's RPC server. Source: `plugin-barman-cloud-v0.13.0-release.yaml` — Service
   `barman-cloud` port 9090 with annotation `cnpg.io/pluginPort: "9090"`, container arg
   `--server-address=:9090`. This 9090 endpoint is the plugin's server surface invoked by
-  CNPG, NOT a per-instance sidecar and NOT a DB/S3 data path. The exact RPC wire
-  protocol is not established from the inventory (only the port + server address are
-  observed); it is left UNRESOLVED unless a versioned doc states it.
+  CNPG, NOT a per-instance sidecar and NOT a DB/S3 data path. The release manifest establishes TCP9090 and TLS server/client certificate arguments;
+  it does not by itself identify the RPC framing. Wire protocol is UNRESOLVED in this
+  bounded evidence and must not be mislabeled as an HTTP webhook. Observed service
+  identity does not prove current peer traffic.
 - **Per-instance Barman sidecar** — executes backup/WAL operations inside each PostgreSQL
   pod (primary or selected standby) as an init/sidecar container. Collected by S1
   (`pods -n portal -l cnpg.io/cluster=portal-db`) initContainers/containers identity;
@@ -86,23 +140,35 @@ four distinct components:
 - **CNPG instance manager** (in-pod, `cnpg.io/podRole=instance`, port 8000 status) —
   manages the local PostgreSQL instance. Observed R1 (port 8000).
 
-Directed interactions (documented design vs observed): the CNPG controller invokes the
-plugin server (9090); the per-instance sidecar reads the ObjectStore
-(`spec.configuration.endpointURL`, origin) and the local PostgreSQL instance. Pod-local
-communication (sidecar↔postgres within a pod) is distinct from inter-Pod policy flows.
-Direction and transport (sidecar→DB 5432 vs sidecar→S3 443 vs instance-manager 8000)
-are declared, not observed; S3 is NOT assumed to use 443. Declared ports are not
-traffic proof.
+Directed design separates the CNPG operator-to-plugin control endpoint TCP9090
+from per-instance backup/WAL work and object-store communication. The sidecar shares
+a Pod network namespace with PostgreSQL; no new inter-Pod TCP5432 permission follows
+merely from that relationship. Its exact local database/instance-manager IPC transport
+is not captured by the approved reads and remains UNRESOLVED.
+
+The source ObjectStore declares HTTPS endpoint `s3-backup.demo-pak.test` with no
+explicit port (source design uses the HTTPS default); this is not live routing/IP or
+packet evidence. Live endpoint origin still requires C1 because base R10 used the
+wrong projection path. No live S3 port/IP allowlist is approved. R1/R2/R3 capture
+identities and declared ports only; actual directed traffic remains UNKNOWN.
 
 ## 5. API/DNS interpretation (R3 under CNI)
-Base inventory R2/R3 observed: API Service `default/kubernetes` 10.96.0.1:443→6443,
-EndpointSlice 172.30.140.101/102/103:6443 ready; kube-dns 10.96.0.10:53 (eps
-10.244.254.65/.66). Under the Calico CNI (served `crd.projectcalico.org/v1`), Service
-ClusterIP is a virtual address whose DNAT to pod endpoints is implemented by the CNI
-dataplane (or kube-proxy). The bounded collector does not read the Calico dataplane
-mode (iptables/eBPF) or kube-proxy identity, so the actual DNAT/enforcement path is
-UNKNOWN and is not inferred from served CRDs. Node podCIDRs (10.244.0/1/2.0/24) ≠
-observed pod IPs (10.244.184/190/254.*), so podCIDR is not an allowlist.
+
+Base inventory R2/R3: API Service 10.96.0.1:443, endpoints
+172.30.140.101/102/103:6443; DNS Service 10.96.0.10:53, endpoints
+10.244.254.65/.66. The API endpoints are node addresses, not assumed Pod IPs.
+
+[Kubernetes 1.36 virtual IP documentation](https://v1-36.docs.kubernetes.io/docs/reference/networking/virtual-ips/)
+describes Service forwarding by kube-proxy or its replacement to endpoint addresses.
+[Kubernetes 1.36 NetworkPolicy documentation](https://v1-36.docs.kubernetes.io/docs/concepts/services-networking/network-policies/)
+leaves address-rewrite order relative to policy processing implementation-dependent.
+Thus both Service and endpoint facts are retained; neither alone proves which
+destination an ipBlock rule sees. Served Calico CRDs are not proof of active
+iptables/eBPF/nftables mode, proxy replacement or enforcement order.
+C5 observes only global defaults; section 3 explains why effective settings are
+unresolved. Actual DNAT/enforcement remains UNKNOWN and must be resolved before apply.
+Node podCIDRs 10.244.0/1/2.0/24 differ from observed Pod IP ranges
+10.244.184/190/254.*; they are not a validated egress allowlist.
 
 ## 6. Monitoring / Gateway / policy kinds
 - Monitoring: `monitoring.coreos.com` not served (R11-13 API_NOT_SERVED); no Prometheus

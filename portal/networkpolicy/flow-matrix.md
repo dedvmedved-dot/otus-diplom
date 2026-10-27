@@ -9,7 +9,7 @@ Base evidence: `evidence/P8/20261026T173244Z-p8c-rv02-live-inventory/inventory.j
 | REP-5432 | portal: cnpg.io/cluster=portal-db, cnpg.io/podRole=instance | portal: same | TCP 5432 | replication | OBSERVED_CONFIG (R1 pods 5432; R3 eps 10.244.184.22/.254.108/.190.50) | p8c-cnpg-existing-flows |
 | IM-8000 | portal: cnpg.io/cluster=portal-db | portal: same | TCP 8000 | instance-manager | OBSERVED_CONFIG (R1 port 8000) | p8c-cnpg-existing-flows |
 | OP-IM-8000 | cnpg-system: app.kubernetes.io/name=cloudnative-pg | portal: cnpg.io/cluster=portal-db | TCP 8000 | operator | OBSERVED_CONFIG (R1 operator) + VERSIONED_DESIGN | p8c-cnpg-existing-flows ingress |
-| BAR-5432 | cnpg-system plugin `barman-cloud.cloudnative-pg.io` (R3) | portal DB / S3 | 9090 svc / 5432 db / S3 443 | Barman plugin | OBSERVED: pluginName + svc 9090 + eps 10.244.190.49 (R2,R3); direction DB/S3 UNKNOWN | p8c-cnpg-existing-flows ingress |
+| BAR-5432 (legacy ID) | CNPG operator → plugin control Service; separately per-instance sidecar | cnpg-system/barman-cloud control endpoint; separate ObjectStore target | control TCP9090 source/endpoint; sidecar local IPC and live S3 routing UNRESOLVED | separate control and backup/WAL roles | OBSERVED identity/9090 endpoint R2/R3; VERSIONED_DESIGN in supplemental-design.md §4; sidecar live identity/traffic UNKNOWN | existing candidate ingress is NOT validated by this row; no plugin→DB5432 permission inferred |
 | MON-9187 | monitoring scraper | portal: cnpg.io/cluster=portal-db | TCP 9187 | metrics scrape | NOT FOUND (R11-13 no Prometheus Operator; no scraper pod) | p8c-cnpg-existing-flows ingress |
 | DNS-53 | portal workloads | kube-system kube-dns 10.96.0.10; eps 10.244.254.65/.66 | UDP+TCP 53 | resolution | OBSERVED_CONFIG (R2 svc; R3 eps) | dns baseline egress + portal/migrator egress |
 | API-6443 | portal workloads | default/kubernetes 10.96.0.1:443→6443; eps 172.30.140.101/102/103 ready (R3) | TCP 6443 | Kubernetes API | OBSERVED_CONFIG (R2 svc + R3 eps); DNAT/CNI UNKNOWN | cnpg/portal egress ipBlock |
@@ -37,3 +37,12 @@ Base evidence: `evidence/P8/20261026T173244Z-p8c-rv02-live-inventory/inventory.j
   identity (I1/S1/S2) collects pod image/imageID; version-specific Calico reads gate on the
   exact `quay.io/calico/node` v3.32.0 pin + pinned digest. Collector prepared
   (supplemental.py + supplemental_test.py), NOT approved to run.
+
+## Architect reconciliation after 7970620
+
+The BAR-5432 identifier is historical, not evidence that the plugin controller connects
+to database port 5432. See supplemental-design.md §§3–5 for source-backed roles,
+Felix priority and DNAT limits. S3-443 is a source HTTPS design, not a live allowlist.
+HostEndpoint/Tier and node-specific Felix overrides are outside the ten reads;
+EFFECTIVE_POLICY_UNION remains UNKNOWN even if those reads later succeed.
+PHASE2_LIVE_READS_APPROVED=NO; NETPOL_APPROVED_FOR_APPLY=NO.

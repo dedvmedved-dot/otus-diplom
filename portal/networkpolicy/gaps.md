@@ -2,11 +2,13 @@
 
 Base evidence: `evidence/P8/20261026T173244Z-p8c-rv02-live-inventory/inventory.jsonl`.
 
-1. BAR-5432 — **UNKNOWN (direction)**. OBSERVED: barman-cloud pluginName
-   `barman-cloud.cloudnative-pg.io`, svc 9090, eps 10.244.190.49, Pod
-   barman-cloud-fddd984d8-ckw25 (R1,R2,R3). Cluster conditions archiving+backup True
-   (R9). Still UNKNOWN: plugin→DB(5432) vs →S3(443) direction and sidecar path
-   (R1 projects containers, not initContainers). Phase-2 (supplemental S1/S2 pod identity).
+1. BAR-5432 — **PARTIAL DESIGN / UNKNOWN LIVE** (legacy ID).
+   R1/R2/R3 observe the plugin control Service TCP9090 and its endpoint.
+   Versioned Barman design distinguishes this control service from per-instance
+   backup/WAL sidecars; see supplemental-design.md §4. It does not establish
+   controller→DB5432 traffic. S1/S2 can provide projected sidecar/controller identity,
+   not prove directed traffic, Pod-local IPC or live S3 route/port.
+   R9 backup/archiving conditions describe the base collection time only.
 
 2. API-6443 — **PARTIAL**. `default/kubernetes` 10.96.0.1:443→6443 (R2) + EndpointSlice
    addresses 172.30.140.101/102/103:6443 ready=true (R3). UNKNOWN: Calico DNAT /
@@ -30,8 +32,15 @@ Base evidence: `evidence/P8/20261026T173244Z-p8c-rv02-live-inventory/inventory.j
 7. BASELINE — **PARTIAL→UNKNOWN**. K8S_NETWORKPOLICY_LIST=EMPTY (R5). But R14 serves
    `crd.projectcalico.org/v1` AND `policy.networking.k8s.io/v1alpha2` → Calico
    NetworkPolicy/GlobalNetworkPolicy + other policy CRDs may exist. EFFECTIVE_POLICY_UNION=UNKNOWN.
-   Phase-2 (P2-C3/C4 + P2-D2). Namespaces catalogued (R4).
+   Phase-2 C3/C4/D2 can add bounded configuration facts, but not HostEndpoint/Tier
+   membership or a complete policy-engine evaluation. Namespaces catalogued (R4).
 
 8. CNI semantics — **PARTIAL**. Calico present (`crd.projectcalico.org` R14); actual
    pod IPs 10.244.184/190/254.* ≠ node podCIDRs 10.244.0/1/2.0/24 (R15) — podCIDR is not
-   an IP allowlist. UNKNOWN: Calico version/mode (iptables/eBPF), policy precedence. Phase-2 (I1 identity + C5 FelixConfiguration).
+   an IP allowlist. Versioned configuration-source precedence is documented in supplemental-design.md §3.
+   UNKNOWN: actual accepted runtime identity, effective per-node mode (iptables/eBPF/nftables),
+   policy applicability/tier ordering and DNAT. I1 + C5 reads only identity and global
+   defaults; node/selector overrides, env/config and HostEndpoint/Tier are not collected.
+
+Source/documentary preparation closure does not close these live gaps or authorize
+additional collection. PHASE2_LIVE_READS_APPROVED=NO; NETPOL_APPROVED_FOR_APPLY=NO.
