@@ -1,0 +1,167 @@
+{
+  "source_sha": "3139e08e4243868d5de2aa9f52d054e424e0a653",
+  "reviewed_sha": "bcda2f78e20a5f83a05f021c5bb4726202f6ca0e",
+  "hashes": {
+    "supplemental.py": {
+      "sha256": "ddd9a4dc17bca97d6b36ae6b4d501e1722c5d38d6e5ac8c7b051698fa0b15491",
+      "git_blob": "1b613fbd1e35a109072d2843d6e5f3a3fd47b3d6"
+    },
+    "supplemental_test.py": {
+      "sha256": "12625fa6923d8948eb4e5752b4a7354846870ce207046159b58aceded2cd32e5",
+      "git_blob": "fce1e7293346c7825a9a56f93efaa8d169ca3b5d"
+    }
+  },
+  "stored_three_pod_pure_validation": "PASS",
+  "three_pod_mock_main": "PASS",
+  "mixed_mock_zero_dependents": "PASS",
+  "finite_cases": [
+    {
+      "ref": "quay.io/calico/node:v3.32.0",
+      "imageID": "sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65",
+      "accepted": true
+    },
+    {
+      "ref": "quay.io/calico/node:v3.32.0",
+      "imageID": "containerd://sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "accepted": true
+    },
+    {
+      "ref": "quay.io/calico/node:v3.32.0",
+      "imageID": "docker-pullable://sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "accepted": true
+    },
+    {
+      "ref": "quay.io/calico/node:v3.32.0",
+      "imageID": "docker://sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "accepted": true
+    },
+    {
+      "ref": "quay.io/calico/node:v3.32.0",
+      "imageID": "sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "accepted": false
+    },
+    {
+      "ref": "quay.io/calico/node:v3.32.0",
+      "imageID": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "accepted": false
+    },
+    {
+      "ref": "quay.io/calico/node:v3.32.0",
+      "imageID": "containerd://sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65",
+      "accepted": false
+    },
+    {
+      "ref": "quay.io/calico/node:v3.32.0",
+      "imageID": "docker-pullable://sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65",
+      "accepted": false
+    },
+    {
+      "ref": "quay.io/calico/node:v3.32.0",
+      "imageID": "docker://sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65",
+      "accepted": false
+    },
+    {
+      "ref": "quay.io/calico/node:v3.32.0",
+      "imageID": "sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65\n",
+      "accepted": false
+    },
+    {
+      "ref": "quay.io/calico/node:v3.32.0",
+      "imageID": "xsha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65",
+      "accepted": false
+    },
+    {
+      "ref": "quay.io/calico/node:v3.32.0",
+      "imageID": "sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65x",
+      "accepted": false
+    },
+    {
+      "ref": "quay.io/calico/node:v3.32.0",
+      "imageID": "containerd://sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a\n",
+      "accepted": false
+    },
+    {
+      "ref": "quay.io/calico/node:v3.32.0",
+      "imageID": "xcontainerd://sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "accepted": false
+    },
+    {
+      "ref": "quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "imageID": "sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65",
+      "accepted": true
+    },
+    {
+      "ref": "quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "imageID": "containerd://sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "accepted": true
+    },
+    {
+      "ref": "quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "imageID": "docker-pullable://sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "accepted": true
+    },
+    {
+      "ref": "quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "imageID": "docker://sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "accepted": true
+    },
+    {
+      "ref": "quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "imageID": "sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "accepted": false
+    },
+    {
+      "ref": "quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "imageID": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "accepted": false
+    },
+    {
+      "ref": "quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "imageID": "containerd://sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65",
+      "accepted": false
+    },
+    {
+      "ref": "quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "imageID": "docker-pullable://sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65",
+      "accepted": false
+    },
+    {
+      "ref": "quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "imageID": "docker://sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65",
+      "accepted": false
+    },
+    {
+      "ref": "quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "imageID": "sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65\n",
+      "accepted": false
+    },
+    {
+      "ref": "quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "imageID": "xsha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65",
+      "accepted": false
+    },
+    {
+      "ref": "quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "imageID": "sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65x",
+      "accepted": false
+    },
+    {
+      "ref": "quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "imageID": "containerd://sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a\n",
+      "accepted": false
+    },
+    {
+      "ref": "quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "imageID": "xcontainerd://sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "accepted": false
+    }
+  ],
+  "existing_changed_functions": [
+    "verify_calico_identity"
+  ],
+  "new_functions": [
+    "_image_id_ok"
+  ],
+  "read_contract_and_other_definitions": "UNCHANGED",
+  "cluster_operations": 0
+}

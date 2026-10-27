@@ -74,7 +74,7 @@ are never written. Read argv is fixed by READ_CONTRACT; no new read is authorize
 ## 2. Digest identity (supported comparison mode)
 Supported image references: `quay.io/calico/node@sha256:f4fafd8…` (repository pin,
 `ansible/playbooks/files/calico-v3.32.0.yaml`) and tag `quay.io/calico/node:v3.32.0`.
-Accepted runtime `imageID` forms (offline-proven):
+Accepted runtime `imageID` forms (legacy contract plus newly proven config relation):
 - legacy exact prefixed pinned-INDEX digest — `containerd://` / `docker-pullable://` /
   `docker://` + `sha256:f4fafd8…` (manifest-list digest, textual equality);
 - observed bare amd64 CONFIG digest — `sha256:6bc9fa4…` (verified descendant of the pinned
@@ -139,7 +139,7 @@ Four distinct components:
 - **Per-instance Barman sidecar** — executes backup/WAL operations inside each PostgreSQL
   pod (primary or selected standby) as an init/sidecar container. Collected by S1
   (`pods -n portal -l cnpg.io/cluster=portal-db`) initContainers/containers identity;
-  live identity UNKNOWN (Phase-2 not run).
+  live identity OBSERVED in Phase-2 S1 at 832591b; traffic direction remains UNKNOWN.
 - **CNPG instance manager** (in-pod, `cnpg.io/podRole=instance`, port 8000 status) —
   manages the local PostgreSQL instance. Observed R1 (port 8000).
 
@@ -151,8 +151,8 @@ is not captured by the approved reads and remains UNRESOLVED.
 
 The source ObjectStore declares HTTPS endpoint `s3-backup.demo-pak.test` with no
 explicit port (source design uses the HTTPS default); this is not live routing/IP or
-packet evidence. Live endpoint origin still requires C1 because base R10 used the
-wrong projection path. No live S3 port/IP allowlist is approved. R1/R2/R3 capture
+packet evidence. Live endpoint origin was observed by Phase-2 C1 at 832591b, superseding base R10's
+wrong-path projection. URL path/prefix and actual route were not collected. No live S3 port/IP allowlist is approved. R1/R2/R3 capture
 identities and declared ports only; actual directed traffic remains UNKNOWN.
 
 ## 5. API/DNS interpretation (R3 under CNI)
@@ -180,3 +180,10 @@ Node podCIDRs 10.244.0/1/2.0/24 differ from observed Pod IP ranges
   result, not a demand to implement them).
 - Future Gateway/dataplane → PLANNED / NOT_CREATED (GatewayClass `eg` present R6; no
   Gateway R7 / EnvoyProxy R8).
+
+## Current follow-up source contract
+
+See followup-read-design.md and followup-typed-contract.json, accepted with bounded
+limits by docs/architecture/P8C_RV02_REVIEW_bcda2f7_20261027.md.
+The old ten-read execution budget is consumed. The new contract authorizes source
+implementation only; no new live run or policy apply is authorized.

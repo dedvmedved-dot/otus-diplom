@@ -1,0 +1,17 @@
+{
+  "cnp": {
+    "kind": "ClusterNetworkPolicy",
+    "scope": "Cluster",
+    "canonical_spec_schema_sha256": "770130a412fd6fab2f02d953edf35f8cc68bf4379db8307e2185937c1e699568"
+  },
+  "hep": {
+    "kind": "HostEndpoint",
+    "scope": "Cluster",
+    "canonical_spec_schema_sha256": "7cb531e81ea56a18eec43314ebbd094ae3e5dc0c0e6cde1cc6003957855c306b"
+  },
+  "tier": {
+    "kind": "Tier",
+    "scope": "Cluster",
+    "canonical_spec_schema_sha256": "99579cef1469eda4d100295775b75f8991e0263729f0b9a39a87d903ac9a5ec9"
+  }
+}

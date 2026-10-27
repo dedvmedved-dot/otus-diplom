@@ -1,0 +1,920 @@
+{
+  "cnp": {
+    "source_repository": "kubernetes-sigs/network-policy-api",
+    "source_commit": "730bd5474d82a2cf82be8b0c6c2a5515598cc44e",
+    "source_blob": "eca1eca97c14f56836aaf8f2394fa03479e01b5f",
+    "group": "policy.networking.k8s.io",
+    "version": "v1alpha2",
+    "kind": "ClusterNetworkPolicy",
+    "scope": "Cluster",
+    "spec_schema": {
+      "properties": {
+        "egress": {
+          "items": {
+            "properties": {
+              "action": {
+                "enum": [
+                  "Accept",
+                  "Deny",
+                  "Pass"
+                ],
+                "type": "string"
+              },
+              "name": {
+                "maxLength": 100,
+                "type": "string"
+              },
+              "protocols": {
+                "items": {
+                  "maxProperties": 1,
+                  "minProperties": 1,
+                  "properties": {
+                    "sctp": {
+                      "minProperties": 1,
+                      "properties": {
+                        "destinationPort": {
+                          "maxProperties": 1,
+                          "minProperties": 1,
+                          "properties": {
+                            "number": {
+                              "format": "int32",
+                              "maximum": 65535,
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "range": {
+                              "properties": {
+                                "end": {
+                                  "format": "int32",
+                                  "maximum": 65535,
+                                  "minimum": 1,
+                                  "type": "integer"
+                                },
+                                "start": {
+                                  "format": "int32",
+                                  "maximum": 65535,
+                                  "minimum": 1,
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "end",
+                                "start"
+                              ],
+                              "type": "object",
+                              "x-kubernetes-validations": [
+                                {
+                                  "message": "Start port must be less than End port",
+                                  "rule": "self.start < self.end"
+                                }
+                              ]
+                            }
+                          },
+                          "type": "object"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "tcp": {
+                      "minProperties": 1,
+                      "properties": {
+                        "destinationPort": {
+                          "maxProperties": 1,
+                          "minProperties": 1,
+                          "properties": {
+                            "number": {
+                              "format": "int32",
+                              "maximum": 65535,
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "range": {
+                              "properties": {
+                                "end": {
+                                  "format": "int32",
+                                  "maximum": 65535,
+                                  "minimum": 1,
+                                  "type": "integer"
+                                },
+                                "start": {
+                                  "format": "int32",
+                                  "maximum": 65535,
+                                  "minimum": 1,
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "end",
+                                "start"
+                              ],
+                              "type": "object",
+                              "x-kubernetes-validations": [
+                                {
+                                  "message": "Start port must be less than End port",
+                                  "rule": "self.start < self.end"
+                                }
+                              ]
+                            }
+                          },
+                          "type": "object"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "udp": {
+                      "minProperties": 1,
+                      "properties": {
+                        "destinationPort": {
+                          "maxProperties": 1,
+                          "minProperties": 1,
+                          "properties": {
+                            "number": {
+                              "format": "int32",
+                              "maximum": 65535,
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "range": {
+                              "properties": {
+                                "end": {
+                                  "format": "int32",
+                                  "maximum": 65535,
+                                  "minimum": 1,
+                                  "type": "integer"
+                                },
+                                "start": {
+                                  "format": "int32",
+                                  "maximum": 65535,
+                                  "minimum": 1,
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "end",
+                                "start"
+                              ],
+                              "type": "object",
+                              "x-kubernetes-validations": [
+                                {
+                                  "message": "Start port must be less than End port",
+                                  "rule": "self.start < self.end"
+                                }
+                              ]
+                            }
+                          },
+                          "type": "object"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                },
+                "maxItems": 25,
+                "minItems": 1,
+                "type": "array"
+              },
+              "to": {
+                "items": {
+                  "maxProperties": 1,
+                  "minProperties": 1,
+                  "properties": {
+                    "namespaces": {
+                      "properties": {
+                        "matchExpressions": {
+                          "items": {
+                            "properties": {
+                              "key": {
+                                "type": "string"
+                              },
+                              "operator": {
+                                "type": "string"
+                              },
+                              "values": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array",
+                                "x-kubernetes-list-type": "atomic"
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "operator"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array",
+                          "x-kubernetes-list-type": "atomic"
+                        },
+                        "matchLabels": {
+                          "additionalProperties": {
+                            "type": "string"
+                          },
+                          "type": "object"
+                        }
+                      },
+                      "type": "object",
+                      "x-kubernetes-map-type": "atomic"
+                    },
+                    "networks": {
+                      "items": {
+                        "maxLength": 43,
+                        "type": "string",
+                        "x-kubernetes-validations": [
+                          {
+                            "message": "Invalid CIDR format provided",
+                            "rule": "isCIDR(self) && cidr(self) == cidr(self).masked()"
+                          }
+                        ]
+                      },
+                      "maxItems": 25,
+                      "minItems": 1,
+                      "type": "array",
+                      "x-kubernetes-list-type": "set"
+                    },
+                    "pods": {
+                      "properties": {
+                        "namespaceSelector": {
+                          "properties": {
+                            "matchExpressions": {
+                              "items": {
+                                "properties": {
+                                  "key": {
+                                    "type": "string"
+                                  },
+                                  "operator": {
+                                    "type": "string"
+                                  },
+                                  "values": {
+                                    "items": {
+                                      "type": "string"
+                                    },
+                                    "type": "array",
+                                    "x-kubernetes-list-type": "atomic"
+                                  }
+                                },
+                                "required": [
+                                  "key",
+                                  "operator"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array",
+                              "x-kubernetes-list-type": "atomic"
+                            },
+                            "matchLabels": {
+                              "additionalProperties": {
+                                "type": "string"
+                              },
+                              "type": "object"
+                            }
+                          },
+                          "type": "object",
+                          "x-kubernetes-map-type": "atomic"
+                        },
+                        "podSelector": {
+                          "properties": {
+                            "matchExpressions": {
+                              "items": {
+                                "properties": {
+                                  "key": {
+                                    "type": "string"
+                                  },
+                                  "operator": {
+                                    "type": "string"
+                                  },
+                                  "values": {
+                                    "items": {
+                                      "type": "string"
+                                    },
+                                    "type": "array",
+                                    "x-kubernetes-list-type": "atomic"
+                                  }
+                                },
+                                "required": [
+                                  "key",
+                                  "operator"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array",
+                              "x-kubernetes-list-type": "atomic"
+                            },
+                            "matchLabels": {
+                              "additionalProperties": {
+                                "type": "string"
+                              },
+                              "type": "object"
+                            }
+                          },
+                          "type": "object",
+                          "x-kubernetes-map-type": "atomic"
+                        }
+                      },
+                      "required": [
+                        "podSelector"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                },
+                "maxItems": 25,
+                "minItems": 1,
+                "type": "array"
+              }
+            },
+            "required": [
+              "action",
+              "to"
+            ],
+            "type": "object"
+          },
+          "maxItems": 25,
+          "type": "array"
+        },
+        "ingress": {
+          "items": {
+            "properties": {
+              "action": {
+                "enum": [
+                  "Accept",
+                  "Deny",
+                  "Pass"
+                ],
+                "type": "string"
+              },
+              "from": {
+                "items": {
+                  "maxProperties": 1,
+                  "minProperties": 1,
+                  "properties": {
+                    "namespaces": {
+                      "properties": {
+                        "matchExpressions": {
+                          "items": {
+                            "properties": {
+                              "key": {
+                                "type": "string"
+                              },
+                              "operator": {
+                                "type": "string"
+                              },
+                              "values": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array",
+                                "x-kubernetes-list-type": "atomic"
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "operator"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array",
+                          "x-kubernetes-list-type": "atomic"
+                        },
+                        "matchLabels": {
+                          "additionalProperties": {
+                            "type": "string"
+                          },
+                          "type": "object"
+                        }
+                      },
+                      "type": "object",
+                      "x-kubernetes-map-type": "atomic"
+                    },
+                    "pods": {
+                      "properties": {
+                        "namespaceSelector": {
+                          "properties": {
+                            "matchExpressions": {
+                              "items": {
+                                "properties": {
+                                  "key": {
+                                    "type": "string"
+                                  },
+                                  "operator": {
+                                    "type": "string"
+                                  },
+                                  "values": {
+                                    "items": {
+                                      "type": "string"
+                                    },
+                                    "type": "array",
+                                    "x-kubernetes-list-type": "atomic"
+                                  }
+                                },
+                                "required": [
+                                  "key",
+                                  "operator"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array",
+                              "x-kubernetes-list-type": "atomic"
+                            },
+                            "matchLabels": {
+                              "additionalProperties": {
+                                "type": "string"
+                              },
+                              "type": "object"
+                            }
+                          },
+                          "type": "object",
+                          "x-kubernetes-map-type": "atomic"
+                        },
+                        "podSelector": {
+                          "properties": {
+                            "matchExpressions": {
+                              "items": {
+                                "properties": {
+                                  "key": {
+                                    "type": "string"
+                                  },
+                                  "operator": {
+                                    "type": "string"
+                                  },
+                                  "values": {
+                                    "items": {
+                                      "type": "string"
+                                    },
+                                    "type": "array",
+                                    "x-kubernetes-list-type": "atomic"
+                                  }
+                                },
+                                "required": [
+                                  "key",
+                                  "operator"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array",
+                              "x-kubernetes-list-type": "atomic"
+                            },
+                            "matchLabels": {
+                              "additionalProperties": {
+                                "type": "string"
+                              },
+                              "type": "object"
+                            }
+                          },
+                          "type": "object",
+                          "x-kubernetes-map-type": "atomic"
+                        }
+                      },
+                      "required": [
+                        "podSelector"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                },
+                "maxItems": 25,
+                "minItems": 1,
+                "type": "array"
+              },
+              "name": {
+                "maxLength": 100,
+                "type": "string"
+              },
+              "protocols": {
+                "items": {
+                  "maxProperties": 1,
+                  "minProperties": 1,
+                  "properties": {
+                    "sctp": {
+                      "minProperties": 1,
+                      "properties": {
+                        "destinationPort": {
+                          "maxProperties": 1,
+                          "minProperties": 1,
+                          "properties": {
+                            "number": {
+                              "format": "int32",
+                              "maximum": 65535,
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "range": {
+                              "properties": {
+                                "end": {
+                                  "format": "int32",
+                                  "maximum": 65535,
+                                  "minimum": 1,
+                                  "type": "integer"
+                                },
+                                "start": {
+                                  "format": "int32",
+                                  "maximum": 65535,
+                                  "minimum": 1,
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "end",
+                                "start"
+                              ],
+                              "type": "object",
+                              "x-kubernetes-validations": [
+                                {
+                                  "message": "Start port must be less than End port",
+                                  "rule": "self.start < self.end"
+                                }
+                              ]
+                            }
+                          },
+                          "type": "object"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "tcp": {
+                      "minProperties": 1,
+                      "properties": {
+                        "destinationPort": {
+                          "maxProperties": 1,
+                          "minProperties": 1,
+                          "properties": {
+                            "number": {
+                              "format": "int32",
+                              "maximum": 65535,
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "range": {
+                              "properties": {
+                                "end": {
+                                  "format": "int32",
+                                  "maximum": 65535,
+                                  "minimum": 1,
+                                  "type": "integer"
+                                },
+                                "start": {
+                                  "format": "int32",
+                                  "maximum": 65535,
+                                  "minimum": 1,
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "end",
+                                "start"
+                              ],
+                              "type": "object",
+                              "x-kubernetes-validations": [
+                                {
+                                  "message": "Start port must be less than End port",
+                                  "rule": "self.start < self.end"
+                                }
+                              ]
+                            }
+                          },
+                          "type": "object"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "udp": {
+                      "minProperties": 1,
+                      "properties": {
+                        "destinationPort": {
+                          "maxProperties": 1,
+                          "minProperties": 1,
+                          "properties": {
+                            "number": {
+                              "format": "int32",
+                              "maximum": 65535,
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "range": {
+                              "properties": {
+                                "end": {
+                                  "format": "int32",
+                                  "maximum": 65535,
+                                  "minimum": 1,
+                                  "type": "integer"
+                                },
+                                "start": {
+                                  "format": "int32",
+                                  "maximum": 65535,
+                                  "minimum": 1,
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "end",
+                                "start"
+                              ],
+                              "type": "object",
+                              "x-kubernetes-validations": [
+                                {
+                                  "message": "Start port must be less than End port",
+                                  "rule": "self.start < self.end"
+                                }
+                              ]
+                            }
+                          },
+                          "type": "object"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                },
+                "maxItems": 25,
+                "minItems": 1,
+                "type": "array"
+              }
+            },
+            "required": [
+              "action",
+              "from"
+            ],
+            "type": "object"
+          },
+          "maxItems": 25,
+          "type": "array"
+        },
+        "priority": {
+          "format": "int32",
+          "maximum": 1000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "subject": {
+          "maxProperties": 1,
+          "minProperties": 1,
+          "properties": {
+            "namespaces": {
+              "properties": {
+                "matchExpressions": {
+                  "items": {
+                    "properties": {
+                      "key": {
+                        "type": "string"
+                      },
+                      "operator": {
+                        "type": "string"
+                      },
+                      "values": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array",
+                        "x-kubernetes-list-type": "atomic"
+                      }
+                    },
+                    "required": [
+                      "key",
+                      "operator"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array",
+                  "x-kubernetes-list-type": "atomic"
+                },
+                "matchLabels": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object",
+              "x-kubernetes-map-type": "atomic"
+            },
+            "pods": {
+              "properties": {
+                "namespaceSelector": {
+                  "properties": {
+                    "matchExpressions": {
+                      "items": {
+                        "properties": {
+                          "key": {
+                            "type": "string"
+                          },
+                          "operator": {
+                            "type": "string"
+                          },
+                          "values": {
+                            "items": {
+                              "type": "string"
+                            },
+                            "type": "array",
+                            "x-kubernetes-list-type": "atomic"
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "operator"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array",
+                      "x-kubernetes-list-type": "atomic"
+                    },
+                    "matchLabels": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object",
+                  "x-kubernetes-map-type": "atomic"
+                },
+                "podSelector": {
+                  "properties": {
+                    "matchExpressions": {
+                      "items": {
+                        "properties": {
+                          "key": {
+                            "type": "string"
+                          },
+                          "operator": {
+                            "type": "string"
+                          },
+                          "values": {
+                            "items": {
+                              "type": "string"
+                            },
+                            "type": "array",
+                            "x-kubernetes-list-type": "atomic"
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "operator"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array",
+                      "x-kubernetes-list-type": "atomic"
+                    },
+                    "matchLabels": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object",
+                  "x-kubernetes-map-type": "atomic"
+                }
+              },
+              "required": [
+                "podSelector"
+              ],
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
+        "tier": {
+          "enum": [
+            "Admin",
+            "Baseline"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "priority",
+        "subject",
+        "tier"
+      ],
+      "type": "object"
+    },
+    "canonical_spec_schema_sha256": "770130a412fd6fab2f02d953edf35f8cc68bf4379db8307e2185937c1e699568"
+  },
+  "hep": {
+    "source_repository": "dedvmedved-dot/otus-diplom",
+    "source_commit": "bcda2f78e20a5f83a05f021c5bb4726202f6ca0e",
+    "source_path": "ansible/playbooks/files/calico-v3.32.0.yaml",
+    "source_blob": "21ea9b4b163305ea479bc7708965104465ffc716",
+    "group": "crd.projectcalico.org",
+    "version": "v1",
+    "kind": "HostEndpoint",
+    "scope": "Cluster",
+    "spec_schema": {
+      "properties": {
+        "expectedIPs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "x-kubernetes-list-type": "set"
+        },
+        "interfaceName": {
+          "maxLength": 15,
+          "type": "string"
+        },
+        "node": {
+          "maxLength": 253,
+          "type": "string"
+        },
+        "ports": {
+          "items": {
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "port": {
+                "maximum": 65535,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "protocol": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ],
+                "pattern": "^.*",
+                "x-kubernetes-int-or-string": true
+              }
+            },
+            "required": [
+              "name",
+              "port",
+              "protocol"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "profiles": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "x-kubernetes-list-type": "set"
+        }
+      },
+      "type": "object",
+      "x-kubernetes-validations": [
+        {
+          "message": "at least one of interfaceName or expectedIPs must be specified",
+          "reason": "FieldValueInvalid",
+          "rule": "(has(self.interfaceName) && size(self.interfaceName) > 0) || (has(self.expectedIPs) && size(self.expectedIPs) > 0)"
+        },
+        {
+          "message": "node must be specified",
+          "reason": "FieldValueInvalid",
+          "rule": "has(self.node) && size(self.node) > 0"
+        }
+      ]
+    },
+    "canonical_spec_schema_sha256": "7cb531e81ea56a18eec43314ebbd094ae3e5dc0c0e6cde1cc6003957855c306b"
+  },
+  "tier": {
+    "source_repository": "dedvmedved-dot/otus-diplom",
+    "source_commit": "bcda2f78e20a5f83a05f021c5bb4726202f6ca0e",
+    "source_path": "ansible/playbooks/files/calico-v3.32.0.yaml",
+    "source_blob": "21ea9b4b163305ea479bc7708965104465ffc716",
+    "group": "crd.projectcalico.org",
+    "version": "v1",
+    "kind": "Tier",
+    "scope": "Cluster",
+    "spec_schema": {
+      "properties": {
+        "defaultAction": {
+          "allOf": [
+            {
+              "enum": [
+                "Allow",
+                "Deny",
+                "Log",
+                "Pass"
+              ]
+            },
+            {
+              "enum": [
+                "Pass",
+                "Deny"
+              ]
+            }
+          ],
+          "default": "Deny",
+          "type": "string"
+        },
+        "order": {
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "canonical_spec_schema_sha256": "99579cef1469eda4d100295775b75f8991e0263729f0b9a39a87d903ac9a5ec9"
+  }
+}
