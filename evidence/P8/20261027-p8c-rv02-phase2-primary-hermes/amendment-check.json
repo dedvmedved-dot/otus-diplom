@@ -1,0 +1,11 @@
+{
+  "base_main": "7d140e256d0ac73aabf586112312e5e861188e00",
+  "change": "Owner requested removing Hermes2; primary Hermes can act as operator with existing authorized access.",
+  "operator_command_unchanged": true,
+  "script_blob": "ad2edaa92de59f657599190842fa7fe68373b582",
+  "script_sha256": "69dac4747856e5f88ac4666e884fe1263777ca5cb64b197741a4b370c093aa4c",
+  "one_run_limit": "Shared across both Gate revisions and all operators; no duplicate run authorized.",
+  "live_execution": "NOT_EXECUTED",
+  "access_verified": "NOT_ASSERTED",
+  "scope_extended": false
+}
