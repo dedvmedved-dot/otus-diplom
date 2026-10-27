@@ -336,6 +336,24 @@ class TestRemainingSP(unittest.TestCase):
             c3 = [r for r in rows if r["id"] == "C3"][0]
             self.assertEqual(c3["category"], "UNSUPPORTED", key)
 
+    def test_unsupported_identity_diagnostic(self):
+        # valid but unbound digest -> UNSUPPORTED (not PARSE_ERROR), safe identity retained
+        p = copy.deepcopy(POD); p["status"]["containerStatuses"][0]["imageID"] = "containerd://sha256:" + "b" * 64
+        rc, calls, rows = run({"I1": R(0, enc(p))})
+        self.assertNotEqual(rc, 0)
+        self.assertNotIn("C3", calls); self.assertNotIn("C4", calls); self.assertNotIn("C5", calls)
+        i1 = [r for r in rows if r["id"] == "I1"][0]
+        self.assertEqual(i1["category"], "UNSUPPORTED")
+        self.assertIn("calico-node", i1["output"])
+        self.assertNotIn(CANARY, i1["output"])
+        # malformed -> PARSE_ERROR, empty output
+        bad = copy.deepcopy(POD); bad["spec"]["containers"] = [None, 7]
+        rc, _, rows = run({"I1": R(0, enc(bad))})
+        self.assertNotEqual(rc, 0)
+        i1 = [r for r in rows if r["id"] == "I1"][0]
+        self.assertEqual(i1["category"], "PARSE_ERROR")
+        self.assertEqual(i1["output"], "")
+
     def test_literal_api_paths(self):
         expected = {
             'C1': ['get', '--raw', '/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup'],

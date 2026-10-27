@@ -502,6 +502,11 @@ class UnsupportedField(Exception):
         self.keys = keys
 
 
+class UnsupportedIdentity(Exception):
+    def __init__(self, reason):
+        self.reason = reason
+
+
 def _check_keys(d, allowed, level):
     unknown = [k for k in d if k not in allowed]
     if unknown:
@@ -510,22 +515,22 @@ def _check_keys(d, allowed, level):
 
 def verify_calico_identity(pods):
     if not pods:
-        raise ValueError('no calico-node pods')
+        raise UnsupportedIdentity('no calico-node pods')
     for pod in pods:
         containers = pod.get('containers', [])
         calico = [c for c in containers
                   if 'calico-node' in (c.get('name') or '') or 'calico/node' in (c.get('image') or '')]
         if not calico:
-            raise ValueError('pod without calico-node identity')
+            raise UnsupportedIdentity('pod without calico-node identity')
         for c in calico:
             image = c.get('image')
             if image not in CALICO_IMAGE_REFS:
-                raise ValueError(f'unsupported calico image {image!r}')
+                raise UnsupportedIdentity(f'unsupported calico image {image!r}')
             iid = c.get('imageID')
             if not iid or not IMAGE_ID_RE.match(iid):
-                raise ValueError(f'invalid imageID {iid!r}')
+                raise UnsupportedIdentity(f'invalid imageID {iid!r}')
             if not iid.endswith(PINNED_DIGEST):
-                raise ValueError('imageID digest not linked to pinned image')
+                raise UnsupportedIdentity('imageID digest not linked to pinned image')
     return len(pods)
 
 PROJECTORS = {
@@ -665,6 +670,8 @@ def main():
                 except UnsupportedDiscovery:
                     unsupported = True
                 except UnsupportedField:
+                    unsupported = True
+                except UnsupportedIdentity:
                     unsupported = True
                 except (json.JSONDecodeError, ValueError, KeyError, TypeError):
                     parse_error = True

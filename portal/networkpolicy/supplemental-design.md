@@ -46,17 +46,29 @@ alone. Fields: bpfEnabled (bool), nftablesMode (Disabled/Enabled/Auto), iptables
 (string), nodeSelector (string). Source: Calico v3.32 FelixConfiguration CRD schema.
 
 ## 4. Barman directed-flow (pinned v0.13.0)
-Three distinct roles, per `manifests/barman-cloud/v0.13.0/` + CNPG v1.30.1:
-- **controller** (cnpg-system `cnpg-controller-manager`) — reconciles Cluster, invokes
-  plugin for backup/restore; observed identity R1/R3.
-- **instance manager** (in-cluster `cnpg.io/podRole=instance`) — runs backup/WAL jobs
-  inside the cluster pod; port 8000 status.
-- **native sidecar / plugin** (`barman-cloud.cloudnative-pg.io`, pluginName in R3,
-  svc 9090) — referenced via Cluster `spec.plugins[].parameters.barmanObjectName` =
-  `portal-db-backup`; the ObjectStore endpoint is `spec.configuration.endpointURL`.
-Directed ports are DECLARED, not observed traffic: plugin→DB(5432) vs plugin→S3(443)
-vs instance-manager(8000) direction remains UNKNOWN; the 9090 service port alone does
-not establish direction.
+Per CNPG barman-cloud plugin docs 0.13.0 (concepts/usage:
+backup/WAL operations execute in per-instance sidecars — primary or selected standby)
+and `manifests/barman-cloud/v0.13.0/` + CNPG v1.30.1, four distinct components:
+
+- **CNPG controller/operator** (cnpg-system `cnpg-controller-manager`) — reconciles the
+  Cluster CR; invokes the plugin for backup/restore. Observed identity R1.
+- **Plugin controller/service** (cnpg-system `barman-cloud` Deployment, Service port
+  9090) — the plugin's OWN control-surface Service (webhook/API), NOT a per-instance
+  sidecar and NOT a DB/S3 data path. Observed R1/R2/R3 (pluginName
+  `barman-cloud.cloudnative-pg.io`).
+- **Per-instance Barman sidecar** — executes backup/WAL operations inside each PostgreSQL
+  pod (primary or selected standby) as an init/sidecar container. Collected by S1
+  (`pods -n portal -l cnpg.io/cluster=portal-db`) initContainers/containers identity;
+  live identity UNKNOWN (Phase-2 not run).
+- **CNPG instance manager** (in-pod, `cnpg.io/podRole=instance`, port 8000 status) —
+  manages the local PostgreSQL instance. Observed R1 (port 8000).
+
+Directed interactions (declared, not observed traffic): the CNPG controller invokes the
+plugin controller; the per-instance sidecar reads the ObjectStore
+(`spec.configuration.endpointURL`, origin) and the local PostgreSQL instance. Pod-local
+communication (sidecar↔postgres within a pod) is distinct from inter-Pod policy flows.
+Direction (sidecar→DB 5432 vs sidecar→S3 443 vs instance-manager 8000) remains UNKNOWN;
+declared ports are not traffic proof.
 
 ## 5. API/DNS interpretation (R3 under CNI)
 Base inventory R2/R3 observed: API Service `default/kubernetes` 10.96.0.1:443→6443,
