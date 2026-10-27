@@ -13,7 +13,7 @@ Base evidence: `evidence/P8/20261026T173244Z-p8c-rv02-live-inventory/inventory.j
 | MON-9187 | monitoring scraper | portal: cnpg.io/cluster=portal-db | TCP 9187 | metrics scrape | NOT FOUND (R11-13 no Prometheus Operator; no scraper pod) | p8c-cnpg-existing-flows ingress |
 | DNS-53 | portal workloads | kube-system kube-dns 10.96.0.10; eps 10.244.254.65/.66 | UDP+TCP 53 | resolution | OBSERVED_CONFIG (R2 svc; R3 eps) | dns baseline egress + portal/migrator egress |
 | API-6443 | portal workloads | default/kubernetes 10.96.0.1:443→6443; eps 172.30.140.101/102/103 ready (R3) | TCP 6443 | Kubernetes API | OBSERVED_CONFIG (R2 svc + R3 eps); DNAT/CNI UNKNOWN | cnpg/portal egress ipBlock |
-| S3-443 | portal: cnpg.io/cluster=portal-db | ObjectStore endpoint | TCP 443 | backup/objectstore | VERSIONED_DESIGN source = `https://s3-backup.demo-pak.test` (objectstore-portal-db.yaml); LIVE value UNKNOWN (base read spec.data, real path spec.configuration) | cnpg egress ipBlock |
+| S3-443 | portal: cnpg.io/cluster=portal-db | ObjectStore endpoint `s3-backup.demo-pak.test` | TCP 443 (https) | backup/objectstore | LIVE CONFIRMED (Phase-2 C1): endpointURL `https://s3-backup.demo-pak.test`, destinationPath `s3://portal-postgres-backup`; secret-ref names only | cnpg egress ipBlock |
 | APP-DB-5432 | portal: pak-portal | portal: cnpg cluster | TCP 5432 | app DB | PLANNED (Portal NOT_CREATED) | portal egress + cnpg ingress |
 | APP-MET-9187 | portal: pak-portal | portal: cnpg cluster | TCP 9187 | CNPG metrics | PLANNED | portal egress + cnpg ingress |
 | MIG-DB-5432 | portal: pak-portal-migrator | portal: cnpg cluster | TCP 5432 | bootstrap | PLANNED | migrator egress + cnpg ingress |

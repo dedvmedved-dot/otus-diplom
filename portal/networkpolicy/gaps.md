@@ -2,12 +2,14 @@
 
 Base evidence: `evidence/P8/20261026T173244Z-p8c-rv02-live-inventory/inventory.jsonl`.
 
-1. BAR-5432 — **PARTIAL DESIGN / UNKNOWN LIVE** (legacy ID).
+1. BAR-5432 — **PARTIAL DESIGN / LIVE IDENTITY OBSERVED** (legacy ID).
    R1/R2/R3 observe the plugin control Service TCP9090 and its endpoint.
-   Versioned Barman design distinguishes this control service from per-instance
-   backup/WAL sidecars; see supplemental-design.md §4. It does not establish
-   controller→DB5432 traffic. S1/S2 can provide projected sidecar/controller identity,
-   not prove directed traffic, Pod-local IPC or live S3 route/port.
+   Phase-2 S1/S2 live read: per-instance Barman sidecar `plugin-barman-cloud`
+   (init container in each portal-db pod) + plugin controller `barman-cloud`
+   (cnpg-system pod) both present. Versioned Barman design distinguishes the control
+   service (9090) from per-instance sidecars; see supplemental-design.md §4. It does
+   not establish controller→DB5432 traffic, Pod-local IPC or live S3 route/port
+   (declared, not observed).
    R9 backup/archiving conditions describe the base collection time only.
 
 2. API-6443 — **PARTIAL**. `default/kubernetes` 10.96.0.1:443→6443 (R2) + EndpointSlice
@@ -20,11 +22,10 @@ Base evidence: `evidence/P8/20261026T173244Z-p8c-rv02-live-inventory/inventory.j
 
 4. DNS-53 — **RESOLVED**. kube-dns 10.96.0.10:53 UDP+TCP; eps 10.244.254.65/.66 ready (R2,R3).
 
-5. S3-443 — **UNKNOWN (live)**. Source (objectstore-portal-db.yaml) defines
-   `spec.configuration.endpointURL = https://s3-backup.demo-pak.test` + destinationPath
-   `s3://portal-postgres-backup/` + secret refs. Base collector read `spec.data` (wrong
-   path) → R10 nulls are NOT_COLLECTED_AT_CORRECT_PATH. Live value requires supplemental
-   `spec.configuration` projection (P2-C1).
+5. S3-443 — **RESOLVED (live endpoint)**. Phase-2 C1 live read: `spec.configuration.endpointURL`
+   = `https://s3-backup.demo-pak.test` (origin-only), destinationPath
+   `s3://portal-postgres-backup`; secret refs `portal-barman-s3-credentials` (keys only,
+   no values). Port 443 implied by https; actual traffic/backup path still UNKNOWN.
 
 6. ENV-* — **RESOLVED (NOT_CREATED)**. GatewayClass `eg` (R6); Gateways [] (R7);
    EnvoyProxies [] (R8). Control-plane envoy-gateway present (R1,R2). Dataplane NOT_CREATED.
