@@ -1,0 +1,180 @@
+{
+  "checked_at_utc": "2026-10-27T13:49:45.272659+00:00",
+  "recovery_head": "d5801bf2c6914c641b92d7ab36818b74cc500ca4",
+  "script_sha256": "69dac4747856e5f88ac4666e884fe1263777ca5cb64b197741a4b370c093aa4c",
+  "script_git_blob": "ad2edaa92de59f657599190842fa7fe68373b582",
+  "read_contract": [
+    [
+      "D1",
+      "discover",
+      [
+        "get",
+        "--raw",
+        "/apis/crd.projectcalico.org/v1"
+      ],
+      "calico",
+      [],
+      "single",
+      null
+    ],
+    [
+      "D2",
+      "discover",
+      [
+        "get",
+        "--raw",
+        "/apis/policy.networking.k8s.io/v1alpha2"
+      ],
+      "policy",
+      [],
+      "single",
+      null
+    ],
+    [
+      "I1",
+      "config",
+      [
+        "get",
+        "pods",
+        "-n",
+        "kube-system",
+        "-l",
+        "k8s-app=calico-node",
+        "-o",
+        "json"
+      ],
+      "identity",
+      [],
+      "list",
+      null
+    ],
+    [
+      "C1",
+      "config",
+      [
+        "get",
+        "--raw",
+        "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+      ],
+      "objectstore",
+      [],
+      "single",
+      "portal-db-backup"
+    ],
+    [
+      "C2",
+      "config",
+      [
+        "get",
+        "--raw",
+        "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+      ],
+      "cluster",
+      [],
+      "single",
+      "portal-db"
+    ],
+    [
+      "C3",
+      "config",
+      [
+        "get",
+        "--raw",
+        "/apis/crd.projectcalico.org/v1/networkpolicies"
+      ],
+      "calico_np",
+      [
+        "D1",
+        "I1"
+      ],
+      "list",
+      null
+    ],
+    [
+      "C4",
+      "config",
+      [
+        "get",
+        "--raw",
+        "/apis/crd.projectcalico.org/v1/globalnetworkpolicies"
+      ],
+      "calico_gnp",
+      [
+        "D1",
+        "I1"
+      ],
+      "list",
+      null
+    ],
+    [
+      "C5",
+      "config",
+      [
+        "get",
+        "--raw",
+        "/apis/crd.projectcalico.org/v1/felixconfigurations/default"
+      ],
+      "felix",
+      [
+        "D1",
+        "I1"
+      ],
+      "single",
+      "default"
+    ],
+    [
+      "S1",
+      "config",
+      [
+        "get",
+        "pods",
+        "-n",
+        "portal",
+        "-l",
+        "cnpg.io/cluster=portal-db",
+        "-o",
+        "json"
+      ],
+      "sidecar",
+      [],
+      "list",
+      null
+    ],
+    [
+      "S2",
+      "config",
+      [
+        "get",
+        "pods",
+        "-n",
+        "cnpg-system",
+        "-l",
+        "app=barman-cloud",
+        "-o",
+        "json"
+      ],
+      "plugin",
+      [],
+      "list",
+      null
+    ]
+  ],
+  "read_count": 10,
+  "gate_sha256": "14617118ca40dc5ac2316dbb32273ab0bc3c4d85f198e802c6b34b9da4221117",
+  "shell_block_sha256": "d42043248e0fe235a863e609681295a1f019adf1e7e60a5bc97d854bf2feb109",
+  "command": [
+    "bash",
+    "-n",
+    "operator-command.sh"
+  ],
+  "exit": 0,
+  "stdout": "",
+  "stderr": "",
+  "checks": {
+    "declared_reads_match_source": "PASS",
+    "script_hash_matches_acceptance": true,
+    "bash_syntax": "PASS",
+    "live_execution": "NOT_EXECUTED"
+  },
+  "scope": "Gate publication only. No cluster, CI, credentials or production accessed."
+}
