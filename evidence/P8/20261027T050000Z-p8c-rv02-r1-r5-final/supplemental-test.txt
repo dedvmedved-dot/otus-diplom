@@ -1,0 +1,104 @@
+/root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp0ujmy929/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp4wez5tc7/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpbz11riyg/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpsqu4xk67/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmppnv4l1lv/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpzbkm01ev/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpp1lkqj7t/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpwen_3kns/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+../root/otus-diplom/portal/networkpolicy/supplemental_test.py:200: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmppi5hn86k/e/supplemental.jsonl' mode='w' encoding='UTF-8'>
+  open(os.path.join(dest, "supplemental.jsonl"), "w").write("KEEP")
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+............./root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpzzcyu0jj/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp1y1l55rl/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp_i9fxp13/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpbxo1lg0w/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpm96slt3o/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpq1lcdvep/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmprpuee97o/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpmyinpg59/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpu653wpiz/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp17dwv04m/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpiyzi7ilb/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpzkebbe5b/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp1c8n20vs/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpa08tbypx/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp3kjx5inz/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+.../root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpf8_mrdzt/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpme_8xjdt/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp5jl_glct/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpj3sx_0iv/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpavg5hxok/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpk9u2xpfk/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmps9vtoulr/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpq58pek0t/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/networkpolicy/supplemental_test.py:99: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpp3wuea_p/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+.
+----------------------------------------------------------------------
+Ran 29 tests in 0.085s
+
+OK
