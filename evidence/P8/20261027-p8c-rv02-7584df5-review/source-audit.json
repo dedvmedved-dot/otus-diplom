@@ -1,0 +1,135 @@
+{
+  "compare": {
+    "repository_full_name": "dedvmedved-dot/otus-diplom",
+    "base": "e8fa08226e1cbc27796117adb52a98cd850582cb",
+    "head": "7584df5f86042681599a958bd688bb8ad1ecca69",
+    "status": "ahead",
+    "ahead_by": 2,
+    "behind_by": 0,
+    "total_commits": 2,
+    "too_large": null,
+    "base_commit": {
+      "sha": "e8fa08226e1cbc27796117adb52a98cd850582cb",
+      "url": "https://api.github.com/repos/dedvmedved-dot/otus-diplom/commits/e8fa08226e1cbc27796117adb52a98cd850582cb",
+      "html_url": "https://github.com/dedvmedved-dot/otus-diplom/commit/e8fa08226e1cbc27796117adb52a98cd850582cb"
+    },
+    "merge_base_commit": {
+      "sha": "e8fa08226e1cbc27796117adb52a98cd850582cb",
+      "url": "https://api.github.com/repos/dedvmedved-dot/otus-diplom/commits/e8fa08226e1cbc27796117adb52a98cd850582cb",
+      "html_url": "https://github.com/dedvmedved-dot/otus-diplom/commit/e8fa08226e1cbc27796117adb52a98cd850582cb"
+    },
+    "files": [
+      {
+        "filename": "evidence/P8/20261027T080000Z-p8c-rv02-r4b-r5/result.md",
+        "status": "added",
+        "additions": 38,
+        "deletions": 0,
+        "changes": 38,
+        "previous_filename": null
+      },
+      {
+        "filename": "evidence/P8/20261027T080000Z-p8c-rv02-r4b-r5/secret-scan.txt",
+        "status": "added",
+        "additions": 3,
+        "deletions": 0,
+        "changes": 3,
+        "previous_filename": null
+      },
+      {
+        "filename": "evidence/P8/20261027T080000Z-p8c-rv02-r4b-r5/supplemental-test.txt",
+        "status": "added",
+        "additions": 125,
+        "deletions": 0,
+        "changes": 125,
+        "previous_filename": null
+      },
+      {
+        "filename": "portal/networkpolicy/coverage-matrix.md",
+        "status": "modified",
+        "additions": 25,
+        "deletions": 22,
+        "changes": 47,
+        "previous_filename": null
+      },
+      {
+        "filename": "portal/networkpolicy/supplemental-design.md",
+        "status": "modified",
+        "additions": 23,
+        "deletions": 11,
+        "changes": 34,
+        "previous_filename": null
+      },
+      {
+        "filename": "portal/networkpolicy/supplemental.py",
+        "status": "modified",
+        "additions": 12,
+        "deletions": 5,
+        "changes": 17,
+        "previous_filename": null
+      },
+      {
+        "filename": "portal/networkpolicy/supplemental_test.py",
+        "status": "modified",
+        "additions": 18,
+        "deletions": 0,
+        "changes": 18,
+        "previous_filename": null
+      }
+    ]
+  },
+  "source_parent": "e8fa08226e1cbc27796117adb52a98cd850582cb",
+  "hashes": {
+    "supplemental.py": {
+      "sha256": "69dac4747856e5f88ac4666e884fe1263777ca5cb64b197741a4b370c093aa4c",
+      "git_blob": "ad2edaa92de59f657599190842fa7fe68373b582"
+    },
+    "supplemental_test.py": {
+      "sha256": "991654157f97ab8d9a07948c74423dfbbb44acd6e1c635cd6a21a1083a4e6408",
+      "git_blob": "8157b942d9f4066dfda7448f2c71fe170b24f657"
+    }
+  },
+  "design_sections_unchanged_from_reviewed_010ff33": [
+    1,
+    2,
+    3,
+    5,
+    6
+  ],
+  "design_changed_section": 4,
+  "evidence_reference_defect": {
+    "matrix_root": "evidence/P8/20261027T070000Z-p8c-rv02-r4-r5-remainder/",
+    "current_author_evidence": "evidence/P8/20261027T080000Z-p8c-rv02-r4b-r5/",
+    "old_identity_case": {
+      "id": "I1",
+      "phase": "config",
+      "start": "2026-10-27T10:31:42.025685+00:00",
+      "argv": [
+        "kubectl",
+        "--context",
+        "review-context",
+        "--request-timeout=15s",
+        "get",
+        "pods",
+        "-n",
+        "kube-system",
+        "-l",
+        "k8s-app=calico-node",
+        "-o",
+        "json"
+      ],
+      "exit": 0,
+      "category": "PARSE_ERROR",
+      "output": "",
+      "end": "2026-10-27T10:31:42.025723+00:00"
+    }
+  },
+  "scope": "All kubectl subprocess calls mocked; no live access, no app/PG17/base inventory rerun.",
+  "decision": {
+    "R2": "CLOSED_PRESERVED",
+    "R3": "CLOSED_PRESERVED",
+    "R4_A": "CLOSED_PRESERVED",
+    "R4_B_1": "CLOSED_INDEPENDENTLY_VERIFIED",
+    "R4_B_2": "PARTIAL",
+    "R5": "PARTIAL"
+  }
+}

@@ -1,0 +1,4359 @@
+{
+  "literal_main_path": {
+    "exit": 0,
+    "calls": [
+      {
+        "id": "D1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ]
+      },
+      {
+        "id": "D2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ]
+      },
+      {
+        "id": "I1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "C1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ]
+      },
+      {
+        "id": "C2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ]
+      },
+      {
+        "id": "C3",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/networkpolicies"
+        ]
+      },
+      {
+        "id": "C4",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/globalnetworkpolicies"
+        ]
+      },
+      {
+        "id": "C5",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/felixconfigurations/default"
+        ]
+      },
+      {
+        "id": "S1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "S2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "D1",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.908102+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"crd.projectcalico.org/v1\", \"resources\": [{\"name\": \"networkpolicies\", \"kind\": \"NetworkPolicy\", \"namespaced\": true, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"globalnetworkpolicies\", \"kind\": \"GlobalNetworkPolicy\", \"namespaced\": false, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"felixconfigurations\", \"kind\": \"FelixConfiguration\", \"namespaced\": false, \"verbs\": [\"get\"]}]}",
+        "end": "2026-10-27T10:47:49.908195+00:00"
+      },
+      {
+        "id": "D2",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.908207+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"policy.networking.k8s.io/v1alpha2\", \"resources\": []}",
+        "end": "2026-10-27T10:47:49.908235+00:00"
+      },
+      {
+        "id": "I1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.908241+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"calico-node-abc\", \"namespace\": \"kube-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"calico-node\", \"image\": \"quay.io/calico/node:v3.32.0\", \"imageID\": \"containerd://sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a\", \"ports\": [{\"containerPort\": 9090, \"name\": \"calico-typha\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.908286+00:00"
+      },
+      {
+        "id": "C1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.908293+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"ObjectStore\", \"metadata\": {\"name\": \"portal-db-backup\", \"namespace\": \"portal\"}, \"spec\": {\"configuration\": {\"endpointURL\": \"https://s3.example.test\", \"destinationPath\": \"s3://backup\", \"endpointCAName\": null, \"s3AccessKeyIdRef\": {\"name\": \"creds\", \"key\": \"ACCESS_KEY_ID\"}, \"s3SecretAccessKeyRef\": null, \"s3RegionRef\": null}}}]",
+        "end": "2026-10-27T10:47:49.908364+00:00"
+      },
+      {
+        "id": "C2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.908371+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"Cluster\", \"metadata\": {\"name\": \"portal-db\", \"namespace\": \"portal\"}, \"spec\": {\"plugins\": [{\"name\": \"barman-cloud.cloudnative-pg.io\", \"isWALArchiver\": true, \"barmanObjectName\": \"portal-db-backup\"}], \"imageName\": null}}]",
+        "end": "2026-10-27T10:47:49.908397+00:00"
+      },
+      {
+        "id": "C3",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.908403+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/networkpolicies"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"NetworkPolicy\", \"metadata\": {\"name\": \"n\", \"namespace\": \"portal\"}, \"spec\": {\"order\": null, \"tier\": null, \"selector\": \"all()\", \"serviceAccountSelector\": null, \"types\": [\"Ingress\"], \"ingress\": [{\"action\": \"Allow\", \"protocol\": null, \"notProtocol\": null, \"ipVersion\": null, \"icmp\": null, \"notICMP\": null, \"http\": null, \"source\": {\"selector\": \"x\", \"notSelector\": null, \"namespaceSelector\": null, \"nets\": [], \"notNets\": [], \"ports\": [], \"notPorts\": [], \"serviceAccounts\": null, \"services\": null}}], \"egress\": []}}]",
+        "end": "2026-10-27T10:47:49.908437+00:00"
+      },
+      {
+        "id": "C4",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.908443+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/globalnetworkpolicies"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"GlobalNetworkPolicy\", \"metadata\": {\"name\": \"gnp\", \"namespace\": null}, \"spec\": {\"order\": 10, \"tier\": null, \"selector\": \"all()\", \"serviceAccountSelector\": null, \"types\": [], \"ingress\": [], \"egress\": [], \"applyOnForward\": true, \"doNotTrack\": null, \"preDNAT\": null, \"namespaceSelector\": null}}]",
+        "end": "2026-10-27T10:47:49.908467+00:00"
+      },
+      {
+        "id": "C5",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.908473+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/felixconfigurations/default"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"FelixConfiguration\", \"metadata\": {\"name\": \"default\", \"namespace\": null}, \"spec\": {\"bpfEnabled\": false, \"nftablesMode\": \"Auto\", \"iptablesBackend\": null, \"nodeSelector\": null}}]",
+        "end": "2026-10-27T10:47:49.908568+00:00"
+      },
+      {
+        "id": "S1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.908574+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"portal-db-1\", \"namespace\": \"portal\"}, \"initContainers\": [], \"containers\": [{\"name\": \"postgres\", \"image\": \"ghcr.io/cloudnative-pg/postgresql:17.4\", \"imageID\": \"containerd://sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\", \"ports\": [{\"containerPort\": 5432, \"name\": \"postgresql\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.908605+00:00"
+      },
+      {
+        "id": "S2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.908611+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"barman-cloud-xyz\", \"namespace\": \"cnpg-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"barman-cloud\", \"image\": \"ghcr.io/cloudnative-pg/barman-cloud:0.13.0\", \"imageID\": \"containerd://sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"ports\": [{\"containerPort\": 9090, \"name\": \"http\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.908635+00:00"
+      }
+    ]
+  },
+  "bad_discovery": {
+    "exit": 1,
+    "calls": [
+      {
+        "id": "D1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ]
+      },
+      {
+        "id": "D2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ]
+      },
+      {
+        "id": "I1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "C1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ]
+      },
+      {
+        "id": "C2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ]
+      },
+      {
+        "id": "S1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "S2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "D1",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.909366+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ],
+        "exit": 0,
+        "category": "PARSE_ERROR",
+        "output": "",
+        "end": "2026-10-27T10:47:49.909418+00:00"
+      },
+      {
+        "id": "D2",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.909429+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"policy.networking.k8s.io/v1alpha2\", \"resources\": []}",
+        "end": "2026-10-27T10:47:49.909451+00:00"
+      },
+      {
+        "id": "I1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.909457+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"calico-node-abc\", \"namespace\": \"kube-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"calico-node\", \"image\": \"quay.io/calico/node:v3.32.0\", \"imageID\": \"containerd://sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a\", \"ports\": [{\"containerPort\": 9090, \"name\": \"calico-typha\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.909497+00:00"
+      },
+      {
+        "id": "C1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.909503+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"ObjectStore\", \"metadata\": {\"name\": \"portal-db-backup\", \"namespace\": \"portal\"}, \"spec\": {\"configuration\": {\"endpointURL\": \"https://s3.example.test\", \"destinationPath\": \"s3://backup\", \"endpointCAName\": null, \"s3AccessKeyIdRef\": {\"name\": \"creds\", \"key\": \"ACCESS_KEY_ID\"}, \"s3SecretAccessKeyRef\": null, \"s3RegionRef\": null}}}]",
+        "end": "2026-10-27T10:47:49.909537+00:00"
+      },
+      {
+        "id": "C2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.909543+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"Cluster\", \"metadata\": {\"name\": \"portal-db\", \"namespace\": \"portal\"}, \"spec\": {\"plugins\": [{\"name\": \"barman-cloud.cloudnative-pg.io\", \"isWALArchiver\": true, \"barmanObjectName\": \"portal-db-backup\"}], \"imageName\": null}}]",
+        "end": "2026-10-27T10:47:49.909564+00:00"
+      },
+      {
+        "id": "C3",
+        "phase": "config",
+        "start": null,
+        "argv": null,
+        "exit": null,
+        "category": "BLOCKED_NOT_EXECUTED",
+        "blocked_by": [
+          "D1"
+        ],
+        "output": "",
+        "end": "2026-10-27T10:47:49.909570+00:00"
+      },
+      {
+        "id": "C4",
+        "phase": "config",
+        "start": null,
+        "argv": null,
+        "exit": null,
+        "category": "BLOCKED_NOT_EXECUTED",
+        "blocked_by": [
+          "D1"
+        ],
+        "output": "",
+        "end": "2026-10-27T10:47:49.909575+00:00"
+      },
+      {
+        "id": "C5",
+        "phase": "config",
+        "start": null,
+        "argv": null,
+        "exit": null,
+        "category": "BLOCKED_NOT_EXECUTED",
+        "blocked_by": [
+          "D1"
+        ],
+        "output": "",
+        "end": "2026-10-27T10:47:49.909579+00:00"
+      },
+      {
+        "id": "S1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.909583+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"portal-db-1\", \"namespace\": \"portal\"}, \"initContainers\": [], \"containers\": [{\"name\": \"postgres\", \"image\": \"ghcr.io/cloudnative-pg/postgresql:17.4\", \"imageID\": \"containerd://sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\", \"ports\": [{\"containerPort\": 5432, \"name\": \"postgresql\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.909610+00:00"
+      },
+      {
+        "id": "S2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.909616+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"barman-cloud-xyz\", \"namespace\": \"cnpg-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"barman-cloud\", \"image\": \"ghcr.io/cloudnative-pg/barman-cloud:0.13.0\", \"imageID\": \"containerd://sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"ports\": [{\"containerPort\": 9090, \"name\": \"http\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.909640+00:00"
+      }
+    ]
+  },
+  "wrong_response_version": {
+    "exit": 1,
+    "calls": [
+      {
+        "id": "D1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ]
+      },
+      {
+        "id": "D2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ]
+      },
+      {
+        "id": "I1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "C1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ]
+      },
+      {
+        "id": "C2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ]
+      },
+      {
+        "id": "C3",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/networkpolicies"
+        ]
+      },
+      {
+        "id": "C4",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/globalnetworkpolicies"
+        ]
+      },
+      {
+        "id": "C5",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/felixconfigurations/default"
+        ]
+      },
+      {
+        "id": "S1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "S2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "D1",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.910261+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"crd.projectcalico.org/v1\", \"resources\": [{\"name\": \"networkpolicies\", \"kind\": \"NetworkPolicy\", \"namespaced\": true, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"globalnetworkpolicies\", \"kind\": \"GlobalNetworkPolicy\", \"namespaced\": false, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"felixconfigurations\", \"kind\": \"FelixConfiguration\", \"namespaced\": false, \"verbs\": [\"get\"]}]}",
+        "end": "2026-10-27T10:47:49.910311+00:00"
+      },
+      {
+        "id": "D2",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.910320+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"policy.networking.k8s.io/v1alpha2\", \"resources\": []}",
+        "end": "2026-10-27T10:47:49.910341+00:00"
+      },
+      {
+        "id": "I1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.910347+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"calico-node-abc\", \"namespace\": \"kube-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"calico-node\", \"image\": \"quay.io/calico/node:v3.32.0\", \"imageID\": \"containerd://sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a\", \"ports\": [{\"containerPort\": 9090, \"name\": \"calico-typha\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.910384+00:00"
+      },
+      {
+        "id": "C1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.910390+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ],
+        "exit": 0,
+        "category": "PARSE_ERROR",
+        "output": "",
+        "end": "2026-10-27T10:47:49.910410+00:00"
+      },
+      {
+        "id": "C2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.910415+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"Cluster\", \"metadata\": {\"name\": \"portal-db\", \"namespace\": \"portal\"}, \"spec\": {\"plugins\": [{\"name\": \"barman-cloud.cloudnative-pg.io\", \"isWALArchiver\": true, \"barmanObjectName\": \"portal-db-backup\"}], \"imageName\": null}}]",
+        "end": "2026-10-27T10:47:49.910435+00:00"
+      },
+      {
+        "id": "C3",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.910441+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/networkpolicies"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"NetworkPolicy\", \"metadata\": {\"name\": \"n\", \"namespace\": \"portal\"}, \"spec\": {\"order\": null, \"tier\": null, \"selector\": \"all()\", \"serviceAccountSelector\": null, \"types\": [\"Ingress\"], \"ingress\": [{\"action\": \"Allow\", \"protocol\": null, \"notProtocol\": null, \"ipVersion\": null, \"icmp\": null, \"notICMP\": null, \"http\": null, \"source\": {\"selector\": \"x\", \"notSelector\": null, \"namespaceSelector\": null, \"nets\": [], \"notNets\": [], \"ports\": [], \"notPorts\": [], \"serviceAccounts\": null, \"services\": null}}], \"egress\": []}}]",
+        "end": "2026-10-27T10:47:49.910473+00:00"
+      },
+      {
+        "id": "C4",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.910480+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/globalnetworkpolicies"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"GlobalNetworkPolicy\", \"metadata\": {\"name\": \"gnp\", \"namespace\": null}, \"spec\": {\"order\": 10, \"tier\": null, \"selector\": \"all()\", \"serviceAccountSelector\": null, \"types\": [], \"ingress\": [], \"egress\": [], \"applyOnForward\": true, \"doNotTrack\": null, \"preDNAT\": null, \"namespaceSelector\": null}}]",
+        "end": "2026-10-27T10:47:49.910503+00:00"
+      },
+      {
+        "id": "C5",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.910509+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/felixconfigurations/default"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"FelixConfiguration\", \"metadata\": {\"name\": \"default\", \"namespace\": null}, \"spec\": {\"bpfEnabled\": false, \"nftablesMode\": \"Auto\", \"iptablesBackend\": null, \"nodeSelector\": null}}]",
+        "end": "2026-10-27T10:47:49.910528+00:00"
+      },
+      {
+        "id": "S1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.910533+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"portal-db-1\", \"namespace\": \"portal\"}, \"initContainers\": [], \"containers\": [{\"name\": \"postgres\", \"image\": \"ghcr.io/cloudnative-pg/postgresql:17.4\", \"imageID\": \"containerd://sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\", \"ports\": [{\"containerPort\": 5432, \"name\": \"postgresql\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.910559+00:00"
+      },
+      {
+        "id": "S2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.910565+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"barman-cloud-xyz\", \"namespace\": \"cnpg-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"barman-cloud\", \"image\": \"ghcr.io/cloudnative-pg/barman-cloud:0.13.0\", \"imageID\": \"containerd://sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"ports\": [{\"containerPort\": 9090, \"name\": \"http\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.910589+00:00"
+      }
+    ]
+  },
+  "C1_forbidden": {
+    "exit": 1,
+    "calls": [
+      {
+        "id": "D1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ]
+      },
+      {
+        "id": "D2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ]
+      },
+      {
+        "id": "I1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "C1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ]
+      },
+      {
+        "id": "C2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ]
+      },
+      {
+        "id": "C3",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/networkpolicies"
+        ]
+      },
+      {
+        "id": "C4",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/globalnetworkpolicies"
+        ]
+      },
+      {
+        "id": "C5",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/felixconfigurations/default"
+        ]
+      },
+      {
+        "id": "S1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "S2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "D1",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.911309+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"crd.projectcalico.org/v1\", \"resources\": [{\"name\": \"networkpolicies\", \"kind\": \"NetworkPolicy\", \"namespaced\": true, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"globalnetworkpolicies\", \"kind\": \"GlobalNetworkPolicy\", \"namespaced\": false, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"felixconfigurations\", \"kind\": \"FelixConfiguration\", \"namespaced\": false, \"verbs\": [\"get\"]}]}",
+        "end": "2026-10-27T10:47:49.911358+00:00"
+      },
+      {
+        "id": "D2",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.911367+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"policy.networking.k8s.io/v1alpha2\", \"resources\": []}",
+        "end": "2026-10-27T10:47:49.911387+00:00"
+      },
+      {
+        "id": "I1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.911392+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"calico-node-abc\", \"namespace\": \"kube-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"calico-node\", \"image\": \"quay.io/calico/node:v3.32.0\", \"imageID\": \"containerd://sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a\", \"ports\": [{\"containerPort\": 9090, \"name\": \"calico-typha\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.911428+00:00"
+      },
+      {
+        "id": "C1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.911434+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ],
+        "exit": 1,
+        "category": "FORBIDDEN",
+        "output": "",
+        "end": "2026-10-27T10:47:49.911443+00:00"
+      },
+      {
+        "id": "C2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.911448+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"Cluster\", \"metadata\": {\"name\": \"portal-db\", \"namespace\": \"portal\"}, \"spec\": {\"plugins\": [{\"name\": \"barman-cloud.cloudnative-pg.io\", \"isWALArchiver\": true, \"barmanObjectName\": \"portal-db-backup\"}], \"imageName\": null}}]",
+        "end": "2026-10-27T10:47:49.911470+00:00"
+      },
+      {
+        "id": "C3",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.911476+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/networkpolicies"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"NetworkPolicy\", \"metadata\": {\"name\": \"n\", \"namespace\": \"portal\"}, \"spec\": {\"order\": null, \"tier\": null, \"selector\": \"all()\", \"serviceAccountSelector\": null, \"types\": [\"Ingress\"], \"ingress\": [{\"action\": \"Allow\", \"protocol\": null, \"notProtocol\": null, \"ipVersion\": null, \"icmp\": null, \"notICMP\": null, \"http\": null, \"source\": {\"selector\": \"x\", \"notSelector\": null, \"namespaceSelector\": null, \"nets\": [], \"notNets\": [], \"ports\": [], \"notPorts\": [], \"serviceAccounts\": null, \"services\": null}}], \"egress\": []}}]",
+        "end": "2026-10-27T10:47:49.911507+00:00"
+      },
+      {
+        "id": "C4",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.911513+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/globalnetworkpolicies"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"GlobalNetworkPolicy\", \"metadata\": {\"name\": \"gnp\", \"namespace\": null}, \"spec\": {\"order\": 10, \"tier\": null, \"selector\": \"all()\", \"serviceAccountSelector\": null, \"types\": [], \"ingress\": [], \"egress\": [], \"applyOnForward\": true, \"doNotTrack\": null, \"preDNAT\": null, \"namespaceSelector\": null}}]",
+        "end": "2026-10-27T10:47:49.911535+00:00"
+      },
+      {
+        "id": "C5",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.911540+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/felixconfigurations/default"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"FelixConfiguration\", \"metadata\": {\"name\": \"default\", \"namespace\": null}, \"spec\": {\"bpfEnabled\": false, \"nftablesMode\": \"Auto\", \"iptablesBackend\": null, \"nodeSelector\": null}}]",
+        "end": "2026-10-27T10:47:49.911558+00:00"
+      },
+      {
+        "id": "S1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.911563+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"portal-db-1\", \"namespace\": \"portal\"}, \"initContainers\": [], \"containers\": [{\"name\": \"postgres\", \"image\": \"ghcr.io/cloudnative-pg/postgresql:17.4\", \"imageID\": \"containerd://sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\", \"ports\": [{\"containerPort\": 5432, \"name\": \"postgresql\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.911589+00:00"
+      },
+      {
+        "id": "S2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.911595+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"barman-cloud-xyz\", \"namespace\": \"cnpg-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"barman-cloud\", \"image\": \"ghcr.io/cloudnative-pg/barman-cloud:0.13.0\", \"imageID\": \"containerd://sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"ports\": [{\"containerPort\": 9090, \"name\": \"http\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.911619+00:00"
+      }
+    ]
+  },
+  "C1_api_not_served": {
+    "exit": 1,
+    "calls": [
+      {
+        "id": "D1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ]
+      },
+      {
+        "id": "D2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ]
+      },
+      {
+        "id": "I1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "C1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ]
+      },
+      {
+        "id": "C2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ]
+      },
+      {
+        "id": "C3",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/networkpolicies"
+        ]
+      },
+      {
+        "id": "C4",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/globalnetworkpolicies"
+        ]
+      },
+      {
+        "id": "C5",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/felixconfigurations/default"
+        ]
+      },
+      {
+        "id": "S1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "S2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "D1",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.912442+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"crd.projectcalico.org/v1\", \"resources\": [{\"name\": \"networkpolicies\", \"kind\": \"NetworkPolicy\", \"namespaced\": true, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"globalnetworkpolicies\", \"kind\": \"GlobalNetworkPolicy\", \"namespaced\": false, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"felixconfigurations\", \"kind\": \"FelixConfiguration\", \"namespaced\": false, \"verbs\": [\"get\"]}]}",
+        "end": "2026-10-27T10:47:49.912496+00:00"
+      },
+      {
+        "id": "D2",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.912506+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"policy.networking.k8s.io/v1alpha2\", \"resources\": []}",
+        "end": "2026-10-27T10:47:49.912528+00:00"
+      },
+      {
+        "id": "I1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.912535+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"calico-node-abc\", \"namespace\": \"kube-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"calico-node\", \"image\": \"quay.io/calico/node:v3.32.0\", \"imageID\": \"containerd://sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a\", \"ports\": [{\"containerPort\": 9090, \"name\": \"calico-typha\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.912573+00:00"
+      },
+      {
+        "id": "C1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.912580+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ],
+        "exit": 1,
+        "category": "API_NOT_SERVED",
+        "output": "",
+        "end": "2026-10-27T10:47:49.912589+00:00"
+      },
+      {
+        "id": "C2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.912594+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"Cluster\", \"metadata\": {\"name\": \"portal-db\", \"namespace\": \"portal\"}, \"spec\": {\"plugins\": [{\"name\": \"barman-cloud.cloudnative-pg.io\", \"isWALArchiver\": true, \"barmanObjectName\": \"portal-db-backup\"}], \"imageName\": null}}]",
+        "end": "2026-10-27T10:47:49.912616+00:00"
+      },
+      {
+        "id": "C3",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.912622+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/networkpolicies"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"NetworkPolicy\", \"metadata\": {\"name\": \"n\", \"namespace\": \"portal\"}, \"spec\": {\"order\": null, \"tier\": null, \"selector\": \"all()\", \"serviceAccountSelector\": null, \"types\": [\"Ingress\"], \"ingress\": [{\"action\": \"Allow\", \"protocol\": null, \"notProtocol\": null, \"ipVersion\": null, \"icmp\": null, \"notICMP\": null, \"http\": null, \"source\": {\"selector\": \"x\", \"notSelector\": null, \"namespaceSelector\": null, \"nets\": [], \"notNets\": [], \"ports\": [], \"notPorts\": [], \"serviceAccounts\": null, \"services\": null}}], \"egress\": []}}]",
+        "end": "2026-10-27T10:47:49.912653+00:00"
+      },
+      {
+        "id": "C4",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.912660+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/globalnetworkpolicies"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"GlobalNetworkPolicy\", \"metadata\": {\"name\": \"gnp\", \"namespace\": null}, \"spec\": {\"order\": 10, \"tier\": null, \"selector\": \"all()\", \"serviceAccountSelector\": null, \"types\": [], \"ingress\": [], \"egress\": [], \"applyOnForward\": true, \"doNotTrack\": null, \"preDNAT\": null, \"namespaceSelector\": null}}]",
+        "end": "2026-10-27T10:47:49.912681+00:00"
+      },
+      {
+        "id": "C5",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.912686+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/felixconfigurations/default"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"FelixConfiguration\", \"metadata\": {\"name\": \"default\", \"namespace\": null}, \"spec\": {\"bpfEnabled\": false, \"nftablesMode\": \"Auto\", \"iptablesBackend\": null, \"nodeSelector\": null}}]",
+        "end": "2026-10-27T10:47:49.912704+00:00"
+      },
+      {
+        "id": "S1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.912708+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"portal-db-1\", \"namespace\": \"portal\"}, \"initContainers\": [], \"containers\": [{\"name\": \"postgres\", \"image\": \"ghcr.io/cloudnative-pg/postgresql:17.4\", \"imageID\": \"containerd://sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\", \"ports\": [{\"containerPort\": 5432, \"name\": \"postgresql\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.912734+00:00"
+      },
+      {
+        "id": "S2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.912740+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"barman-cloud-xyz\", \"namespace\": \"cnpg-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"barman-cloud\", \"image\": \"ghcr.io/cloudnative-pg/barman-cloud:0.13.0\", \"imageID\": \"containerd://sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"ports\": [{\"containerPort\": 9090, \"name\": \"http\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.912762+00:00"
+      }
+    ]
+  },
+  "C1_connection": {
+    "exit": 1,
+    "calls": [
+      {
+        "id": "D1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ]
+      },
+      {
+        "id": "D2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ]
+      },
+      {
+        "id": "I1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "C1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ]
+      },
+      {
+        "id": "C2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ]
+      },
+      {
+        "id": "C3",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/networkpolicies"
+        ]
+      },
+      {
+        "id": "C4",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/globalnetworkpolicies"
+        ]
+      },
+      {
+        "id": "C5",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/felixconfigurations/default"
+        ]
+      },
+      {
+        "id": "S1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "S2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "D1",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.913526+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"crd.projectcalico.org/v1\", \"resources\": [{\"name\": \"networkpolicies\", \"kind\": \"NetworkPolicy\", \"namespaced\": true, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"globalnetworkpolicies\", \"kind\": \"GlobalNetworkPolicy\", \"namespaced\": false, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"felixconfigurations\", \"kind\": \"FelixConfiguration\", \"namespaced\": false, \"verbs\": [\"get\"]}]}",
+        "end": "2026-10-27T10:47:49.913662+00:00"
+      },
+      {
+        "id": "D2",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.913670+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"policy.networking.k8s.io/v1alpha2\", \"resources\": []}",
+        "end": "2026-10-27T10:47:49.913692+00:00"
+      },
+      {
+        "id": "I1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.913698+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"calico-node-abc\", \"namespace\": \"kube-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"calico-node\", \"image\": \"quay.io/calico/node:v3.32.0\", \"imageID\": \"containerd://sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a\", \"ports\": [{\"containerPort\": 9090, \"name\": \"calico-typha\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.913735+00:00"
+      },
+      {
+        "id": "C1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.913742+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ],
+        "exit": 1,
+        "category": "CONNECTION",
+        "output": "",
+        "end": "2026-10-27T10:47:49.913751+00:00"
+      },
+      {
+        "id": "C2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.913756+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"Cluster\", \"metadata\": {\"name\": \"portal-db\", \"namespace\": \"portal\"}, \"spec\": {\"plugins\": [{\"name\": \"barman-cloud.cloudnative-pg.io\", \"isWALArchiver\": true, \"barmanObjectName\": \"portal-db-backup\"}], \"imageName\": null}}]",
+        "end": "2026-10-27T10:47:49.913779+00:00"
+      },
+      {
+        "id": "C3",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.913785+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/networkpolicies"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"NetworkPolicy\", \"metadata\": {\"name\": \"n\", \"namespace\": \"portal\"}, \"spec\": {\"order\": null, \"tier\": null, \"selector\": \"all()\", \"serviceAccountSelector\": null, \"types\": [\"Ingress\"], \"ingress\": [{\"action\": \"Allow\", \"protocol\": null, \"notProtocol\": null, \"ipVersion\": null, \"icmp\": null, \"notICMP\": null, \"http\": null, \"source\": {\"selector\": \"x\", \"notSelector\": null, \"namespaceSelector\": null, \"nets\": [], \"notNets\": [], \"ports\": [], \"notPorts\": [], \"serviceAccounts\": null, \"services\": null}}], \"egress\": []}}]",
+        "end": "2026-10-27T10:47:49.913843+00:00"
+      },
+      {
+        "id": "C4",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.913850+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/globalnetworkpolicies"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"GlobalNetworkPolicy\", \"metadata\": {\"name\": \"gnp\", \"namespace\": null}, \"spec\": {\"order\": 10, \"tier\": null, \"selector\": \"all()\", \"serviceAccountSelector\": null, \"types\": [], \"ingress\": [], \"egress\": [], \"applyOnForward\": true, \"doNotTrack\": null, \"preDNAT\": null, \"namespaceSelector\": null}}]",
+        "end": "2026-10-27T10:47:49.913875+00:00"
+      },
+      {
+        "id": "C5",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.913880+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/felixconfigurations/default"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"FelixConfiguration\", \"metadata\": {\"name\": \"default\", \"namespace\": null}, \"spec\": {\"bpfEnabled\": false, \"nftablesMode\": \"Auto\", \"iptablesBackend\": null, \"nodeSelector\": null}}]",
+        "end": "2026-10-27T10:47:49.913898+00:00"
+      },
+      {
+        "id": "S1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.913903+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"portal-db-1\", \"namespace\": \"portal\"}, \"initContainers\": [], \"containers\": [{\"name\": \"postgres\", \"image\": \"ghcr.io/cloudnative-pg/postgresql:17.4\", \"imageID\": \"containerd://sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\", \"ports\": [{\"containerPort\": 5432, \"name\": \"postgresql\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.913930+00:00"
+      },
+      {
+        "id": "S2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.913936+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"barman-cloud-xyz\", \"namespace\": \"cnpg-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"barman-cloud\", \"image\": \"ghcr.io/cloudnative-pg/barman-cloud:0.13.0\", \"imageID\": \"containerd://sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"ports\": [{\"containerPort\": 9090, \"name\": \"http\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.913959+00:00"
+      }
+    ]
+  },
+  "C1_timeout": {
+    "exit": 1,
+    "calls": [
+      {
+        "id": "D1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ]
+      },
+      {
+        "id": "D2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ]
+      },
+      {
+        "id": "I1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "C1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ]
+      },
+      {
+        "id": "C2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ]
+      },
+      {
+        "id": "C3",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/networkpolicies"
+        ]
+      },
+      {
+        "id": "C4",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/globalnetworkpolicies"
+        ]
+      },
+      {
+        "id": "C5",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/felixconfigurations/default"
+        ]
+      },
+      {
+        "id": "S1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "S2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "D1",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.914950+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"crd.projectcalico.org/v1\", \"resources\": [{\"name\": \"networkpolicies\", \"kind\": \"NetworkPolicy\", \"namespaced\": true, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"globalnetworkpolicies\", \"kind\": \"GlobalNetworkPolicy\", \"namespaced\": false, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"felixconfigurations\", \"kind\": \"FelixConfiguration\", \"namespaced\": false, \"verbs\": [\"get\"]}]}",
+        "end": "2026-10-27T10:47:49.915011+00:00"
+      },
+      {
+        "id": "D2",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.915019+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"policy.networking.k8s.io/v1alpha2\", \"resources\": []}",
+        "end": "2026-10-27T10:47:49.915091+00:00"
+      },
+      {
+        "id": "I1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.915111+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"calico-node-abc\", \"namespace\": \"kube-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"calico-node\", \"image\": \"quay.io/calico/node:v3.32.0\", \"imageID\": \"containerd://sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a\", \"ports\": [{\"containerPort\": 9090, \"name\": \"calico-typha\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.915160+00:00"
+      },
+      {
+        "id": "C1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.915167+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ],
+        "exit": null,
+        "category": "TIMEOUT",
+        "output": "",
+        "end": "2026-10-27T10:47:49.915179+00:00"
+      },
+      {
+        "id": "C2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.915185+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"Cluster\", \"metadata\": {\"name\": \"portal-db\", \"namespace\": \"portal\"}, \"spec\": {\"plugins\": [{\"name\": \"barman-cloud.cloudnative-pg.io\", \"isWALArchiver\": true, \"barmanObjectName\": \"portal-db-backup\"}], \"imageName\": null}}]",
+        "end": "2026-10-27T10:47:49.915231+00:00"
+      },
+      {
+        "id": "C3",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.915239+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/networkpolicies"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"NetworkPolicy\", \"metadata\": {\"name\": \"n\", \"namespace\": \"portal\"}, \"spec\": {\"order\": null, \"tier\": null, \"selector\": \"all()\", \"serviceAccountSelector\": null, \"types\": [\"Ingress\"], \"ingress\": [{\"action\": \"Allow\", \"protocol\": null, \"notProtocol\": null, \"ipVersion\": null, \"icmp\": null, \"notICMP\": null, \"http\": null, \"source\": {\"selector\": \"x\", \"notSelector\": null, \"namespaceSelector\": null, \"nets\": [], \"notNets\": [], \"ports\": [], \"notPorts\": [], \"serviceAccounts\": null, \"services\": null}}], \"egress\": []}}]",
+        "end": "2026-10-27T10:47:49.915273+00:00"
+      },
+      {
+        "id": "C4",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.915280+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/globalnetworkpolicies"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"GlobalNetworkPolicy\", \"metadata\": {\"name\": \"gnp\", \"namespace\": null}, \"spec\": {\"order\": 10, \"tier\": null, \"selector\": \"all()\", \"serviceAccountSelector\": null, \"types\": [], \"ingress\": [], \"egress\": [], \"applyOnForward\": true, \"doNotTrack\": null, \"preDNAT\": null, \"namespaceSelector\": null}}]",
+        "end": "2026-10-27T10:47:49.915304+00:00"
+      },
+      {
+        "id": "C5",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.915309+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1/felixconfigurations/default"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"FelixConfiguration\", \"metadata\": {\"name\": \"default\", \"namespace\": null}, \"spec\": {\"bpfEnabled\": false, \"nftablesMode\": \"Auto\", \"iptablesBackend\": null, \"nodeSelector\": null}}]",
+        "end": "2026-10-27T10:47:49.915327+00:00"
+      },
+      {
+        "id": "S1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.915332+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"portal-db-1\", \"namespace\": \"portal\"}, \"initContainers\": [], \"containers\": [{\"name\": \"postgres\", \"image\": \"ghcr.io/cloudnative-pg/postgresql:17.4\", \"imageID\": \"containerd://sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\", \"ports\": [{\"containerPort\": 5432, \"name\": \"postgresql\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.915360+00:00"
+      },
+      {
+        "id": "S2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.915366+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"barman-cloud-xyz\", \"namespace\": \"cnpg-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"barman-cloud\", \"image\": \"ghcr.io/cloudnative-pg/barman-cloud:0.13.0\", \"imageID\": \"containerd://sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"ports\": [{\"containerPort\": 9090, \"name\": \"http\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.915390+00:00"
+      }
+    ]
+  },
+  "valid_unsupported_identity": {
+    "exit": 1,
+    "calls": [
+      {
+        "id": "D1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ]
+      },
+      {
+        "id": "D2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ]
+      },
+      {
+        "id": "I1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "C1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ]
+      },
+      {
+        "id": "C2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ]
+      },
+      {
+        "id": "S1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "S2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "D1",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.916320+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"crd.projectcalico.org/v1\", \"resources\": [{\"name\": \"networkpolicies\", \"kind\": \"NetworkPolicy\", \"namespaced\": true, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"globalnetworkpolicies\", \"kind\": \"GlobalNetworkPolicy\", \"namespaced\": false, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"felixconfigurations\", \"kind\": \"FelixConfiguration\", \"namespaced\": false, \"verbs\": [\"get\"]}]}",
+        "end": "2026-10-27T10:47:49.916377+00:00"
+      },
+      {
+        "id": "D2",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.916385+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"policy.networking.k8s.io/v1alpha2\", \"resources\": []}",
+        "end": "2026-10-27T10:47:49.916406+00:00"
+      },
+      {
+        "id": "I1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.916413+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": "UNSUPPORTED",
+        "output": "[{\"metadata\": {\"name\": \"calico-node-abc\", \"namespace\": \"kube-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"calico-node\", \"image\": \"quay.io/calico/node:v3.32.0\", \"imageID\": \"containerd://sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\", \"ports\": [{\"containerPort\": 9090, \"name\": \"calico-typha\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.916456+00:00"
+      },
+      {
+        "id": "C1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.916463+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"ObjectStore\", \"metadata\": {\"name\": \"portal-db-backup\", \"namespace\": \"portal\"}, \"spec\": {\"configuration\": {\"endpointURL\": \"https://s3.example.test\", \"destinationPath\": \"s3://backup\", \"endpointCAName\": null, \"s3AccessKeyIdRef\": {\"name\": \"creds\", \"key\": \"ACCESS_KEY_ID\"}, \"s3SecretAccessKeyRef\": null, \"s3RegionRef\": null}}}]",
+        "end": "2026-10-27T10:47:49.916505+00:00"
+      },
+      {
+        "id": "C2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.916512+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"Cluster\", \"metadata\": {\"name\": \"portal-db\", \"namespace\": \"portal\"}, \"spec\": {\"plugins\": [{\"name\": \"barman-cloud.cloudnative-pg.io\", \"isWALArchiver\": true, \"barmanObjectName\": \"portal-db-backup\"}], \"imageName\": null}}]",
+        "end": "2026-10-27T10:47:49.916533+00:00"
+      },
+      {
+        "id": "C3",
+        "phase": "config",
+        "start": null,
+        "argv": null,
+        "exit": null,
+        "category": "BLOCKED_NOT_EXECUTED",
+        "blocked_by": [
+          "I1"
+        ],
+        "output": "",
+        "end": "2026-10-27T10:47:49.916539+00:00"
+      },
+      {
+        "id": "C4",
+        "phase": "config",
+        "start": null,
+        "argv": null,
+        "exit": null,
+        "category": "BLOCKED_NOT_EXECUTED",
+        "blocked_by": [
+          "I1"
+        ],
+        "output": "",
+        "end": "2026-10-27T10:47:49.916544+00:00"
+      },
+      {
+        "id": "C5",
+        "phase": "config",
+        "start": null,
+        "argv": null,
+        "exit": null,
+        "category": "BLOCKED_NOT_EXECUTED",
+        "blocked_by": [
+          "I1"
+        ],
+        "output": "",
+        "end": "2026-10-27T10:47:49.916548+00:00"
+      },
+      {
+        "id": "S1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.916552+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"portal-db-1\", \"namespace\": \"portal\"}, \"initContainers\": [], \"containers\": [{\"name\": \"postgres\", \"image\": \"ghcr.io/cloudnative-pg/postgresql:17.4\", \"imageID\": \"containerd://sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\", \"ports\": [{\"containerPort\": 5432, \"name\": \"postgresql\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.916582+00:00"
+      },
+      {
+        "id": "S2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.916589+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"barman-cloud-xyz\", \"namespace\": \"cnpg-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"barman-cloud\", \"image\": \"ghcr.io/cloudnative-pg/barman-cloud:0.13.0\", \"imageID\": \"containerd://sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"ports\": [{\"containerPort\": 9090, \"name\": \"http\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.916613+00:00"
+      }
+    ]
+  },
+  "identity_wrong_registry": {
+    "exit": 1,
+    "calls": [
+      {
+        "id": "D1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ]
+      },
+      {
+        "id": "D2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ]
+      },
+      {
+        "id": "I1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "C1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ]
+      },
+      {
+        "id": "C2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ]
+      },
+      {
+        "id": "S1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "S2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "D1",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.917328+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"crd.projectcalico.org/v1\", \"resources\": [{\"name\": \"networkpolicies\", \"kind\": \"NetworkPolicy\", \"namespaced\": true, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"globalnetworkpolicies\", \"kind\": \"GlobalNetworkPolicy\", \"namespaced\": false, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"felixconfigurations\", \"kind\": \"FelixConfiguration\", \"namespaced\": false, \"verbs\": [\"get\"]}]}",
+        "end": "2026-10-27T10:47:49.917379+00:00"
+      },
+      {
+        "id": "D2",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.917387+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"policy.networking.k8s.io/v1alpha2\", \"resources\": []}",
+        "end": "2026-10-27T10:47:49.917407+00:00"
+      },
+      {
+        "id": "I1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.917413+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": "UNSUPPORTED",
+        "output": "[{\"metadata\": {\"name\": \"calico-node-abc\", \"namespace\": \"kube-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"calico-node\", \"image\": \"registry.invalid/calico/node:v3.32.0\", \"imageID\": \"containerd://sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a\", \"ports\": [{\"containerPort\": 9090, \"name\": \"calico-typha\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.917453+00:00"
+      },
+      {
+        "id": "C1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.917461+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"ObjectStore\", \"metadata\": {\"name\": \"portal-db-backup\", \"namespace\": \"portal\"}, \"spec\": {\"configuration\": {\"endpointURL\": \"https://s3.example.test\", \"destinationPath\": \"s3://backup\", \"endpointCAName\": null, \"s3AccessKeyIdRef\": {\"name\": \"creds\", \"key\": \"ACCESS_KEY_ID\"}, \"s3SecretAccessKeyRef\": null, \"s3RegionRef\": null}}}]",
+        "end": "2026-10-27T10:47:49.917494+00:00"
+      },
+      {
+        "id": "C2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.917500+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"Cluster\", \"metadata\": {\"name\": \"portal-db\", \"namespace\": \"portal\"}, \"spec\": {\"plugins\": [{\"name\": \"barman-cloud.cloudnative-pg.io\", \"isWALArchiver\": true, \"barmanObjectName\": \"portal-db-backup\"}], \"imageName\": null}}]",
+        "end": "2026-10-27T10:47:49.917520+00:00"
+      },
+      {
+        "id": "C3",
+        "phase": "config",
+        "start": null,
+        "argv": null,
+        "exit": null,
+        "category": "BLOCKED_NOT_EXECUTED",
+        "blocked_by": [
+          "I1"
+        ],
+        "output": "",
+        "end": "2026-10-27T10:47:49.917525+00:00"
+      },
+      {
+        "id": "C4",
+        "phase": "config",
+        "start": null,
+        "argv": null,
+        "exit": null,
+        "category": "BLOCKED_NOT_EXECUTED",
+        "blocked_by": [
+          "I1"
+        ],
+        "output": "",
+        "end": "2026-10-27T10:47:49.917530+00:00"
+      },
+      {
+        "id": "C5",
+        "phase": "config",
+        "start": null,
+        "argv": null,
+        "exit": null,
+        "category": "BLOCKED_NOT_EXECUTED",
+        "blocked_by": [
+          "I1"
+        ],
+        "output": "",
+        "end": "2026-10-27T10:47:49.917533+00:00"
+      },
+      {
+        "id": "S1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.917537+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"portal-db-1\", \"namespace\": \"portal\"}, \"initContainers\": [], \"containers\": [{\"name\": \"postgres\", \"image\": \"ghcr.io/cloudnative-pg/postgresql:17.4\", \"imageID\": \"containerd://sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\", \"ports\": [{\"containerPort\": 5432, \"name\": \"postgresql\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.917562+00:00"
+      },
+      {
+        "id": "S2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.917568+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"barman-cloud-xyz\", \"namespace\": \"cnpg-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"barman-cloud\", \"image\": \"ghcr.io/cloudnative-pg/barman-cloud:0.13.0\", \"imageID\": \"containerd://sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"ports\": [{\"containerPort\": 9090, \"name\": \"http\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.917599+00:00"
+      }
+    ]
+  },
+  "identity_wrong_version": {
+    "exit": 1,
+    "calls": [
+      {
+        "id": "D1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ]
+      },
+      {
+        "id": "D2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ]
+      },
+      {
+        "id": "I1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "C1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ]
+      },
+      {
+        "id": "C2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ]
+      },
+      {
+        "id": "S1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "S2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "D1",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.918547+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"crd.projectcalico.org/v1\", \"resources\": [{\"name\": \"networkpolicies\", \"kind\": \"NetworkPolicy\", \"namespaced\": true, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"globalnetworkpolicies\", \"kind\": \"GlobalNetworkPolicy\", \"namespaced\": false, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"felixconfigurations\", \"kind\": \"FelixConfiguration\", \"namespaced\": false, \"verbs\": [\"get\"]}]}",
+        "end": "2026-10-27T10:47:49.918600+00:00"
+      },
+      {
+        "id": "D2",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.918609+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"policy.networking.k8s.io/v1alpha2\", \"resources\": []}",
+        "end": "2026-10-27T10:47:49.918631+00:00"
+      },
+      {
+        "id": "I1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.918637+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": "UNSUPPORTED",
+        "output": "[{\"metadata\": {\"name\": \"calico-node-abc\", \"namespace\": \"kube-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"calico-node\", \"image\": \"quay.io/calico/node:v0.0.0\", \"imageID\": \"containerd://sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a\", \"ports\": [{\"containerPort\": 9090, \"name\": \"calico-typha\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.918677+00:00"
+      },
+      {
+        "id": "C1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.918683+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"ObjectStore\", \"metadata\": {\"name\": \"portal-db-backup\", \"namespace\": \"portal\"}, \"spec\": {\"configuration\": {\"endpointURL\": \"https://s3.example.test\", \"destinationPath\": \"s3://backup\", \"endpointCAName\": null, \"s3AccessKeyIdRef\": {\"name\": \"creds\", \"key\": \"ACCESS_KEY_ID\"}, \"s3SecretAccessKeyRef\": null, \"s3RegionRef\": null}}}]",
+        "end": "2026-10-27T10:47:49.918717+00:00"
+      },
+      {
+        "id": "C2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.918723+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"Cluster\", \"metadata\": {\"name\": \"portal-db\", \"namespace\": \"portal\"}, \"spec\": {\"plugins\": [{\"name\": \"barman-cloud.cloudnative-pg.io\", \"isWALArchiver\": true, \"barmanObjectName\": \"portal-db-backup\"}], \"imageName\": null}}]",
+        "end": "2026-10-27T10:47:49.918744+00:00"
+      },
+      {
+        "id": "C3",
+        "phase": "config",
+        "start": null,
+        "argv": null,
+        "exit": null,
+        "category": "BLOCKED_NOT_EXECUTED",
+        "blocked_by": [
+          "I1"
+        ],
+        "output": "",
+        "end": "2026-10-27T10:47:49.918749+00:00"
+      },
+      {
+        "id": "C4",
+        "phase": "config",
+        "start": null,
+        "argv": null,
+        "exit": null,
+        "category": "BLOCKED_NOT_EXECUTED",
+        "blocked_by": [
+          "I1"
+        ],
+        "output": "",
+        "end": "2026-10-27T10:47:49.918754+00:00"
+      },
+      {
+        "id": "C5",
+        "phase": "config",
+        "start": null,
+        "argv": null,
+        "exit": null,
+        "category": "BLOCKED_NOT_EXECUTED",
+        "blocked_by": [
+          "I1"
+        ],
+        "output": "",
+        "end": "2026-10-27T10:47:49.918758+00:00"
+      },
+      {
+        "id": "S1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.918761+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"portal-db-1\", \"namespace\": \"portal\"}, \"initContainers\": [], \"containers\": [{\"name\": \"postgres\", \"image\": \"ghcr.io/cloudnative-pg/postgresql:17.4\", \"imageID\": \"containerd://sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\", \"ports\": [{\"containerPort\": 5432, \"name\": \"postgresql\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.918789+00:00"
+      },
+      {
+        "id": "S2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.918795+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"barman-cloud-xyz\", \"namespace\": \"cnpg-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"barman-cloud\", \"image\": \"ghcr.io/cloudnative-pg/barman-cloud:0.13.0\", \"imageID\": \"containerd://sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"ports\": [{\"containerPort\": 9090, \"name\": \"http\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.918874+00:00"
+      }
+    ]
+  },
+  "identity_repository_digest_format": {
+    "exit": 1,
+    "calls": [
+      {
+        "id": "D1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ]
+      },
+      {
+        "id": "D2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ]
+      },
+      {
+        "id": "I1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "C1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ]
+      },
+      {
+        "id": "C2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ]
+      },
+      {
+        "id": "S1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "S2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "D1",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.919668+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"crd.projectcalico.org/v1\", \"resources\": [{\"name\": \"networkpolicies\", \"kind\": \"NetworkPolicy\", \"namespaced\": true, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"globalnetworkpolicies\", \"kind\": \"GlobalNetworkPolicy\", \"namespaced\": false, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"felixconfigurations\", \"kind\": \"FelixConfiguration\", \"namespaced\": false, \"verbs\": [\"get\"]}]}",
+        "end": "2026-10-27T10:47:49.919718+00:00"
+      },
+      {
+        "id": "D2",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.919727+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"policy.networking.k8s.io/v1alpha2\", \"resources\": []}",
+        "end": "2026-10-27T10:47:49.919747+00:00"
+      },
+      {
+        "id": "I1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.919752+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": "UNSUPPORTED",
+        "output": "[{\"metadata\": {\"name\": \"calico-node-abc\", \"namespace\": \"kube-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"calico-node\", \"image\": \"quay.io/calico/node:v3.32.0\", \"imageID\": \"quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a\", \"ports\": [{\"containerPort\": 9090, \"name\": \"calico-typha\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.919798+00:00"
+      },
+      {
+        "id": "C1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.919911+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"ObjectStore\", \"metadata\": {\"name\": \"portal-db-backup\", \"namespace\": \"portal\"}, \"spec\": {\"configuration\": {\"endpointURL\": \"https://s3.example.test\", \"destinationPath\": \"s3://backup\", \"endpointCAName\": null, \"s3AccessKeyIdRef\": {\"name\": \"creds\", \"key\": \"ACCESS_KEY_ID\"}, \"s3SecretAccessKeyRef\": null, \"s3RegionRef\": null}}}]",
+        "end": "2026-10-27T10:47:49.919956+00:00"
+      },
+      {
+        "id": "C2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.919964+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"Cluster\", \"metadata\": {\"name\": \"portal-db\", \"namespace\": \"portal\"}, \"spec\": {\"plugins\": [{\"name\": \"barman-cloud.cloudnative-pg.io\", \"isWALArchiver\": true, \"barmanObjectName\": \"portal-db-backup\"}], \"imageName\": null}}]",
+        "end": "2026-10-27T10:47:49.919987+00:00"
+      },
+      {
+        "id": "C3",
+        "phase": "config",
+        "start": null,
+        "argv": null,
+        "exit": null,
+        "category": "BLOCKED_NOT_EXECUTED",
+        "blocked_by": [
+          "I1"
+        ],
+        "output": "",
+        "end": "2026-10-27T10:47:49.919993+00:00"
+      },
+      {
+        "id": "C4",
+        "phase": "config",
+        "start": null,
+        "argv": null,
+        "exit": null,
+        "category": "BLOCKED_NOT_EXECUTED",
+        "blocked_by": [
+          "I1"
+        ],
+        "output": "",
+        "end": "2026-10-27T10:47:49.919997+00:00"
+      },
+      {
+        "id": "C5",
+        "phase": "config",
+        "start": null,
+        "argv": null,
+        "exit": null,
+        "category": "BLOCKED_NOT_EXECUTED",
+        "blocked_by": [
+          "I1"
+        ],
+        "output": "",
+        "end": "2026-10-27T10:47:49.920001+00:00"
+      },
+      {
+        "id": "S1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.920004+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"portal-db-1\", \"namespace\": \"portal\"}, \"initContainers\": [], \"containers\": [{\"name\": \"postgres\", \"image\": \"ghcr.io/cloudnative-pg/postgresql:17.4\", \"imageID\": \"containerd://sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\", \"ports\": [{\"containerPort\": 5432, \"name\": \"postgresql\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.920033+00:00"
+      },
+      {
+        "id": "S2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.920039+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"barman-cloud-xyz\", \"namespace\": \"cnpg-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"barman-cloud\", \"image\": \"ghcr.io/cloudnative-pg/barman-cloud:0.13.0\", \"imageID\": \"containerd://sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"ports\": [{\"containerPort\": 9090, \"name\": \"http\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.920063+00:00"
+      }
+    ]
+  },
+  "identity_missing_imageID": {
+    "exit": 1,
+    "calls": [
+      {
+        "id": "D1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ]
+      },
+      {
+        "id": "D2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ]
+      },
+      {
+        "id": "I1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "C1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ]
+      },
+      {
+        "id": "C2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ]
+      },
+      {
+        "id": "S1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "S2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "D1",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.920756+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"crd.projectcalico.org/v1\", \"resources\": [{\"name\": \"networkpolicies\", \"kind\": \"NetworkPolicy\", \"namespaced\": true, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"globalnetworkpolicies\", \"kind\": \"GlobalNetworkPolicy\", \"namespaced\": false, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"felixconfigurations\", \"kind\": \"FelixConfiguration\", \"namespaced\": false, \"verbs\": [\"get\"]}]}",
+        "end": "2026-10-27T10:47:49.920871+00:00"
+      },
+      {
+        "id": "D2",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.920882+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"policy.networking.k8s.io/v1alpha2\", \"resources\": []}",
+        "end": "2026-10-27T10:47:49.920906+00:00"
+      },
+      {
+        "id": "I1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.920912+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": "UNSUPPORTED",
+        "output": "[{\"metadata\": {\"name\": \"calico-node-abc\", \"namespace\": \"kube-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"calico-node\", \"image\": \"quay.io/calico/node:v3.32.0\", \"imageID\": null, \"ports\": [{\"containerPort\": 9090, \"name\": \"calico-typha\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.920966+00:00"
+      },
+      {
+        "id": "C1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.920973+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"ObjectStore\", \"metadata\": {\"name\": \"portal-db-backup\", \"namespace\": \"portal\"}, \"spec\": {\"configuration\": {\"endpointURL\": \"https://s3.example.test\", \"destinationPath\": \"s3://backup\", \"endpointCAName\": null, \"s3AccessKeyIdRef\": {\"name\": \"creds\", \"key\": \"ACCESS_KEY_ID\"}, \"s3SecretAccessKeyRef\": null, \"s3RegionRef\": null}}}]",
+        "end": "2026-10-27T10:47:49.921007+00:00"
+      },
+      {
+        "id": "C2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.921013+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"Cluster\", \"metadata\": {\"name\": \"portal-db\", \"namespace\": \"portal\"}, \"spec\": {\"plugins\": [{\"name\": \"barman-cloud.cloudnative-pg.io\", \"isWALArchiver\": true, \"barmanObjectName\": \"portal-db-backup\"}], \"imageName\": null}}]",
+        "end": "2026-10-27T10:47:49.921034+00:00"
+      },
+      {
+        "id": "C3",
+        "phase": "config",
+        "start": null,
+        "argv": null,
+        "exit": null,
+        "category": "BLOCKED_NOT_EXECUTED",
+        "blocked_by": [
+          "I1"
+        ],
+        "output": "",
+        "end": "2026-10-27T10:47:49.921039+00:00"
+      },
+      {
+        "id": "C4",
+        "phase": "config",
+        "start": null,
+        "argv": null,
+        "exit": null,
+        "category": "BLOCKED_NOT_EXECUTED",
+        "blocked_by": [
+          "I1"
+        ],
+        "output": "",
+        "end": "2026-10-27T10:47:49.921044+00:00"
+      },
+      {
+        "id": "C5",
+        "phase": "config",
+        "start": null,
+        "argv": null,
+        "exit": null,
+        "category": "BLOCKED_NOT_EXECUTED",
+        "blocked_by": [
+          "I1"
+        ],
+        "output": "",
+        "end": "2026-10-27T10:47:49.921047+00:00"
+      },
+      {
+        "id": "S1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.921051+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"portal-db-1\", \"namespace\": \"portal\"}, \"initContainers\": [], \"containers\": [{\"name\": \"postgres\", \"image\": \"ghcr.io/cloudnative-pg/postgresql:17.4\", \"imageID\": \"containerd://sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\", \"ports\": [{\"containerPort\": 5432, \"name\": \"postgresql\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.921076+00:00"
+      },
+      {
+        "id": "S2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.921082+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"barman-cloud-xyz\", \"namespace\": \"cnpg-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"barman-cloud\", \"image\": \"ghcr.io/cloudnative-pg/barman-cloud:0.13.0\", \"imageID\": \"containerd://sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"ports\": [{\"containerPort\": 9090, \"name\": \"http\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.921106+00:00"
+      }
+    ]
+  },
+  "malformed_identity_json": {
+    "exit": 1,
+    "calls": [
+      {
+        "id": "D1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ]
+      },
+      {
+        "id": "D2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ]
+      },
+      {
+        "id": "I1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "C1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ]
+      },
+      {
+        "id": "C2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ]
+      },
+      {
+        "id": "S1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "S2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "D1",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.921755+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"crd.projectcalico.org/v1\", \"resources\": [{\"name\": \"networkpolicies\", \"kind\": \"NetworkPolicy\", \"namespaced\": true, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"globalnetworkpolicies\", \"kind\": \"GlobalNetworkPolicy\", \"namespaced\": false, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"felixconfigurations\", \"kind\": \"FelixConfiguration\", \"namespaced\": false, \"verbs\": [\"get\"]}]}",
+        "end": "2026-10-27T10:47:49.921858+00:00"
+      },
+      {
+        "id": "D2",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.921867+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"policy.networking.k8s.io/v1alpha2\", \"resources\": []}",
+        "end": "2026-10-27T10:47:49.921890+00:00"
+      },
+      {
+        "id": "I1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.921896+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": "PARSE_ERROR",
+        "output": "",
+        "end": "2026-10-27T10:47:49.921921+00:00"
+      },
+      {
+        "id": "C1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.921928+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"ObjectStore\", \"metadata\": {\"name\": \"portal-db-backup\", \"namespace\": \"portal\"}, \"spec\": {\"configuration\": {\"endpointURL\": \"https://s3.example.test\", \"destinationPath\": \"s3://backup\", \"endpointCAName\": null, \"s3AccessKeyIdRef\": {\"name\": \"creds\", \"key\": \"ACCESS_KEY_ID\"}, \"s3SecretAccessKeyRef\": null, \"s3RegionRef\": null}}}]",
+        "end": "2026-10-27T10:47:49.921963+00:00"
+      },
+      {
+        "id": "C2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.921970+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"Cluster\", \"metadata\": {\"name\": \"portal-db\", \"namespace\": \"portal\"}, \"spec\": {\"plugins\": [{\"name\": \"barman-cloud.cloudnative-pg.io\", \"isWALArchiver\": true, \"barmanObjectName\": \"portal-db-backup\"}], \"imageName\": null}}]",
+        "end": "2026-10-27T10:47:49.921992+00:00"
+      },
+      {
+        "id": "C3",
+        "phase": "config",
+        "start": null,
+        "argv": null,
+        "exit": null,
+        "category": "BLOCKED_NOT_EXECUTED",
+        "blocked_by": [
+          "I1"
+        ],
+        "output": "",
+        "end": "2026-10-27T10:47:49.921998+00:00"
+      },
+      {
+        "id": "C4",
+        "phase": "config",
+        "start": null,
+        "argv": null,
+        "exit": null,
+        "category": "BLOCKED_NOT_EXECUTED",
+        "blocked_by": [
+          "I1"
+        ],
+        "output": "",
+        "end": "2026-10-27T10:47:49.922002+00:00"
+      },
+      {
+        "id": "C5",
+        "phase": "config",
+        "start": null,
+        "argv": null,
+        "exit": null,
+        "category": "BLOCKED_NOT_EXECUTED",
+        "blocked_by": [
+          "I1"
+        ],
+        "output": "",
+        "end": "2026-10-27T10:47:49.922006+00:00"
+      },
+      {
+        "id": "S1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.922009+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"portal-db-1\", \"namespace\": \"portal\"}, \"initContainers\": [], \"containers\": [{\"name\": \"postgres\", \"image\": \"ghcr.io/cloudnative-pg/postgresql:17.4\", \"imageID\": \"containerd://sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\", \"ports\": [{\"containerPort\": 5432, \"name\": \"postgresql\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.922040+00:00"
+      },
+      {
+        "id": "S2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.922046+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"barman-cloud-xyz\", \"namespace\": \"cnpg-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"barman-cloud\", \"image\": \"ghcr.io/cloudnative-pg/barman-cloud:0.13.0\", \"imageID\": \"containerd://sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"ports\": [{\"containerPort\": 9090, \"name\": \"http\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.922071+00:00"
+      }
+    ]
+  },
+  "malformed_identity_types": {
+    "exit": 1,
+    "calls": [
+      {
+        "id": "D1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ]
+      },
+      {
+        "id": "D2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ]
+      },
+      {
+        "id": "I1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "C1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ]
+      },
+      {
+        "id": "C2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ]
+      },
+      {
+        "id": "S1",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ]
+      },
+      {
+        "id": "S2",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ]
+      }
+    ],
+    "rows": [
+      {
+        "id": "D1",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.923160+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/crd.projectcalico.org/v1"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"crd.projectcalico.org/v1\", \"resources\": [{\"name\": \"networkpolicies\", \"kind\": \"NetworkPolicy\", \"namespaced\": true, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"globalnetworkpolicies\", \"kind\": \"GlobalNetworkPolicy\", \"namespaced\": false, \"verbs\": [\"get\", \"list\"]}, {\"name\": \"felixconfigurations\", \"kind\": \"FelixConfiguration\", \"namespaced\": false, \"verbs\": [\"get\"]}]}",
+        "end": "2026-10-27T10:47:49.923222+00:00"
+      },
+      {
+        "id": "D2",
+        "phase": "discover",
+        "start": "2026-10-27T10:47:49.923232+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/policy.networking.k8s.io/v1alpha2"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "{\"kind\": \"APIResourceList\", \"groupVersion\": \"policy.networking.k8s.io/v1alpha2\", \"resources\": []}",
+        "end": "2026-10-27T10:47:49.923255+00:00"
+      },
+      {
+        "id": "I1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.923261+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "kube-system",
+          "-l",
+          "k8s-app=calico-node",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": "PARSE_ERROR",
+        "output": "",
+        "end": "2026-10-27T10:47:49.923289+00:00"
+      },
+      {
+        "id": "C1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.923295+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"ObjectStore\", \"metadata\": {\"name\": \"portal-db-backup\", \"namespace\": \"portal\"}, \"spec\": {\"configuration\": {\"endpointURL\": \"https://s3.example.test\", \"destinationPath\": \"s3://backup\", \"endpointCAName\": null, \"s3AccessKeyIdRef\": {\"name\": \"creds\", \"key\": \"ACCESS_KEY_ID\"}, \"s3SecretAccessKeyRef\": null, \"s3RegionRef\": null}}}]",
+        "end": "2026-10-27T10:47:49.923329+00:00"
+      },
+      {
+        "id": "C2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.923335+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "--raw",
+          "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"kind\": \"Cluster\", \"metadata\": {\"name\": \"portal-db\", \"namespace\": \"portal\"}, \"spec\": {\"plugins\": [{\"name\": \"barman-cloud.cloudnative-pg.io\", \"isWALArchiver\": true, \"barmanObjectName\": \"portal-db-backup\"}], \"imageName\": null}}]",
+        "end": "2026-10-27T10:47:49.923358+00:00"
+      },
+      {
+        "id": "C3",
+        "phase": "config",
+        "start": null,
+        "argv": null,
+        "exit": null,
+        "category": "BLOCKED_NOT_EXECUTED",
+        "blocked_by": [
+          "I1"
+        ],
+        "output": "",
+        "end": "2026-10-27T10:47:49.923364+00:00"
+      },
+      {
+        "id": "C4",
+        "phase": "config",
+        "start": null,
+        "argv": null,
+        "exit": null,
+        "category": "BLOCKED_NOT_EXECUTED",
+        "blocked_by": [
+          "I1"
+        ],
+        "output": "",
+        "end": "2026-10-27T10:47:49.923369+00:00"
+      },
+      {
+        "id": "C5",
+        "phase": "config",
+        "start": null,
+        "argv": null,
+        "exit": null,
+        "category": "BLOCKED_NOT_EXECUTED",
+        "blocked_by": [
+          "I1"
+        ],
+        "output": "",
+        "end": "2026-10-27T10:47:49.923378+00:00"
+      },
+      {
+        "id": "S1",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.923384+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "portal",
+          "-l",
+          "cnpg.io/cluster=portal-db",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"portal-db-1\", \"namespace\": \"portal\"}, \"initContainers\": [], \"containers\": [{\"name\": \"postgres\", \"image\": \"ghcr.io/cloudnative-pg/postgresql:17.4\", \"imageID\": \"containerd://sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\", \"ports\": [{\"containerPort\": 5432, \"name\": \"postgresql\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.923483+00:00"
+      },
+      {
+        "id": "S2",
+        "phase": "config",
+        "start": "2026-10-27T10:47:49.923492+00:00",
+        "argv": [
+          "kubectl",
+          "--context",
+          "review-context",
+          "--request-timeout=15s",
+          "get",
+          "pods",
+          "-n",
+          "cnpg-system",
+          "-l",
+          "app=barman-cloud",
+          "-o",
+          "json"
+        ],
+        "exit": 0,
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"barman-cloud-xyz\", \"namespace\": \"cnpg-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"barman-cloud\", \"image\": \"ghcr.io/cloudnative-pg/barman-cloud:0.13.0\", \"imageID\": \"containerd://sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"ports\": [{\"containerPort\": 9090, \"name\": \"http\"}], \"restartPolicy\": null}]}]",
+        "end": "2026-10-27T10:47:49.923522+00:00"
+      }
+    ]
+  },
+  "matrix_audit": {
+    "mentioned_test_ids": [
+      "test_calico_identity_present",
+      "test_container_port_range_rejected",
+      "test_global_policy_fields_preserved",
+      "test_http_paths_malformed_rejected",
+      "test_icmp_namespace_selector_preserved",
+      "test_identity_exact_contract",
+      "test_identity_gate_negatives",
+      "test_invalid_status_rejected",
+      "test_literal_api_paths",
+      "test_malformed_containers_rejected",
+      "test_missing_discovery_scope_rejected",
+      "test_named_get_bound",
+      "test_namespaced_policy_rejects_global_only_fields",
+      "test_no_kubectl",
+      "test_no_overwrite",
+      "test_pod_imageID_from_status",
+      "test_pod_port_leaf_typed",
+      "test_pod_wrong_kind_rejected",
+      "test_policy_api_unsupported",
+      "test_scope_verb_kind_missing_felix",
+      "test_scoped_list_namespace_rejected",
+      "test_semantic_fields_preserved",
+      "test_unsupported_discovery",
+      "test_unsupported_field_rejected",
+      "test_unsupported_identity_diagnostic",
+      "test_wrong_binding",
+      "test_wrong_group_blocks"
+    ],
+    "missing_test_definitions": [],
+    "defined_test_count": 33,
+    "declared_33_count": true,
+    "stale_version_qualified": false,
+    "stale_evidence_root": true,
+    "literal_api_test_in_matrix": true
+  },
+  "hashes": {
+    "supplemental.py": {
+      "sha256": "69dac4747856e5f88ac4666e884fe1263777ca5cb64b197741a4b370c093aa4c",
+      "git_blob": "ad2edaa92de59f657599190842fa7fe68373b582"
+    },
+    "supplemental_test.py": {
+      "sha256": "991654157f97ab8d9a07948c74423dfbbb44acd6e1c635cd6a21a1083a4e6408",
+      "git_blob": "8157b942d9f4066dfda7448f2c71fe170b24f657"
+    }
+  }
+}
