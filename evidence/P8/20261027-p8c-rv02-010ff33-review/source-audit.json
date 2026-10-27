@@ -1,0 +1,133 @@
+{
+  "repository": "dedvmedved-dot/otus-diplom",
+  "reviewed_main": "010ff330407ff9c82de08ece90970ac41a4a229f",
+  "source": "cdc249deb3213274fbead006203fbd159371651e",
+  "source_parent": "d0a0d9e52a7e528714eea24bbce36467da139ce3",
+  "compare": {
+    "repository_full_name": "dedvmedved-dot/otus-diplom",
+    "base": "d0a0d9e52a7e528714eea24bbce36467da139ce3",
+    "head": "010ff330407ff9c82de08ece90970ac41a4a229f",
+    "status": "ahead",
+    "ahead_by": 2,
+    "behind_by": 0,
+    "total_commits": 2,
+    "too_large": null,
+    "base_commit": {
+      "sha": "d0a0d9e52a7e528714eea24bbce36467da139ce3",
+      "url": "https://api.github.com/repos/dedvmedved-dot/otus-diplom/commits/d0a0d9e52a7e528714eea24bbce36467da139ce3",
+      "html_url": "https://github.com/dedvmedved-dot/otus-diplom/commit/d0a0d9e52a7e528714eea24bbce36467da139ce3"
+    },
+    "merge_base_commit": {
+      "sha": "d0a0d9e52a7e528714eea24bbce36467da139ce3",
+      "url": "https://api.github.com/repos/dedvmedved-dot/otus-diplom/commits/d0a0d9e52a7e528714eea24bbce36467da139ce3",
+      "html_url": "https://github.com/dedvmedved-dot/otus-diplom/commit/d0a0d9e52a7e528714eea24bbce36467da139ce3"
+    },
+    "files": [
+      {
+        "filename": "evidence/P8/20261027T070000Z-p8c-rv02-r4-r5-remainder/result.md",
+        "status": "added",
+        "additions": 42,
+        "deletions": 0,
+        "changes": 42,
+        "previous_filename": null
+      },
+      {
+        "filename": "evidence/P8/20261027T070000Z-p8c-rv02-r4-r5-remainder/secret-scan.txt",
+        "status": "added",
+        "additions": 3,
+        "deletions": 0,
+        "changes": 3,
+        "previous_filename": null
+      },
+      {
+        "filename": "evidence/P8/20261027T070000Z-p8c-rv02-r4-r5-remainder/supplemental-test.txt",
+        "status": "added",
+        "additions": 119,
+        "deletions": 0,
+        "changes": 119,
+        "previous_filename": null
+      },
+      {
+        "filename": "portal/networkpolicy/coverage-matrix.md",
+        "status": "added",
+        "additions": 27,
+        "deletions": 0,
+        "changes": 27,
+        "previous_filename": null
+      },
+      {
+        "filename": "portal/networkpolicy/supplemental-design.md",
+        "status": "modified",
+        "additions": 72,
+        "deletions": 37,
+        "changes": 109,
+        "previous_filename": null
+      },
+      {
+        "filename": "portal/networkpolicy/supplemental.py",
+        "status": "modified",
+        "additions": 8,
+        "deletions": 5,
+        "changes": 13,
+        "previous_filename": null
+      },
+      {
+        "filename": "portal/networkpolicy/supplemental_test.py",
+        "status": "modified",
+        "additions": 12,
+        "deletions": 0,
+        "changes": 12,
+        "previous_filename": null
+      }
+    ]
+  },
+  "hashes": {
+    "supplemental.py": {
+      "sha256": "53a7f9ca0d7f0fc2e294be32f84a51a79b79e08f9e99066d707f9f775bf3c72d",
+      "git_blob": "e5f0bccce88270c60cf6f36777f9ec05ba51003b"
+    },
+    "supplemental_test.py": {
+      "sha256": "7a0b88b9d85c1c7c177792a1f3fb506c9b07027acc69fa003601ad324be4f029",
+      "git_blob": "eadd4f3ae7e966a97ec49246f57a257a0d8ecd21"
+    }
+  },
+  "commands": [
+    {
+      "argv": [
+        "python3",
+        "supplemental_test.py",
+        "-v"
+      ],
+      "start_utc": "2026-10-27T10:31:41.814767+00:00",
+      "end_utc": "2026-10-27T10:31:41.949685+00:00",
+      "exit": 0
+    },
+    {
+      "argv": [
+        "python3",
+        "reproduce.py"
+      ],
+      "start_utc": "2026-10-27T10:31:41.949747+00:00",
+      "end_utc": "2026-10-27T10:31:42.045923+00:00",
+      "exit": 0
+    }
+  ],
+  "all_kubectl_calls_mocked": true,
+  "live_gates_opened": false,
+  "findings": {
+    "R4_A": "CLOSED",
+    "R2": "PRESERVED_CLOSED",
+    "R3": "PRESERVED_CLOSED",
+    "R4_B": "PARTIAL",
+    "R5": "PARTIAL"
+  },
+  "primary_sources_opened": [
+    "https://cloudnative-pg.io/plugin-barman-cloud/docs/0.13.0/concepts/",
+    "https://cloudnative-pg.io/plugin-barman-cloud/docs/0.13.0/usage/"
+  ],
+  "limitations": [
+    "Local Hermes clean worktree is author-reported.",
+    "No actual cluster traffic or effective CNI mode independently observed.",
+    "No CI release or operator authorization."
+  ]
+}
