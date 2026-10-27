@@ -1,0 +1,18 @@
+{
+  "byte_hashes": {
+    "index.json": "f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+    "manifest.json": "12262c951e705c595f49d354372bcb0f166b1571b26d502a006fb487dd0025e4",
+    "config.json": "6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65"
+  },
+  "descriptor_sizes": "PASS",
+  "media_types": "PASS",
+  "platform": "linux/amd64",
+  "observed_id_equals_config": "PASS",
+  "identity_chain": "INDEPENDENTLY_VERIFIED",
+  "limits": [
+    "not runtime attestation",
+    "not proof of runtime implementation/version",
+    "no layers fetched or executed",
+    "no cluster access"
+  ]
+}

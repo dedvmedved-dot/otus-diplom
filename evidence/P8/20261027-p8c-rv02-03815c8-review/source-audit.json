@@ -1,0 +1,20 @@
+{
+  "reviewed_main": "03815c86cd12eaf98337dcd6eeaec257fd783648",
+  "parent": "f75c492f424cd133c22fa63b1a99b8e5e2f18842",
+  "tree": "6158c0ee72e812b954aa235795c95ce34fc5e62f",
+  "changed_paths": [
+    "evidence/P8/20261027T143000Z-p8c-rv02-identity-binding/followup-read-design.md",
+    "evidence/P8/20261027T143000Z-p8c-rv02-identity-binding/identity-chain.json",
+    "evidence/P8/20261027T143000Z-p8c-rv02-identity-binding/result.md"
+  ],
+  "upstream_candidate": {
+    "repo": "kubernetes-sigs/network-policy-api",
+    "commit": "730bd5474d82a2cf82be8b0c6c2a5515598cc44e",
+    "types_blob": "8f534d3c92ce0acdce8560d8190ebb574ee4240b",
+    "standard_crd_blob": "eca1eca97c14f56836aaf8f2394fa03479e01b5f",
+    "installed_schema_verified": false
+  },
+  "review_command": "python3 review-03815c8/check_chain.py",
+  "exit_code": 0,
+  "cluster_access": false
+}

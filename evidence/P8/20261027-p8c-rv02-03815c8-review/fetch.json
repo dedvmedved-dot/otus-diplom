@@ -1,0 +1,23 @@
+[
+  {
+    "url": "https://quay.io/v2/calico/node/manifests/sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+    "sha256": "f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+    "bytes": 1359,
+    "content_type": "application/vnd.docker.distribution.manifest.list.v2+json",
+    "utc": "2026-10-27T14:27:27.069373+00:00"
+  },
+  {
+    "url": "https://quay.io/v2/calico/node/manifests/sha256:12262c951e705c595f49d354372bcb0f166b1571b26d502a006fb487dd0025e4",
+    "sha256": "12262c951e705c595f49d354372bcb0f166b1571b26d502a006fb487dd0025e4",
+    "bytes": 530,
+    "content_type": "application/vnd.docker.distribution.manifest.v2+json",
+    "utc": "2026-10-27T14:27:48.989210+00:00"
+  },
+  {
+    "url": "https://quay.io/v2/calico/node/blobs/sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65",
+    "sha256": "6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65",
+    "bytes": 3893,
+    "content_type": "application/octet-stream",
+    "utc": "2026-10-27T14:27:58.242329+00:00"
+  }
+]
