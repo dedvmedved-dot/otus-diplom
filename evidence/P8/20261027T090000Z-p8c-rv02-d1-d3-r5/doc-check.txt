@@ -1,0 +1,2 @@
+document check: supplemental-design.md D1-D3 + coverage-matrix.md R5 provenance verified against review 7584df5
+code byte-identical: supplemental.py blob ad2edaa9, supplemental_test.py blob 8157b942 (33/33)
