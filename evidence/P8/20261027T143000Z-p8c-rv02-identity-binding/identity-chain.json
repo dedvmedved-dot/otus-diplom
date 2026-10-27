@@ -1,0 +1,46 @@
+{
+  "scope": "offline registry metadata verification (quay.io/calico/node), no cluster access",
+  "pinned_repository_ref": "quay.io/calico/node",
+  "pinned_manifest_list_digest": "sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+  "observed_runtime_imageid": "sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65",
+  "verdict": "VERIFIED",
+  "chain": [
+    {
+      "link": "pinned manifest-list",
+      "url": "https://quay.io/v2/calico/node/manifests/sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "utc": "2026-10-27T14:22:34Z",
+      "requested_digest": "sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "computed_sha256": "f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+      "mediaType": "application/vnd.docker.distribution.manifest.list.v2+json",
+      "schemaVersion": 2,
+      "platform_descriptors": [
+        {"digest": "sha256:12262c951e705c595f49d354372bcb0f166b1571b26d502a006fb487dd0025e4", "architecture": "amd64", "os": "linux"},
+        {"digest": "sha256:f737550f3eb703d65941c0ae4daddd52431395ad4b33184c44f1fe467c0f328c", "architecture": "arm64", "os": "linux"},
+        {"digest": "sha256:7eb23124fed53094e620a79b4005542e85ef2e3dd107b0bd464f35030f8f41df", "architecture": "ppc64le", "os": "linux"},
+        {"digest": "sha256:15fc49f9368dbbbe39b756e399957647317ff329e5ebb92629cf9f33205d2252", "architecture": "s390x", "os": "linux"}
+      ]
+    },
+    {
+      "link": "amd64 platform manifest",
+      "url": "https://quay.io/v2/calico/node/manifests/sha256:12262c951e705c595f49d354372bcb0f166b1571b26d502a006fb487dd0025e4",
+      "utc": "2026-10-27T14:22:35Z",
+      "requested_digest": "sha256:12262c951e705c595f49d354372bcb0f166b1571b26d502a006fb487dd0025e4",
+      "computed_sha256": "12262c951e705c595f49d354372bcb0f166b1571b26d502a006fb487dd0025e4",
+      "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+      "schemaVersion": 2,
+      "config_digest": "sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65",
+      "config_mediaType": "application/vnd.docker.container.image.v1+json",
+      "num_layers": 1
+    },
+    {
+      "link": "amd64 image config blob",
+      "url": "https://quay.io/v2/calico/node/blobs/sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65",
+      "utc": "2026-10-27T14:22:35Z",
+      "requested_digest": "sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65",
+      "computed_sha256": "6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65",
+      "mediaType": "application/octet-stream"
+    }
+  ],
+  "interpretation": "The observed runtime imageID sha256:6bc9fa4... is the amd64 image CONFIG digest (application/vnd.docker.container.image.v1+json), a verified descendant of the pinned manifest-list sha256:f4fafd8... via the amd64 platform manifest sha256:12262c95.... It is NOT the manifest-list digest and NOT a platform-manifest digest. The collector's IMAGE_ID_RE rejected the bare sha256:... form before any digest comparison, and endswith(PINNED_DIGEST) would also fail because config-digest != manifest-list digest.",
+  "no_auth_headers_saved": true
+}
