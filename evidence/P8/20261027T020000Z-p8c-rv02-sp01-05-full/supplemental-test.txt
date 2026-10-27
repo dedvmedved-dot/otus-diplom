@@ -1,0 +1,48 @@
+test_calico_identity_present (__main__.TestDiscoveryGate.test_calico_identity_present) ... /root/otus-diplom/portal/networkpolicy/supplemental_test.py:90: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpw0_y4jq3/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_policy_api_unsupported (__main__.TestDiscoveryGate.test_policy_api_unsupported) ... /root/otus-diplom/portal/networkpolicy/supplemental_test.py:90: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpb_fa2t60/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_scope_verb_kind_missing_felix (__main__.TestDiscoveryGate.test_scope_verb_kind_missing_felix) ... /root/otus-diplom/portal/networkpolicy/supplemental_test.py:90: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpvv82secq/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/networkpolicy/supplemental_test.py:90: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpceyeqgz7/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/networkpolicy/supplemental_test.py:90: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp48904_kq/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/networkpolicy/supplemental_test.py:90: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp9wd1rkl3/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_valid (__main__.TestDiscoveryGate.test_valid) ... /root/otus-diplom/portal/networkpolicy/supplemental_test.py:90: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpmb_fd41h/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_wrong_group_blocks (__main__.TestDiscoveryGate.test_wrong_group_blocks) ... /root/otus-diplom/portal/networkpolicy/supplemental_test.py:90: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpdxxcsfxb/out/supplemental.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, "supplemental.jsonl"))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_no_kubectl (__main__.TestNoOverwriteNoKubectl.test_no_kubectl) ... ok
+test_no_overwrite (__main__.TestNoOverwriteNoKubectl.test_no_overwrite) ... /root/otus-diplom/portal/networkpolicy/supplemental_test.py:188: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmperoj06ys/e/supplemental.jsonl' mode='w' encoding='UTF-8'>
+  open(os.path.join(dest, "supplemental.jsonl"), "w").write("KEEP")
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_gnp_cluster_scoped (__main__.TestProjectors.test_gnp_cluster_scoped) ... ok
+test_malformed_containers_rejected (__main__.TestProjectors.test_malformed_containers_rejected) ... ok
+test_named_get_bound (__main__.TestProjectors.test_named_get_bound) ... ok
+test_numeric_protocol_accepted (__main__.TestProjectors.test_numeric_protocol_accepted) ... ok
+test_pod_imageID_from_status (__main__.TestProjectors.test_pod_imageID_from_status) ... ok
+test_pod_port_leaf_typed (__main__.TestProjectors.test_pod_port_leaf_typed) ... ok
+test_pod_wrong_kind_rejected (__main__.TestProjectors.test_pod_wrong_kind_rejected) ... ok
+test_service_accounts_typed (__main__.TestProjectors.test_service_accounts_typed) ... ok
+test_tier_notSelector_preserved (__main__.TestProjectors.test_tier_notSelector_preserved) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.023s
+
+OK
