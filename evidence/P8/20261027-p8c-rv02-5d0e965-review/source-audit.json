@@ -1,0 +1,121 @@
+{
+  "reviewed_main": "5d0e965497b16a0b59d90e05e4738f935ce152af",
+  "source": "27a012134e37bf3e3dea1aff2dcbf1653ddfc5af",
+  "compare": {
+    "repository_full_name": "dedvmedved-dot/otus-diplom",
+    "base": "58e6e640d9c12d7c212b1be06e30a32f147ab6d2",
+    "head": "5d0e965497b16a0b59d90e05e4738f935ce152af",
+    "status": "ahead",
+    "ahead_by": 2,
+    "behind_by": 0,
+    "total_commits": 2,
+    "too_large": null,
+    "base_commit": {
+      "sha": "58e6e640d9c12d7c212b1be06e30a32f147ab6d2",
+      "url": "https://api.github.com/repos/dedvmedved-dot/otus-diplom/commits/58e6e640d9c12d7c212b1be06e30a32f147ab6d2",
+      "html_url": "https://github.com/dedvmedved-dot/otus-diplom/commit/58e6e640d9c12d7c212b1be06e30a32f147ab6d2"
+    },
+    "merge_base_commit": {
+      "sha": "58e6e640d9c12d7c212b1be06e30a32f147ab6d2",
+      "url": "https://api.github.com/repos/dedvmedved-dot/otus-diplom/commits/58e6e640d9c12d7c212b1be06e30a32f147ab6d2",
+      "html_url": "https://github.com/dedvmedved-dot/otus-diplom/commit/58e6e640d9c12d7c212b1be06e30a32f147ab6d2"
+    },
+    "files": [
+      {
+        "filename": "evidence/P8/20261027T050000Z-p8c-rv02-r1-r5-final/result.md",
+        "status": "added",
+        "additions": 30,
+        "deletions": 0,
+        "changes": 30,
+        "previous_filename": null
+      },
+      {
+        "filename": "evidence/P8/20261027T050000Z-p8c-rv02-r1-r5-final/secret-scan.txt",
+        "status": "added",
+        "additions": 3,
+        "deletions": 0,
+        "changes": 3,
+        "previous_filename": null
+      },
+      {
+        "filename": "evidence/P8/20261027T050000Z-p8c-rv02-r1-r5-final/supplemental-test.txt",
+        "status": "added",
+        "additions": 104,
+        "deletions": 0,
+        "changes": 104,
+        "previous_filename": null
+      },
+      {
+        "filename": "portal/networkpolicy/PLAN.md",
+        "status": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "changes": 2,
+        "previous_filename": null
+      },
+      {
+        "filename": "portal/networkpolicy/flow-matrix.md",
+        "status": "modified",
+        "additions": 4,
+        "deletions": 2,
+        "changes": 6,
+        "previous_filename": null
+      },
+      {
+        "filename": "portal/networkpolicy/supplemental.py",
+        "status": "modified",
+        "additions": 44,
+        "deletions": 8,
+        "changes": 52,
+        "previous_filename": null
+      },
+      {
+        "filename": "portal/networkpolicy/supplemental_test.py",
+        "status": "modified",
+        "additions": 30,
+        "deletions": 6,
+        "changes": 36,
+        "previous_filename": null
+      }
+    ]
+  },
+  "schema": {
+    "path": "ansible/playbooks/files/calico-v3.32.0.yaml",
+    "blob": "21ea9b4b163305ea479bc7708965104465ffc716",
+    "facts": {
+      "GlobalNetworkPolicy": [
+        "applyOnForward",
+        "doNotTrack",
+        "egress",
+        "ingress",
+        "namespaceSelector",
+        "order",
+        "performanceHints",
+        "preDNAT",
+        "selector",
+        "serviceAccountSelector",
+        "tier",
+        "types"
+      ],
+      "NetworkPolicy": [
+        "egress",
+        "ingress",
+        "order",
+        "performanceHints",
+        "selector",
+        "serviceAccountSelector",
+        "tier",
+        "types"
+      ],
+      "daemonset_images": [
+        "quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a"
+      ]
+    }
+  },
+  "working_docs": {
+    "PLAN.md": "a1666d68bdb39d89e791448b5cdecdf034327a66",
+    "flow-matrix.md": "cc618a26c4a2e1a061d2e73c9e1bd01f324506dc",
+    "collection-map.md": "d0e47d79f3a9660b526aedff47fd2338bcace8e7",
+    "gaps.md": "78ffc99c19dfcfef60b15110ca626c46f9f6ecc2"
+  }
+}

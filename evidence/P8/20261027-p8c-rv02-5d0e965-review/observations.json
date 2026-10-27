@@ -1,0 +1,433 @@
+{
+  "equal_digest_fixture": {
+    "exit": 0,
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ],
+    "rows": {
+      "I1": {
+        "category": null,
+        "output": "[{\"metadata\": {\"name\": \"calico-node-abc\", \"namespace\": \"kube-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"calico-node\", \"image\": \"quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a\", \"imageID\": \"containerd://sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a\", \"ports\": [{\"containerPort\": 9090, \"name\": \"calico-typha\"}], \"restartPolicy\": null}]}, {\"metadata\": {\"name\": \"calico-node-abc\", \"namespace\": \"kube-system\"}, \"initContainers\": [], \"containers\": [{\"name\": \"calico-node\", \"image\": \"quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a\", \"imageID\": \"containerd://sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a\", \"ports\": [{\"containerPort\": 9090, \"name\": \"calico-typha\"}], \"restartPolicy\": null}]}]"
+      },
+      "C3": {
+        "category": null,
+        "output": "[{\"kind\": \"NetworkPolicy\", \"metadata\": {\"name\": \"n\", \"namespace\": \"portal\"}, \"spec\": {\"order\": null, \"tier\": null, \"selector\": \"all()\", \"serviceAccountSelector\": null, \"types\": [\"Ingress\"], \"ingress\": [{\"action\": \"Allow\", \"protocol\": null, \"notProtocol\": null, \"ipVersion\": null, \"icmp\": null, \"notICMP\": null, \"http\": null, \"source\": {\"selector\": \"x\", \"notSelector\": null, \"namespaceSelector\": null, \"nets\": [], \"notNets\": [], \"ports\": [], \"notPorts\": [], \"serviceAccounts\": null, \"services\": null}}], \"egress\": []}}]"
+      },
+      "C4": {
+        "category": null,
+        "output": "[{\"kind\": \"GlobalNetworkPolicy\", \"metadata\": {\"name\": \"gnp\", \"namespace\": null}, \"spec\": {\"order\": 10, \"tier\": null, \"selector\": \"all()\", \"serviceAccountSelector\": null, \"types\": [], \"ingress\": [], \"egress\": [], \"applyOnForward\": true, \"doNotTrack\": null, \"preDNAT\": null, \"namespaceSelector\": null}}]"
+      },
+      "C5": {
+        "category": null,
+        "output": "[{\"kind\": \"FelixConfiguration\", \"metadata\": {\"name\": \"default\", \"namespace\": null}, \"spec\": {\"bpfEnabled\": false, \"nftablesMode\": \"Auto\", \"iptablesBackend\": null, \"nodeSelector\": null}}]"
+      }
+    }
+  },
+  "unbound_digest_blocked": {
+    "exit": 1,
+    "dependent_calls": [],
+    "rows": {
+      "I1": {
+        "category": "PARSE_ERROR",
+        "output": ""
+      },
+      "C3": {
+        "category": "BLOCKED_NOT_EXECUTED",
+        "output": ""
+      },
+      "C4": {
+        "category": "BLOCKED_NOT_EXECUTED",
+        "output": ""
+      },
+      "C5": {
+        "category": "BLOCKED_NOT_EXECUTED",
+        "output": ""
+      }
+    }
+  },
+  "repository_qualified_same_digest": {
+    "exit": 1,
+    "dependent_calls": [],
+    "rows": {
+      "I1": {
+        "category": "PARSE_ERROR",
+        "output": ""
+      },
+      "C3": {
+        "category": "BLOCKED_NOT_EXECUTED",
+        "output": ""
+      },
+      "C4": {
+        "category": "BLOCKED_NOT_EXECUTED",
+        "output": ""
+      },
+      "C5": {
+        "category": "BLOCKED_NOT_EXECUTED",
+        "output": ""
+      }
+    }
+  },
+  "bare_repository_same_digest": {
+    "exit": 1,
+    "dependent_calls": [],
+    "rows": {
+      "I1": {
+        "category": "PARSE_ERROR",
+        "output": ""
+      },
+      "C3": {
+        "category": "BLOCKED_NOT_EXECUTED",
+        "output": ""
+      },
+      "C4": {
+        "category": "BLOCKED_NOT_EXECUTED",
+        "output": ""
+      },
+      "C5": {
+        "category": "BLOCKED_NOT_EXECUTED",
+        "output": ""
+      }
+    }
+  },
+  "unsupported_spec": {
+    "exit": 1,
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ],
+    "rows": {
+      "C3": {
+        "category": "UNSUPPORTED",
+        "output": ""
+      }
+    }
+  },
+  "unsupported_rule": {
+    "exit": 1,
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ],
+    "rows": {
+      "C3": {
+        "category": "UNSUPPORTED",
+        "output": ""
+      }
+    }
+  },
+  "unsupported_entity": {
+    "exit": 1,
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ],
+    "rows": {
+      "C3": {
+        "category": "UNSUPPORTED",
+        "output": ""
+      }
+    }
+  },
+  "unsupported_http": {
+    "exit": 1,
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ],
+    "rows": {
+      "C3": {
+        "category": "UNSUPPORTED",
+        "output": ""
+      }
+    }
+  },
+  "unsupported_http_path": {
+    "exit": 1,
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ],
+    "rows": {
+      "C3": {
+        "category": "UNSUPPORTED",
+        "output": ""
+      }
+    }
+  },
+  "unsupported_icmp": {
+    "exit": 1,
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ],
+    "rows": {
+      "C3": {
+        "category": "UNSUPPORTED",
+        "output": ""
+      }
+    }
+  },
+  "unsupported_serviceAccounts": {
+    "exit": 1,
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ],
+    "rows": {
+      "C3": {
+        "category": "UNSUPPORTED",
+        "output": ""
+      }
+    }
+  },
+  "unsupported_services": {
+    "exit": 1,
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ],
+    "rows": {
+      "C3": {
+        "category": "UNSUPPORTED",
+        "output": ""
+      }
+    }
+  },
+  "namespaced_policy_global_only_namespaceSelector": {
+    "exit": 0,
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ],
+    "rows": {
+      "C3": {
+        "category": null,
+        "output": "[{\"kind\": \"NetworkPolicy\", \"metadata\": {\"name\": \"n\", \"namespace\": \"portal\"}, \"spec\": {\"order\": null, \"tier\": null, \"selector\": \"all()\", \"serviceAccountSelector\": null, \"types\": [\"Ingress\"], \"ingress\": [{\"action\": \"Allow\", \"protocol\": null, \"notProtocol\": null, \"ipVersion\": null, \"icmp\": null, \"notICMP\": null, \"http\": null, \"source\": {\"selector\": \"x\", \"notSelector\": null, \"namespaceSelector\": null, \"nets\": [], \"notNets\": [], \"ports\": [], \"notPorts\": [], \"serviceAccounts\": null, \"services\": null}}], \"egress\": []}}]"
+      }
+    },
+    "same_projection": true
+  },
+  "namespaced_policy_global_only_applyOnForward": {
+    "exit": 0,
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ],
+    "rows": {
+      "C3": {
+        "category": null,
+        "output": "[{\"kind\": \"NetworkPolicy\", \"metadata\": {\"name\": \"n\", \"namespace\": \"portal\"}, \"spec\": {\"order\": null, \"tier\": null, \"selector\": \"all()\", \"serviceAccountSelector\": null, \"types\": [\"Ingress\"], \"ingress\": [{\"action\": \"Allow\", \"protocol\": null, \"notProtocol\": null, \"ipVersion\": null, \"icmp\": null, \"notICMP\": null, \"http\": null, \"source\": {\"selector\": \"x\", \"notSelector\": null, \"namespaceSelector\": null, \"nets\": [], \"notNets\": [], \"ports\": [], \"notPorts\": [], \"serviceAccounts\": null, \"services\": null}}], \"egress\": []}}]"
+      }
+    },
+    "same_projection": true
+  },
+  "namespaced_policy_global_only_doNotTrack": {
+    "exit": 0,
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ],
+    "rows": {
+      "C3": {
+        "category": null,
+        "output": "[{\"kind\": \"NetworkPolicy\", \"metadata\": {\"name\": \"n\", \"namespace\": \"portal\"}, \"spec\": {\"order\": null, \"tier\": null, \"selector\": \"all()\", \"serviceAccountSelector\": null, \"types\": [\"Ingress\"], \"ingress\": [{\"action\": \"Allow\", \"protocol\": null, \"notProtocol\": null, \"ipVersion\": null, \"icmp\": null, \"notICMP\": null, \"http\": null, \"source\": {\"selector\": \"x\", \"notSelector\": null, \"namespaceSelector\": null, \"nets\": [], \"notNets\": [], \"ports\": [], \"notPorts\": [], \"serviceAccounts\": null, \"services\": null}}], \"egress\": []}}]"
+      }
+    },
+    "same_projection": true
+  },
+  "namespaced_policy_global_only_preDNAT": {
+    "exit": 0,
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ],
+    "rows": {
+      "C3": {
+        "category": null,
+        "output": "[{\"kind\": \"NetworkPolicy\", \"metadata\": {\"name\": \"n\", \"namespace\": \"portal\"}, \"spec\": {\"order\": null, \"tier\": null, \"selector\": \"all()\", \"serviceAccountSelector\": null, \"types\": [\"Ingress\"], \"ingress\": [{\"action\": \"Allow\", \"protocol\": null, \"notProtocol\": null, \"ipVersion\": null, \"icmp\": null, \"notICMP\": null, \"http\": null, \"source\": {\"selector\": \"x\", \"notSelector\": null, \"namespaceSelector\": null, \"nets\": [], \"notNets\": [], \"ports\": [], \"notPorts\": [], \"serviceAccounts\": null, \"services\": null}}], \"egress\": []}}]"
+      }
+    },
+    "same_projection": true
+  },
+  "global_policy_fields_preserved": {
+    "exit": 0,
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ],
+    "rows": {
+      "C4": {
+        "category": null,
+        "output": "[{\"kind\": \"GlobalNetworkPolicy\", \"metadata\": {\"name\": \"gnp\", \"namespace\": null}, \"spec\": {\"order\": 10, \"tier\": null, \"selector\": \"all()\", \"serviceAccountSelector\": null, \"types\": [], \"ingress\": [], \"egress\": [], \"applyOnForward\": true, \"doNotTrack\": true, \"preDNAT\": true, \"namespaceSelector\": \"team == 'restricted'\"}}]"
+      }
+    }
+  },
+  "nonsemantic_drop": {
+    "exit": 0,
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ],
+    "rows": {
+      "C3": {
+        "category": null,
+        "output": "[{\"kind\": \"NetworkPolicy\", \"metadata\": {\"name\": \"n\", \"namespace\": \"portal\"}, \"spec\": {\"order\": null, \"tier\": null, \"selector\": \"all()\", \"serviceAccountSelector\": null, \"types\": [\"Ingress\"], \"ingress\": [{\"action\": \"Allow\", \"protocol\": null, \"notProtocol\": null, \"ipVersion\": null, \"icmp\": null, \"notICMP\": null, \"http\": null, \"source\": {\"selector\": \"x\", \"notSelector\": null, \"namespaceSelector\": null, \"nets\": [], \"notNets\": [], \"ports\": [], \"notPorts\": [], \"serviceAccounts\": null, \"services\": null}}], \"egress\": []}}]"
+      }
+    }
+  },
+  "request_contract": [
+    {
+      "id": "D1",
+      "argv": [
+        "get",
+        "--raw",
+        "/apis/crd.projectcalico.org/v1"
+      ],
+      "deps": []
+    },
+    {
+      "id": "D2",
+      "argv": [
+        "get",
+        "--raw",
+        "/apis/policy.networking.k8s.io/v1alpha2"
+      ],
+      "deps": []
+    },
+    {
+      "id": "I1",
+      "argv": [
+        "get",
+        "pods",
+        "-n",
+        "kube-system",
+        "-l",
+        "k8s-app=calico-node",
+        "-o",
+        "json"
+      ],
+      "deps": []
+    },
+    {
+      "id": "C1",
+      "argv": [
+        "get",
+        "objectstores.barmancloud.cnpg.io",
+        "-n",
+        "portal",
+        "portal-db-backup",
+        "-o",
+        "json"
+      ],
+      "deps": []
+    },
+    {
+      "id": "C2",
+      "argv": [
+        "get",
+        "clusters.postgresql.cnpg.io",
+        "-n",
+        "portal",
+        "portal-db",
+        "-o",
+        "json"
+      ],
+      "deps": []
+    },
+    {
+      "id": "C3",
+      "argv": [
+        "get",
+        "networkpolicies.crd.projectcalico.org",
+        "-A",
+        "-o",
+        "json"
+      ],
+      "deps": [
+        "D1",
+        "I1"
+      ]
+    },
+    {
+      "id": "C4",
+      "argv": [
+        "get",
+        "globalnetworkpolicies.crd.projectcalico.org",
+        "-o",
+        "json"
+      ],
+      "deps": [
+        "D1",
+        "I1"
+      ]
+    },
+    {
+      "id": "C5",
+      "argv": [
+        "get",
+        "felixconfigurations.crd.projectcalico.org",
+        "default",
+        "-o",
+        "json"
+      ],
+      "deps": [
+        "D1",
+        "I1"
+      ]
+    },
+    {
+      "id": "S1",
+      "argv": [
+        "get",
+        "pods",
+        "-n",
+        "portal",
+        "-l",
+        "cnpg.io/cluster=portal-db",
+        "-o",
+        "json"
+      ],
+      "deps": []
+    },
+    {
+      "id": "S2",
+      "argv": [
+        "get",
+        "pods",
+        "-n",
+        "cnpg-system",
+        "-l",
+        "app=barman-cloud",
+        "-o",
+        "json"
+      ],
+      "deps": []
+    }
+  ],
+  "hashes": {
+    "supplemental.py": {
+      "sha256": "0ea9987f4ae2514f9e99b5a6943c67c5af9b69f491f62f4dcef5df84bc286a1a",
+      "git_blob": "7549cbce7c675fb3e3b9b3ed541ccb5561698e84"
+    },
+    "supplemental_test.py": {
+      "sha256": "90c6a3a5eaedcf82beec4bc7f97f75af93f400eb203a33d3eb37ff5b12b2714d",
+      "git_blob": "222d4cc29872e92834b4fc9e05c7170d2feb0e12"
+    }
+  }
+}
