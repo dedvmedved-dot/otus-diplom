@@ -3,15 +3,16 @@
 
 PHASE2_LIVE_READS_APPROVED=NO; OWNER_PHASE2_HANDOFF_ALLOWED=NO.
 
-Addresses SP-01..04. Key properties:
-  - discovery is a GATE: a config read whose dependency discovery did not match
-    the reviewed groupVersion/resources is NOT executed (BLOCKED_NOT_EXECUTED record).
-  - discovery responses are validated + projected (kind/groupVersion/resources),
-    never persisted raw; malformed/wrong-identity → safe error, dependent reads blocked.
-  - per-kind apiVersion/kind/scope/identity contract; invalid list elements reject
-    (not silently dropped); cluster-scoped GlobalNetworkPolicy omits namespace.
-  - typed recursive policy projection (no arbitrary nested content); secret refs are
-    name+key only; false/0/string/unknown members never collapse to null/empty.
+Fixes SP-01..05 remainder:
+  - discovery validates per-resource kind/scope/verbs; config reads gate on exact
+    GVR+kind+scope+get/list; C5 requires felixconfigurations; D2 classifies policy
+    kinds (unsupported -> UNSUPPORTED, no completeness claim).
+  - typed leaves: serviceAccounts{names,selector}, container ports containerPort/name,
+    policy tier/notSelector; protocol int-or-string.
+  - pod identity: kind=Pod required, nonempty namespace, spec+status joined for imageID,
+    malformed containers reject (no silent drop).
+  - named reads bound to requested namespace/name; list-vs-single shape enforced.
+  - Calico runtime identity read (I1) precedes version-specific Calico reads.
 """
 import argparse
 import datetime
@@ -22,7 +23,6 @@ import subprocess
 import sys
 from urllib.parse import urlsplit
 
-# --- URL + typed helpers ---------------------------------------------------------
 
 def origin_only(v):
     if v is None or not isinstance(v, str):
@@ -95,6 +95,12 @@ def _num(v, field, allow_none=False):
     return v
 
 
+def _port_val(v, field):
+    if isinstance(v, bool) or not isinstance(v, (int, str)):
+        raise ValueError(field + ' not int/string')
+    return v
+
+
 def _enum(v, field, allowed, allow_none=False):
     if v is None:
         if allow_none:
@@ -116,20 +122,11 @@ def _str_list(v, field):
     return v
 
 
-def _secret_ref(v, field):
-    d = _dict_req(v, field)
-    return {'name': _nonempty(d.get('name'), field + '.name'),
-            'key': _str(d.get('key'), field + '.key', allow_none=True)}
-
-
-def _require_kind(obj, kind):
+def _require(obj, kind, api):
     if obj.get('kind') != kind:
         raise ValueError(f"kind {obj.get('kind')!r} != {kind}")
-
-
-def _require_api(obj, api_version):
-    if obj.get('apiVersion') != api_version:
-        raise ValueError(f"apiVersion {obj.get('apiVersion')!r} != {api_version}")
+    if obj.get('apiVersion') != api:
+        raise ValueError(f"apiVersion {obj.get('apiVersion')!r} != {api}")
 
 
 def _meta(obj, namespaced=True):
@@ -143,16 +140,15 @@ def _meta(obj, namespaced=True):
     return {'name': name, 'namespace': ns}
 
 
-# --- Discovery projection/validation (SP-01) -------------------------------------
+# --- discovery ----------------------------------------------------------------
 
 def project_discovery(raw):
-    """Validate APIResourceList shape/kind/groupVersion/resources; typed output."""
     data = json.loads(raw)
     if not isinstance(data, dict):
         raise ValueError('discovery not an object')
     if data.get('kind') != 'APIResourceList':
-        raise ValueError(f"discovery kind {data.get('kind')!r}")
-    gv = _str(data.get('groupVersion'), 'groupVersion')
+        raise ValueError('discovery kind != APIResourceList')
+    gv = _nonempty(data.get('groupVersion'), 'groupVersion')
     res = data.get('resources')
     if not isinstance(res, list):
         raise ValueError('resources not a list')
@@ -161,50 +157,57 @@ def project_discovery(raw):
         if not isinstance(r, dict):
             raise ValueError('resource not an object')
         out.append({'name': _str(r.get('name'), 'resource.name'),
+                    'kind': _str(r.get('kind'), 'resource.kind', allow_none=True),
                     'namespaced': _bool(r.get('namespaced'), 'resource.namespaced', allow_none=True),
                     'verbs': _str_list(r.get('verbs'), 'resource.verbs')})
     return json.dumps({'kind': 'APIResourceList', 'groupVersion': gv, 'resources': out})
 
 
-# --- ObjectStore / Cluster / policy / identity projections -----------------------
+# --- projections --------------------------------------------------------------
 
-def project_objectstore(obj):
-    _require_kind(obj, 'ObjectStore')
-    _require_api(obj, 'barmancloud.cnpg.io/v1')
+def project_objectstore(obj, expect_name=None):
+    _require(obj, 'ObjectStore', 'barmancloud.cnpg.io/v1')
+    md = _meta(obj, namespaced=True)
+    if expect_name is not None and md['name'] != expect_name:
+        raise ValueError(f"objectstore name {md['name']!r} != {expect_name}")
     spec = _dict_req(obj.get('spec'), 'spec')
     cfg = _dict_req(spec.get('configuration'), 'spec.configuration')
     s3 = _dict(cfg.get('s3Credentials'), 'spec.configuration.s3Credentials')
     ca = _dict(cfg.get('endpointCA'), 'spec.configuration.endpointCA')
-    def ref_or_none(v):
-        return _secret_ref(v, 's3Credentials') if v is not None else None
-    return {'kind': 'ObjectStore', 'metadata': _meta(obj, namespaced=True), 'spec': {'configuration': {
+    def ref(v):
+        if v is None:
+            return None
+        d = _dict_req(v, 's3Credentials')
+        return {'name': _nonempty(d.get('name'), 'ref.name'), 'key': _str(d.get('key'), 'ref.key', allow_none=True)}
+    return {'kind': 'ObjectStore', 'metadata': md, 'spec': {'configuration': {
         'endpointURL': origin_only(cfg.get('endpointURL')),
         'destinationPath': origin_only(cfg.get('destinationPath')),
         'endpointCAName': _str(ca.get('name'), 'endpointCA.name', allow_none=True),
-        's3AccessKeyIdRef': ref_or_none(s3.get('accessKeyId')),
-        's3SecretAccessKeyRef': ref_or_none(s3.get('secretAccessKey')),
-        's3RegionRef': ref_or_none(s3.get('region')),
-    }}}
+        's3AccessKeyIdRef': ref(s3.get('accessKeyId')),
+        's3SecretAccessKeyRef': ref(s3.get('secretAccessKey')),
+        's3RegionRef': ref(s3.get('region'))}}}
 
 
-def project_cluster(obj):
-    _require_kind(obj, 'Cluster')
-    _require_api(obj, 'postgresql.cnpg.io/v1')
+def project_cluster(obj, expect_name=None):
+    _require(obj, 'Cluster', 'postgresql.cnpg.io/v1')
+    md = _meta(obj, namespaced=True)
+    if expect_name is not None and md['name'] != expect_name:
+        raise ValueError(f"cluster name {md['name']!r} != {expect_name}")
     spec = _dict_req(obj.get('spec'), 'spec')
     plugins = spec.get('plugins')
     out = []
     if plugins is not None:
         if not isinstance(plugins, list):
-            raise ValueError('spec.plugins not a list')
+            raise ValueError('plugins not a list')
         for pl in plugins:
             if not isinstance(pl, dict):
                 raise ValueError('plugin not an object')
             params = _dict(pl.get('parameters'), 'plugin.parameters')
             out.append({'name': _str(pl.get('name'), 'plugin.name'),
                         'isWALArchiver': _bool(pl.get('isWALArchiver'), 'plugin.isWALArchiver', allow_none=True),
-                        'barmanObjectName': _str(params.get('barmanObjectName'), 'plugin.parameters.barmanObjectName', allow_none=True)})
-    return {'kind': 'Cluster', 'metadata': _meta(obj, namespaced=True), 'spec': {
-        'plugins': out, 'imageName': _str(spec.get('imageName'), 'spec.imageName', allow_none=True)}}
+                        'barmanObjectName': _str(params.get('barmanObjectName'), 'barmanObjectName', allow_none=True)})
+    return {'kind': 'Cluster', 'metadata': md, 'spec': {
+        'plugins': out, 'imageName': _str(spec.get('imageName'), 'imageName', allow_none=True)}}
 
 
 def _ports_typed(v, field):
@@ -212,29 +215,43 @@ def _ports_typed(v, field):
         return []
     if not isinstance(v, list):
         raise ValueError(field + ' not a list')
-    out = []
-    for x in v:
-        if isinstance(x, bool) or not isinstance(x, (int, str)):
-            raise ValueError(field + ' port not int/string')
-        out.append(x)
-    return out
+    return [_port_val(x, field) for x in v]
+
+
+def _sa(v, field):
+    if v is None:
+        return None
+    d = _dict_req(v, field)
+    return {'names': _str_list(d.get('names'), field + '.names'),
+            'selector': _str(d.get('selector'), field + '.selector', allow_none=True)}
 
 
 def _policy_entity(e, field):
     e = _dict_req(e, field)
     return {'selector': _str(e.get('selector'), field + '.selector', allow_none=True),
+            'notSelector': _str(e.get('notSelector'), field + '.notSelector', allow_none=True),
             'namespaceSelector': _str(e.get('namespaceSelector'), field + '.namespaceSelector', allow_none=True),
             'nets': _str_list(e.get('nets'), field + '.nets'),
             'notNets': _str_list(e.get('notNets'), field + '.notNets'),
             'ports': _ports_typed(e.get('ports'), field + '.ports'),
             'notPorts': _ports_typed(e.get('notPorts'), field + '.notPorts'),
-            'serviceAccounts': _dict(e.get('serviceAccounts'), field + '.serviceAccounts')}
+            'serviceAccounts': _sa(e.get('serviceAccounts'), field + '.serviceAccounts')}
+
+
+def _proto(v, field):
+    if v is None:
+        return None
+    if isinstance(v, bool):
+        raise ValueError(field + ' not int/string')
+    if isinstance(v, (int, str)):
+        return v
+    raise ValueError(field + ' not int/string')
 
 
 def _policy_rule(r, field):
     r = _dict_req(r, field)
     out = {'action': _enum(r.get('action'), field + '.action', ('Allow', 'Deny', 'Log', 'Pass'), allow_none=True),
-           'protocol': _str(r.get('protocol'), field + '.protocol', allow_none=True)}
+           'protocol': _proto(r.get('protocol'), field + '.protocol')}
     if 'source' in r:
         out['source'] = _policy_entity(r['source'], field + '.source')
     if 'destination' in r:
@@ -243,8 +260,7 @@ def _policy_rule(r, field):
 
 
 def project_calico_policy(obj, kind, namespaced):
-    _require_kind(obj, kind)
-    _require_api(obj, 'crd.projectcalico.org/v1')
+    _require(obj, kind, 'crd.projectcalico.org/v1')
     spec = _dict_req(obj.get('spec'), 'spec')
     ingress = spec.get('ingress')
     egress = spec.get('egress')
@@ -254,12 +270,12 @@ def project_calico_policy(obj, kind, namespaced):
         raise ValueError('egress not a list')
     out = {'kind': kind, 'metadata': _meta(obj, namespaced=namespaced), 'spec': {
         'order': _num(spec.get('order'), 'order', allow_none=True),
+        'tier': _str(spec.get('tier'), 'tier', allow_none=True),
         'selector': _str(spec.get('selector'), 'selector', allow_none=True),
         'types': _str_list(spec.get('types'), 'types'),
         'ingress': [_policy_rule(x, 'ingress') for x in (ingress or [])],
         'egress': [_policy_rule(x, 'egress') for x in (egress or [])],
     }}
-    # host effects only on GlobalNetworkPolicy (cluster scope)
     if not namespaced:
         for f in ('applyOnForward', 'doNotTrack', 'preDNAT'):
             out['spec'][f] = _bool(spec.get(f), f, allow_none=True)
@@ -267,66 +283,91 @@ def project_calico_policy(obj, kind, namespaced):
 
 
 def project_felix(obj):
-    _require_kind(obj, 'FelixConfiguration')
-    _require_api(obj, 'crd.projectcalico.org/v1')
+    _require(obj, 'FelixConfiguration', 'crd.projectcalico.org/v1')
     spec = _dict_req(obj.get('spec'), 'spec')
-    return {'kind': 'FelixConfiguration', 'metadata': _meta(obj, namespaced=False),
-            'spec': {'bpfEnabled': _bool(spec.get('bpfEnabled'), 'bpfEnabled', allow_none=True),
-                     'dataplane': _str(spec.get('dataplane'), 'dataplane', allow_none=True),
-                     'chainInsertMode': _str(spec.get('chainInsertMode'), 'chainInsertMode', allow_none=True)}}
+    return {'kind': 'FelixConfiguration', 'metadata': _meta(obj, namespaced=False), 'spec': {
+        'bpfEnabled': _bool(spec.get('bpfEnabled'), 'bpfEnabled', allow_none=True),
+        'nftablesMode': _enum(spec.get('nftablesMode'), 'nftablesMode', ('Disabled', 'Enabled', 'Auto'), allow_none=True),
+        'iptablesBackend': _str(spec.get('iptablesBackend'), 'iptablesBackend', allow_none=True),
+        'nodeSelector': _str(spec.get('nodeSelector'), 'nodeSelector', allow_none=True)}}
 
 
-def _container(c, field):
-    c = _dict_req(c, field)
-    ports = []
-    for p in (c.get('ports') or []):
-        if isinstance(p, dict):
-            ports.append({'containerPort': p.get('containerPort'), 'name': p.get('name')})
-    return {'name': _str(c.get('name'), field + '.name'),
-            'image': _str(c.get('image'), field + '.image', allow_none=True),
-            'imageID': _str(c.get('imageID'), field + '.imageID', allow_none=True),
-            'ports': ports,
-            'restartPolicy': _str(c.get('restartPolicy'), field + '.restartPolicy', allow_none=True)}
+def _container_ports(v, field):
+    if v is None:
+        return []
+    if not isinstance(v, list):
+        raise ValueError(field + ' not a list')
+    out = []
+    for p in v:
+        if not isinstance(p, dict):
+            raise ValueError(field + ' port not an object')
+        out.append({'containerPort': _port_val(p.get('containerPort'), field + '.containerPort'),
+                    'name': _str(p.get('name'), field + '.name', allow_none=True)})
+    return out
 
 
 def project_pod_identity(obj):
-    _require_api(obj, 'v1')
-    md = _dict(obj.get('metadata'), 'metadata')
+    _require(obj, 'Pod', 'v1')
+    md = _meta(obj, namespaced=True)
     spec = _dict_req(obj.get('spec'), 'spec')
-    def cs(k):
+    status = _dict(obj.get('status'), 'status')
+    status_by = {}
+    for cat in ('containerStatuses', 'initContainerStatuses'):
+        for s in (status.get(cat) or []):
+            if isinstance(s, dict) and isinstance(s.get('name'), str):
+                status_by[(cat, s['name'])] = s.get('imageID')
+    def cs(k, cat):
         v = spec.get(k)
         if v is None:
             return []
         if not isinstance(v, list):
             raise ValueError(k + ' not a list')
-        return [_container(x, k) for x in v if isinstance(x, dict)]
-    return {'metadata': {'name': _str(md.get('name'), 'metadata.name'),
-                         'namespace': _str(md.get('namespace'), 'metadata.namespace')},
-            'initContainers': cs('initContainers'),
-            'containers': cs('containers')}
+        out = []
+        for c in v:
+            if not isinstance(c, dict):
+                raise ValueError(k + ' item not an object')
+            name = _nonempty(c.get('name'), k + '.name')
+            out.append({'name': name,
+                        'image': _str(c.get('image'), k + '.image', allow_none=True),
+                        'imageID': _str(status_by.get((cat, name)), k + '.imageID', allow_none=True),
+                        'ports': _container_ports(c.get('ports'), k + '.ports'),
+                        'restartPolicy': _str(c.get('restartPolicy'), k + '.restartPolicy', allow_none=True)})
+        return out
+    return {'metadata': md,
+            'initContainers': cs('initContainers', 'initContainerStatuses'),
+            'containers': cs('containers', 'containerStatuses')}
 
 
-# --- read contract (with explicit dependencies + reviewed versions) --------------
+# --- read contract ------------------------------------------------------------
 
-# (id, phase, argv_tail, resource_key, deps)
+# (id, phase, argv_tail, resource_key, deps, shape, expect_name)
+# shape: 'list' or 'single'
 READ_CONTRACT = [
-    ('D1', 'discover', ['get', '--raw', '/apis/crd.projectcalico.org/v1'], 'calico_discovery', []),
-    ('D2', 'discover', ['get', '--raw', '/apis/policy.networking.k8s.io/v1alpha2'], 'policy_discovery', []),
-    ('C1', 'config', ['get', 'objectstores.barmancloud.cnpg.io', '-n', 'portal', 'portal-db-backup', '-o', 'json'], 'objectstore', []),
-    ('C2', 'config', ['get', 'clusters.postgresql.cnpg.io', '-n', 'portal', 'portal-db', '-o', 'json'], 'cluster', []),
-    ('C3', 'config', ['get', 'networkpolicies.crd.projectcalico.org', '-A', '-o', 'json'], 'calico_np', ['D1']),
-    ('C4', 'config', ['get', 'globalnetworkpolicies.crd.projectcalico.org', '-o', 'json'], 'calico_gnp', ['D1']),
-    ('C5', 'config', ['get', 'felixconfigurations.crd.projectcalico.org', 'default', '-o', 'json'], 'felix', ['D1']),
-    ('S1', 'config', ['get', 'pods', '-n', 'portal', '-l', 'cnpg.io/cluster=portal-db', '-o', 'json'], 'sidecar', []),
-    ('S2', 'config', ['get', 'pods', '-n', 'cnpg-system', '-l', 'app=barman-cloud', '-o', 'json'], 'plugin', []),
+    ('D1', 'discover', ['get', '--raw', '/apis/crd.projectcalico.org/v1'], 'calico', [], 'single', None),
+    ('D2', 'discover', ['get', '--raw', '/apis/policy.networking.k8s.io/v1alpha2'], 'policy', [], 'single', None),
+    ('I1', 'config', ['get', 'pods', '-n', 'kube-system', '-l', 'k8s-app=calico-node', '-o', 'json'], 'identity', [], 'list', None),
+    ('C1', 'config', ['get', 'objectstores.barmancloud.cnpg.io', '-n', 'portal', 'portal-db-backup', '-o', 'json'], 'objectstore', [], 'single', 'portal-db-backup'),
+    ('C2', 'config', ['get', 'clusters.postgresql.cnpg.io', '-n', 'portal', 'portal-db', '-o', 'json'], 'cluster', [], 'single', 'portal-db'),
+    ('C3', 'config', ['get', 'networkpolicies.crd.projectcalico.org', '-A', '-o', 'json'], 'calico_np', ['D1', 'I1'], 'list', None),
+    ('C4', 'config', ['get', 'globalnetworkpolicies.crd.projectcalico.org', '-o', 'json'], 'calico_gnp', ['D1', 'I1'], 'list', None),
+    ('C5', 'config', ['get', 'felixconfigurations.crd.projectcalico.org', 'default', '-o', 'json'], 'felix', ['D1', 'I1'], 'single', 'default'),
+    ('S1', 'config', ['get', 'pods', '-n', 'portal', '-l', 'cnpg.io/cluster=portal-db', '-o', 'json'], 'sidecar', [], 'list', None),
+    ('S2', 'config', ['get', 'pods', '-n', 'cnpg-system', '-l', 'app=barman-cloud', '-o', 'json'], 'plugin', [], 'list', None),
 ]
 
 DISCOVERY_EXPECT = {
-    'calico_discovery': ('crd.projectcalico.org/v1', {'networkpolicies', 'globalnetworkpolicies'}),
-    'policy_discovery': ('policy.networking.k8s.io/v1alpha2', set()),
+    'calico': ('crd.projectcalico.org/v1', {
+        'networkpolicies': ('NetworkPolicy', True, ['get', 'list']),
+        'globalnetworkpolicies': ('GlobalNetworkPolicy', False, ['get', 'list']),
+        'felixconfigurations': ('FelixConfiguration', False, ['get']),
+    }),
+    'policy': ('policy.networking.k8s.io/v1alpha2', {}),
 }
 
+SUPPORTED_POLICY_KINDS = set()  # no policy.networking.k8s.io kinds are reviewed yet
+
 PROJECTORS = {
+    'identity': project_pod_identity,
     'objectstore': project_objectstore,
     'cluster': project_cluster,
     'calico_np': lambda o: project_calico_policy(o, 'NetworkPolicy', namespaced=True),
@@ -337,27 +378,39 @@ PROJECTORS = {
 }
 
 
-def _items(raw):
+def _single(raw):
+    data = json.loads(raw)
+    if not isinstance(data, dict):
+        raise ValueError('expected single object')
+    return data
+
+
+def _list(raw):
     data = json.loads(raw)
     if not isinstance(data, dict):
         raise ValueError('expected object')
     items = data.get('items')
-    if items is None:
-        # single object (get <name>) — still projectable
-        return [data]
     if not isinstance(items, list):
         raise ValueError('items not a list')
     return items
 
 
-def project_config(resource_key, raw):
+def project_config(resource_key, raw, shape, expect_name):
+    if shape == 'single':
+        items = [_single(raw)]
+    else:
+        items = _list(raw)
     proj = PROJECTORS[resource_key]
-    items = _items(raw)
     out = []
     for it in items:
         if not isinstance(it, dict):
-            raise ValueError('item not an object')  # reject, never drop
-        out.append(proj(it))
+            raise ValueError('item not an object')
+        if resource_key == 'objectstore':
+            out.append(project_objectstore(it, expect_name))
+        elif resource_key == 'cluster':
+            out.append(project_cluster(it, expect_name))
+        else:
+            out.append(proj(it))
     return json.dumps(out)
 
 
@@ -390,15 +443,14 @@ def main():
     directory = Path(args.output)
     directory.mkdir(parents=True, exist_ok=False)
     failures = 0
-    discovery_ok = set()
+    ok_ids = set()
+    discovery = {}  # resource_key -> parsed discovery dict
     with (directory / 'supplemental.jsonl').open('x') as log:
-        for rid, phase, argv_tail, resource_key, deps in READ_CONTRACT:
-            unmet = [d for d in deps if d not in discovery_ok]
+        for rid, phase, argv_tail, resource_key, deps, shape, expect_name in READ_CONTRACT:
+            unmet = [d for d in deps if d not in ok_ids]
             if unmet:
-                # gated: do NOT call kubectl
-                log.write(json.dumps({'id': rid, 'phase': phase, 'start': None, 'argv': None,
-                                      'exit': None, 'category': 'BLOCKED_NOT_EXECUTED',
-                                      'blocked_by': unmet, 'output': '',
+                log.write(json.dumps({'id': rid, 'phase': phase, 'start': None, 'argv': None, 'exit': None,
+                                      'category': 'BLOCKED_NOT_EXECUTED', 'blocked_by': unmet, 'output': '',
                                       'end': datetime.datetime.now(datetime.timezone.utc).isoformat()}) + '\n')
                 failures += 1
                 continue
@@ -418,16 +470,31 @@ def main():
                 try:
                     if phase == 'discover':
                         output = project_discovery(result.stdout)
-                        exp_gv, exp_res = DISCOVERY_EXPECT[resource_key]
                         data = json.loads(output)
+                        exp_gv, exp_res = DISCOVERY_EXPECT[resource_key]
                         if data['groupVersion'] != exp_gv:
-                            raise ValueError(f"discovery groupVersion {data['groupVersion']} != {exp_gv}")
-                        names = {r['name'] for r in data['resources']}
-                        missing = exp_res - names
-                        if missing:
-                            raise ValueError('discovery missing resources: ' + ','.join(sorted(missing)))
+                            raise ValueError(f"groupVersion {data['groupVersion']} != {exp_gv}")
+                        res_by_name = {r['name']: r for r in data['resources']}
+                        for rname, (kind, namespaced, verbs) in exp_res.items():
+                            if rname not in res_by_name:
+                                raise ValueError(f'discovery missing resource {rname}')
+                            rr = res_by_name[rname]
+                            if rr['kind'] != kind:
+                                raise ValueError(f"resource {rname} kind {rr['kind']} != {kind}")
+                            if rr['namespaced'] is not None and rr['namespaced'] != namespaced:
+                                raise ValueError(f"resource {rname} scope mismatch")
+                            for v in verbs:
+                                if v not in rr['verbs']:
+                                    raise ValueError(f"resource {rname} missing verb {v}")
+                        # D2: classify served policy kinds
+                        if resource_key == 'policy':
+                            kinds = {r['kind'] for r in data['resources'] if r.get('kind')}
+                            unsup = kinds - SUPPORTED_POLICY_KINDS
+                            if kinds and unsup:
+                                raise ValueError('unsupported policy kinds: ' + ','.join(sorted(unsup)))
+                        discovery[resource_key] = data
                     else:
-                        output = project_config(resource_key, result.stdout)
+                        output = project_config(resource_key, result.stdout, shape, expect_name)
                 except (json.JSONDecodeError, ValueError, KeyError, TypeError):
                     parse_error = True
                     output = ''
@@ -436,8 +503,7 @@ def main():
             if category is not None:
                 failures += 1
             else:
-                if phase == 'discover':
-                    discovery_ok.add(rid)
+                ok_ids.add(rid)
             log.write(json.dumps({'id': rid, 'phase': phase, 'start': start, 'argv': argv,
                                   'exit': None if result is None else result.returncode,
                                   'category': category, 'output': output,

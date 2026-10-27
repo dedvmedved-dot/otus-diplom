@@ -81,15 +81,15 @@ Required safe raw read-only evidence (UTC start/end, command, exit, selected fie
 
 | Flow | Required observation | Current proof |
 |---|---|---|
-| CNPG peers 5432/8000 | portal Pods labels/ports + Service targetPorts/EndpointSlices | historical claims; fresh raw missing |
-| operator/plugin | cnpg-system Pods labels/ports, selected Service endpoints; controller API configuration for plugin and reconcile paths | source Barman namespace/port only; runtime missing |
-| DNS53 TCP/UDP | kube-dns Service/EndpointSlices + CoreDNS Pod labels | fresh raw missing |
-| Kubernetes API | default/kubernetes Service and EndpointSlices, API Node addresses, CNI mode and documented service DNAT enforcement point | missing; existing /24 candidate is NOT approved |
-| S3 TLS443 | canonical ObjectStore endpoint plus permitted read-only routing facts | historical claim; runtime path missing |
-| monitoring9187 | API discovery of ServiceMonitor/PodMonitor; served resources and selectors; Prometheus Pod namespace/labels | missing; absence NOT established |
-| Portal/migrator | candidate Deployment/Job labels and ports (repository) | offline both-side tests; not runtime |
-| Envoy xDS18000/backend8080/listener | GatewayClass/EnvoyProxy source configuration, controller and eventual dataplane labels, Service targetPorts, owning namespace | candidate/offline only |
-| baseline union | all existing policies and all portal namespace workload identities | fresh raw missing |
+| CNPG peers 5432/8000 | portal Pods labels/ports + Service targetPorts/EndpointSlices | OBSERVED (R1 pods 5432/9187/8000; R2 svc r/ro/rw→5432; R3 eps) |
+| operator/plugin | cnpg-system Pods labels/ports, selected Service endpoints; controller API configuration for plugin and reconcile paths | OBSERVED identity (R1 cnpg-controller-manager; R3 barman-cloud pluginName+9090); direction UNKNOWN |
+| DNS53 TCP/UDP | kube-dns Service/EndpointSlices + CoreDNS Pod labels | OBSERVED (R2 kube-dns 10.96.0.10:53; R3 eps 10.244.254.65/.66) |
+| Kubernetes API | default/kubernetes Service and EndpointSlices, API Node addresses, CNI mode and documented service DNAT enforcement point | OBSERVED Service+eps (R2 10.96.0.1:443→6443; R3 172.30.140.101/102/103:6443 ready); DNAT/CNI UNKNOWN |
+| S3 TLS443 | canonical ObjectStore endpoint plus permitted read-only routing facts | source spec.configuration.endpointURL (objectstore-portal-db.yaml); live value UNKNOWN (base read wrong path) |
+| monitoring9187 | API discovery of ServiceMonitor/PodMonitor; served resources and selectors; Prometheus Pod namespace/labels | OBSERVED not-served (R11-13 API_NOT_SERVED); no Prometheus pod (R1) → not-found |
+| Portal/migrator | candidate Deployment/Job labels and ports (repository) | offline both-side tests; not runtime (NOT_CREATED) |
+| Envoy xDS18000/backend8080/listener | GatewayClass/EnvoyProxy source configuration, controller and eventual dataplane labels, Service targetPorts, owning namespace | control-plane OBSERVED (R1/R2 18000); GatewayClass eg (R6); dataplane NOT_CREATED (R7/R8) |
+| baseline union | all existing policies and all portal namespace workload identities | K8S netpol EMPTY (R5); EFFECTIVE union UNKNOWN (Calico + policy.networking.k8s.io served R14) |
 
 Use `inventory.py --context <approved-context> --output <new-evidence-dir>` on the
 already authorized Hermes environment. It only issues fixed `kubectl get` reads
