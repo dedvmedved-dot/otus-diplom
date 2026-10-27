@@ -1,0 +1,96 @@
+{
+  "reviewed_main": "f080cc3b6dcb4cc5abd01cfa83d2c9eb4ad0002e",
+  "source": "85dcc0332a70f62f7ab4aacb156fd7014d0b8ca8",
+  "compare": {
+    "repository_full_name": "dedvmedved-dot/otus-diplom",
+    "base": "eb2b40ccfb9eac7d188ce2d243541811db6797dd",
+    "head": "f080cc3b6dcb4cc5abd01cfa83d2c9eb4ad0002e",
+    "status": "ahead",
+    "ahead_by": 2,
+    "behind_by": 0,
+    "total_commits": 2,
+    "too_large": null,
+    "base_commit": {
+      "sha": "eb2b40ccfb9eac7d188ce2d243541811db6797dd",
+      "url": "https://api.github.com/repos/dedvmedved-dot/otus-diplom/commits/eb2b40ccfb9eac7d188ce2d243541811db6797dd",
+      "html_url": "https://github.com/dedvmedved-dot/otus-diplom/commit/eb2b40ccfb9eac7d188ce2d243541811db6797dd"
+    },
+    "merge_base_commit": {
+      "sha": "eb2b40ccfb9eac7d188ce2d243541811db6797dd",
+      "url": "https://api.github.com/repos/dedvmedved-dot/otus-diplom/commits/eb2b40ccfb9eac7d188ce2d243541811db6797dd",
+      "html_url": "https://github.com/dedvmedved-dot/otus-diplom/commit/eb2b40ccfb9eac7d188ce2d243541811db6797dd"
+    },
+    "files": [
+      {
+        "filename": "evidence/P8/20261027T060000Z-p8c-rv02-r2-r4-r5/result.md",
+        "status": "added",
+        "additions": 28,
+        "deletions": 0,
+        "changes": 28,
+        "previous_filename": null
+      },
+      {
+        "filename": "evidence/P8/20261027T060000Z-p8c-rv02-r2-r4-r5/secret-scan.txt",
+        "status": "added",
+        "additions": 3,
+        "deletions": 0,
+        "changes": 3,
+        "previous_filename": null
+      },
+      {
+        "filename": "evidence/P8/20261027T060000Z-p8c-rv02-r2-r4-r5/supplemental-test.txt",
+        "status": "added",
+        "additions": 119,
+        "deletions": 0,
+        "changes": 119,
+        "previous_filename": null
+      },
+      {
+        "filename": "portal/networkpolicy/collection-map.md",
+        "status": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "changes": 4,
+        "previous_filename": null
+      },
+      {
+        "filename": "portal/networkpolicy/supplemental-design.md",
+        "status": "added",
+        "additions": 40,
+        "deletions": 0,
+        "changes": 40,
+        "previous_filename": null
+      },
+      {
+        "filename": "portal/networkpolicy/supplemental.py",
+        "status": "modified",
+        "additions": 5,
+        "deletions": 3,
+        "changes": 8,
+        "previous_filename": null
+      },
+      {
+        "filename": "portal/networkpolicy/supplemental_test.py",
+        "status": "modified",
+        "additions": 18,
+        "deletions": 0,
+        "changes": 18,
+        "previous_filename": null
+      }
+    ]
+  },
+  "design": {
+    "blob": "0a19f08c3989c5cff9e46052e952e3627f91e13d",
+    "content": "# P8C RV-02 — supplemental collector design (R4)\n\nDate: 2026-10-27. OFFLINE source design; PHASE2_LIVE_READS_APPROVED=NO.\n\n## API-version pinning (per read)\nEach config read is bound to a reviewed apiVersion enforced by the projector's\n`_require(apiVersion=...)` (reject on mismatch). Discovery validates the served\ngroupVersion before dependent reads.\n\n| Read | Resource (GVR) | Pinned apiVersion | Enforced by |\n|---|---|---|---|\n| C1 | objectstores.barmancloud.cnpg.io | barmancloud.cnpg.io/v1 | project_objectstore |\n| C2 | clusters.postgresql.cnpg.io | postgresql.cnpg.io/v1 | project_cluster |\n| C3 | networkpolicies.crd.projectcalico.org | crd.projectcalico.org/v1 | project_calico_policy |\n| C4 | globalnetworkpolicies.crd.projectcalico.org | crd.projectcalico.org/v1 | project_calico_policy |\n| C5 | felixconfigurations.crd.projectcalico.org | crd.projectcalico.org/v1 | project_felix |\n| I1/S1/S2 | pods (core) | v1 | project_pod_identity |\n\n## Felix effective-configuration limit\nOnly the cluster-default FelixConfiguration (`default`) is read (C5). Node-specific\nFelixConfiguration, environment overrides and per-node config are NOT read in this\nscope; effective per-node mode is therefore UNKNOWN and is not inferred from the\ndefault alone. Fields: bpfEnabled / nftablesMode / iptablesBackend / nodeSelector.\n\n## Calico runtime identity — digest comparison limit\nThe runtime `imageID` digest is compared to the repository-pinned manifest digest by\ntextual equality (`containerd://sha256:<pinned>`). This is a source-identity check, not\na proof of runtime provenance: for a multi-platform manifest-list the live imageID may\nbe a platform-child digest that differs from the pinned manifest-list digest. Such a\nchild digest is NOT accepted (no textual match, no independent platform verification\navailable offline) — the gate is intentionally conservative and blocks rather than\naccepting an unverified relationship. Live-only verification of platform-child digests\nis out of scope and remains UNKNOWN.\n\n## Barman directed-flow limit\nThe plugin reference (`spec.plugins[].parameters.barmanObjectName=portal-db-backup`) and\nthe ObjectStore endpoint (`spec.configuration.endpointURL`, origin-only) are collected,\nbut configuration/declared ports are not observed traffic. The plugin's direction\n(plugin→DB 5432 vs plugin→S3 443 vs instance-manager sidecar) remains UNKNOWN and is not\nasserted from the declared 9090 service port.\n"
+  },
+  "hashes": {
+    "supplemental.py": {
+      "sha256": "b5f998796a1e67bbcae2e130b0ada651834d1536089d93fb26494c46589effac",
+      "git_blob": "755b8fc23418a1c23ecaa6184de4e92805595c38"
+    },
+    "supplemental_test.py": {
+      "sha256": "d29fbd7de61a1d5810a5c845b2022e73121e33e7e21ade43cf7b643b1eb4b08a",
+      "git_blob": "345f0c020aeb372393673caddd300b0ba286fc46"
+    }
+  }
+}

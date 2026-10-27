@@ -1,0 +1,253 @@
+{
+  "np_reject_namespaceSelector": {
+    "exit": 1,
+    "category": "UNSUPPORTED",
+    "output": "",
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ]
+  },
+  "gnp_preserve_namespaceSelector": {
+    "exit": 0,
+    "category": null,
+    "output": "[{\"kind\": \"GlobalNetworkPolicy\", \"metadata\": {\"name\": \"gnp\", \"namespace\": null}, \"spec\": {\"order\": 10, \"tier\": null, \"selector\": \"all()\", \"serviceAccountSelector\": null, \"types\": [], \"ingress\": [], \"egress\": [], \"applyOnForward\": true, \"doNotTrack\": null, \"preDNAT\": null, \"namespaceSelector\": \"team == 'restricted'\"}}]",
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ]
+  },
+  "np_reject_applyOnForward": {
+    "exit": 1,
+    "category": "UNSUPPORTED",
+    "output": "",
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ]
+  },
+  "gnp_preserve_applyOnForward": {
+    "exit": 0,
+    "category": null,
+    "output": "[{\"kind\": \"GlobalNetworkPolicy\", \"metadata\": {\"name\": \"gnp\", \"namespace\": null}, \"spec\": {\"order\": 10, \"tier\": null, \"selector\": \"all()\", \"serviceAccountSelector\": null, \"types\": [], \"ingress\": [], \"egress\": [], \"applyOnForward\": true, \"doNotTrack\": null, \"preDNAT\": null, \"namespaceSelector\": null}}]",
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ]
+  },
+  "np_reject_doNotTrack": {
+    "exit": 1,
+    "category": "UNSUPPORTED",
+    "output": "",
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ]
+  },
+  "gnp_preserve_doNotTrack": {
+    "exit": 0,
+    "category": null,
+    "output": "[{\"kind\": \"GlobalNetworkPolicy\", \"metadata\": {\"name\": \"gnp\", \"namespace\": null}, \"spec\": {\"order\": 10, \"tier\": null, \"selector\": \"all()\", \"serviceAccountSelector\": null, \"types\": [], \"ingress\": [], \"egress\": [], \"applyOnForward\": true, \"doNotTrack\": true, \"preDNAT\": null, \"namespaceSelector\": null}}]",
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ]
+  },
+  "np_reject_preDNAT": {
+    "exit": 1,
+    "category": "UNSUPPORTED",
+    "output": "",
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ]
+  },
+  "gnp_preserve_preDNAT": {
+    "exit": 0,
+    "category": null,
+    "output": "[{\"kind\": \"GlobalNetworkPolicy\", \"metadata\": {\"name\": \"gnp\", \"namespace\": null}, \"spec\": {\"order\": 10, \"tier\": null, \"selector\": \"all()\", \"serviceAccountSelector\": null, \"types\": [], \"ingress\": [], \"egress\": [], \"applyOnForward\": true, \"doNotTrack\": null, \"preDNAT\": true, \"namespaceSelector\": null}}]",
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ]
+  },
+  "unsupported_spec": {
+    "exit": 1,
+    "category": "UNSUPPORTED",
+    "output": "",
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ]
+  },
+  "unsupported_rule": {
+    "exit": 1,
+    "category": "UNSUPPORTED",
+    "output": "",
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ]
+  },
+  "unsupported_entity": {
+    "exit": 1,
+    "category": "UNSUPPORTED",
+    "output": "",
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ]
+  },
+  "unsupported_http": {
+    "exit": 1,
+    "category": "UNSUPPORTED",
+    "output": "",
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ]
+  },
+  "unsupported_http_path": {
+    "exit": 1,
+    "category": "UNSUPPORTED",
+    "output": "",
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ]
+  },
+  "unsupported_icmp": {
+    "exit": 1,
+    "category": "UNSUPPORTED",
+    "output": "",
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ]
+  },
+  "unsupported_sa": {
+    "exit": 1,
+    "category": "UNSUPPORTED",
+    "output": "",
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ]
+  },
+  "unsupported_services": {
+    "exit": 1,
+    "category": "UNSUPPORTED",
+    "output": "",
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ]
+  },
+  "wrong_response_version_rejected": {
+    "exit": 1,
+    "category": "PARSE_ERROR",
+    "output": "",
+    "dependent_calls": [
+      "C3",
+      "C4",
+      "C5"
+    ]
+  },
+  "valid_but_unbound_identity": {
+    "exit": 1,
+    "category": "PARSE_ERROR",
+    "output": "",
+    "dependent_calls": []
+  },
+  "requests": [
+    {
+      "id": "C1",
+      "actual_argv": [
+        "get",
+        "objectstores.barmancloud.cnpg.io",
+        "-n",
+        "portal",
+        "portal-db-backup",
+        "-o",
+        "json"
+      ],
+      "expected_fixed_raw_path": "/apis/barmancloud.cnpg.io/v1/namespaces/portal/objectstores/portal-db-backup",
+      "uses_expected_raw_path": false
+    },
+    {
+      "id": "C2",
+      "actual_argv": [
+        "get",
+        "clusters.postgresql.cnpg.io",
+        "-n",
+        "portal",
+        "portal-db",
+        "-o",
+        "json"
+      ],
+      "expected_fixed_raw_path": "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db",
+      "uses_expected_raw_path": false
+    },
+    {
+      "id": "C3",
+      "actual_argv": [
+        "get",
+        "networkpolicies.crd.projectcalico.org",
+        "-A",
+        "-o",
+        "json"
+      ],
+      "expected_fixed_raw_path": "/apis/crd.projectcalico.org/v1/networkpolicies",
+      "uses_expected_raw_path": false
+    },
+    {
+      "id": "C4",
+      "actual_argv": [
+        "get",
+        "globalnetworkpolicies.crd.projectcalico.org",
+        "-o",
+        "json"
+      ],
+      "expected_fixed_raw_path": "/apis/crd.projectcalico.org/v1/globalnetworkpolicies",
+      "uses_expected_raw_path": false
+    },
+    {
+      "id": "C5",
+      "actual_argv": [
+        "get",
+        "felixconfigurations.crd.projectcalico.org",
+        "default",
+        "-o",
+        "json"
+      ],
+      "expected_fixed_raw_path": "/apis/crd.projectcalico.org/v1/felixconfigurations/default",
+      "uses_expected_raw_path": false
+    }
+  ],
+  "hashes": {
+    "supplemental.py": {
+      "sha256": "b5f998796a1e67bbcae2e130b0ada651834d1536089d93fb26494c46589effac",
+      "git_blob": "755b8fc23418a1c23ecaa6184de4e92805595c38"
+    },
+    "supplemental_test.py": {
+      "sha256": "d29fbd7de61a1d5810a5c845b2022e73121e33e7e21ade43cf7b643b1eb4b08a",
+      "git_blob": "345f0c020aeb372393673caddd300b0ba286fc46"
+    }
+  }
+}
