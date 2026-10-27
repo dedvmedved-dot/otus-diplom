@@ -1,0 +1,28 @@
+{
+  "repository_ref": "3262a9b7733b120a4a06bc2931e6983695524428",
+  "path": "ansible/playbooks/files/calico-v3.32.0.yaml",
+  "git_blob": "21ea9b4b163305ea479bc7708965104465ffc716",
+  "scope": "Repository schema; not current runtime-version verification",
+  "fields": [
+    {
+      "field": "notProtocol:",
+      "excerpt": "notProtocol:\n                        anyOf:\n                          - type: integer\n                          - type: string\n                        pattern: ^.*\n                        x-kubernetes-int-or-string: true\n                      protocol:\n                        anyOf:\n                          - type: integer\n                          - type: string\n                        pattern: ^.*\n                        x-kubernetes-int-or-string: true\n                      source:\n         "
+    },
+    {
+      "field": "ipVersion:",
+      "excerpt": "ipVersion:\n                        enum:\n                          - 4\n                          - 6\n                        type: integer\n                      metadata:\n                        properties:\n                          annotations:\n                            additionalProperties:\n                              type: string\n                            type: object\n                        type: object\n                      notICMP:\n                        properties:\n                "
+    },
+    {
+      "field": "http:",
+      "excerpt": "http:\n                        properties:\n                          methods:\n                            items:\n                              type: string\n                            maxItems: 20\n                            type: array\n                          paths:\n                            items:\n                              properties:\n                                exact:\n                                  maxLength: 1024\n                                  type: string\n                  "
+    },
+    {
+      "field": "serviceAccountSelector:",
+      "excerpt": "serviceAccountSelector:\n                  type: string\n                tier:\n                  default: default\n                  type: string\n                types:\n                  items:\n                    enum:\n                      - Ingress\n                      - Egress\n                    type: string\n                  maxItems: 2\n                  minItems: 1\n                  type: array\n                  x-kubernetes-list-type: set\n              type: object\n          type: object\n "
+    },
+    {
+      "field": "services:",
+      "excerpt": "services:\n                            properties:\n                              name:\n                                type: string\n                              namespace:\n                                type: string\n                            type: object\n                        type: object\n                      http:\n                        properties:\n                          methods:\n                            items:\n                              type: string\n                            "
+    }
+  ]
+}

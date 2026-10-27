@@ -1,0 +1,485 @@
+{
+  "reviewed_head": "3262a9b7733b120a4a06bc2931e6983695524428",
+  "source_sha": "20168390748d88840ddb619ec10eb3ee07804628",
+  "hashes": {
+    "supplemental.py": {
+      "sha256": "230d947835b5d45c63e634139ae51df4d1b3d2832261e00bc10d0bb589c5cb70",
+      "git_blob": "308f661214b3034e17e7180e86ff45d631d953f1"
+    },
+    "supplemental_test.py": {
+      "sha256": "dec06069a402698ba146fd42b6187bc86f0f3be5b240d4e9ea585ba91798073a",
+      "git_blob": "55206c67fa12e8f68e6251121f9b42b576c4c82e"
+    }
+  },
+  "observations": {
+    "empty_identity": {
+      "rc": 0,
+      "calls": [
+        "D1",
+        "D2",
+        "I1",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": null,
+        "D2": null,
+        "I1": null,
+        "C1": null,
+        "C2": null,
+        "C3": null,
+        "C4": null,
+        "C5": null,
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "unreviewed_identity": {
+      "rc": 0,
+      "calls": [
+        "D1",
+        "D2",
+        "I1",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": null,
+        "D2": null,
+        "I1": null,
+        "C1": null,
+        "C2": null,
+        "C3": null,
+        "C4": null,
+        "C5": null,
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "missing_image_id": {
+      "rc": 0,
+      "calls": [
+        "D1",
+        "D2",
+        "I1",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": null,
+        "D2": null,
+        "I1": null,
+        "C1": null,
+        "C2": null,
+        "C3": null,
+        "C4": null,
+        "C5": null,
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "mixed_identity": {
+      "rc": 0,
+      "calls": [
+        "D1",
+        "D2",
+        "I1",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": null,
+        "D2": null,
+        "I1": null,
+        "C1": null,
+        "C2": null,
+        "C3": null,
+        "C4": null,
+        "C5": null,
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "missing_discovery_scope": {
+      "rc": 0,
+      "calls": [
+        "D1",
+        "D2",
+        "I1",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": null,
+        "D2": null,
+        "I1": null,
+        "C1": null,
+        "C2": null,
+        "C3": null,
+        "C4": null,
+        "C5": null,
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "closed_explicit_wrong_scope": {
+      "rc": 1,
+      "calls": [
+        "D1",
+        "D2",
+        "I1",
+        "C1",
+        "C2",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": "PARSE_ERROR",
+        "D2": null,
+        "I1": null,
+        "C1": null,
+        "C2": null,
+        "C3": "BLOCKED_NOT_EXECUTED",
+        "C4": "BLOCKED_NOT_EXECUTED",
+        "C5": "BLOCKED_NOT_EXECUTED",
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "closed_forbidden": {
+      "rc": 1,
+      "calls": [
+        "D1",
+        "D2",
+        "I1",
+        "C1",
+        "C2",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": "FORBIDDEN",
+        "D2": null,
+        "I1": null,
+        "C1": null,
+        "C2": null,
+        "C3": "BLOCKED_NOT_EXECUTED",
+        "C4": "BLOCKED_NOT_EXECUTED",
+        "C5": "BLOCKED_NOT_EXECUTED",
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "closed_timeout": {
+      "rc": 1,
+      "calls": [
+        "D1",
+        "D2",
+        "I1",
+        "C1",
+        "C2",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": "TIMEOUT",
+        "D2": null,
+        "I1": null,
+        "C1": null,
+        "C2": null,
+        "C3": "BLOCKED_NOT_EXECUTED",
+        "C4": "BLOCKED_NOT_EXECUTED",
+        "C5": "BLOCKED_NOT_EXECUTED",
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "closed_non_json": {
+      "rc": 1,
+      "calls": [
+        "D1",
+        "D2",
+        "I1",
+        "C1",
+        "C2",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": "PARSE_ERROR",
+        "D2": null,
+        "I1": null,
+        "C1": null,
+        "C2": null,
+        "C3": "BLOCKED_NOT_EXECUTED",
+        "C4": "BLOCKED_NOT_EXECUTED",
+        "C5": "BLOCKED_NOT_EXECUTED",
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "unsupported_discovery_loses_reason": {
+      "rc": 1,
+      "calls": [
+        "D1",
+        "D2",
+        "I1",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": null,
+        "D2": "PARSE_ERROR",
+        "I1": null,
+        "C1": null,
+        "C2": null,
+        "C3": null,
+        "C4": null,
+        "C5": null,
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "silent_semantic_loss": {
+      "notProtocol": {
+        "identical_output": true,
+        "category": null,
+        "rc": 0
+      },
+      "ipVersion": {
+        "identical_output": true,
+        "category": null,
+        "rc": 0
+      },
+      "http": {
+        "identical_output": true,
+        "category": null,
+        "rc": 0
+      },
+      "serviceAccountSelector": {
+        "identical_output": true,
+        "category": null,
+        "rc": 0
+      },
+      "services": {
+        "identical_output": true,
+        "category": null,
+        "rc": 0
+      }
+    },
+    "wrong_binding_C1": {
+      "rc": 0,
+      "calls": [
+        "D1",
+        "D2",
+        "I1",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": null,
+        "D2": null,
+        "I1": null,
+        "C1": null,
+        "C2": null,
+        "C3": null,
+        "C4": null,
+        "C5": null,
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "wrong_binding_C2": {
+      "rc": 0,
+      "calls": [
+        "D1",
+        "D2",
+        "I1",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": null,
+        "D2": null,
+        "I1": null,
+        "C1": null,
+        "C2": null,
+        "C3": null,
+        "C4": null,
+        "C5": null,
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "wrong_binding_C5": {
+      "rc": 0,
+      "calls": [
+        "D1",
+        "D2",
+        "I1",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": null,
+        "D2": null,
+        "I1": null,
+        "C1": null,
+        "C2": null,
+        "C3": null,
+        "C4": null,
+        "C5": null,
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "string_container_port_accepted": {
+      "rc": 0,
+      "calls": [
+        "D1",
+        "D2",
+        "I1",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": null,
+        "D2": null,
+        "I1": null,
+        "C1": null,
+        "C2": null,
+        "C3": null,
+        "C4": null,
+        "C5": null,
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "invalid_status_collapses_to_absence": {
+      "rc": 0,
+      "calls": [
+        "D1",
+        "D2",
+        "I1",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": null,
+        "D2": null,
+        "I1": null,
+        "C1": null,
+        "C2": null,
+        "C3": null,
+        "C4": null,
+        "C5": null,
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    },
+    "closed_image_id_joins": {
+      "regular": true,
+      "init": true
+    },
+    "closed_service_account_canary": {
+      "rc": 0,
+      "calls": [
+        "D1",
+        "D2",
+        "I1",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "S1",
+        "S2"
+      ],
+      "categories": {
+        "D1": null,
+        "D2": null,
+        "I1": null,
+        "C1": null,
+        "C2": null,
+        "C3": null,
+        "C4": null,
+        "C5": null,
+        "S1": null,
+        "S2": null
+      },
+      "canary_retained": false
+    }
+  },
+  "cluster_calls": 0,
+  "result": "PARTIAL_CLOSURE_CONFIRMED; REMAINING_DEFECTS_REPRODUCED"
+}

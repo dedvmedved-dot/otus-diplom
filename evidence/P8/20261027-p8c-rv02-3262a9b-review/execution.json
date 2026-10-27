@@ -1,0 +1,19 @@
+{
+  "reviewed_head": "3262a9b7733b120a4a06bc2931e6983695524428",
+  "scope": "Offline mocks only. No cluster reads, no application/base collector reruns.",
+  "commands": [
+    {
+      "command": "python3 supplemental_test.py -v",
+      "exit_code": 0,
+      "result": "16/16 PASS; nonblocking ResourceWarnings",
+      "cwd": "review-3262a9b"
+    },
+    {
+      "command": "python3 reproduce.py",
+      "exit_code": 0,
+      "result": "Documented partial closure and remaining defects reproduced; not acceptance",
+      "cwd": "review-3262a9b"
+    }
+  ],
+  "replay": "Place exact reviewed supplemental.py/supplemental_test.py beside reproduce.py. Python standard library only."
+}
