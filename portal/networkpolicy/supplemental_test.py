@@ -18,6 +18,7 @@ spec.loader.exec_module(inv)
 
 CANARY = "SYNTHETIC_SP_REVIEW_CANARY_NOT_A_SECRET"
 PINNED_HEX = "f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a"
+AMD64_CONFIG_HEX = "6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65"
 
 
 def enc(item):
@@ -353,6 +354,27 @@ class TestRemainingSP(unittest.TestCase):
         i1 = [r for r in rows if r["id"] == "I1"][0]
         self.assertEqual(i1["category"], "PARSE_ERROR")
         self.assertEqual(i1["output"], "")
+
+    def test_identity_config_digest_accepted(self):
+        p = copy.deepcopy(POD)
+        p["status"]["containerStatuses"][0]["imageID"] = "sha256:" + AMD64_CONFIG_HEX
+        rc, calls, _ = run({"I1": R(0, enc(p))})
+        self.assertEqual(rc, 0)
+        self.assertIn("C3", calls)
+
+    def test_identity_config_digest_prefix_rejected(self):
+        p = copy.deepcopy(POD)
+        p["status"]["containerStatuses"][0]["imageID"] = "containerd://sha256:" + AMD64_CONFIG_HEX
+        rc, calls, _ = run({"I1": R(0, enc(p))})
+        self.assertNotEqual(rc, 0)
+        self.assertNotIn("C3", calls)
+
+    def test_identity_bare_index_rejected(self):
+        p = copy.deepcopy(POD)
+        p["status"]["containerStatuses"][0]["imageID"] = "sha256:" + PINNED_HEX  # bare index, not prefixed
+        rc, calls, _ = run({"I1": R(0, enc(p))})
+        self.assertNotEqual(rc, 0)
+        self.assertNotIn("C3", calls)
 
     def test_literal_api_paths(self):
         expected = {

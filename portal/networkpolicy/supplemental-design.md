@@ -74,11 +74,14 @@ are never written. Read argv is fixed by READ_CONTRACT; no new read is authorize
 ## 2. Digest identity (supported comparison mode)
 Supported image references: `quay.io/calico/node@sha256:f4fafd8…` (repository pin,
 `ansible/playbooks/files/calico-v3.32.0.yaml`) and tag `quay.io/calico/node:v3.32.0`.
-Runtime `imageID` must match `(containerd|docker-pullable|docker)://sha256:<pinned>`
-by textual equality. Unsupported representations (repository-qualified imageID, bare
-`quay.io/calico/node@sha256:`, arbitrary/unbound/child digests) → UNSUPPORTED with safe
-projected identity retained, C3/C4/C5 blocked. Malformed JSON/types → PARSE_ERROR.
-Live verification of a platform-child digest relationship is UNKNOWN and out of scope.
+Accepted runtime `imageID` forms (offline-proven):
+- legacy exact prefixed pinned-INDEX digest — `containerd://` / `docker-pullable://` /
+  `docker://` + `sha256:f4fafd8…` (manifest-list digest, textual equality);
+- observed bare amd64 CONFIG digest — `sha256:6bc9fa4…` (verified descendant of the pinned
+  index via the amd64 platform manifest `sha256:12262c95…`, G2 registry chain).
+No arbitrary bare digest, no `containerd://` config variant, no mutable tag resolution, no
+runtime registry lookup. Unsupported forms → UNSUPPORTED with safe projected identity retained;
+malformed JSON/types → PARSE_ERROR.
 
 ## 3. Felix precedence and host/global/tier scope
 

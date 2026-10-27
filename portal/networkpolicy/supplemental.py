@@ -479,11 +479,15 @@ SERVICES_ALLOWED = {'name', 'namespace'}
 # Calico runtime identity: exact finite contract grounded in the repository pin
 # ansible/playbooks/files/calico-v3.32.0.yaml — the daemonset image is
 # quay.io/calico/node@sha256:f4fafd8... (digest ref) or the same-image tag v3.32.0.
-# A runtime imageID must be a valid containerd/docker digest AND resolve to the
-# pinned manifest digest (textual equality). Platform-child digests of a
-# multi-platform manifest are NOT accepted without an explicit reviewed
-# relationship — a syntactically valid but unbound digest is not identity proof.
+# Accepted runtime imageID forms (S1 extension, offline-proven chain):
+#   - legacy exact prefixed pinned-INDEX digest: containerd/docker-pullable/docker://
+#     sha256:f4fafd8... (manifest-list digest, textual equality);
+#   - observed bare amd64 CONFIG digest: sha256:6bc9fa4... (verified descendant of the
+#     pinned index via the amd64 platform manifest; G2 registry chain).
+# No arbitrary bare digest, no containerd://config variant, no substring/endswith beyond
+# the exact index suffix, no mutable tag resolution, no runtime registry lookup.
 PINNED_DIGEST = 'sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a'
+AMD64_CONFIG_DIGEST = 'sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65'
 CALICO_IMAGE_REFS = {
     'quay.io/calico/node@' + PINNED_DIGEST,
     'quay.io/calico/node:v3.32.0',
@@ -513,6 +517,18 @@ def _check_keys(d, allowed, level):
         raise UnsupportedField(level, sorted(unknown))
 
 
+def _image_id_ok(iid):
+    if not iid:
+        return False
+    # legacy: exact prefixed pinned-INDEX digest forms (manifest-list)
+    if IMAGE_ID_RE.match(iid) and iid.endswith(PINNED_DIGEST):
+        return True
+    # observed: bare amd64 CONFIG digest, bound to the immutable chain
+    if iid == AMD64_CONFIG_DIGEST:
+        return True
+    return False
+
+
 def verify_calico_identity(pods):
     if not pods:
         raise UnsupportedIdentity('no calico-node pods')
@@ -527,10 +543,8 @@ def verify_calico_identity(pods):
             if image not in CALICO_IMAGE_REFS:
                 raise UnsupportedIdentity(f'unsupported calico image {image!r}')
             iid = c.get('imageID')
-            if not iid or not IMAGE_ID_RE.match(iid):
+            if not _image_id_ok(iid):
                 raise UnsupportedIdentity(f'invalid imageID {iid!r}')
-            if not iid.endswith(PINNED_DIGEST):
-                raise UnsupportedIdentity('imageID digest not linked to pinned image')
     return len(pods)
 
 PROJECTORS = {
