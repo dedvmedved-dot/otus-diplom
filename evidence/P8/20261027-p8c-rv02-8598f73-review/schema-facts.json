@@ -1,0 +1,154 @@
+{
+  "GlobalNetworkPolicy": {
+    "spec_fields": [
+      "applyOnForward",
+      "doNotTrack",
+      "egress",
+      "ingress",
+      "namespaceSelector",
+      "order",
+      "performanceHints",
+      "preDNAT",
+      "selector",
+      "serviceAccountSelector",
+      "tier",
+      "types"
+    ],
+    "rule_fields": [
+      "action",
+      "destination",
+      "http",
+      "icmp",
+      "ipVersion",
+      "metadata",
+      "notICMP",
+      "notProtocol",
+      "protocol",
+      "source"
+    ],
+    "icmp": {
+      "properties": {
+        "code": {
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "type": {
+          "maximum": 254,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "x-kubernetes-validations": [
+        {
+          "message": "ICMP code specified without an ICMP type",
+          "reason": "FieldValueInvalid",
+          "rule": "!has(self.code) || has(self.type)"
+        }
+      ]
+    },
+    "notICMP": {
+      "properties": {
+        "code": {
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "type": {
+          "maximum": 254,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "x-kubernetes-validations": [
+        {
+          "message": "ICMP code specified without an ICMP type",
+          "reason": "FieldValueInvalid",
+          "rule": "!has(self.code) || has(self.type)"
+        }
+      ]
+    },
+    "namespaceSelector": {
+      "type": "string"
+    }
+  },
+  "NetworkPolicy": {
+    "spec_fields": [
+      "egress",
+      "ingress",
+      "order",
+      "performanceHints",
+      "selector",
+      "serviceAccountSelector",
+      "tier",
+      "types"
+    ],
+    "rule_fields": [
+      "action",
+      "destination",
+      "http",
+      "icmp",
+      "ipVersion",
+      "metadata",
+      "notICMP",
+      "notProtocol",
+      "protocol",
+      "source"
+    ],
+    "icmp": {
+      "properties": {
+        "code": {
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "type": {
+          "maximum": 254,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "x-kubernetes-validations": [
+        {
+          "message": "ICMP code specified without an ICMP type",
+          "reason": "FieldValueInvalid",
+          "rule": "!has(self.code) || has(self.type)"
+        }
+      ]
+    },
+    "notICMP": {
+      "properties": {
+        "code": {
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "type": {
+          "maximum": 254,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "x-kubernetes-validations": [
+        {
+          "message": "ICMP code specified without an ICMP type",
+          "reason": "FieldValueInvalid",
+          "rule": "!has(self.code) || has(self.type)"
+        }
+      ]
+    },
+    "namespaceSelector": null
+  },
+  "daemonset_images": [
+    "quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a"
+  ],
+  "source": {
+    "path": "ansible/playbooks/files/calico-v3.32.0.yaml",
+    "ref": "8598f73bd21724b00f3eb2805e9d90caffaeb051",
+    "git_blob": "21ea9b4b163305ea479bc7708965104465ffc716"
+  }
+}
