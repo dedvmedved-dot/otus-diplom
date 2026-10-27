@@ -17,6 +17,7 @@ Fixes SP-01..05 remainder:
 import argparse
 import datetime
 import json
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -157,8 +158,8 @@ def project_discovery(raw):
         if not isinstance(r, dict):
             raise ValueError('resource not an object')
         out.append({'name': _str(r.get('name'), 'resource.name'),
-                    'kind': _str(r.get('kind'), 'resource.kind', allow_none=True),
-                    'namespaced': _bool(r.get('namespaced'), 'resource.namespaced', allow_none=True),
+                    'kind': _str(r.get('kind'), 'resource.kind'),
+                    'namespaced': _bool(r.get('namespaced'), 'resource.namespaced'),
                     'verbs': _str_list(r.get('verbs'), 'resource.verbs')})
     return json.dumps({'kind': 'APIResourceList', 'groupVersion': gv, 'resources': out})
 
@@ -168,6 +169,8 @@ def project_discovery(raw):
 def project_objectstore(obj, expect_name=None):
     _require(obj, 'ObjectStore', 'barmancloud.cnpg.io/v1')
     md = _meta(obj, namespaced=True)
+    if md['namespace'] != 'portal':
+        raise ValueError(f"objectstore namespace {md['namespace']!r} != portal")
     if expect_name is not None and md['name'] != expect_name:
         raise ValueError(f"objectstore name {md['name']!r} != {expect_name}")
     spec = _dict_req(obj.get('spec'), 'spec')
@@ -191,6 +194,8 @@ def project_objectstore(obj, expect_name=None):
 def project_cluster(obj, expect_name=None):
     _require(obj, 'Cluster', 'postgresql.cnpg.io/v1')
     md = _meta(obj, namespaced=True)
+    if md['namespace'] != 'portal':
+        raise ValueError(f"cluster namespace {md['namespace']!r} != portal")
     if expect_name is not None and md['name'] != expect_name:
         raise ValueError(f"cluster name {md['name']!r} != {expect_name}")
     spec = _dict_req(obj.get('spec'), 'spec')
@@ -226,6 +231,14 @@ def _sa(v, field):
             'selector': _str(d.get('selector'), field + '.selector', allow_none=True)}
 
 
+def _services(v, field):
+    if v is None:
+        return None
+    d = _dict_req(v, field)
+    return {'name': _str(d.get('name'), field + '.name', allow_none=True),
+            'namespace': _str(d.get('namespace'), field + '.namespace', allow_none=True)}
+
+
 def _policy_entity(e, field):
     e = _dict_req(e, field)
     return {'selector': _str(e.get('selector'), field + '.selector', allow_none=True),
@@ -235,7 +248,8 @@ def _policy_entity(e, field):
             'notNets': _str_list(e.get('notNets'), field + '.notNets'),
             'ports': _ports_typed(e.get('ports'), field + '.ports'),
             'notPorts': _ports_typed(e.get('notPorts'), field + '.notPorts'),
-            'serviceAccounts': _sa(e.get('serviceAccounts'), field + '.serviceAccounts')}
+            'serviceAccounts': _sa(e.get('serviceAccounts'), field + '.serviceAccounts'),
+            'services': _services(e.get('services'), field + '.services')}
 
 
 def _proto(v, field):
@@ -248,10 +262,35 @@ def _proto(v, field):
     raise ValueError(field + ' not int/string')
 
 
+def _ip_version(v, field):
+    if v is None:
+        return None
+    if isinstance(v, bool) or not isinstance(v, int) or v not in (4, 6):
+        raise ValueError(field + ' invalid (must be 4 or 6)')
+    return v
+
+
+def _http(v, field):
+    if v is None:
+        return None
+    d = _dict_req(v, field)
+    paths = []
+    for p in (d.get('paths') or []):
+        if not isinstance(p, dict):
+            raise ValueError(field + '.paths item not object')
+        paths.append({'exact': _str(p.get('exact'), field + '.exact', allow_none=True),
+                      'prefix': _str(p.get('prefix'), field + '.prefix', allow_none=True)})
+    return {'methods': _str_list(d.get('methods'), field + '.methods'),
+            'paths': paths}
+
+
 def _policy_rule(r, field):
     r = _dict_req(r, field)
     out = {'action': _enum(r.get('action'), field + '.action', ('Allow', 'Deny', 'Log', 'Pass'), allow_none=True),
-           'protocol': _proto(r.get('protocol'), field + '.protocol')}
+           'protocol': _proto(r.get('protocol'), field + '.protocol'),
+           'notProtocol': _proto(r.get('notProtocol'), field + '.notProtocol'),
+           'ipVersion': _ip_version(r.get('ipVersion'), field + '.ipVersion'),
+           'http': _http(r.get('http'), field + '.http')}
     if 'source' in r:
         out['source'] = _policy_entity(r['source'], field + '.source')
     if 'destination' in r:
@@ -272,6 +311,7 @@ def project_calico_policy(obj, kind, namespaced):
         'order': _num(spec.get('order'), 'order', allow_none=True),
         'tier': _str(spec.get('tier'), 'tier', allow_none=True),
         'selector': _str(spec.get('selector'), 'selector', allow_none=True),
+        'serviceAccountSelector': _str(spec.get('serviceAccountSelector'), 'serviceAccountSelector', allow_none=True),
         'types': _str_list(spec.get('types'), 'types'),
         'ingress': [_policy_rule(x, 'ingress') for x in (ingress or [])],
         'egress': [_policy_rule(x, 'egress') for x in (egress or [])],
@@ -284,6 +324,9 @@ def project_calico_policy(obj, kind, namespaced):
 
 def project_felix(obj):
     _require(obj, 'FelixConfiguration', 'crd.projectcalico.org/v1')
+    md = _meta(obj, namespaced=False)
+    if md['name'] != 'default':
+        raise ValueError(f"felix name {md['name']!r} != default")
     spec = _dict_req(obj.get('spec'), 'spec')
     return {'kind': 'FelixConfiguration', 'metadata': _meta(obj, namespaced=False), 'spec': {
         'bpfEnabled': _bool(spec.get('bpfEnabled'), 'bpfEnabled', allow_none=True),
@@ -301,7 +344,10 @@ def _container_ports(v, field):
     for p in v:
         if not isinstance(p, dict):
             raise ValueError(field + ' port not an object')
-        out.append({'containerPort': _port_val(p.get('containerPort'), field + '.containerPort'),
+        cp = p.get('containerPort')
+        if isinstance(cp, bool) or not isinstance(cp, int):
+            raise ValueError(field + '.containerPort not an integer')
+        out.append({'containerPort': cp,
                     'name': _str(p.get('name'), field + '.name', allow_none=True)})
     return out
 
@@ -313,8 +359,15 @@ def project_pod_identity(obj):
     status = _dict(obj.get('status'), 'status')
     status_by = {}
     for cat in ('containerStatuses', 'initContainerStatuses'):
-        for s in (status.get(cat) or []):
-            if isinstance(s, dict) and isinstance(s.get('name'), str):
+        v = status.get(cat)
+        if v is None:
+            continue
+        if not isinstance(v, list):
+            raise ValueError(cat + ' not a list')
+        for s in v:
+            if not isinstance(s, dict):
+                raise ValueError(cat + ' item not an object')
+            if isinstance(s.get('name'), str):
                 status_by[(cat, s['name'])] = s.get('imageID')
     def cs(k, cat):
         v = spec.get(k)
@@ -365,6 +418,34 @@ DISCOVERY_EXPECT = {
 }
 
 SUPPORTED_POLICY_KINDS = set()  # no policy.networking.k8s.io kinds are reviewed yet
+
+# Calico runtime identity: supported software = calico/node v3.32.x (source pin
+# ansible/playbooks/files/calico-v3.32.0.yaml), with a present runtime imageID.
+SUPPORTED_CALICO_NODE = re.compile(r'calico/node:.*v3\.32')
+
+
+class UnsupportedDiscovery(Exception):
+    def __init__(self, kinds):
+        self.kinds = kinds
+
+
+def verify_calico_identity(pods):
+    if not pods:
+        raise ValueError('no calico-node pods')
+    found = 0
+    for pod in pods:
+        for c in pod.get('containers', []):
+            name = c.get('name') or ''
+            image = c.get('image') or ''
+            if 'calico-node' in name or 'calico/node' in image:
+                found += 1
+                if not SUPPORTED_CALICO_NODE.search(image):
+                    raise ValueError(f'unsupported calico image {image!r}')
+                if not c.get('imageID'):
+                    raise ValueError('missing imageID for calico-node')
+    if found == 0:
+        raise ValueError('no calico-node container found')
+    return found
 
 PROJECTORS = {
     'identity': project_pod_identity,
@@ -466,6 +547,7 @@ def main():
                 pass
             output = ''
             ok = result is not None and result.returncode == 0
+            unsupported = False
             if ok:
                 try:
                     if phase == 'discover':
@@ -481,25 +563,31 @@ def main():
                             rr = res_by_name[rname]
                             if rr['kind'] != kind:
                                 raise ValueError(f"resource {rname} kind {rr['kind']} != {kind}")
-                            if rr['namespaced'] is not None and rr['namespaced'] != namespaced:
+                            if rr['namespaced'] != namespaced:
                                 raise ValueError(f"resource {rname} scope mismatch")
                             for v in verbs:
                                 if v not in rr['verbs']:
                                     raise ValueError(f"resource {rname} missing verb {v}")
-                        # D2: classify served policy kinds
                         if resource_key == 'policy':
                             kinds = {r['kind'] for r in data['resources'] if r.get('kind')}
                             unsup = kinds - SUPPORTED_POLICY_KINDS
-                            if kinds and unsup:
-                                raise ValueError('unsupported policy kinds: ' + ','.join(sorted(unsup)))
+                            if unsup:
+                                raise UnsupportedDiscovery(sorted(unsup))
                         discovery[resource_key] = data
                     else:
                         output = project_config(resource_key, result.stdout, shape, expect_name)
+                        if resource_key == 'identity':
+                            verify_calico_identity(json.loads(output))
+                except UnsupportedDiscovery:
+                    unsupported = True
                 except (json.JSONDecodeError, ValueError, KeyError, TypeError):
                     parse_error = True
                     output = ''
-            category = classify(None if result is None else result.returncode,
-                                '' if result is None else result.stderr, timed_out, parse_error)
+            if unsupported:
+                category = 'UNSUPPORTED'
+            else:
+                category = classify(None if result is None else result.returncode,
+                                    '' if result is None else result.stderr, timed_out, parse_error)
             if category is not None:
                 failures += 1
             else:

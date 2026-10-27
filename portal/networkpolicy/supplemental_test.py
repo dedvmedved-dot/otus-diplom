@@ -201,5 +201,78 @@ class TestNoOverwriteNoKubectl(unittest.TestCase):
         self.assertFalse(os.path.exists(outdir))
 
 
+class TestRemainingSP(unittest.TestCase):
+    def _run_rid(self, rid, body):
+        return run({rid: R(0, body if isinstance(body, str) else json.dumps(body))})
+
+    def test_identity_gate_negatives(self):
+        bad = copy.deepcopy(POD)
+        bad["spec"]["containers"][0]["image"] = "other.example/unreviewed:v999"
+        bad["status"]["containerStatuses"][0]["imageID"] = "containerd://sha256:" + "b" * 64
+        nostatus = copy.deepcopy(POD); nostatus.pop("status")
+        for name, body in {"empty": {"items": []}, "unreviewed": {"items": [bad]},
+                           "missing_image_id": {"items": [nostatus]},
+                           "mixed": {"items": [POD, bad]}}.items():
+            rc, calls, _ = run({"I1": R(0, json.dumps(body))})
+            self.assertNotEqual(rc, 0, name)
+            self.assertNotIn("C3", calls, name); self.assertNotIn("C4", calls, name); self.assertNotIn("C5", calls, name)
+
+    def test_missing_discovery_scope_rejected(self):
+        d = copy.deepcopy(CALICO_DISC)
+        for r in d["resources"]:
+            r.pop("namespaced")
+        rc, calls, _ = run({"D1": R(0, json.dumps(d))})
+        self.assertNotEqual(rc, 0)
+        self.assertNotIn("C5", calls)
+
+    def test_unsupported_discovery(self):
+        pd = {"kind": "APIResourceList", "groupVersion": "policy.networking.k8s.io/v1alpha2",
+              "resources": [{"name": "adminnetworkpolicies", "kind": "AdminNetworkPolicy", "namespaced": False, "verbs": ["get", "list"]}]}
+        rc, calls, rows = run({"D2": R(0, json.dumps(pd))})
+        self.assertNotEqual(rc, 0)
+        d2 = [r for r in rows if r["id"] == "D2"][0]
+        self.assertEqual(d2["category"], "UNSUPPORTED")
+        self.assertIn("AdminNetworkPolicy", d2["output"])
+
+    def test_semantic_fields_preserved(self):
+        base = copy.deepcopy(NP)
+        base["spec"]["ingress"][0]["source"] = {"selector": "all()"}
+        obj = copy.deepcopy(base)
+        obj["spec"]["ingress"][0].update(notProtocol="UDP", ipVersion=6, http={"methods": ["GET"]})
+        obj["spec"]["serviceAccountSelector"] = "role == 'reader'"
+        obj["spec"]["ingress"][0]["source"]["services"] = {"name": "svc", "namespace": "portal"}
+        a = json.loads(inv.project_config("calico_np", enc(base), "list", None))[0]
+        b = json.loads(inv.project_config("calico_np", enc(obj), "list", None))[0]
+        self.assertNotEqual(json.dumps(a, sort_keys=True), json.dumps(b, sort_keys=True))
+        self.assertEqual(b["spec"]["ingress"][0]["notProtocol"], "UDP")
+        self.assertEqual(b["spec"]["ingress"][0]["ipVersion"], 6)
+        self.assertEqual(b["spec"]["serviceAccountSelector"], "role == 'reader'")
+        self.assertEqual(b["spec"]["ingress"][0]["source"]["services"]["name"], "svc")
+
+    def test_wrong_binding(self):
+        os_bad = copy.deepcopy(OS); os_bad["metadata"]["namespace"] = "other"
+        rc, _, _ = run({"C1": R(0, single(os_bad))})
+        self.assertNotEqual(rc, 0)
+        cl_bad = copy.deepcopy(CL); cl_bad["metadata"]["namespace"] = "other"
+        rc, _, _ = run({"C2": R(0, single(cl_bad))})
+        self.assertNotEqual(rc, 0)
+        felix_bad = copy.deepcopy(FELIX); felix_bad["metadata"]["name"] = "other"
+        rc, _, _ = run({"C5": R(0, single(felix_bad))})
+        self.assertNotEqual(rc, 0)
+
+    def test_string_container_port_rejected(self):
+        bad = copy.deepcopy(POD)
+        bad["spec"]["containers"][0]["ports"] = [{"containerPort": "not-numeric", "name": "p"}]
+        with self.assertRaises(ValueError):
+            inv.project_config("identity", enc(bad), "list", None)
+
+    def test_invalid_status_rejected(self):
+        bad = copy.deepcopy(POD)
+        bad["status"]["containerStatuses"] = False
+        rc, calls, _ = run({"I1": R(0, enc(bad))})
+        self.assertNotEqual(rc, 0)
+        self.assertNotIn("C3", calls)
+
+
 if __name__ == "__main__":
     unittest.main()
