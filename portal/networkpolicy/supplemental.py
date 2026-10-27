@@ -333,7 +333,7 @@ def _policy_rule(r, field):
 def project_calico_policy(obj, kind, namespaced):
     _require(obj, kind, 'crd.projectcalico.org/v1')
     spec = _dict_req(obj.get('spec'), 'spec')
-    _check_keys(spec, CALICO_SPEC_ALLOWED, 'spec')
+    _check_keys(spec, NP_SPEC_ALLOWED if namespaced else GNP_SPEC_ALLOWED, 'spec')
     ingress = spec.get('ingress')
     egress = spec.get('egress')
     if ingress is not None and not isinstance(ingress, list):
@@ -459,8 +459,10 @@ NS_EXPECT = {'identity': 'kube-system', 'sidecar': 'portal', 'plugin': 'cnpg-sys
 
 # Finite Calico semantic-field contract: any key outside these allowlists at a
 # semantic nesting level raises UnsupportedField (UNSUPPORTED), never silent loss.
-CALICO_SPEC_ALLOWED = {'order', 'tier', 'selector', 'serviceAccountSelector', 'types', 'ingress', 'egress',
-                       'applyOnForward', 'doNotTrack', 'preDNAT', 'namespaceSelector', 'performanceHints'}
+# Per-kind: NetworkPolicy (namespaced) has a narrower spec than GlobalNetworkPolicy.
+NP_SPEC_ALLOWED = {'order', 'tier', 'selector', 'serviceAccountSelector', 'types', 'ingress', 'egress',
+                   'performanceHints'}
+GNP_SPEC_ALLOWED = NP_SPEC_ALLOWED | {'applyOnForward', 'doNotTrack', 'preDNAT', 'namespaceSelector'}
 RULE_ALLOWED = {'action', 'protocol', 'notProtocol', 'ipVersion', 'icmp', 'notICMP', 'http',
                 'source', 'destination', 'metadata'}
 ENTITY_ALLOWED = {'selector', 'notSelector', 'namespaceSelector', 'nets', 'notNets', 'ports',

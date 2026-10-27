@@ -11,7 +11,7 @@ No exec, traffic tests, namespace scans, generic ConfigMap dumps or secrets.
 | Namespace labels (namespaceSelector) | `get namespaces -o jsonpath` | `.metadata.name`, `.metadata.labels` | OBSERVED_CONFIG; labels only, no annotations |
 | Existing NetworkPolicy union | `get networkpolicies -A -o json` (projected) | podSelector/policyTypes/ingress/egress (peers, selectors, ipBlock, ports+endPort) | OBSERVED_CONFIG; kind validated NetworkPolicy; arbitrary spec/status dropped |
 | CNPG portal-db peers/operator | `get clusters.postgresql.cnpg.io -A -o json` (projected) | instances, storageSize, walStorageSize, barmanObjectStoreName, monitoring, phase, readyInstances, conditions | OBSERVED_CONFIG + OBSERVED_STATUS; no bootstrap/env/secret data |
-| Barman plugin endpoint/port | `get objectstores.barmancloud.cnpg.io -A -o json` (projected) | destinationPath + endpointURL (origin-only sanitized), s3CredentialsName | OBSERVED_CONFIG; endpoint origin only; plugin→DB direction still UNKNOWN |
+| Barman plugin endpoint/port | `get objectstores.barmancloud.cnpg.io -A -o json` (base read `spec.data` — WRONG path; supplemental reads `spec.configuration`) | destinationPath + endpointURL (origin-only), s3Credentials secret-ref | base = NOT_COLLECTED_AT_CORRECT_PATH (R10 all nulls); supplemental spec.configuration correct; plugin→DB direction UNKNOWN |
 | Monitoring scrape identity | `get servicemonitors -A` + `get podmonitors -A` + `--raw /apis/monitoring.coreos.com/v1` | selectors, namespaceSelector, endpoint ports/paths | OBSERVED_CONFIG; absence reported as "not found in surveyed sources" |
 | Node API/CNI mapping | `get nodes -o jsonpath` (name + `.status.addresses` + `.spec.podCIDRs`) | node name, addresses, podCIDRs | OBSERVED_CONFIG; **NO annotations collected** |
 | DNS kube-dns | `get services -A` + `get endpointslices -A` | kube-system/kube-dns Service + EndpointSlices | OBSERVED_CONFIG |
@@ -27,7 +27,7 @@ against the DISCOVERED version BEFORE it runs — never guessed, never executed 
 ## Phase-2 supplemental collector (implemented, OFFLINE-ONLY — NOT approved to run)
 
 The two-phase plan below is now implemented as `supplemental.py` (with
-`supplemental_test.py`, 28/28). PHASE2_LIVE_READS_APPROVED=NO until exact-script
+`supplemental_test.py`, 31/31). PHASE2_LIVE_READS_APPROVED=NO until exact-script
 Architect approval. Key corrections vs the earlier NOT_DEFINED plan:
 - ObjectStore endpoint is `spec.configuration` (NOT `spec.data`) — projected
   endpointURL/destinationPath origin-only + secret-ref name/key only.

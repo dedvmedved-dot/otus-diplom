@@ -327,6 +327,24 @@ class TestRemainingSP(unittest.TestCase):
             c3 = [r for r in rows if r["id"] == "C3"][0]
             self.assertEqual(c3["category"], "UNSUPPORTED", label)
 
+    def test_namespaced_policy_rejects_global_only_fields(self):
+        for key, val in [("namespaceSelector", "team == 'restricted'"), ("applyOnForward", True),
+                         ("doNotTrack", True), ("preDNAT", True)]:
+            p = copy.deepcopy(NP); p["spec"][key] = val
+            rc, _, rows = run({"C3": R(0, enc(p))})
+            self.assertNotEqual(rc, 0, key)
+            c3 = [r for r in rows if r["id"] == "C3"][0]
+            self.assertEqual(c3["category"], "UNSUPPORTED", key)
+
+    def test_global_policy_fields_preserved(self):
+        g = copy.deepcopy(GNP)
+        g["spec"].update(namespaceSelector="team == 'restricted'", applyOnForward=True, doNotTrack=True, preDNAT=True)
+        rc, _, _ = run({"C4": R(0, enc(g))})
+        self.assertEqual(rc, 0)
+        out = json.loads(inv.project_config("calico_gnp", enc(g), "list", None))[0]
+        self.assertEqual(out["spec"]["namespaceSelector"], "team == 'restricted'")
+        self.assertTrue(out["spec"]["applyOnForward"])
+
     def test_icmp_namespace_selector_preserved(self):
         base = copy.deepcopy(NP); base["spec"]["ingress"][0]["protocol"] = "ICMP"
         changed = copy.deepcopy(base); changed["spec"]["ingress"][0]["icmp"] = {"type": 8}
