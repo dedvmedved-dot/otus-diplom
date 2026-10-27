@@ -1,0 +1,141 @@
+{
+  "checked_at_utc": "2026-10-27T11:08:27.622767+00:00",
+  "reviewed_main": "79706203c7c6ec46686fa9e36686bf52ce1a4b9c",
+  "checks": {
+    "code_byte_identity": "PASS",
+    "prior_33_test_evidence": "REUSED_PASS_NOT_RERUN",
+    "matrix_test_ids_exist_and_were_executed": {
+      "result": "PASS",
+      "count": 27,
+      "ids": [
+        "test_calico_identity_present",
+        "test_container_port_range_rejected",
+        "test_global_policy_fields_preserved",
+        "test_http_paths_malformed_rejected",
+        "test_icmp_namespace_selector_preserved",
+        "test_identity_exact_contract",
+        "test_identity_gate_negatives",
+        "test_invalid_status_rejected",
+        "test_literal_api_paths",
+        "test_malformed_containers_rejected",
+        "test_missing_discovery_scope_rejected",
+        "test_named_get_bound",
+        "test_namespaced_policy_rejects_global_only_fields",
+        "test_no_kubectl",
+        "test_no_overwrite",
+        "test_pod_imageID_from_status",
+        "test_pod_port_leaf_typed",
+        "test_pod_wrong_kind_rejected",
+        "test_policy_api_unsupported",
+        "test_scope_verb_kind_missing_felix",
+        "test_scoped_list_namespace_rejected",
+        "test_semantic_fields_preserved",
+        "test_unsupported_discovery",
+        "test_unsupported_field_rejected",
+        "test_unsupported_identity_diagnostic",
+        "test_wrong_binding",
+        "test_wrong_group_blocks"
+      ]
+    },
+    "matrix_json_case_keys": {
+      "result": "PASS",
+      "keys": [
+        "identity_wrong_registry",
+        "identity_wrong_version",
+        "identity_missing_imageID",
+        "valid_unsupported_identity",
+        "malformed_identity_json",
+        "malformed_identity_types",
+        "literal_main_path",
+        "wrong_response_version",
+        "bad_discovery",
+        "C1_forbidden",
+        "C1_api_not_served",
+        "C1_connection",
+        "C1_timeout"
+      ]
+    },
+    "ten_reads_documented": "PASS",
+    "exact_felix_source_priority": "PASS",
+    "nodeSelector_scope_and_host_tier_limits": "PASS",
+    "gates_preserved": "PASS",
+    "collection_map_count": "PASS"
+  },
+  "files": {
+    "supplemental.py": {
+      "git_blob": "ad2edaa92de59f657599190842fa7fe68373b582",
+      "sha256": "69dac4747856e5f88ac4666e884fe1263777ca5cb64b197741a4b370c093aa4c"
+    },
+    "supplemental_test.py": {
+      "git_blob": "8157b942d9f4066dfda7448f2c71fe170b24f657",
+      "sha256": "991654157f97ab8d9a07948c74423dfbbb44acd6e1c635cd6a21a1083a4e6408"
+    },
+    "supplemental-design.md": {
+      "git_blob": "41dcf4c61fe0dc1bb4334c20a864afc2ea3a5cb6",
+      "sha256": "5495c31a36e9ffe03a295261aec925aea1d2b54a4cbbc74c335c9f6da9ed2e1b"
+    },
+    "coverage-matrix.md": {
+      "git_blob": "c3aeda1f87647344419ca225a0afc9171bc7815f",
+      "sha256": "97351afcc8d9034716a1d0aaebe5b11f12e08505b2a80d251ad59eb95d384239"
+    },
+    "PLAN.md": {
+      "git_blob": "9520486884b603683d9584bf95520221264c513f",
+      "sha256": "08a0cab39ebbb92b375cf66574dbe985d74e90affb8299ef4be63fe8e3cca116"
+    },
+    "flow-matrix.md": {
+      "git_blob": "c35b51dcbb2eaec49aa114fbb9e1bcff7699fe15",
+      "sha256": "4b6de88d7a38c163cd2d3b16c8a00d35f1cea7ef2e4b94e80d7a08add6918686"
+    },
+    "gaps.md": {
+      "git_blob": "cb814dea05c614dc6006bc5ec3acea1a831c8769",
+      "sha256": "97be6c4f611454903af14b840d00ccb4b2979e888e8989b8012c9550a022931c"
+    },
+    "collection-map.md": {
+      "git_blob": "62052d53eaf6ae3eefe73a85e49c913f3358b11c",
+      "sha256": "3f01d902e6d8e5a79ce64060b24b69ce16ff6ff4bd72e067e416f3279daf2fd1"
+    }
+  },
+  "sources": {
+    "calico": {
+      "commit": "eb1cf57823a1dd8d25c48b82fd023ea9e3e17996",
+      "path": "felix/config/config_params.go",
+      "blob": "72676f76f3bdd5f592e29313c712b159db0bcd2e",
+      "repository_crd_blob": "21ea9b4b163305ea479bc7708965104465ffc716",
+      "checked_members": [
+        "Source",
+        "SourcesInDescendingOrder",
+        "resolve",
+        "FelixConfiguration spec.nodeSelector.description"
+      ]
+    },
+    "barman": {
+      "release_manifest_blob": "4fa292cd8f89808d96f6d90af826afd31afa29ec",
+      "objectstore_blob": "07709428317922b7789a7b6c22bf9b88b5dc9a03",
+      "cluster_blob": "e60a92353194fda60f34dacb56273ed7048af14c",
+      "checked_fields": [
+        "Service port9090/TCP/pluginPort",
+        "Deployment server-address/TLS arguments",
+        "ObjectStore configuration endpointURL",
+        "Cluster spec.plugins"
+      ],
+      "docs": [
+        "https://cloudnative-pg.io/plugin-barman-cloud/docs/0.13.0/concepts/",
+        "https://cloudnative-pg.io/plugin-barman-cloud/docs/0.13.0/usage/"
+      ]
+    },
+    "kubernetes": [
+      "https://v1-36.docs.kubernetes.io/docs/concepts/services-networking/network-policies/",
+      "https://v1-36.docs.kubernetes.io/docs/reference/networking/virtual-ips/"
+    ]
+  },
+  "manual_checks": [
+    "Type/helper summary inspected against pinned source, including optional/null normalization.",
+    "Barman control service vs sidecar source distinction; no live traffic inference.",
+    "Felix config precedence and nodeSelector constraints checked against exact source/schema.",
+    "API endpoints distinguished from Pod IPs; effective DNAT unknown.",
+    "Remaining historical claims in PLAN explicitly non-authoritative and non-executable."
+  ],
+  "no_live_reads": true,
+  "no_behavioral_tests_rerun": true,
+  "policy_yaml_unchanged": true
+}
