@@ -17,6 +17,7 @@ inv = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(inv)
 
 CANARY = "SYNTHETIC_SP_REVIEW_CANARY_NOT_A_SECRET"
+PINNED_HEX = "f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a"
 
 
 def enc(item):
@@ -53,7 +54,7 @@ FELIX = {"apiVersion": "crd.projectcalico.org/v1", "kind": "FelixConfiguration",
 POD = {"apiVersion": "v1", "kind": "Pod", "metadata": {"name": "calico-node-abc", "namespace": "kube-system"},
        "spec": {"initContainers": [], "containers": [{"name": "calico-node", "image": "quay.io/calico/node:v3.32.0",
                "ports": [{"containerPort": 9090, "name": "calico-typha"}]}]},
-       "status": {"containerStatuses": [{"name": "calico-node", "imageID": "containerd://sha256:" + "a" * 64}]}}
+       "status": {"containerStatuses": [{"name": "calico-node", "imageID": "containerd://sha256:" + PINNED_HEX}]}}
 POD_PORTAL = {"apiVersion": "v1", "kind": "Pod", "metadata": {"name": "portal-db-1", "namespace": "portal"},
        "spec": {"initContainers": [], "containers": [{"name": "postgres", "image": "ghcr.io/cloudnative-pg/postgresql:17.4",
                "ports": [{"containerPort": 5432, "name": "postgresql"}]}]},
@@ -137,10 +138,13 @@ class TestDiscoveryGate(unittest.TestCase):
 class TestProjectors(unittest.TestCase):
     def test_service_accounts_typed(self):
         obj = copy.deepcopy(NP)
-        obj["spec"]["ingress"][0]["source"]["serviceAccounts"] = {"names": ["default"], "extra": {"token": CANARY}}
+        obj["spec"]["ingress"][0]["source"]["serviceAccounts"] = {"names": ["default"], "selector": "x"}
         out = json.loads(inv.project_config("calico_np", enc(obj), "list", None))
-        self.assertNotIn(CANARY, json.dumps(out))
         self.assertEqual(out[0]["spec"]["ingress"][0]["source"]["serviceAccounts"]["names"], ["default"])
+        bad = copy.deepcopy(NP)
+        bad["spec"]["ingress"][0]["source"]["serviceAccounts"] = {"names": ["default"], "extra": {"token": CANARY}}
+        with self.assertRaises(inv.UnsupportedField):
+            inv.project_config("calico_np", enc(bad), "list", None)
 
     def test_tier_notSelector_preserved(self):
         base = copy.deepcopy(NP)
@@ -283,9 +287,8 @@ class TestRemainingSP(unittest.TestCase):
 
 
     def test_identity_exact_contract(self):
-        pin = "quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a"
+        pin = "quay.io/calico/node@sha256:" + PINNED_HEX
         p = copy.deepcopy(POD); p["spec"]["containers"][0]["image"] = pin
-        p["status"]["containerStatuses"][0]["imageID"] = "containerd://sha256:" + "f" * 64
         rc, calls, _ = run({"I1": R(0, enc(p))})
         self.assertEqual(rc, 0); self.assertIn("C3", calls)
         p2 = copy.deepcopy(POD); p2["spec"]["containers"][0]["image"] = "unreviewed.example/calico/node:v3.32.0"
@@ -295,13 +298,34 @@ class TestRemainingSP(unittest.TestCase):
         rc, _, _ = run({"I1": R(0, enc(p3))}); self.assertNotEqual(rc, 0)
         p4 = copy.deepcopy(POD); p4["status"]["containerStatuses"][0]["imageID"] = "not-a-runtime-digest"
         rc, _, _ = run({"I1": R(0, enc(p4))}); self.assertNotEqual(rc, 0)
+        # unbound (arbitrary) runtime digest rejected even when consistent across pods
         p5 = copy.deepcopy(POD); p5["status"]["containerStatuses"][0]["imageID"] = "containerd://sha256:" + "b" * 64
-        rc, _, _ = run({"I1": R(0, json.dumps({"items": [POD, p5]}))}); self.assertNotEqual(rc, 0)
+        rc, _, _ = run({"I1": R(0, json.dumps({"items": [p5, copy.deepcopy(p5)]}))}); self.assertNotEqual(rc, 0)
         p6 = copy.deepcopy(POD); p6["metadata"]["namespace"] = "other"
         rc, _, _ = run({"I1": R(0, enc(p6))}); self.assertNotEqual(rc, 0)
         other = copy.deepcopy(POD); other["spec"]["containers"] = [{"name": "other", "image": "unreviewed.example/other:v1"}]
         other.pop("status")
         rc, _, _ = run({"I1": R(0, json.dumps({"items": [POD, other]}))}); self.assertNotEqual(rc, 0)
+
+    def test_unsupported_field_rejected(self):
+        for label, path in [("spec", ["spec"]), ("rule", ["spec", "ingress", 0]),
+                            ("entity", ["spec", "ingress", 0, "source"]),
+                            ("http", ["spec", "ingress", 0, "http"]),
+                            ("icmp", ["spec", "ingress", 0, "icmp"])]:
+            b = copy.deepcopy(NP)
+            rule = b["spec"]["ingress"][0]
+            rule["http"] = {"methods": ["GET"], "paths": [{"exact": "/health"}]}
+            rule["icmp"] = {"type": 8}
+            rule["source"]["serviceAccounts"] = {"names": ["reader"]}
+            rule["source"]["services"] = {"name": "service", "namespace": "portal"}
+            node = b
+            for k in path:
+                node = node[k]
+            node["futureSemanticRestriction"] = "x"
+            rc, _, rows = run({"C3": R(0, enc(b))})
+            self.assertNotEqual(rc, 0, label)
+            c3 = [r for r in rows if r["id"] == "C3"][0]
+            self.assertEqual(c3["category"], "UNSUPPORTED", label)
 
     def test_icmp_namespace_selector_preserved(self):
         base = copy.deepcopy(NP); base["spec"]["ingress"][0]["protocol"] = "ICMP"

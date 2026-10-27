@@ -31,7 +31,7 @@ deploy"). This document records candidate flows and known source facts. It does 
 |---|---|---|---|
 | CNPG pod (peer) | CNPG pod | 5432/8000 | replication / instance-manager |
 | CNPG operator (cnpg-system) | CNPG pod | 8000 | reconcile/switchover |
-| Barman controller (cnpg-system) | CNPG pod | 5432 | backup plugin |
+| Barman plugin (cnpg-system, ref spec.plugins[].parameters.barmanObjectName) | CNPG pod / S3 (172.30.143.10:443) | svc 9090 observed; direction DB/S3 UNKNOWN | backup/WAL archiver (plugin flow UNVERIFIED) |
 | Portal pod | CNPG pod | 5432/9187 | app DB / metrics scrape |
 | Migrator Job | CNPG pod | 5432 | schema bootstrap |
 | CNPG pod | DNS (kube-system) | 53 | resolution |

@@ -227,6 +227,7 @@ def _sa(v, field):
     if v is None:
         return None
     d = _dict_req(v, field)
+    _check_keys(d, SA_ALLOWED, field)
     return {'names': _str_list(d.get('names'), field + '.names'),
             'selector': _str(d.get('selector'), field + '.selector', allow_none=True)}
 
@@ -235,12 +236,14 @@ def _services(v, field):
     if v is None:
         return None
     d = _dict_req(v, field)
+    _check_keys(d, SERVICES_ALLOWED, field)
     return {'name': _str(d.get('name'), field + '.name', allow_none=True),
             'namespace': _str(d.get('namespace'), field + '.namespace', allow_none=True)}
 
 
 def _policy_entity(e, field):
     e = _dict_req(e, field)
+    _check_keys(e, ENTITY_ALLOWED, field)
     return {'selector': _str(e.get('selector'), field + '.selector', allow_none=True),
             'notSelector': _str(e.get('notSelector'), field + '.notSelector', allow_none=True),
             'namespaceSelector': _str(e.get('namespaceSelector'), field + '.namespaceSelector', allow_none=True),
@@ -284,6 +287,7 @@ def _icmp(v, field):
     if v is None:
         return None
     d = _dict_req(v, field)
+    _check_keys(d, ICMP_ALLOWED, field)
     return {'type': _int_range(d.get('type'), field + '.type', 0, 254, allow_none=True),
             'code': _int_range(d.get('code'), field + '.code', 0, 255, allow_none=True)}
 
@@ -292,6 +296,7 @@ def _http(v, field):
     if v is None:
         return None
     d = _dict_req(v, field)
+    _check_keys(d, HTTP_ALLOWED, field)
     paths = d.get('paths')
     if paths is None:
         paths = []
@@ -301,6 +306,7 @@ def _http(v, field):
     for p in paths:
         if not isinstance(p, dict):
             raise ValueError(field + '.paths item not object')
+        _check_keys(p, HTTP_PATH_ALLOWED, field + '.paths')
         out_paths.append({'exact': _str(p.get('exact'), field + '.exact', allow_none=True),
                           'prefix': _str(p.get('prefix'), field + '.prefix', allow_none=True)})
     return {'methods': _str_list(d.get('methods'), field + '.methods'),
@@ -309,6 +315,7 @@ def _http(v, field):
 
 def _policy_rule(r, field):
     r = _dict_req(r, field)
+    _check_keys(r, RULE_ALLOWED, field)
     out = {'action': _enum(r.get('action'), field + '.action', ('Allow', 'Deny', 'Log', 'Pass'), allow_none=True),
            'protocol': _proto(r.get('protocol'), field + '.protocol'),
            'notProtocol': _proto(r.get('notProtocol'), field + '.notProtocol'),
@@ -326,6 +333,7 @@ def _policy_rule(r, field):
 def project_calico_policy(obj, kind, namespaced):
     _require(obj, kind, 'crd.projectcalico.org/v1')
     spec = _dict_req(obj.get('spec'), 'spec')
+    _check_keys(spec, CALICO_SPEC_ALLOWED, 'spec')
     ingress = spec.get('ingress')
     egress = spec.get('egress')
     if ingress is not None and not isinstance(ingress, list):
@@ -449,14 +457,30 @@ SUPPORTED_POLICY_KINDS = set()  # no policy.networking.k8s.io kinds are reviewed
 
 NS_EXPECT = {'identity': 'kube-system', 'sidecar': 'portal', 'plugin': 'cnpg-system'}
 
+# Finite Calico semantic-field contract: any key outside these allowlists at a
+# semantic nesting level raises UnsupportedField (UNSUPPORTED), never silent loss.
+CALICO_SPEC_ALLOWED = {'order', 'tier', 'selector', 'serviceAccountSelector', 'types', 'ingress', 'egress',
+                       'applyOnForward', 'doNotTrack', 'preDNAT', 'namespaceSelector', 'performanceHints'}
+RULE_ALLOWED = {'action', 'protocol', 'notProtocol', 'ipVersion', 'icmp', 'notICMP', 'http',
+                'source', 'destination', 'metadata'}
+ENTITY_ALLOWED = {'selector', 'notSelector', 'namespaceSelector', 'nets', 'notNets', 'ports',
+                  'notPorts', 'serviceAccounts', 'services'}
+HTTP_ALLOWED = {'methods', 'paths'}
+HTTP_PATH_ALLOWED = {'exact', 'prefix'}
+ICMP_ALLOWED = {'type', 'code'}
+SA_ALLOWED = {'names', 'selector'}
+SERVICES_ALLOWED = {'name', 'namespace'}
+
 # Calico runtime identity: exact finite contract grounded in the repository pin
 # ansible/playbooks/files/calico-v3.32.0.yaml — the daemonset image is
 # quay.io/calico/node@sha256:f4fafd8... (digest ref) or the same-image tag v3.32.0.
-# A runtime imageID must be a valid containerd/docker digest, and must be
-# consistent across every selected calico-node pod (platform-child digests of a
-# multi-platform manifest are NOT assumed equivalent without verification).
+# A runtime imageID must be a valid containerd/docker digest AND resolve to the
+# pinned manifest digest (textual equality). Platform-child digests of a
+# multi-platform manifest are NOT accepted without an explicit reviewed
+# relationship — a syntactically valid but unbound digest is not identity proof.
+PINNED_DIGEST = 'sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a'
 CALICO_IMAGE_REFS = {
-    'quay.io/calico/node@sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a',
+    'quay.io/calico/node@' + PINNED_DIGEST,
     'quay.io/calico/node:v3.32.0',
 }
 IMAGE_ID_RE = re.compile(r'^(containerd|docker-pullable|docker)://sha256:[0-9a-f]{64}$')
@@ -467,10 +491,21 @@ class UnsupportedDiscovery(Exception):
         self.kinds = kinds
 
 
+class UnsupportedField(Exception):
+    def __init__(self, level, keys):
+        self.level = level
+        self.keys = keys
+
+
+def _check_keys(d, allowed, level):
+    unknown = [k for k in d if k not in allowed]
+    if unknown:
+        raise UnsupportedField(level, sorted(unknown))
+
+
 def verify_calico_identity(pods):
     if not pods:
         raise ValueError('no calico-node pods')
-    image_ids = set()
     for pod in pods:
         containers = pod.get('containers', [])
         calico = [c for c in containers
@@ -484,9 +519,8 @@ def verify_calico_identity(pods):
             iid = c.get('imageID')
             if not iid or not IMAGE_ID_RE.match(iid):
                 raise ValueError(f'invalid imageID {iid!r}')
-            image_ids.add(iid)
-    if len(image_ids) != 1:
-        raise ValueError('inconsistent runtime imageIDs across calico-node pods')
+            if not iid.endswith(PINNED_DIGEST):
+                raise ValueError('imageID digest not linked to pinned image')
     return len(pods)
 
 PROJECTORS = {
@@ -624,6 +658,8 @@ def main():
                         if resource_key == 'identity':
                             verify_calico_identity(json.loads(output))
                 except UnsupportedDiscovery:
+                    unsupported = True
+                except UnsupportedField:
                     unsupported = True
                 except (json.JSONDecodeError, ValueError, KeyError, TypeError):
                     parse_error = True

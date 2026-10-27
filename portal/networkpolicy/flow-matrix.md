@@ -33,5 +33,7 @@ Base evidence: `evidence/P8/20261026T173244Z-p8c-rv02-live-inventory/inventory.j
   `crd.projectcalico.org/v1` + `policy.networking.k8s.io/v1alpha2` → EFFECTIVE_POLICY_UNION=UNKNOWN.
   Node podCIDRs (10.244.0/1/2.0/24) ≠ actual pod IPs (10.244.184/190/254.*) — not an allowlist.
 - **LI-04** Port 9090 alone does not prove plugin→DB/S3 direction. R1 projects containers
-  only, not initContainers. Direction/route/enforcement remain UNKNOWN; Phase-2 supplemental
-  collector prepared (supplemental.py + supplemental_test.py), NOT approved to run.
+  only, not initContainers; direction/route/enforcement remain UNKNOWN. Phase-2 supplemental
+  identity (I1/S1/S2) collects pod image/imageID; version-specific Calico reads gate on the
+  exact `quay.io/calico/node` v3.32.0 pin + pinned digest. Collector prepared
+  (supplemental.py + supplemental_test.py), NOT approved to run.
