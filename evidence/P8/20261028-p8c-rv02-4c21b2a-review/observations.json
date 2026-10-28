@@ -1,0 +1,1817 @@
+{
+  "reviewed_sha": "4c21b2a388dfd3d91415335a028f322886d7372e",
+  "python": "3.12.14",
+  "hashes": {
+    "followup.py": {
+      "sha256": "0552239c76810f3f5ac6757e41636b9a9c8b30054ff76dc6f662ad4ab37cd507",
+      "git_blob": "99547efb384fdafc185fc06858863ac4dfbcd780"
+    },
+    "followup_test.py": {
+      "sha256": "2fb9c3eab919d1025a65b924f01f6a5fb1a64734ca819062eae64844aeb7ff55",
+      "git_blob": "24024f917ae1fc3228e68b1e101e2713ab2e15e0"
+    },
+    "supplemental.py": {
+      "sha256": "ddd9a4dc17bca97d6b36ae6b4d501e1722c5d38d6e5ac8c7b051698fa0b15491",
+      "git_blob": "1b613fbd1e35a109072d2843d6e5f3a3fd47b3d6"
+    },
+    "followup-typed-contract.json": {
+      "sha256": "998b83fa6c0fe528caf0b236a7184630ce2cc1abae761b89b2c75b48ad7a6c9c",
+      "git_blob": "b1f4c6195fd08fcacf4fc08fcc327840adee9204"
+    }
+  },
+  "cluster_calls": 0,
+  "cases": {
+    "valid_baseline": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 1,
+      "output_sample": [
+        {
+          "apiVersion": "policy.networking.k8s.io/v1alpha2",
+          "kind": "ClusterNetworkPolicy",
+          "metadata": {
+            "name": "allow-portal",
+            "namespace": null
+          },
+          "spec": {
+            "tier": "Admin",
+            "priority": 10,
+            "subject": {
+              "namespaces": {
+                "matchLabels": {
+                  "name": "portal"
+                }
+              }
+            },
+            "ingress": [
+              {
+                "action": "Accept",
+                "from": [
+                  {
+                    "namespaces": {
+                      "matchLabels": {
+                        "name": "portal"
+                      }
+                    }
+                  }
+                ],
+                "protocols": [
+                  {
+                    "tcp": {
+                      "destinationPort": {
+                        "number": 5432
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "egress": [
+              {
+                "action": "Accept",
+                "to": [
+                  {
+                    "networks": [
+                      "10.244.0.0/24"
+                    ]
+                  }
+                ],
+                "protocols": [
+                  {
+                    "udp": {
+                      "destinationPort": {
+                        "range": {
+                          "start": 53,
+                          "end": 54
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "context_mismatch": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 1,
+      "output_sample": [
+        {
+          "kind": "NetworkPolicy",
+          "metadata": {
+            "name": "n",
+            "namespace": "portal"
+          },
+          "spec": {
+            "order": null,
+            "tier": null,
+            "selector": "all()",
+            "serviceAccountSelector": null,
+            "types": [
+              "Ingress"
+            ],
+            "ingress": [
+              {
+                "action": "Allow",
+                "protocol": null,
+                "notProtocol": null,
+                "ipVersion": null,
+                "icmp": null,
+                "notICMP": null,
+                "http": null,
+                "source": {
+                  "selector": "x",
+                  "notSelector": null,
+                  "namespaceSelector": null,
+                  "nets": [],
+                  "notNets": [],
+                  "ports": [],
+                  "notPorts": [],
+                  "serviceAccounts": null,
+                  "services": null
+                }
+              }
+            ],
+            "egress": []
+          }
+        }
+      ],
+      "actual_contexts": [
+        "another-context",
+        "kubernetes-admin@pak-portal"
+      ],
+      "logged_context": "another-context"
+    },
+    "oversized_F-CNP": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 501,
+      "output_sample": [
+        {
+          "apiVersion": "policy.networking.k8s.io/v1alpha2",
+          "kind": "ClusterNetworkPolicy",
+          "metadata": {
+            "name": "x-0",
+            "namespace": null
+          },
+          "spec": {
+            "tier": "Admin",
+            "priority": 10,
+            "subject": {
+              "namespaces": {
+                "matchLabels": {
+                  "name": "portal"
+                }
+              }
+            },
+            "ingress": [
+              {
+                "action": "Accept",
+                "from": [
+                  {
+                    "namespaces": {
+                      "matchLabels": {
+                        "name": "portal"
+                      }
+                    }
+                  }
+                ],
+                "protocols": [
+                  {
+                    "tcp": {
+                      "destinationPort": {
+                        "number": 5432
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "egress": [
+              {
+                "action": "Accept",
+                "to": [
+                  {
+                    "networks": [
+                      "10.244.0.0/24"
+                    ]
+                  }
+                ],
+                "protocols": [
+                  {
+                    "udp": {
+                      "destinationPort": {
+                        "range": {
+                          "start": 53,
+                          "end": 54
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "oversized_F-NP": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 501,
+      "output_sample": [
+        {
+          "kind": "NetworkPolicy",
+          "metadata": {
+            "name": "x-0",
+            "namespace": "portal"
+          },
+          "spec": {
+            "order": null,
+            "tier": null,
+            "selector": "all()",
+            "serviceAccountSelector": null,
+            "types": [
+              "Ingress"
+            ],
+            "ingress": [
+              {
+                "action": "Allow",
+                "protocol": null,
+                "notProtocol": null,
+                "ipVersion": null,
+                "icmp": null,
+                "notICMP": null,
+                "http": null,
+                "source": {
+                  "selector": "x",
+                  "notSelector": null,
+                  "namespaceSelector": null,
+                  "nets": [],
+                  "notNets": [],
+                  "ports": [],
+                  "notPorts": [],
+                  "serviceAccounts": null,
+                  "services": null
+                }
+              }
+            ],
+            "egress": []
+          }
+        }
+      ]
+    },
+    "oversized_F-GNP": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 501,
+      "output_sample": [
+        {
+          "kind": "GlobalNetworkPolicy",
+          "metadata": {
+            "name": "x-0",
+            "namespace": null
+          },
+          "spec": {
+            "order": 10,
+            "tier": null,
+            "selector": "all()",
+            "serviceAccountSelector": null,
+            "types": [],
+            "ingress": [],
+            "egress": [],
+            "applyOnForward": true,
+            "doNotTrack": null,
+            "preDNAT": null,
+            "namespaceSelector": null
+          }
+        }
+      ]
+    },
+    "oversized_F-HEP": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 501,
+      "output_sample": [
+        {
+          "apiVersion": "crd.projectcalico.org/v1",
+          "kind": "HostEndpoint",
+          "metadata": {
+            "name": "x-0",
+            "namespace": null,
+            "labels": {
+              "kubernetes.io/hostname": "node-01"
+            }
+          },
+          "spec": {
+            "node": "node-01",
+            "interfaceName": "eth0",
+            "expectedIPs": [
+              "172.30.140.101"
+            ],
+            "profiles": [
+              "default"
+            ],
+            "ports": [
+              {
+                "name": "k8s",
+                "port": 6443,
+                "protocol": "TCP"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "oversized_F-TIER": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 501,
+      "output_sample": [
+        {
+          "apiVersion": "crd.projectcalico.org/v1",
+          "kind": "Tier",
+          "metadata": {
+            "name": "x-0",
+            "namespace": null
+          },
+          "spec": {
+            "order": 100,
+            "defaultAction": "Pass"
+          }
+        }
+      ]
+    },
+    "three_pages_600_last_without_continue": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 11,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 600,
+      "output_sample": [
+        {
+          "kind": "NetworkPolicy",
+          "metadata": {
+            "name": "x-0",
+            "namespace": "portal"
+          },
+          "spec": {
+            "order": null,
+            "tier": null,
+            "selector": "all()",
+            "serviceAccountSelector": null,
+            "types": [
+              "Ingress"
+            ],
+            "ingress": [
+              {
+                "action": "Allow",
+                "protocol": null,
+                "notProtocol": null,
+                "ipVersion": null,
+                "icmp": null,
+                "notICMP": null,
+                "http": null,
+                "source": {
+                  "selector": "x",
+                  "notSelector": null,
+                  "namespaceSelector": null,
+                  "nets": [],
+                  "notNets": [],
+                  "ports": [],
+                  "notPorts": [],
+                  "serviceAccounts": null,
+                  "services": null
+                }
+              }
+            ],
+            "egress": []
+          }
+        }
+      ]
+    },
+    "wrong_list_kind": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 0,
+      "output_sample": []
+    },
+    "missing_list_metadata": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 0,
+      "output_sample": []
+    },
+    "false_metadata": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 0,
+      "output_sample": []
+    },
+    "false_continue": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 0,
+      "output_sample": []
+    },
+    "null_rv": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 0,
+      "output_sample": []
+    },
+    "scalar_item": {
+      "rc": null,
+      "crash": "AttributeError",
+      "row_count": 4,
+      "calls": 5
+    },
+    "first_page_forbidden": {
+      "rc": 1,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": "PARTIAL",
+      "exit": 0,
+      "complete": false,
+      "reason": "next-page GET_FAILED",
+      "output_count": 0,
+      "output_sample": []
+    },
+    "first_page_not_served": {
+      "rc": 1,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": "PARTIAL",
+      "exit": 0,
+      "complete": false,
+      "reason": "next-page GET_FAILED",
+      "output_count": 0,
+      "output_sample": []
+    },
+    "first_page_connection": {
+      "rc": 1,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": "PARTIAL",
+      "exit": 0,
+      "complete": false,
+      "reason": "next-page GET_FAILED",
+      "output_count": 0,
+      "output_sample": []
+    },
+    "first_page_timeout": {
+      "rc": 1,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": "TIMEOUT",
+      "exit": 0,
+      "complete": false,
+      "reason": "timeout",
+      "output_count": null,
+      "output_sample": null
+    },
+    "later_page_timeout": {
+      "rc": 1,
+      "crash": null,
+      "row_count": 9,
+      "calls": 10,
+      "category": "TIMEOUT",
+      "exit": 0,
+      "complete": false,
+      "reason": "timeout",
+      "output_count": null,
+      "output_sample": null
+    },
+    "later_page_forbidden": {
+      "rc": 1,
+      "crash": null,
+      "row_count": 9,
+      "calls": 10,
+      "category": "PARTIAL",
+      "exit": 0,
+      "complete": false,
+      "reason": "next-page GET_FAILED",
+      "output_count": 1,
+      "output_sample": [
+        {
+          "kind": "NetworkPolicy",
+          "metadata": {
+            "name": "n",
+            "namespace": "portal"
+          },
+          "spec": {
+            "order": null,
+            "tier": null,
+            "selector": "all()",
+            "serviceAccountSelector": null,
+            "types": [
+              "Ingress"
+            ],
+            "ingress": [
+              {
+                "action": "Allow",
+                "protocol": null,
+                "notProtocol": null,
+                "ipVersion": null,
+                "icmp": null,
+                "notICMP": null,
+                "http": null,
+                "source": {
+                  "selector": "x",
+                  "notSelector": null,
+                  "namespaceSelector": null,
+                  "nets": [],
+                  "notNets": [],
+                  "ports": [],
+                  "notPorts": [],
+                  "serviceAccounts": null,
+                  "services": null
+                }
+              }
+            ],
+            "egress": []
+          }
+        }
+      ]
+    },
+    "subject_null_to_match_all": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 1,
+      "output_sample": [
+        {
+          "apiVersion": "policy.networking.k8s.io/v1alpha2",
+          "kind": "ClusterNetworkPolicy",
+          "metadata": {
+            "name": "allow-portal",
+            "namespace": null
+          },
+          "spec": {
+            "tier": "Admin",
+            "priority": 10,
+            "subject": {
+              "namespaces": {}
+            },
+            "ingress": [
+              {
+                "action": "Accept",
+                "from": [
+                  {
+                    "namespaces": {
+                      "matchLabels": {
+                        "name": "portal"
+                      }
+                    }
+                  }
+                ],
+                "protocols": [
+                  {
+                    "tcp": {
+                      "destinationPort": {
+                        "number": 5432
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "egress": [
+              {
+                "action": "Accept",
+                "to": [
+                  {
+                    "networks": [
+                      "10.244.0.0/24"
+                    ]
+                  }
+                ],
+                "protocols": [
+                  {
+                    "udp": {
+                      "destinationPort": {
+                        "range": {
+                          "start": 53,
+                          "end": 54
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "peer_null_to_match_all": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 1,
+      "output_sample": [
+        {
+          "apiVersion": "policy.networking.k8s.io/v1alpha2",
+          "kind": "ClusterNetworkPolicy",
+          "metadata": {
+            "name": "allow-portal",
+            "namespace": null
+          },
+          "spec": {
+            "tier": "Admin",
+            "priority": 10,
+            "subject": {
+              "namespaces": {
+                "matchLabels": {
+                  "name": "portal"
+                }
+              }
+            },
+            "ingress": [
+              {
+                "action": "Accept",
+                "from": [
+                  {
+                    "namespaces": {}
+                  }
+                ],
+                "protocols": [
+                  {
+                    "tcp": {
+                      "destinationPort": {
+                        "number": 5432
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "egress": [
+              {
+                "action": "Accept",
+                "to": [
+                  {
+                    "networks": [
+                      "10.244.0.0/24"
+                    ]
+                  }
+                ],
+                "protocols": [
+                  {
+                    "udp": {
+                      "destinationPort": {
+                        "range": {
+                          "start": 53,
+                          "end": 54
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "protocols_null": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 1,
+      "output_sample": [
+        {
+          "apiVersion": "policy.networking.k8s.io/v1alpha2",
+          "kind": "ClusterNetworkPolicy",
+          "metadata": {
+            "name": "allow-portal",
+            "namespace": null
+          },
+          "spec": {
+            "tier": "Admin",
+            "priority": 10,
+            "subject": {
+              "namespaces": {
+                "matchLabels": {
+                  "name": "portal"
+                }
+              }
+            },
+            "ingress": [
+              {
+                "action": "Accept",
+                "from": [
+                  {
+                    "namespaces": {
+                      "matchLabels": {
+                        "name": "portal"
+                      }
+                    }
+                  }
+                ],
+                "protocols": null
+              }
+            ],
+            "egress": [
+              {
+                "action": "Accept",
+                "to": [
+                  {
+                    "networks": [
+                      "10.244.0.0/24"
+                    ]
+                  }
+                ],
+                "protocols": [
+                  {
+                    "udp": {
+                      "destinationPort": {
+                        "range": {
+                          "start": 53,
+                          "end": 54
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "namespace_selector_null": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 1,
+      "output_sample": [
+        {
+          "apiVersion": "policy.networking.k8s.io/v1alpha2",
+          "kind": "ClusterNetworkPolicy",
+          "metadata": {
+            "name": "allow-portal",
+            "namespace": null
+          },
+          "spec": {
+            "tier": "Admin",
+            "priority": 10,
+            "subject": {
+              "pods": {
+                "podSelector": {},
+                "namespaceSelector": {}
+              }
+            },
+            "ingress": [
+              {
+                "action": "Accept",
+                "from": [
+                  {
+                    "namespaces": {
+                      "matchLabels": {
+                        "name": "portal"
+                      }
+                    }
+                  }
+                ],
+                "protocols": [
+                  {
+                    "tcp": {
+                      "destinationPort": {
+                        "number": 5432
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "egress": [
+              {
+                "action": "Accept",
+                "to": [
+                  {
+                    "networks": [
+                      "10.244.0.0/24"
+                    ]
+                  }
+                ],
+                "protocols": [
+                  {
+                    "udp": {
+                      "destinationPort": {
+                        "range": {
+                          "start": 53,
+                          "end": 54
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "ingress_wrong_direction_silently_dropped": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 1,
+      "output_sample": [
+        {
+          "apiVersion": "policy.networking.k8s.io/v1alpha2",
+          "kind": "ClusterNetworkPolicy",
+          "metadata": {
+            "name": "allow-portal",
+            "namespace": null
+          },
+          "spec": {
+            "tier": "Admin",
+            "priority": 10,
+            "subject": {
+              "namespaces": {
+                "matchLabels": {
+                  "name": "portal"
+                }
+              }
+            },
+            "ingress": [
+              {
+                "action": "Accept",
+                "from": [
+                  {
+                    "namespaces": {
+                      "matchLabels": {
+                        "name": "portal"
+                      }
+                    }
+                  }
+                ],
+                "protocols": [
+                  {
+                    "tcp": {
+                      "destinationPort": {
+                        "number": 5432
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "egress": [
+              {
+                "action": "Accept",
+                "to": [
+                  {
+                    "networks": [
+                      "10.244.0.0/24"
+                    ]
+                  }
+                ],
+                "protocols": [
+                  {
+                    "udp": {
+                      "destinationPort": {
+                        "range": {
+                          "start": 53,
+                          "end": 54
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "egress_wrong_direction_silently_dropped": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 1,
+      "output_sample": [
+        {
+          "apiVersion": "policy.networking.k8s.io/v1alpha2",
+          "kind": "ClusterNetworkPolicy",
+          "metadata": {
+            "name": "allow-portal",
+            "namespace": null
+          },
+          "spec": {
+            "tier": "Admin",
+            "priority": 10,
+            "subject": {
+              "namespaces": {
+                "matchLabels": {
+                  "name": "portal"
+                }
+              }
+            },
+            "ingress": [
+              {
+                "action": "Accept",
+                "from": [
+                  {
+                    "namespaces": {
+                      "matchLabels": {
+                        "name": "portal"
+                      }
+                    }
+                  }
+                ],
+                "protocols": [
+                  {
+                    "tcp": {
+                      "destinationPort": {
+                        "number": 5432
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "egress": [
+              {
+                "action": "Accept",
+                "to": [
+                  {
+                    "networks": [
+                      "10.244.0.0/24"
+                    ]
+                  }
+                ],
+                "protocols": [
+                  {
+                    "udp": {
+                      "destinationPort": {
+                        "range": {
+                          "start": 53,
+                          "end": 54
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "duplicate_networks": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 1,
+      "output_sample": [
+        {
+          "apiVersion": "policy.networking.k8s.io/v1alpha2",
+          "kind": "ClusterNetworkPolicy",
+          "metadata": {
+            "name": "allow-portal",
+            "namespace": null
+          },
+          "spec": {
+            "tier": "Admin",
+            "priority": 10,
+            "subject": {
+              "namespaces": {
+                "matchLabels": {
+                  "name": "portal"
+                }
+              }
+            },
+            "ingress": [
+              {
+                "action": "Accept",
+                "from": [
+                  {
+                    "namespaces": {
+                      "matchLabels": {
+                        "name": "portal"
+                      }
+                    }
+                  }
+                ],
+                "protocols": [
+                  {
+                    "tcp": {
+                      "destinationPort": {
+                        "number": 5432
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "egress": [
+              {
+                "action": "Accept",
+                "to": [
+                  {
+                    "networks": [
+                      "10.0.0.0/8",
+                      "10.0.0.0/8"
+                    ]
+                  }
+                ],
+                "protocols": [
+                  {
+                    "udp": {
+                      "destinationPort": {
+                        "range": {
+                          "start": 53,
+                          "end": 54
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "hep_null_profiles": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 1,
+      "output_sample": [
+        {
+          "apiVersion": "crd.projectcalico.org/v1",
+          "kind": "HostEndpoint",
+          "metadata": {
+            "name": "node01-eth0",
+            "namespace": null,
+            "labels": {
+              "kubernetes.io/hostname": "node-01"
+            }
+          },
+          "spec": {
+            "node": "node-01",
+            "interfaceName": "eth0",
+            "expectedIPs": [
+              "172.30.140.101"
+            ],
+            "profiles": [],
+            "ports": [
+              {
+                "name": "k8s",
+                "port": 6443,
+                "protocol": "TCP"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "hep_null_expectedips": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 1,
+      "output_sample": [
+        {
+          "apiVersion": "crd.projectcalico.org/v1",
+          "kind": "HostEndpoint",
+          "metadata": {
+            "name": "node01-eth0",
+            "namespace": null,
+            "labels": {
+              "kubernetes.io/hostname": "node-01"
+            }
+          },
+          "spec": {
+            "node": "node-01",
+            "interfaceName": "eth0",
+            "expectedIPs": [],
+            "profiles": [
+              "default"
+            ],
+            "ports": [
+              {
+                "name": "k8s",
+                "port": 6443,
+                "protocol": "TCP"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "hep_duplicate_profiles": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 1,
+      "output_sample": [
+        {
+          "apiVersion": "crd.projectcalico.org/v1",
+          "kind": "HostEndpoint",
+          "metadata": {
+            "name": "node01-eth0",
+            "namespace": null,
+            "labels": {
+              "kubernetes.io/hostname": "node-01"
+            }
+          },
+          "spec": {
+            "node": "node-01",
+            "interfaceName": "eth0",
+            "expectedIPs": [
+              "172.30.140.101"
+            ],
+            "profiles": [
+              "a",
+              "a"
+            ],
+            "ports": [
+              {
+                "name": "k8s",
+                "port": 6443,
+                "protocol": "TCP"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "cluster_namespace_F-CNP": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 1,
+      "output_sample": [
+        {
+          "apiVersion": "policy.networking.k8s.io/v1alpha2",
+          "kind": "ClusterNetworkPolicy",
+          "metadata": {
+            "name": "allow-portal",
+            "namespace": "wrong"
+          },
+          "spec": {
+            "tier": "Admin",
+            "priority": 10,
+            "subject": {
+              "namespaces": {
+                "matchLabels": {
+                  "name": "portal"
+                }
+              }
+            },
+            "ingress": [
+              {
+                "action": "Accept",
+                "from": [
+                  {
+                    "namespaces": {
+                      "matchLabels": {
+                        "name": "portal"
+                      }
+                    }
+                  }
+                ],
+                "protocols": [
+                  {
+                    "tcp": {
+                      "destinationPort": {
+                        "number": 5432
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "egress": [
+              {
+                "action": "Accept",
+                "to": [
+                  {
+                    "networks": [
+                      "10.244.0.0/24"
+                    ]
+                  }
+                ],
+                "protocols": [
+                  {
+                    "udp": {
+                      "destinationPort": {
+                        "range": {
+                          "start": 53,
+                          "end": 54
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "cluster_namespace_F-GNP": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 1,
+      "output_sample": [
+        {
+          "kind": "GlobalNetworkPolicy",
+          "metadata": {
+            "name": "gnp",
+            "namespace": "wrong"
+          },
+          "spec": {
+            "order": 10,
+            "tier": null,
+            "selector": "all()",
+            "serviceAccountSelector": null,
+            "types": [],
+            "ingress": [],
+            "egress": [],
+            "applyOnForward": true,
+            "doNotTrack": null,
+            "preDNAT": null,
+            "namespaceSelector": null
+          }
+        }
+      ]
+    },
+    "cluster_namespace_F-HEP": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 1,
+      "output_sample": [
+        {
+          "apiVersion": "crd.projectcalico.org/v1",
+          "kind": "HostEndpoint",
+          "metadata": {
+            "name": "node01-eth0",
+            "namespace": "wrong",
+            "labels": {
+              "kubernetes.io/hostname": "node-01"
+            }
+          },
+          "spec": {
+            "node": "node-01",
+            "interfaceName": "eth0",
+            "expectedIPs": [
+              "172.30.140.101"
+            ],
+            "profiles": [
+              "default"
+            ],
+            "ports": [
+              {
+                "name": "k8s",
+                "port": 6443,
+                "protocol": "TCP"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "cluster_namespace_F-TIER": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 1,
+      "output_sample": [
+        {
+          "apiVersion": "crd.projectcalico.org/v1",
+          "kind": "Tier",
+          "metadata": {
+            "name": "security",
+            "namespace": "wrong"
+          },
+          "spec": {
+            "order": 100,
+            "defaultAction": "Pass"
+          }
+        }
+      ]
+    },
+    "tier_labels_dropped": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 1,
+      "output_sample": [
+        {
+          "apiVersion": "crd.projectcalico.org/v1",
+          "kind": "Tier",
+          "metadata": {
+            "name": "security",
+            "namespace": null
+          },
+          "spec": {
+            "order": 100,
+            "defaultAction": "Pass"
+          }
+        }
+      ]
+    },
+    "tier_nan": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 1,
+      "output_sample": [
+        {
+          "apiVersion": "crd.projectcalico.org/v1",
+          "kind": "Tier",
+          "metadata": {
+            "name": "security",
+            "namespace": null
+          },
+          "spec": {
+            "order": {
+              "nonfinite_observed": "nan"
+            },
+            "defaultAction": "Pass"
+          }
+        }
+      ]
+    },
+    "tier_inf": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 1,
+      "output_sample": [
+        {
+          "apiVersion": "crd.projectcalico.org/v1",
+          "kind": "Tier",
+          "metadata": {
+            "name": "security",
+            "namespace": null
+          },
+          "spec": {
+            "order": {
+              "nonfinite_observed": "inf"
+            },
+            "defaultAction": "Pass"
+          }
+        }
+      ]
+    },
+    "served_string_false_unlocks": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": null,
+      "reason": null,
+      "output_count": null,
+      "output_sample": {
+        "apiVersion": "apiextensions.k8s.io/v1",
+        "kind": "CustomResourceDefinition",
+        "name": "clusternetworkpolicies.policy.networking.k8s.io",
+        "group": "policy.networking.k8s.io",
+        "names_kind": "ClusterNetworkPolicy",
+        "plural": "clusternetworkpolicies",
+        "scope": "Cluster",
+        "version": "v1alpha2",
+        "served": true,
+        "spec_schema_sha256": "770130a412fd6fab2f02d953edf35f8cc68bf4379db8307e2185937c1e699568",
+        "compatible": true
+      }
+    },
+    "malformed_version_entry_ignored": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": null,
+      "reason": null,
+      "output_count": null,
+      "output_sample": {
+        "apiVersion": "apiextensions.k8s.io/v1",
+        "kind": "CustomResourceDefinition",
+        "name": "clusternetworkpolicies.policy.networking.k8s.io",
+        "group": "policy.networking.k8s.io",
+        "names_kind": "ClusterNetworkPolicy",
+        "plural": "clusternetworkpolicies",
+        "scope": "Cluster",
+        "version": "v1alpha2",
+        "served": true,
+        "spec_schema_sha256": "770130a412fd6fab2f02d953edf35f8cc68bf4379db8307e2185937c1e699568",
+        "compatible": true
+      }
+    },
+    "podlist_scalar": {
+      "rc": null,
+      "crash": "AttributeError",
+      "row_count": 1,
+      "calls": 2
+    },
+    "pod_metadata_scalar": {
+      "rc": null,
+      "crash": "AttributeError",
+      "row_count": 1,
+      "calls": 2
+    },
+    "pod_wrong_list_kind": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 1,
+      "output_sample": [
+        {
+          "metadata": {
+            "name": "calico-node-abc",
+            "namespace": "kube-system"
+          },
+          "initContainers": [],
+          "containers": [
+            {
+              "name": "calico-node",
+              "image": "quay.io/calico/node:v3.32.0",
+              "imageID": "containerd://sha256:f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a",
+              "ports": [],
+              "restartPolicy": null
+            }
+          ]
+        }
+      ]
+    },
+    "discovery_missing_tier_blocks_unrelated": {
+      "rc": 1,
+      "crash": null,
+      "row_count": 9,
+      "calls": 4,
+      "category": "BLOCKED_NOT_EXECUTED",
+      "exit": null,
+      "complete": null,
+      "reason": null,
+      "output_count": null,
+      "output_sample": null,
+      "executed_reads": [
+        "F-D1",
+        "F-I1",
+        "F-CS",
+        "F-CNP"
+      ]
+    },
+    "continuation_calls_not_journaled": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 10,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 1,
+      "output_sample": [
+        {
+          "kind": "NetworkPolicy",
+          "metadata": {
+            "name": "n",
+            "namespace": "portal"
+          },
+          "spec": {
+            "order": null,
+            "tier": null,
+            "selector": "all()",
+            "serviceAccountSelector": null,
+            "types": [
+              "Ingress"
+            ],
+            "ingress": [
+              {
+                "action": "Allow",
+                "protocol": null,
+                "notProtocol": null,
+                "ipVersion": null,
+                "icmp": null,
+                "notICMP": null,
+                "http": null,
+                "source": {
+                  "selector": "x",
+                  "notSelector": null,
+                  "namespaceSelector": null,
+                  "nets": [],
+                  "notNets": [],
+                  "ports": [],
+                  "notPorts": [],
+                  "serviceAccounts": null,
+                  "services": null
+                }
+              }
+            ],
+            "egress": []
+          }
+        }
+      ],
+      "actual_paths": [
+        "/apis/crd.projectcalico.org/v1/networkpolicies?limit=200",
+        "/apis/crd.projectcalico.org/v1/networkpolicies?limit=200&continue=a%2Fb%3Fx%3D1"
+      ],
+      "logged_path": "/apis/crd.projectcalico.org/v1/networkpolicies?limit=200"
+    },
+    "schema_semantic_description_property_erased": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": null,
+      "reason": null,
+      "output_count": null,
+      "output_sample": {
+        "apiVersion": "apiextensions.k8s.io/v1",
+        "kind": "CustomResourceDefinition",
+        "name": "clusternetworkpolicies.policy.networking.k8s.io",
+        "group": "policy.networking.k8s.io",
+        "names_kind": "ClusterNetworkPolicy",
+        "plural": "clusternetworkpolicies",
+        "scope": "Cluster",
+        "version": "v1alpha2",
+        "served": true,
+        "spec_schema_sha256": "770130a412fd6fab2f02d953edf35f8cc68bf4379db8307e2185937c1e699568",
+        "compatible": true
+      }
+    },
+    "selector_explicit_null_values_dropped": {
+      "rc": 0,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": null,
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": 1,
+      "output_sample": [
+        {
+          "apiVersion": "policy.networking.k8s.io/v1alpha2",
+          "kind": "ClusterNetworkPolicy",
+          "metadata": {
+            "name": "allow-portal",
+            "namespace": null
+          },
+          "spec": {
+            "tier": "Admin",
+            "priority": 10,
+            "subject": {
+              "namespaces": {
+                "matchExpressions": [
+                  {
+                    "key": "x",
+                    "operator": "Exists"
+                  }
+                ]
+              }
+            },
+            "ingress": [
+              {
+                "action": "Accept",
+                "from": [
+                  {
+                    "namespaces": {
+                      "matchLabels": {
+                        "name": "portal"
+                      }
+                    }
+                  }
+                ],
+                "protocols": [
+                  {
+                    "tcp": {
+                      "destinationPort": {
+                        "number": 5432
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "egress": [
+              {
+                "action": "Accept",
+                "to": [
+                  {
+                    "networks": [
+                      "10.244.0.0/24"
+                    ]
+                  }
+                ],
+                "protocols": [
+                  {
+                    "udp": {
+                      "destinationPort": {
+                        "range": {
+                          "start": 53,
+                          "end": 54
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "schema_valid_empty_hep_port_name_rejected": {
+      "rc": 1,
+      "crash": null,
+      "row_count": 9,
+      "calls": 9,
+      "category": "PARSE_ERROR",
+      "exit": 0,
+      "complete": true,
+      "reason": null,
+      "output_count": null,
+      "output_sample": null
+    }
+  }
+}

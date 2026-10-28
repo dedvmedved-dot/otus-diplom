@@ -109,7 +109,14 @@ spec.group=policy.networking.k8s.io, names.kind=ClusterNetworkPolicy,
 names.plural=clusternetworkpolicies, scope=Cluster; exactly one versions entry named
 v1alpha2 with served=true and an object openAPIV3Schema.properties.spec.
 
-Extract that spec subtree; recursively remove only description keys. Canonicalize:
+Extract that spec subtree; remove description only as a schema annotation at
+schema-node positions. Preserve property names inside properties/patternProperties/
+definitions/$defs/dependentSchemas maps (including a property called description).
+Traverse schema-valued nodes and schema arrays; preserve literal defaults/enums/
+examples and extension payloads. Do not apply a blind recursive key deletion.
+See FU-05 in docs/architecture/P8C_RV02_REVIEW_4c21b2a_20261028.md and its offline
+schema_normalization_reference.py. The accepted pinned hash remains unchanged.
+Canonicalize:
 JSON UTF-8, sorted keys, separators comma/colon, ensure_ascii=false, allow_nan=false;
 preserve array order and all other keys. Compare SHA256 to
 770130a412fd6fab2f02d953edf35f8cc68bf4379db8307e2185937c1e699568.
@@ -206,3 +213,15 @@ Required offline coverage in one package:
 - subprocess timeout/forbidden/not-served/connection/OS error; no overwrite/no kubectl;
 - main argv literal assertions, no extra read, no raw/error/annotation/env/credential canary leak.
 No regression rerun outside changed collector scope, no accepted PG17/Portal/backup tests.
+
+## Implementation review 4c21b2a — source correction required
+
+Current implementation is NOT accepted for live use. Follow the complete FU-01..08
+requirements in docs/architecture/P8C_RV02_REVIEW_4c21b2a_20261028.md.
+The review clarifies fixed-context rejection before any output/call, independently
+enforced cap500, exact list envelopes/types, honest process outcomes/page journal,
+null-versus-absent semantics and per-resource discovery verdicts. Schema annotations
+are removed only at schema nodes; semantic properties named description are preserved.
+This corrects an ambiguity in the original Architect normalization wording.
+No old evidence, accepted identity chain or supplemental source is superseded.
+PHASE2_NEW_RUN_APPROVED=NO; NETPOL_APPROVED_FOR_APPLY=NO.

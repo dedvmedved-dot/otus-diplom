@@ -1,0 +1,156 @@
+test_bad_action_enum (__main__.TestCNP.test_bad_action_enum) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpvl1gxqys/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_noncanonical_cidr (__main__.TestCNP.test_noncanonical_cidr) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpqm34td_f/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_port_range_start_ge_end (__main__.TestCNP.test_port_range_start_ge_end) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpemfwhc7j/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_priority_bounds (__main__.TestCNP.test_priority_bounds) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmprwbi0eia/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_subject_two_fields (__main__.TestCNP.test_subject_two_fields) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp5fn3k17q/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_unknown_semantic_field_unsupported (__main__.TestCNP.test_unknown_semantic_field_unsupported) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpktv3w3f2/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_malformed_parse_error_no_raw (__main__.TestCRDSchema.test_malformed_parse_error_no_raw) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp6kihfe8t/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_mismatch_unsupported (__main__.TestCRDSchema.test_mismatch_unsupported) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpsvfh7wxz/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_wrong_scope_kind_verb (__main__.TestDiscovery.test_wrong_scope_kind_verb) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp1dvccl4y/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpxp1vl0wz/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpizzbdbol/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpeub9dopb/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_no_kubectl (__main__.TestEnv.test_no_kubectl) ... ok
+test_no_overwrite (__main__.TestEnv.test_no_overwrite) ... ok
+test_no_raw_annotation_env_credential_leak (__main__.TestEnv.test_no_raw_annotation_env_credential_leak) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp8xke831e/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_empty_interface_and_ips (__main__.TestHEP.test_empty_interface_and_ips) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpkire1j9a/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_missing_node (__main__.TestHEP.test_missing_node) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp6e11wi0n/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_unknown_spec_key (__main__.TestHEP.test_unknown_spec_key) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpoc4v1fl3/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_valid_preserved (__main__.TestHEP.test_valid_preserved) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpcycv9586/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_all_ok (__main__.TestHappyPath.test_all_ok) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpa8sc2oqn/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_cnp_projection (__main__.TestHappyPath.test_cnp_projection) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpiixe6xxs/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_cs_output (__main__.TestHappyPath.test_cs_output) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpj4nrzpzq/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_config_digest_prefix_rejected (__main__.TestIdentity.test_config_digest_prefix_rejected) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpsm6a5fir/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_empty_pods_rejected (__main__.TestIdentity.test_empty_pods_rejected) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp4ohiv4xg/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_new_config_digest_positive (__main__.TestIdentity.test_new_config_digest_positive) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp3nnuy4sj/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_wrong_registry_rejected (__main__.TestIdentity.test_wrong_registry_rejected) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp6js9vqho/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_cap_reached_partial (__main__.TestPagination.test_cap_reached_partial) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpoetrcrbq/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_empty (__main__.TestPagination.test_empty) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp4ypkw87b/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_malformed_list_parse_error (__main__.TestPagination.test_malformed_list_parse_error) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp3v1k0pw2/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_next_page_error_partial (__main__.TestPagination.test_next_page_error_partial) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpi_ihb4si/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_repeated_token_partial (__main__.TestPagination.test_repeated_token_partial) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpty_tqpxq/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_rv_swap_partial (__main__.TestPagination.test_rv_swap_partial) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpgyshm_r2/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_two_pages_complete (__main__.TestPagination.test_two_pages_complete) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpvby9j3tb/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_connection (__main__.TestSubprocessErrors.test_connection) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpo_myo4e4/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_forbidden (__main__.TestSubprocessErrors.test_forbidden) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpv7e_m_gz/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_not_served (__main__.TestSubprocessErrors.test_not_served) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpttgk1ya0/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_timeout (__main__.TestSubprocessErrors.test_timeout) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpfnkm_ppx/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_absent_vs_observed (__main__.TestTier.test_absent_vs_observed) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp1cu9v40i/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_default_action_preserved (__main__.TestTier.test_default_action_preserved) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpdapr_uk1/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_invalid_enum (__main__.TestTier.test_invalid_enum) ... /workspace/scratch/14185c8f871f/review-4c21b2a/followup_test.py:148: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpqubhiffn/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+
+----------------------------------------------------------------------
+Ran 37 tests in 0.117s
+
+OK
