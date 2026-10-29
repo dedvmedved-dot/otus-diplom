@@ -1,0 +1,33 @@
+{
+  "start_utc": "2026-10-29T09:43:23.149807+00:00",
+  "end_utc": "2026-10-29T09:43:24.078526+00:00",
+  "python": "3.12.14",
+  "runs": [
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "followup_test.py",
+        "-v"
+      ],
+      "start_utc": "2026-10-29T09:43:23.149826+00:00",
+      "end_utc": "2026-10-29T09:43:23.425873+00:00",
+      "exit_code": 0,
+      "output_file": "followup-tests.txt"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "reproduce.py"
+      ],
+      "start_utc": "2026-10-29T09:43:23.425893+00:00",
+      "end_utc": "2026-10-29T09:43:24.037474+00:00",
+      "exit_code": 0,
+      "output_file": "reproduce-summary.json"
+    }
+  ],
+  "normalization_assertions": "PASS",
+  "source_sha": "78268f6f542b6e58685a0802ee40eae368e089c5",
+  "reviewed_main_sha": "d71af18c27059bcd9ce3ae3c2b15686d7df953c6",
+  "all_collector_kubectl_calls_mocked": true,
+  "reviewer_cluster_calls": 0
+}
