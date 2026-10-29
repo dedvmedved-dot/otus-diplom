@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
-"""P8C-R1 RV-02 — bounded follow-up collector (F-D1..F-TIER).
+"""P8C-R1 RV-02 — bounded follow-up collector (F-D1..F-TIER), corrected.
 
 Offline source design per portal/networkpolicy/followup-read-design.md (Architect
-revision after bcda2f7). Reuses accepted pure projectors and the finite S1 identity
-gate from supplemental.py; adds CNP/HEP/Tier typed projectors, the F-CS schema
-fingerprint and pagination. No live execution authorized by this module itself.
+revision after 4c21b2a review, FU-01..08). Reuses accepted pure projectors and the
+finite S1 identity gate from supplemental.py; adds CNP/HEP/Tier typed projectors, the
+F-CS schema fingerprint, pagination with hard bounds and a per-page journal.
+No live execution authorized by this module itself.
 """
 import argparse
+import copy
 import datetime
 import hashlib
 import ipaddress
 import json
+import math
 import shutil
 import subprocess
 import sys
@@ -22,12 +25,10 @@ from supplemental import (
     UnsupportedField,
     UnsupportedIdentity,
     _check_keys,
-    _dict,
     _dict_req,
     _enum,
     _meta,
     _nonempty,
-    _num,
     _require,
     _str,
     _str_list,
@@ -39,15 +40,14 @@ from supplemental import (
     verify_calico_identity,
 )
 
+# The ONLY authorized context. Any other value is rejected before any subprocess call.
 CTX = 'kubernetes-admin@pak-portal'
 REQUEST_TIMEOUT = '15s'
 SUBPROCESS_TIMEOUT = 20
 OUTPUT_FILE = 'followup.jsonl'
 
-# F-CS canonical spec-schema hash (network-policy-api v1alpha2 ClusterNetworkPolicy).
 CNP_SPEC_SHA256 = '770130a412fd6fab2f02d953edf35f8cc68bf4379db8307e2185937c1e699568'
 
-# Pagination budget for the five --raw list reads.
 PAGE_LIMIT = 200
 PAGE_LIMIT_LAST = 100
 TOTAL_CAP = 500
@@ -58,13 +58,47 @@ CNP_ACTION = {'Accept', 'Deny', 'Pass'}
 CNP_PROTOCOL = {'tcp', 'udp', 'sctp'}
 EXPR_OPERATOR = {'In', 'NotIn', 'Exists', 'DoesNotExist'}
 
+LIST_ENVELOPE = {
+    'F-CNP': ('ClusterNetworkPolicyList', 'policy.networking.k8s.io/v1alpha2'),
+    'F-NP': ('NetworkPolicyList', 'crd.projectcalico.org/v1'),
+    'F-GNP': ('GlobalNetworkPolicyList', 'crd.projectcalico.org/v1'),
+    'F-HEP': ('HostEndpointList', 'crd.projectcalico.org/v1'),
+    'F-TIER': ('TierList', 'crd.projectcalico.org/v1'),
+}
 
-def _strip_descriptions(obj):
-    if isinstance(obj, dict):
-        return {k: _strip_descriptions(v) for k, v in obj.items() if k != 'description'}
-    if isinstance(obj, list):
-        return [_strip_descriptions(x) for x in obj]
-    return obj
+
+def normalize_schema(s):
+    """Corrected narrow normalization (per schema_normalization_reference.py):
+    drop `description` only as a schema annotation at schema-node positions, preserve
+    semantic property names (including one literally called `description`)."""
+    if isinstance(s, bool):
+        return s
+    if not isinstance(s, dict):
+        raise ValueError('schema must be object/boolean')
+    maps = {'properties', 'patternProperties', 'definitions', '$defs', 'dependentSchemas'}
+    arrays = {'allOf', 'anyOf', 'oneOf', 'prefixItems'}
+    singles = {'items', 'additionalItems', 'additionalProperties', 'unevaluatedItems',
+               'unevaluatedProperties', 'not', 'contains', 'propertyNames', 'if', 'then', 'else'}
+    out = {}
+    for k, v in s.items():
+        if k == 'description':
+            continue
+        if k in maps:
+            if not isinstance(v, dict):
+                raise ValueError('schema map')
+            out[k] = {name: normalize_schema(sub) for name, sub in v.items()}
+        elif k in arrays:
+            if not isinstance(v, list):
+                raise ValueError('schema array')
+            out[k] = [normalize_schema(sub) for sub in v]
+        elif k in singles:
+            if k == 'items' and isinstance(v, list):
+                out[k] = [normalize_schema(sub) for sub in v]
+            else:
+                out[k] = normalize_schema(v)
+        else:
+            out[k] = copy.deepcopy(v)
+    return out
 
 
 def _canonicalize(obj):
@@ -77,32 +111,40 @@ def _expr(e, field):
     _check_keys(o, {'key', 'operator', 'values'}, field)
     key = _nonempty(o.get('key'), field + '.key')
     op = _enum(o.get('operator'), field + '.operator', EXPR_OPERATOR)
-    values = o.get('values')
+    if 'values' in o:
+        values = o['values']
+        if values is None:
+            raise ValueError(field + '.values cannot be null')
+        if op in ('In', 'NotIn'):
+            if not isinstance(values, list) or not values or not all(isinstance(x, str) for x in values):
+                raise ValueError(field + '.values must be a nonempty string list for ' + op)
+            return {'key': key, 'operator': op, 'values': values}
+        if values != []:
+            raise ValueError(field + '.values must be empty for ' + op)
+        return {'key': key, 'operator': op}
     if op in ('In', 'NotIn'):
-        if not isinstance(values, list) or not values or not all(isinstance(x, str) for x in values):
-            raise ValueError(field + '.values must be a nonempty string list for ' + op)
-        return {'key': key, 'operator': op, 'values': values}
-    if values not in (None, []):
-        raise ValueError(field + '.values must be absent/empty for ' + op)
+        raise ValueError(field + '.values required for ' + op)
     return {'key': key, 'operator': op}
 
 
-def _selector(v, field, required=False):
+def _selector(v, field):
     if v is None:
-        if required:
-            raise ValueError(field + ' required')
-        return {}
+        raise ValueError(field + ' cannot be null')
     if not isinstance(v, dict):
         raise ValueError(field + ' not an object')
     _check_keys(v, {'matchLabels', 'matchExpressions'}, field)
     out = {}
     if 'matchLabels' in v:
+        if v['matchLabels'] is None:
+            raise ValueError(field + '.matchLabels cannot be null')
         ml = v['matchLabels']
         if not isinstance(ml, dict) or not all(isinstance(k, str) and isinstance(val, str)
                                                for k, val in ml.items()):
             raise ValueError(field + '.matchLabels not a string map')
         out['matchLabels'] = dict(ml)
     if 'matchExpressions' in v:
+        if v['matchExpressions'] is None:
+            raise ValueError(field + '.matchExpressions cannot be null')
         me = v['matchExpressions']
         if not isinstance(me, list):
             raise ValueError(field + '.matchExpressions not a list')
@@ -119,12 +161,18 @@ def _valid_cidr(x):
 
 
 def _networks(v, field):
+    if v is None:
+        raise ValueError(field + ' cannot be null')
     if not isinstance(v, list) or not (1 <= len(v) <= 25):
         raise ValueError(field + ' must be a list of 1..25 CIDRs')
     out = []
+    seen = set()
     for x in v:
         if not isinstance(x, str) or len(x) > 43 or not _valid_cidr(x):
             raise ValueError(field + ' invalid CIDR ' + repr(x))
+        if x in seen:
+            raise ValueError(field + ' duplicate CIDR ' + x)
+        seen.add(x)
         out.append(x)
     return out
 
@@ -132,9 +180,12 @@ def _networks(v, field):
 def _namespaced_pod(v, field):
     o = _dict_req(v, field)
     _check_keys(o, {'namespaceSelector', 'podSelector'}, field)
-    pod_sel = _selector(o.get('podSelector'), field + '.podSelector', required=True)
-    out = {'podSelector': pod_sel}
+    if 'podSelector' not in o or o['podSelector'] is None:
+        raise ValueError(field + '.podSelector required')
+    out = {'podSelector': _selector(o['podSelector'], field + '.podSelector')}
     if 'namespaceSelector' in o:
+        if o['namespaceSelector'] is None:
+            raise ValueError(field + '.namespaceSelector cannot be null')
         out['namespaceSelector'] = _selector(o['namespaceSelector'], field + '.namespaceSelector')
     return out
 
@@ -145,9 +196,12 @@ def _subject(v, field):
     keys = [k for k in ('namespaces', 'pods') if k in o]
     if len(keys) != 1:
         raise ValueError(field + ' must set exactly one of namespaces/pods')
-    if 'namespaces' in o:
-        return {'namespaces': _selector(o['namespaces'], field + '.namespaces')}
-    return {'pods': _namespaced_pod(o['pods'], field + '.pods')}
+    k = keys[0]
+    if o[k] is None:
+        raise ValueError(field + '.' + k + ' cannot be null')
+    if k == 'namespaces':
+        return {'namespaces': _selector(o[k], field + '.namespaces')}
+    return {'pods': _namespaced_pod(o[k], field + '.pods')}
 
 
 def _peer(v, field, egress=False):
@@ -158,11 +212,13 @@ def _peer(v, field, egress=False):
     if len(keys) != 1:
         raise ValueError(field + ' must set exactly one peer field')
     k = keys[0]
+    if o[k] is None:
+        raise ValueError(field + '.' + k + ' cannot be null')
     if k == 'namespaces':
-        return {'namespaces': _selector(o['namespaces'], field + '.namespaces')}
+        return {'namespaces': _selector(o[k], field + '.namespaces')}
     if k == 'pods':
-        return {'pods': _namespaced_pod(o['pods'], field + '.pods')}
-    return {'networks': _networks(o['networks'], field + '.networks')}
+        return {'pods': _namespaced_pod(o[k], field + '.pods')}
+    return {'networks': _networks(o[k], field + '.networks')}
 
 
 def _destination_port(v, field):
@@ -195,15 +251,19 @@ def _protocol(p, field):
     if len(keys) != 1:
         raise ValueError(field + ' must set exactly one of tcp/udp/sctp')
     k = keys[0]
+    if o[k] is None:
+        raise ValueError(field + '.' + k + ' cannot be null')
     po = _dict_req(o[k], field + '.' + k)
     _check_keys(po, {'destinationPort'}, field + '.' + k)
-    dp = _destination_port(po.get('destinationPort'), field + '.' + k + '.destinationPort')
+    if 'destinationPort' not in po or po['destinationPort'] is None:
+        raise ValueError(field + '.' + k + '.destinationPort required')
+    dp = _destination_port(po['destinationPort'], field + '.' + k + '.destinationPort')
     return {k: {'destinationPort': dp}}
 
 
 def _protocols(v, field):
     if v is None:
-        return None
+        raise ValueError(field + ' cannot be null')
     if not isinstance(v, list) or not (1 <= len(v) <= 25):
         raise ValueError(field + ' must be a list of 1..25 protocols')
     return [_protocol(p, field + '[%d]' % i) for i, p in enumerate(v)]
@@ -211,16 +271,21 @@ def _protocols(v, field):
 
 def _rule(r, field, egress=False):
     o = _dict_req(r, field)
-    _check_keys(o, {'name', 'action', 'from', 'to', 'protocols'}, field)
+    allowed = {'name', 'action', 'to', 'protocols'} if egress else {'name', 'action', 'from', 'protocols'}
+    _check_keys(o, allowed, field)
     action = _enum(o.get('action'), field + '.action', CNP_ACTION)
     out = {'action': action}
     if 'name' in o:
+        if o['name'] is None:
+            raise ValueError(field + '.name cannot be null')
         name = o['name']
         if not isinstance(name, str) or len(name) > 100:
             raise ValueError(field + '.name must be string <=100')
         out['name'] = name
     peers_key = 'to' if egress else 'from'
-    peers = o.get(peers_key)
+    if peers_key not in o or o[peers_key] is None:
+        raise ValueError(field + '.' + peers_key + ' required')
+    peers = o[peers_key]
     if not isinstance(peers, list) or not (1 <= len(peers) <= 25):
         raise ValueError(field + '.' + peers_key + ' must be 1..25 peers')
     out[peers_key] = [_peer(x, field + '.%s[%d]' % (peers_key, i), egress=egress)
@@ -230,9 +295,39 @@ def _rule(r, field, egress=False):
     return out
 
 
+def _labels(md):
+    if 'labels' not in md:
+        return None
+    if md['labels'] is None:
+        raise ValueError('metadata.labels cannot be null')
+    labels = md['labels']
+    if not isinstance(labels, dict) or not all(isinstance(k, str) and isinstance(v, str)
+                                              for k, v in labels.items()):
+        raise ValueError('metadata.labels not a string map')
+    return dict(labels)
+
+
+def _cluster_meta(obj, kind, api):
+    _require(obj, kind, api)
+    md = _dict_req(obj.get('metadata'), 'metadata')
+    name = _nonempty(md.get('name'), 'metadata.name')
+    ns = md.get('namespace')
+    if ns not in (None, ''):
+        raise ValueError('cluster-scoped ' + kind + ' must not set metadata.namespace')
+    return {'name': name, 'namespace': None}
+
+
+def _finite_num(v, field):
+    if v is None or isinstance(v, bool) or not isinstance(v, (int, float)):
+        raise ValueError(field + ' not a number')
+    if isinstance(v, float) and not math.isfinite(v):
+        raise ValueError(field + ' not finite')
+    return v
+
+
 def project_cnp(obj):
     _require(obj, 'ClusterNetworkPolicy', 'policy.networking.k8s.io/v1alpha2')
-    md = _meta(obj, namespaced=False)
+    md = _cluster_meta(obj, 'ClusterNetworkPolicy', 'policy.networking.k8s.io/v1alpha2')
     spec = _dict_req(obj.get('spec'), 'spec')
     _check_keys(spec, {'tier', 'priority', 'subject', 'ingress', 'egress'}, 'spec')
     tier = _enum(spec.get('tier'), 'spec.tier', CNP_TIER)
@@ -242,13 +337,19 @@ def project_cnp(obj):
     subject = _subject(spec.get('subject'), 'spec.subject')
     out = {'apiVersion': 'policy.networking.k8s.io/v1alpha2', 'kind': 'ClusterNetworkPolicy',
            'metadata': md, 'spec': {'tier': tier, 'priority': priority, 'subject': subject}}
+    if 'labels' in obj.get('metadata', {}):
+        out['metadata']['labels'] = _labels(obj['metadata'])
     if 'ingress' in spec:
         ing = spec['ingress']
+        if ing is None:
+            raise ValueError('spec.ingress cannot be null')
         if not isinstance(ing, list) or len(ing) > 25:
             raise ValueError('spec.ingress must be array <=25')
         out['spec']['ingress'] = [_rule(x, 'spec.ingress[%d]' % i, egress=False) for i, x in enumerate(ing)]
     if 'egress' in spec:
         egr = spec['egress']
+        if egr is None:
+            raise ValueError('spec.egress cannot be null')
         if not isinstance(egr, list) or len(egr) > 25:
             raise ValueError('spec.egress must be array <=25')
         out['spec']['egress'] = [_rule(x, 'spec.egress[%d]' % i, egress=True) for i, x in enumerate(egr)]
@@ -265,30 +366,40 @@ def _int_or_string_port(v, field):
 
 def project_hep(obj):
     _require(obj, 'HostEndpoint', 'crd.projectcalico.org/v1')
-    md = _meta(obj, namespaced=False)
+    md = _cluster_meta(obj, 'HostEndpoint', 'crd.projectcalico.org/v1')
     out = {'apiVersion': 'crd.projectcalico.org/v1', 'kind': 'HostEndpoint', 'metadata': md}
     if 'labels' in obj.get('metadata', {}):
-        labels = obj['metadata']['labels']
-        if not isinstance(labels, dict) or not all(isinstance(k, str) and isinstance(val, str)
-                                                  for k, val in labels.items()):
-            raise ValueError('metadata.labels not a string map')
-        out['metadata']['labels'] = dict(labels)
+        out['metadata']['labels'] = _labels(obj['metadata'])
     spec = _dict_req(obj.get('spec'), 'spec')
     _check_keys(spec, {'node', 'interfaceName', 'expectedIPs', 'profiles', 'ports'}, 'spec')
     node = spec.get('node')
-    if not isinstance(node, str) or node == '' or len(node) > 253:
+    if node is None or not isinstance(node, str) or node == '' or len(node) > 253:
         raise ValueError('spec.node must be nonempty string <=253')
     sp = {'node': node}
     if 'interfaceName' in spec:
+        if spec['interfaceName'] is None:
+            raise ValueError('spec.interfaceName cannot be null')
         ifn = spec['interfaceName']
         if not isinstance(ifn, str) or len(ifn) > 15:
             raise ValueError('spec.interfaceName must be string <=15')
         sp['interfaceName'] = ifn
     if 'expectedIPs' in spec:
-        sp['expectedIPs'] = _str_list(spec['expectedIPs'], 'spec.expectedIPs')
+        if spec['expectedIPs'] is None:
+            raise ValueError('spec.expectedIPs cannot be null')
+        eips = _str_list(spec['expectedIPs'], 'spec.expectedIPs')
+        if len(set(eips)) != len(eips):
+            raise ValueError('spec.expectedIPs duplicate')
+        sp['expectedIPs'] = eips
     if 'profiles' in spec:
-        sp['profiles'] = _str_list(spec['profiles'], 'spec.profiles')
+        if spec['profiles'] is None:
+            raise ValueError('spec.profiles cannot be null')
+        profs = _str_list(spec['profiles'], 'spec.profiles')
+        if len(set(profs)) != len(profs):
+            raise ValueError('spec.profiles duplicate')
+        sp['profiles'] = profs
     if 'ports' in spec:
+        if spec['ports'] is None:
+            raise ValueError('spec.ports cannot be null')
         ports = spec['ports']
         if not isinstance(ports, list):
             raise ValueError('spec.ports not a list')
@@ -296,7 +407,11 @@ def project_hep(obj):
         for i, p in enumerate(ports):
             po = _dict_req(p, 'spec.ports[%d]' % i)
             _check_keys(po, {'name', 'port', 'protocol'}, 'spec.ports[%d]' % i)
-            name = _nonempty(po.get('name'), 'spec.ports[%d].name' % i)
+            if 'name' not in po or po['name'] is None:
+                raise ValueError('spec.ports[%d].name required' % i)
+            name = po['name']
+            if not isinstance(name, str):
+                raise ValueError('spec.ports[%d].name not a string' % i)
             port = po.get('port')
             if isinstance(port, bool) or not isinstance(port, int) or not (1 <= port <= 65535):
                 raise ValueError('spec.ports[%d].port out of range' % i)
@@ -312,19 +427,24 @@ def project_hep(obj):
 
 def project_tier(obj):
     _require(obj, 'Tier', 'crd.projectcalico.org/v1')
-    md = _meta(obj, namespaced=False)
+    md = _cluster_meta(obj, 'Tier', 'crd.projectcalico.org/v1')
     out = {'apiVersion': 'crd.projectcalico.org/v1', 'kind': 'Tier', 'metadata': md}
+    if 'labels' in obj.get('metadata', {}):
+        out['metadata']['labels'] = _labels(obj['metadata'])
     spec = _dict_req(obj.get('spec'), 'spec')
     _check_keys(spec, {'order', 'defaultAction'}, 'spec')
     sp = {}
     if 'order' in spec:
-        sp['order'] = _num(spec['order'], 'spec.order')
+        if spec['order'] is None:
+            raise ValueError('spec.order cannot be null')
+        sp['order'] = _finite_num(spec['order'], 'spec.order')
     if 'defaultAction' in spec:
         da = spec['defaultAction']
+        if da is None:
+            raise ValueError('spec.defaultAction cannot be null')
         if not isinstance(da, str) or da not in ('Pass', 'Deny'):
             raise ValueError('spec.defaultAction invalid enum')
         sp['defaultAction'] = da
-    # schema-derived default is Deny; absence is preserved (not fabricated)
     out['spec'] = sp
     return out
 
@@ -337,7 +457,7 @@ def project_crd_schema(raw):
         raise ValueError('crd apiVersion mismatch')
     if data.get('kind') != 'CustomResourceDefinition':
         raise ValueError('crd kind mismatch')
-    md = _meta(data, namespaced=False)
+    md = _cluster_meta(data, 'CustomResourceDefinition', 'apiextensions.k8s.io/v1')
     if md['name'] != 'clusternetworkpolicies.policy.networking.k8s.io':
         raise ValueError('crd name mismatch')
     spec = _dict_req(data.get('spec'), 'spec')
@@ -353,17 +473,22 @@ def project_crd_schema(raw):
     versions = spec.get('versions')
     if not isinstance(versions, list):
         raise ValueError('crd versions not a list')
-    v1a2 = [v for v in versions if isinstance(v, dict) and v.get('name') == 'v1alpha2']
+    v1a2 = []
+    for v in versions:
+        if not isinstance(v, dict):
+            raise ValueError('crd versions entry not an object')
+        if v.get('name') == 'v1alpha2':
+            v1a2.append(v)
     if len(v1a2) != 1:
         raise ValueError('crd must have exactly one v1alpha2 version')
     v = v1a2[0]
-    if not v.get('served'):
-        raise ValueError('crd v1alpha2 not served')
+    if v.get('served') is not True:
+        raise ValueError('crd v1alpha2 served must be boolean true')
     schema = _dict_req(v.get('schema'), 'versions[0].schema')
     oas = _dict_req(schema.get('openAPIV3Schema'), 'openAPIV3Schema')
     props = _dict_req(oas.get('properties'), 'openAPIV3Schema.properties')
     spec_subtree = _dict_req(props.get('spec'), 'properties.spec')
-    canon = _canonicalize(_strip_descriptions(spec_subtree))
+    canon = _canonicalize(normalize_schema(spec_subtree))
     h = hashlib.sha256(canon.encode('utf-8')).hexdigest()
     return {
         'apiVersion': 'apiextensions.k8s.io/v1',
@@ -374,7 +499,7 @@ def project_crd_schema(raw):
         'plural': names['plural'],
         'scope': spec['scope'],
         'version': 'v1alpha2',
-        'served': bool(v['served']),
+        'served': True,
         'spec_schema_sha256': h,
         'compatible': h == CNP_SPEC_SHA256,
     }
@@ -395,18 +520,12 @@ def _project_d1(raw):
     if data['groupVersion'] != 'crd.projectcalico.org/v1':
         raise ValueError('discovery groupVersion mismatch')
     res_by_name = {r['name']: r for r in data['resources']}
+    verdicts = {}
     for rname, (kind, namespaced, verbs) in D1_EXPECT.items():
-        if rname not in res_by_name:
-            raise ValueError('discovery missing resource ' + rname)
-        rr = res_by_name[rname]
-        if rr['kind'] != kind:
-            raise ValueError('resource %s kind %s != %s' % (rname, rr['kind'], kind))
-        if rr['namespaced'] != namespaced:
-            raise ValueError('resource %s scope mismatch' % rname)
-        for verb in verbs:
-            if verb not in rr['verbs']:
-                raise ValueError('resource %s missing verb %s' % (rname, verb))
-    return output
+        rr = res_by_name.get(rname)
+        verdicts[rname] = (rr is not None and rr['kind'] == kind and rr['namespaced'] == namespaced
+                           and all(v in rr['verbs'] for v in verbs))
+    return output, verdicts
 
 
 READS = [
@@ -420,24 +539,42 @@ READS = [
     {'id': 'F-CNP', 'argv': ['get', '--raw', '/apis/policy.networking.k8s.io/v1alpha2/clusternetworkpolicies'],
      'kind': 'list', 'deps': ['F-CS'], 'proj': 'cnp', 'paginated': True},
     {'id': 'F-NP', 'argv': ['get', '--raw', '/apis/crd.projectcalico.org/v1/networkpolicies'],
-     'kind': 'list', 'deps': ['F-D1', 'F-I1'], 'proj': 'np', 'paginated': True},
+     'kind': 'list', 'deps': ['D1:networkpolicies', 'F-I1'], 'proj': 'np', 'paginated': True},
     {'id': 'F-GNP', 'argv': ['get', '--raw', '/apis/crd.projectcalico.org/v1/globalnetworkpolicies'],
-     'kind': 'list', 'deps': ['F-D1', 'F-I1'], 'proj': 'gnp', 'paginated': True},
+     'kind': 'list', 'deps': ['D1:globalnetworkpolicies', 'F-I1'], 'proj': 'gnp', 'paginated': True},
     {'id': 'F-FELIX', 'argv': ['get', '--raw', '/apis/crd.projectcalico.org/v1/felixconfigurations/default'],
-     'kind': 'single', 'deps': ['F-D1', 'F-I1'], 'proj': 'felix', 'paginated': False},
+     'kind': 'single', 'deps': ['D1:felixconfigurations', 'F-I1'], 'proj': 'felix', 'paginated': False},
     {'id': 'F-HEP', 'argv': ['get', '--raw', '/apis/crd.projectcalico.org/v1/hostendpoints'],
-     'kind': 'list', 'deps': ['F-D1', 'F-I1'], 'proj': 'hep', 'paginated': True},
+     'kind': 'list', 'deps': ['D1:hostendpoints', 'F-I1'], 'proj': 'hep', 'paginated': True},
     {'id': 'F-TIER', 'argv': ['get', '--raw', '/apis/crd.projectcalico.org/v1/tiers'],
-     'kind': 'list', 'deps': ['F-D1', 'F-I1'], 'proj': 'tier', 'paginated': True},
+     'kind': 'list', 'deps': ['D1:tiers', 'F-I1'], 'proj': 'tier', 'paginated': True},
 ]
+
+def _cluster_check(obj, kind):
+    md = _dict_req(obj.get('metadata'), 'metadata')
+    ns = md.get('namespace')
+    if ns not in (None, ''):
+        raise ValueError('cluster-scoped ' + kind + ' must not set metadata.namespace')
+    return True
+
+
+def _project_gnp(obj):
+    _cluster_check(obj, 'GlobalNetworkPolicy')
+    return project_calico_policy(obj, 'GlobalNetworkPolicy', namespaced=False)
+
+
+def _project_felix(obj):
+    _cluster_check(obj, 'FelixConfiguration')
+    return project_felix(obj)
+
 
 PROJECTOR = {
     'cnp': project_cnp,
     'hep': project_hep,
     'tier': project_tier,
     'np': lambda o: project_calico_policy(o, 'NetworkPolicy', namespaced=True),
-    'gnp': lambda o: project_calico_policy(o, 'GlobalNetworkPolicy', namespaced=False),
-    'felix': project_felix,
+    'gnp': _project_gnp,
+    'felix': _project_felix,
 }
 
 
@@ -445,7 +582,13 @@ def _run(argv):
     return subprocess.run(argv, capture_output=True, text=True, timeout=SUBPROCESS_TIMEOUT)
 
 
-def _list_pages(path, run_fn):
+def _now():
+    return datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+
+def _list_pages(rid, path, ctx, run_fn):
+    kind, api = LIST_ENVELOPE[rid]
+    journal = []
     items = []
     token = None
     rv = None
@@ -455,39 +598,82 @@ def _list_pages(path, run_fn):
         p = path + '?limit=%d' % limit
         if token is not None:
             p += '&continue=' + quote(token, safe='')
-        argv = ['kubectl', '--context', CTX, '--request-timeout=' + REQUEST_TIMEOUT,
-                'get', '--raw', p]
-        result = run_fn(argv)
-        if result is None or result.returncode != 0:
-            return items, False, 'next-page GET_FAILED'
+        argv = ['kubectl', '--context', ctx, '--request-timeout=' + REQUEST_TIMEOUT, 'get', '--raw', p]
+        start = _now()
+        result = None
+        try:
+            result = run_fn(argv)
+        except subprocess.TimeoutExpired:
+            journal.append({'page': page, 'limit': limit, 'start': start, 'end': _now(),
+                            'returncode': None, 'cause': 'TIMEOUT', 'count': 0})
+            if page == 0:
+                return {'items': [], 'complete': False, 'category': 'TIMEOUT', 'reason': 'timeout',
+                        'returncode': None, 'journal': journal}
+            return {'items': items, 'complete': False, 'category': 'PARTIAL', 'reason': 'timeout after page',
+                    'returncode': None, 'journal': journal}
+        except OSError:
+            journal.append({'page': page, 'limit': limit, 'start': start, 'end': _now(),
+                            'returncode': None, 'cause': 'GET_FAILED', 'count': 0})
+            if page == 0:
+                return {'items': [], 'complete': False, 'category': 'GET_FAILED', 'reason': 'os error',
+                        'returncode': None, 'journal': journal}
+            return {'items': items, 'complete': False, 'category': 'PARTIAL', 'reason': 'os error after page',
+                    'returncode': None, 'journal': journal}
+        rc = result.returncode if result is not None else None
+        if rc != 0:
+            cause = classify(rc, result.stderr if result is not None else '', False)
+            journal.append({'page': page, 'limit': limit, 'start': start, 'end': _now(),
+                            'returncode': rc, 'cause': cause, 'count': 0})
+            if page == 0:
+                return {'items': [], 'complete': False, 'category': cause, 'reason': cause,
+                        'returncode': rc, 'journal': journal}
+            return {'items': items, 'complete': False, 'category': 'PARTIAL', 'reason': 'next-page ' + (cause or 'GET_FAILED'),
+                    'returncode': rc, 'journal': journal}
         try:
             data = json.loads(result.stdout)
         except json.JSONDecodeError:
             raise ValueError('list not valid JSON')
         if not isinstance(data, dict):
             raise ValueError('list not an object')
+        if data.get('kind') != kind or data.get('apiVersion') != api:
+            raise ValueError('list kind/apiVersion mismatch')
         meta = data.get('metadata')
-        meta = meta if isinstance(meta, dict) else {}
+        if not isinstance(meta, dict):
+            raise ValueError('list metadata not an object')
         new_rv = meta.get('resourceVersion')
+        if not isinstance(new_rv, str) or new_rv == '':
+            raise ValueError('list resourceVersion must be nonempty string')
         if rv is not None and new_rv != rv:
-            return items, False, 'resourceVersion changed'
+            journal.append({'page': page, 'limit': limit, 'start': start, 'end': _now(),
+                            'returncode': rc, 'cause': None, 'count': 0})
+            return {'items': items, 'complete': False, 'category': 'PARTIAL', 'reason': 'resourceVersion changed',
+                    'returncode': rc, 'journal': journal}
         rv = new_rv
+        cont = meta.get('continue')
+        if cont is not None and not isinstance(cont, str):
+            raise ValueError('continue must be string or absent')
         page_items = data.get('items')
         if not isinstance(page_items, list):
             raise ValueError('items not a list')
+        for it in page_items:
+            if not isinstance(it, dict):
+                raise ValueError('item not an object')
         items.extend(page_items)
-        cont = meta.get('continue')
-        if not cont:
-            return items, True, None
+        journal.append({'page': page, 'limit': limit, 'start': start, 'end': _now(),
+                        'returncode': rc, 'cause': None, 'count': len(page_items)})
+        if len(items) > TOTAL_CAP:
+            return {'items': items[:TOTAL_CAP], 'complete': False, 'category': 'PARTIAL', 'reason': 'over cap',
+                    'returncode': rc, 'journal': journal}
+        if cont is None or cont == '':
+            return {'items': items, 'complete': True, 'category': None, 'reason': None,
+                    'returncode': rc, 'journal': journal}
         if cont in seen:
-            return items, False, 'repeated continue token'
+            return {'items': items, 'complete': False, 'category': 'PARTIAL', 'reason': 'repeated continue token',
+                    'returncode': rc, 'journal': journal}
         seen.add(cont)
         token = cont
-    return items, False, 'cap reached'
-
-
-def _now():
-    return datetime.datetime.now(datetime.timezone.utc).isoformat()
+    return {'items': items, 'complete': False, 'category': 'PARTIAL', 'reason': 'cap reached',
+            'returncode': rc, 'journal': journal}
 
 
 def main():
@@ -495,6 +681,8 @@ def main():
     p.add_argument('--context', required=True)
     p.add_argument('--output', required=True)
     args = p.parse_args()
+    if args.context != CTX:
+        raise SystemExit('BLOCKED: unexpected context (approved: %s)' % CTX)
     if not shutil.which('kubectl'):
         raise SystemExit('BLOCKED: kubectl unavailable')
     directory = Path(args.output)
@@ -508,7 +696,8 @@ def main():
             if unmet:
                 log.write(json.dumps({'id': rid, 'start': None, 'argv': None, 'exit': None,
                                       'category': 'BLOCKED_NOT_EXECUTED', 'blocked_by': unmet,
-                                      'output': '', 'complete': None, 'end': _now()}) + '\n')
+                                      'output': '', 'complete': None, 'end': _now()},
+                                     allow_nan=False) + '\n')
                 failures += 1
                 continue
             if entry['paginated']:
@@ -523,28 +712,30 @@ def main():
             timed_out = False
             result = None
             if entry['paginated']:
+                journal = []
                 try:
-                    items, complete, reason = _list_pages(path, _run)
-                    category = None
+                    res = _list_pages(rid, path, args.context, _run)
+                    journal = res['journal']
+                    category = res['category']
+                    complete = res['complete']
+                    reason = res['reason']
+                    exit_code = res.get('returncode')
                     output = ''
-                    try:
-                        output = json.dumps([PROJECTOR[entry['proj']](it) for it in items])
-                    except UnsupportedField:
-                        category = 'UNSUPPORTED'
-                    except (json.JSONDecodeError, ValueError, KeyError, TypeError):
-                        category = 'PARSE_ERROR'
-                    if category is None and not complete:
-                        category = 'PARTIAL'
-                except subprocess.TimeoutExpired:
-                    category, complete, reason, output = 'TIMEOUT', False, 'timeout', ''
-                except OSError:
-                    category, complete, reason, output = 'GET_FAILED', False, 'os error', ''
+                    if res['items']:
+                        try:
+                            output = json.dumps([PROJECTOR[entry['proj']](it) for it in res['items']],
+                                                allow_nan=False)
+                        except UnsupportedField:
+                            category, output = 'UNSUPPORTED', ''
+                        except (json.JSONDecodeError, ValueError, KeyError, TypeError):
+                            category, output = 'PARSE_ERROR', ''
                 except (json.JSONDecodeError, ValueError, KeyError, TypeError):
-                    category, complete, reason, output = 'PARSE_ERROR', False, 'malformed list', ''
+                    category, complete, reason, exit_code, output = 'PARSE_ERROR', False, 'malformed list', None, ''
                 log.write(json.dumps({'id': rid, 'start': start, 'argv': argv,
-                                      'exit': 0, 'category': category, 'output': output,
-                                      'complete': complete, 'reason': reason,
-                                      'end': _now()}) + '\n')
+                                      'exit': exit_code, 'category': category, 'output': output,
+                                      'complete': complete, 'reason': reason, 'journal': journal,
+                                      'continuation_redacted': len(journal) > 1,
+                                      'end': _now()}, allow_nan=False) + '\n')
                 if category is None:
                     ok_ids.add(rid)
                 else:
@@ -556,40 +747,49 @@ def main():
                 timed_out = True
             except OSError:
                 pass
-
             output = ''
             ok = result is not None and result.returncode == 0
             unsupported = False
             complete = None
+            verdicts = None
             if ok:
                 try:
                     kind = entry['kind']
                     if kind == 'discovery':
-                        output = _project_d1(result.stdout)
+                        output, verdicts = _project_d1(result.stdout)
                     elif kind == 'podlist':
                         data = json.loads(result.stdout)
-                        meta = data.get('metadata') or {}
-                        if meta.get('continue'):
-                            output = ''
-                            complete = False
+                        if not isinstance(data, dict) or data.get('kind') != 'PodList' or data.get('apiVersion') != 'v1':
+                            raise ValueError('pod list envelope mismatch')
+                        meta = data.get('metadata')
+                        if not isinstance(meta, dict):
+                            raise ValueError('pod list metadata not an object')
+                        cont = meta.get('continue')
+                        if cont is not None and not isinstance(cont, str):
+                            raise ValueError('continue must be string or absent')
+                        if cont:
                             raise ValueError('pod list incomplete (continue present)')
                         items = data.get('items')
                         if not isinstance(items, list):
                             raise ValueError('items not a list')
-                        proj = [project_pod_identity(it, 'kube-system') for it in items]
+                        proj = []
+                        for it in items:
+                            if not isinstance(it, dict):
+                                raise ValueError('item not an object')
+                            proj.append(project_pod_identity(it, 'kube-system'))
                         verify_calico_identity(proj)
-                        output = json.dumps(proj)
+                        output = json.dumps(proj, allow_nan=False)
                         complete = True
                     elif kind == 'crd':
                         proj = project_crd_schema(result.stdout)
                         if not proj['compatible']:
                             unsupported = True
-                        output = json.dumps(proj)
+                        output = json.dumps(proj, allow_nan=False)
                     elif kind == 'single':
                         data = json.loads(result.stdout)
                         if not isinstance(data, dict):
                             raise ValueError('expected single object')
-                        output = json.dumps(PROJECTOR[entry['proj']](data))
+                        output = json.dumps(PROJECTOR[entry['proj']](data), allow_nan=False)
                     else:
                         raise ValueError('unknown kind ' + kind)
                 except UnsupportedField:
@@ -602,7 +802,7 @@ def main():
                     failures += 1
                     log.write(json.dumps({'id': rid, 'start': start, 'argv': argv,
                                           'exit': 0, 'category': 'PARSE_ERROR', 'output': '',
-                                          'complete': complete, 'end': _now()}) + '\n')
+                                          'complete': complete, 'end': _now()}, allow_nan=False) + '\n')
                     continue
             if unsupported:
                 category = 'UNSUPPORTED'
@@ -613,10 +813,14 @@ def main():
                 failures += 1
             else:
                 ok_ids.add(rid)
+            if verdicts is not None:
+                for rname, vok in verdicts.items():
+                    if vok:
+                        ok_ids.add('D1:' + rname)
             log.write(json.dumps({'id': rid, 'start': start, 'argv': argv,
                                   'exit': None if result is None else result.returncode,
                                   'category': category, 'output': output, 'complete': complete,
-                                  'end': _now()}) + '\n')
+                                  'end': _now()}, allow_nan=False) + '\n')
     return 1 if failures else 0
 
 
