@@ -667,5 +667,105 @@ class TestEnv(unittest.TestCase):
         self.assertNotIn('SECRET/TOKEN', json.dumps(rows))
 
 
+class TestR1JournalAndExit(unittest.TestCase):
+    def test_projector_error_complete_false(self):
+        c = copy.deepcopy(CNP)
+        c['spec'] = 'bad'
+        rc, _, rows = run({'F-CNP': [R(0, page('F-CNP', [c]))]})
+        r = by_id(rows)['F-CNP']
+        self.assertEqual(r['category'], 'PARSE_ERROR')
+        self.assertFalse(r['complete'])
+        self.assertEqual(r['exit'], 0)
+        self.assertGreaterEqual(len(r['journal']), 1)
+
+    def test_unsupported_projector_complete_false(self):
+        c = copy.deepcopy(CNP)
+        c['spec']['ingress'][0]['bogusField'] = 'x'
+        rc, _, rows = run({'F-CNP': [R(0, page('F-CNP', [c]))]})
+        r = by_id(rows)['F-CNP']
+        self.assertEqual(r['category'], 'UNSUPPORTED')
+        self.assertFalse(r['complete'])
+        self.assertEqual(r['output'], '')
+
+    def test_invalid_page_preserves_journal_and_exit(self):
+        rc, _, rows = run({'F-NP': [R(0, page('F-NP', [NP], 'tok1')),
+                                     R(0, 'not json')]})
+        r = by_id(rows)['F-NP']
+        self.assertEqual(r['category'], 'PARSE_ERROR')
+        self.assertFalse(r['complete'])
+        self.assertEqual(r['exit'], 0)
+        self.assertEqual(len(r['journal']), 2)
+        self.assertEqual(r['journal'][1]['cause'], 'invalid JSON')
+
+    def test_nonfinite_gnp_complete_false(self):
+        g = copy.deepcopy(GNP)
+        g['spec']['order'] = float('nan')
+        rc, _, rows = run({'F-GNP': [R(0, page('F-GNP', [g]))]})
+        r = by_id(rows)['F-GNP']
+        self.assertEqual(r['category'], 'PARSE_ERROR')
+        self.assertFalse(r['complete'])
+
+
+class TestR2Boundaries(unittest.TestCase):
+    def test_continue_null_parse_error(self):
+        body = {'kind': 'NetworkPolicyList', 'apiVersion': 'crd.projectcalico.org/v1',
+                'metadata': {'resourceVersion': 'r', 'continue': None}, 'items': []}
+        rc, _, rows = run({'F-NP': R(0, json.dumps(body))})
+        self.assertEqual(by_id(rows)['F-NP']['category'], 'PARSE_ERROR')
+
+    def test_cluster_namespace_null_rejected(self):
+        for rid, obj in [('F-CNP', CNP), ('F-GNP', GNP), ('F-HEP', HEP), ('F-TIER', TIER)]:
+            o = copy.deepcopy(obj)
+            o['metadata']['namespace'] = None
+            rc, _, rows = run({rid: R(0, page(rid, [o]))})
+            self.assertNotEqual(rc, 0, rid)
+            self.assertEqual(by_id(rows)[rid]['category'], 'PARSE_ERROR', rid)
+
+    def test_unbound_identity_retained(self):
+        p = copy.deepcopy(POD)
+        p['spec']['containers'][0]['image'] = 'quay.io/calico/node:v3.31.0'
+        rc, _, rows = run({'F-I1': R(0, podlist([p]))})
+        i1 = by_id(rows)['F-I1']
+        self.assertEqual(i1['category'], 'UNSUPPORTED')
+        self.assertNotEqual(i1['output'], '')
+        self.assertIn('calico-node', i1['output'])
+
+    def test_single_page_201_overlong(self):
+        rc, _, rows = run({'F-NP': R(0, page('F-NP', objects(NP, 201)))})
+        r = by_id(rows)['F-NP']
+        self.assertEqual(r['category'], 'PARTIAL')
+        self.assertEqual(r['reason'], 'page overlong')
+        self.assertFalse(r['complete'])
+
+    def test_two_pages_201_complete(self):
+        rc, _, rows = run({'F-NP': [R(0, page('F-NP', objects(NP, 200), 'a')),
+                                     R(0, page('F-NP', objects(NP, 1), None))]})
+        self.assertEqual(rc, 0)
+        self.assertTrue(by_id(rows)['F-NP']['complete'])
+
+
+class TestR3CRDVersions(unittest.TestCase):
+    def _crd_versions(self, extra):
+        c = copy.deepcopy(CRD)
+        c['spec']['versions'].append(extra)
+        return R(0, json.dumps(c))
+
+    def test_empty_entry(self):
+        rc, _, rows = run({'F-CS': self._crd_versions({})})
+        self.assertEqual(by_id(rows)['F-CS']['category'], 'PARSE_ERROR')
+
+    def test_name_null(self):
+        rc, _, rows = run({'F-CS': self._crd_versions({'name': None})})
+        self.assertEqual(by_id(rows)['F-CS']['category'], 'PARSE_ERROR')
+
+    def test_name_int(self):
+        rc, _, rows = run({'F-CS': self._crd_versions({'name': 42})})
+        self.assertEqual(by_id(rows)['F-CS']['category'], 'PARSE_ERROR')
+
+    def test_served_bad_string(self):
+        rc, _, rows = run({'F-CS': self._crd_versions({'name': 'v1beta1', 'served': 'bad'})})
+        self.assertEqual(by_id(rows)['F-CS']['category'], 'PARSE_ERROR')
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
