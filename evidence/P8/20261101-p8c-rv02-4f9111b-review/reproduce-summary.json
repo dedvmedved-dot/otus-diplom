@@ -1,0 +1,27 @@
+{
+  "executed": 151,
+  "passed": 131,
+  "failed": 20,
+  "failed_cases": [
+    "F-CNP_timeout_later",
+    "F-CNP_oserror_later",
+    "F-CNP_badprojector_first",
+    "F-CNP_badprojector_later",
+    "F-NP_timeout_later",
+    "F-NP_oserror_later",
+    "F-NP_badprojector_first",
+    "F-NP_badprojector_later",
+    "F-GNP_timeout_later",
+    "F-GNP_oserror_later",
+    "F-GNP_badprojector_first",
+    "F-GNP_badprojector_later",
+    "F-HEP_timeout_later",
+    "F-HEP_oserror_later",
+    "F-HEP_badprojector_first",
+    "F-HEP_badprojector_later",
+    "F-TIER_timeout_later",
+    "F-TIER_oserror_later",
+    "F-TIER_badprojector_first",
+    "F-TIER_badprojector_later"
+  ]
+}

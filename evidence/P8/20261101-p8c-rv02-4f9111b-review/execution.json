@@ -1,0 +1,42 @@
+{
+  "start_utc": "2026-10-31T23:31:45.377133+00:00",
+  "end_utc": "2026-10-31T23:31:46.416978+00:00",
+  "python": "3.12.14",
+  "runs": [
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "followup_test.py",
+        "-v"
+      ],
+      "start_utc": "2026-10-31T23:31:45.377146+00:00",
+      "end_utc": "2026-10-31T23:31:45.657218+00:00",
+      "exit_code": 0,
+      "output_file": "followup-tests.txt"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "reproduce.py"
+      ],
+      "start_utc": "2026-10-31T23:31:45.657233+00:00",
+      "end_utc": "2026-10-31T23:31:46.253719+00:00",
+      "exit_code": 0,
+      "output_file": "reproduce-summary.json"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "regression_test.py"
+      ],
+      "start_utc": "2026-10-31T23:31:46.253735+00:00",
+      "end_utc": "2026-10-31T23:31:46.416955+00:00",
+      "exit_code": 1,
+      "output_file": "regression-tests.txt"
+    }
+  ],
+  "source_sha": "c4477cf299916332848a00af73f0927d427f4ba4",
+  "reviewed_main_sha": "4f9111b2a60945fad08b8f150a6069e6edd405a8",
+  "all_collector_kubectl_calls_mocked": true,
+  "reviewer_cluster_calls": 0
+}

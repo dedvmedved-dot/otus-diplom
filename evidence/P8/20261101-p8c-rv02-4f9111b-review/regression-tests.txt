@@ -1,0 +1,431 @@
+test_duplicate_nonselected_versions_rejected (__main__.RemainingContract.test_duplicate_nonselected_versions_rejected) ... /workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmphmnv2_pd/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+
+  test_duplicate_nonselected_versions_rejected (__main__.RemainingContract.test_duplicate_nonselected_versions_rejected) (entries=[{'name': 'v2', 'served': False}, {'name': 'v2', 'served': False}]) ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp231tn4lh/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_duplicate_nonselected_versions_rejected (__main__.RemainingContract.test_duplicate_nonselected_versions_rejected) (entries=[{'name': 'v2', 'served': False}, {'name': 'v2', 'served': True}]) ... FAIL
+test_one_journal_record_per_repeated_token_attempt (__main__.RemainingContract.test_one_journal_record_per_repeated_token_attempt) ... /workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpni5cdrri/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+
+  test_one_journal_record_per_repeated_token_attempt (__main__.RemainingContract.test_one_journal_record_per_repeated_token_attempt) (rid='F-CNP') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpqcoc69rg/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_one_journal_record_per_repeated_token_attempt (__main__.RemainingContract.test_one_journal_record_per_repeated_token_attempt) (rid='F-NP') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp_ilm2zva/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_one_journal_record_per_repeated_token_attempt (__main__.RemainingContract.test_one_journal_record_per_repeated_token_attempt) (rid='F-GNP') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpzrg38143/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_one_journal_record_per_repeated_token_attempt (__main__.RemainingContract.test_one_journal_record_per_repeated_token_attempt) (rid='F-HEP') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmptwn0nnuz/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_one_journal_record_per_repeated_token_attempt (__main__.RemainingContract.test_one_journal_record_per_repeated_token_attempt) (rid='F-TIER') ... FAIL
+test_projector_failure_stops_continuation (__main__.RemainingContract.test_projector_failure_stops_continuation) ... /workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpf5edptt3/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+
+  test_projector_failure_stops_continuation (__main__.RemainingContract.test_projector_failure_stops_continuation) (rid='F-CNP') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpo1ske2ua/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_projector_failure_stops_continuation (__main__.RemainingContract.test_projector_failure_stops_continuation) (rid='F-NP') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpnbs7chsh/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_projector_failure_stops_continuation (__main__.RemainingContract.test_projector_failure_stops_continuation) (rid='F-GNP') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpa63r3x73/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_projector_failure_stops_continuation (__main__.RemainingContract.test_projector_failure_stops_continuation) (rid='F-HEP') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp0227i44z/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_projector_failure_stops_continuation (__main__.RemainingContract.test_projector_failure_stops_continuation) (rid='F-TIER') ... FAIL
+test_projector_journal_is_not_success (__main__.RemainingContract.test_projector_journal_is_not_success) ... /workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp1e57eq5j/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+
+  test_projector_journal_is_not_success (__main__.RemainingContract.test_projector_journal_is_not_success) (rid='F-CNP') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpstfg1tqi/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_projector_journal_is_not_success (__main__.RemainingContract.test_projector_journal_is_not_success) (rid='F-NP') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpwmg8j6a5/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_projector_journal_is_not_success (__main__.RemainingContract.test_projector_journal_is_not_success) (rid='F-GNP') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmppxtstjuz/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_projector_journal_is_not_success (__main__.RemainingContract.test_projector_journal_is_not_success) (rid='F-HEP') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpksjtrq0u/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_projector_journal_is_not_success (__main__.RemainingContract.test_projector_journal_is_not_success) (rid='F-TIER') ... FAIL
+test_real_archived_identity_mapping (__main__.RemainingContract.test_real_archived_identity_mapping) ... /workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp0o8909d5/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_unknown_later_process_returncode_is_null (__main__.RemainingContract.test_unknown_later_process_returncode_is_null) ... /workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp8qho3wf0/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+
+  test_unknown_later_process_returncode_is_null (__main__.RemainingContract.test_unknown_later_process_returncode_is_null) (rid='F-CNP', error='TimeoutExpired') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmps8kbjo3u/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_unknown_later_process_returncode_is_null (__main__.RemainingContract.test_unknown_later_process_returncode_is_null) (rid='F-CNP', error='OSError') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpb19obck8/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_unknown_later_process_returncode_is_null (__main__.RemainingContract.test_unknown_later_process_returncode_is_null) (rid='F-NP', error='TimeoutExpired') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp2sud38oo/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_unknown_later_process_returncode_is_null (__main__.RemainingContract.test_unknown_later_process_returncode_is_null) (rid='F-NP', error='OSError') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp_usmvt4a/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_unknown_later_process_returncode_is_null (__main__.RemainingContract.test_unknown_later_process_returncode_is_null) (rid='F-GNP', error='TimeoutExpired') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpy3bmgue6/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_unknown_later_process_returncode_is_null (__main__.RemainingContract.test_unknown_later_process_returncode_is_null) (rid='F-GNP', error='OSError') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpn51bpt1z/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_unknown_later_process_returncode_is_null (__main__.RemainingContract.test_unknown_later_process_returncode_is_null) (rid='F-HEP', error='TimeoutExpired') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpawnjkb_u/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_unknown_later_process_returncode_is_null (__main__.RemainingContract.test_unknown_later_process_returncode_is_null) (rid='F-HEP', error='OSError') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpxo2rm2h3/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_unknown_later_process_returncode_is_null (__main__.RemainingContract.test_unknown_later_process_returncode_is_null) (rid='F-TIER', error='TimeoutExpired') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpf_672h66/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_unknown_later_process_returncode_is_null (__main__.RemainingContract.test_unknown_later_process_returncode_is_null) (rid='F-TIER', error='OSError') ... FAIL
+test_unsupported_stops_continuation (__main__.RemainingContract.test_unsupported_stops_continuation) ... /workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpyowhnmsx/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+
+  test_unsupported_stops_continuation (__main__.RemainingContract.test_unsupported_stops_continuation) (rid='F-CNP') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpd7mf9evy/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_unsupported_stops_continuation (__main__.RemainingContract.test_unsupported_stops_continuation) (rid='F-NP') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpptuhq3gb/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_unsupported_stops_continuation (__main__.RemainingContract.test_unsupported_stops_continuation) (rid='F-GNP') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmplogwetd1/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_unsupported_stops_continuation (__main__.RemainingContract.test_unsupported_stops_continuation) (rid='F-HEP') ... FAIL
+/workspace/scratch/14185c8f871f/review-4f9111b/followup_test.py:167: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpefnviz41/out/followup.jsonl' mode='r' encoding='UTF-8'>
+  rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+  test_unsupported_stops_continuation (__main__.RemainingContract.test_unsupported_stops_continuation) (rid='F-TIER') ... FAIL
+
+======================================================================
+FAIL: test_duplicate_nonselected_versions_rejected (__main__.RemainingContract.test_duplicate_nonselected_versions_rejected) (entries=[{'name': 'v2', 'served': False}, {'name': 'v2', 'served': False}])
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 56, in test_duplicate_nonselected_versions_rejected
+    self.assertEqual((rc,r['category'],r['output']),(1,'PARSE_ERROR',''))
+AssertionError: Tuples differ: (0, None, '{"apiVersion": "apiextensions.k[382 chars]ue}') != (1, 'PARSE_ERROR', '')
+
+First differing element 0:
+0
+1
+
++ (1, 'PARSE_ERROR', '')
+- (0,
+-  None,
+-  '{"apiVersion": "apiextensions.k8s.io/v1", "kind": '
+-  '"CustomResourceDefinition", "name": '
+-  '"clusternetworkpolicies.policy.networking.k8s.io", "group": '
+-  '"policy.networking.k8s.io", "names_kind": "ClusterNetworkPolicy", "plural": '
+-  '"clusternetworkpolicies", "scope": "Cluster", "version": "v1alpha2", '
+-  '"served": true, "spec_schema_sha256": '
+-  '"770130a412fd6fab2f02d953edf35f8cc68bf4379db8307e2185937c1e699568", '
+-  '"compatible": true}')
+
+======================================================================
+FAIL: test_duplicate_nonselected_versions_rejected (__main__.RemainingContract.test_duplicate_nonselected_versions_rejected) (entries=[{'name': 'v2', 'served': False}, {'name': 'v2', 'served': True}])
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 56, in test_duplicate_nonselected_versions_rejected
+    self.assertEqual((rc,r['category'],r['output']),(1,'PARSE_ERROR',''))
+AssertionError: Tuples differ: (0, None, '{"apiVersion": "apiextensions.k[382 chars]ue}') != (1, 'PARSE_ERROR', '')
+
+First differing element 0:
+0
+1
+
++ (1, 'PARSE_ERROR', '')
+- (0,
+-  None,
+-  '{"apiVersion": "apiextensions.k8s.io/v1", "kind": '
+-  '"CustomResourceDefinition", "name": '
+-  '"clusternetworkpolicies.policy.networking.k8s.io", "group": '
+-  '"policy.networking.k8s.io", "names_kind": "ClusterNetworkPolicy", "plural": '
+-  '"clusternetworkpolicies", "scope": "Cluster", "version": "v1alpha2", '
+-  '"served": true, "spec_schema_sha256": '
+-  '"770130a412fd6fab2f02d953edf35f8cc68bf4379db8307e2185937c1e699568", '
+-  '"compatible": true}')
+
+======================================================================
+FAIL: test_one_journal_record_per_repeated_token_attempt (__main__.RemainingContract.test_one_journal_record_per_repeated_token_attempt) (rid='F-CNP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 47, in test_one_journal_record_per_repeated_token_attempt
+    self.assertEqual(len(r['journal']),actual)
+AssertionError: 3 != 2
+
+======================================================================
+FAIL: test_one_journal_record_per_repeated_token_attempt (__main__.RemainingContract.test_one_journal_record_per_repeated_token_attempt) (rid='F-NP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 47, in test_one_journal_record_per_repeated_token_attempt
+    self.assertEqual(len(r['journal']),actual)
+AssertionError: 3 != 2
+
+======================================================================
+FAIL: test_one_journal_record_per_repeated_token_attempt (__main__.RemainingContract.test_one_journal_record_per_repeated_token_attempt) (rid='F-GNP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 47, in test_one_journal_record_per_repeated_token_attempt
+    self.assertEqual(len(r['journal']),actual)
+AssertionError: 3 != 2
+
+======================================================================
+FAIL: test_one_journal_record_per_repeated_token_attempt (__main__.RemainingContract.test_one_journal_record_per_repeated_token_attempt) (rid='F-HEP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 47, in test_one_journal_record_per_repeated_token_attempt
+    self.assertEqual(len(r['journal']),actual)
+AssertionError: 3 != 2
+
+======================================================================
+FAIL: test_one_journal_record_per_repeated_token_attempt (__main__.RemainingContract.test_one_journal_record_per_repeated_token_attempt) (rid='F-TIER')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 47, in test_one_journal_record_per_repeated_token_attempt
+    self.assertEqual(len(r['journal']),actual)
+AssertionError: 3 != 2
+
+======================================================================
+FAIL: test_projector_failure_stops_continuation (__main__.RemainingContract.test_projector_failure_stops_continuation) (rid='F-CNP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 12, in test_projector_failure_stops_continuation
+    self.assertEqual(sum(c[0]==rid for c in calls),1)
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_projector_failure_stops_continuation (__main__.RemainingContract.test_projector_failure_stops_continuation) (rid='F-NP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 12, in test_projector_failure_stops_continuation
+    self.assertEqual(sum(c[0]==rid for c in calls),1)
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_projector_failure_stops_continuation (__main__.RemainingContract.test_projector_failure_stops_continuation) (rid='F-GNP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 12, in test_projector_failure_stops_continuation
+    self.assertEqual(sum(c[0]==rid for c in calls),1)
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_projector_failure_stops_continuation (__main__.RemainingContract.test_projector_failure_stops_continuation) (rid='F-HEP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 12, in test_projector_failure_stops_continuation
+    self.assertEqual(sum(c[0]==rid for c in calls),1)
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_projector_failure_stops_continuation (__main__.RemainingContract.test_projector_failure_stops_continuation) (rid='F-TIER')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 12, in test_projector_failure_stops_continuation
+    self.assertEqual(sum(c[0]==rid for c in calls),1)
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_projector_journal_is_not_success (__main__.RemainingContract.test_projector_journal_is_not_success) (rid='F-CNP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 20, in test_projector_journal_is_not_success
+    self.assertTrue(r['journal'][0]['cause'])
+AssertionError: None is not true
+
+======================================================================
+FAIL: test_projector_journal_is_not_success (__main__.RemainingContract.test_projector_journal_is_not_success) (rid='F-NP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 20, in test_projector_journal_is_not_success
+    self.assertTrue(r['journal'][0]['cause'])
+AssertionError: None is not true
+
+======================================================================
+FAIL: test_projector_journal_is_not_success (__main__.RemainingContract.test_projector_journal_is_not_success) (rid='F-GNP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 20, in test_projector_journal_is_not_success
+    self.assertTrue(r['journal'][0]['cause'])
+AssertionError: None is not true
+
+======================================================================
+FAIL: test_projector_journal_is_not_success (__main__.RemainingContract.test_projector_journal_is_not_success) (rid='F-HEP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 20, in test_projector_journal_is_not_success
+    self.assertTrue(r['journal'][0]['cause'])
+AssertionError: None is not true
+
+======================================================================
+FAIL: test_projector_journal_is_not_success (__main__.RemainingContract.test_projector_journal_is_not_success) (rid='F-TIER')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 20, in test_projector_journal_is_not_success
+    self.assertTrue(r['journal'][0]['cause'])
+AssertionError: None is not true
+
+======================================================================
+FAIL: test_unknown_later_process_returncode_is_null (__main__.RemainingContract.test_unknown_later_process_returncode_is_null) (rid='F-CNP', error='TimeoutExpired')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 37, in test_unknown_later_process_returncode_is_null
+    self.assertIsNone(r['exit'])
+AssertionError: 0 is not None
+
+======================================================================
+FAIL: test_unknown_later_process_returncode_is_null (__main__.RemainingContract.test_unknown_later_process_returncode_is_null) (rid='F-CNP', error='OSError')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 37, in test_unknown_later_process_returncode_is_null
+    self.assertIsNone(r['exit'])
+AssertionError: 0 is not None
+
+======================================================================
+FAIL: test_unknown_later_process_returncode_is_null (__main__.RemainingContract.test_unknown_later_process_returncode_is_null) (rid='F-NP', error='TimeoutExpired')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 37, in test_unknown_later_process_returncode_is_null
+    self.assertIsNone(r['exit'])
+AssertionError: 0 is not None
+
+======================================================================
+FAIL: test_unknown_later_process_returncode_is_null (__main__.RemainingContract.test_unknown_later_process_returncode_is_null) (rid='F-NP', error='OSError')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 37, in test_unknown_later_process_returncode_is_null
+    self.assertIsNone(r['exit'])
+AssertionError: 0 is not None
+
+======================================================================
+FAIL: test_unknown_later_process_returncode_is_null (__main__.RemainingContract.test_unknown_later_process_returncode_is_null) (rid='F-GNP', error='TimeoutExpired')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 37, in test_unknown_later_process_returncode_is_null
+    self.assertIsNone(r['exit'])
+AssertionError: 0 is not None
+
+======================================================================
+FAIL: test_unknown_later_process_returncode_is_null (__main__.RemainingContract.test_unknown_later_process_returncode_is_null) (rid='F-GNP', error='OSError')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 37, in test_unknown_later_process_returncode_is_null
+    self.assertIsNone(r['exit'])
+AssertionError: 0 is not None
+
+======================================================================
+FAIL: test_unknown_later_process_returncode_is_null (__main__.RemainingContract.test_unknown_later_process_returncode_is_null) (rid='F-HEP', error='TimeoutExpired')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 37, in test_unknown_later_process_returncode_is_null
+    self.assertIsNone(r['exit'])
+AssertionError: 0 is not None
+
+======================================================================
+FAIL: test_unknown_later_process_returncode_is_null (__main__.RemainingContract.test_unknown_later_process_returncode_is_null) (rid='F-HEP', error='OSError')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 37, in test_unknown_later_process_returncode_is_null
+    self.assertIsNone(r['exit'])
+AssertionError: 0 is not None
+
+======================================================================
+FAIL: test_unknown_later_process_returncode_is_null (__main__.RemainingContract.test_unknown_later_process_returncode_is_null) (rid='F-TIER', error='TimeoutExpired')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 37, in test_unknown_later_process_returncode_is_null
+    self.assertIsNone(r['exit'])
+AssertionError: 0 is not None
+
+======================================================================
+FAIL: test_unknown_later_process_returncode_is_null (__main__.RemainingContract.test_unknown_later_process_returncode_is_null) (rid='F-TIER', error='OSError')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 37, in test_unknown_later_process_returncode_is_null
+    self.assertIsNone(r['exit'])
+AssertionError: 0 is not None
+
+======================================================================
+FAIL: test_unsupported_stops_continuation (__main__.RemainingContract.test_unsupported_stops_continuation) (rid='F-CNP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 29, in test_unsupported_stops_continuation
+    self.assertEqual(sum(c[0]==rid for c in calls),1)
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_unsupported_stops_continuation (__main__.RemainingContract.test_unsupported_stops_continuation) (rid='F-NP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 29, in test_unsupported_stops_continuation
+    self.assertEqual(sum(c[0]==rid for c in calls),1)
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_unsupported_stops_continuation (__main__.RemainingContract.test_unsupported_stops_continuation) (rid='F-GNP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 29, in test_unsupported_stops_continuation
+    self.assertEqual(sum(c[0]==rid for c in calls),1)
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_unsupported_stops_continuation (__main__.RemainingContract.test_unsupported_stops_continuation) (rid='F-HEP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 29, in test_unsupported_stops_continuation
+    self.assertEqual(sum(c[0]==rid for c in calls),1)
+AssertionError: 2 != 1
+
+======================================================================
+FAIL: test_unsupported_stops_continuation (__main__.RemainingContract.test_unsupported_stops_continuation) (rid='F-TIER')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4f9111b/regression_test.py", line 29, in test_unsupported_stops_continuation
+    self.assertEqual(sum(c[0]==rid for c in calls),1)
+AssertionError: 2 != 1
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.081s
+
+FAILED (failures=32)
