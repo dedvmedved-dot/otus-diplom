@@ -1,0 +1,12 @@
+{
+  "executed": 151,
+  "passed": 146,
+  "failed": 5,
+  "failed_cases": [
+    "F-CNP_bounded_prefix_invalid_suffix",
+    "F-NP_bounded_prefix_invalid_suffix",
+    "F-GNP_bounded_prefix_invalid_suffix",
+    "F-HEP_bounded_prefix_invalid_suffix",
+    "F-TIER_bounded_prefix_invalid_suffix"
+  ]
+}

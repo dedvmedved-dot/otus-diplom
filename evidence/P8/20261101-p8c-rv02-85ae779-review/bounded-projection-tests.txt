@@ -1,0 +1,234 @@
+test_invalid_discarded_suffix_not_projected (__main__.BoundedProjection.test_invalid_discarded_suffix_not_projected) ... 
+  test_invalid_discarded_suffix_not_projected (__main__.BoundedProjection.test_invalid_discarded_suffix_not_projected) (rid='F-CNP', malformed=True) ... FAIL
+  test_invalid_discarded_suffix_not_projected (__main__.BoundedProjection.test_invalid_discarded_suffix_not_projected) (rid='F-CNP', malformed=False) ... FAIL
+  test_invalid_discarded_suffix_not_projected (__main__.BoundedProjection.test_invalid_discarded_suffix_not_projected) (rid='F-NP', malformed=True) ... FAIL
+  test_invalid_discarded_suffix_not_projected (__main__.BoundedProjection.test_invalid_discarded_suffix_not_projected) (rid='F-NP', malformed=False) ... FAIL
+  test_invalid_discarded_suffix_not_projected (__main__.BoundedProjection.test_invalid_discarded_suffix_not_projected) (rid='F-GNP', malformed=True) ... FAIL
+  test_invalid_discarded_suffix_not_projected (__main__.BoundedProjection.test_invalid_discarded_suffix_not_projected) (rid='F-GNP', malformed=False) ... FAIL
+  test_invalid_discarded_suffix_not_projected (__main__.BoundedProjection.test_invalid_discarded_suffix_not_projected) (rid='F-HEP', malformed=True) ... FAIL
+  test_invalid_discarded_suffix_not_projected (__main__.BoundedProjection.test_invalid_discarded_suffix_not_projected) (rid='F-HEP', malformed=False) ... FAIL
+  test_invalid_discarded_suffix_not_projected (__main__.BoundedProjection.test_invalid_discarded_suffix_not_projected) (rid='F-TIER', malformed=True) ... FAIL
+  test_invalid_discarded_suffix_not_projected (__main__.BoundedProjection.test_invalid_discarded_suffix_not_projected) (rid='F-TIER', malformed=False) ... FAIL
+test_single_501_projects_only_500 (__main__.BoundedProjection.test_single_501_projects_only_500) ... 
+  test_single_501_projects_only_500 (__main__.BoundedProjection.test_single_501_projects_only_500) (rid='F-CNP') ... FAIL
+  test_single_501_projects_only_500 (__main__.BoundedProjection.test_single_501_projects_only_500) (rid='F-NP') ... FAIL
+  test_single_501_projects_only_500 (__main__.BoundedProjection.test_single_501_projects_only_500) (rid='F-GNP') ... FAIL
+  test_single_501_projects_only_500 (__main__.BoundedProjection.test_single_501_projects_only_500) (rid='F-HEP') ... FAIL
+  test_single_501_projects_only_500 (__main__.BoundedProjection.test_single_501_projects_only_500) (rid='F-TIER') ... FAIL
+test_third_page_remaining_budget (__main__.BoundedProjection.test_third_page_remaining_budget) ... 
+  test_third_page_remaining_budget (__main__.BoundedProjection.test_third_page_remaining_budget) (rid='F-CNP') ... FAIL
+  test_third_page_remaining_budget (__main__.BoundedProjection.test_third_page_remaining_budget) (rid='F-NP') ... FAIL
+  test_third_page_remaining_budget (__main__.BoundedProjection.test_third_page_remaining_budget) (rid='F-GNP') ... FAIL
+  test_third_page_remaining_budget (__main__.BoundedProjection.test_third_page_remaining_budget) (rid='F-HEP') ... FAIL
+  test_third_page_remaining_budget (__main__.BoundedProjection.test_third_page_remaining_budget) (rid='F-TIER') ... FAIL
+test_validated_count_on_midpage_error (__main__.BoundedProjection.test_validated_count_on_midpage_error) ... 
+  test_validated_count_on_midpage_error (__main__.BoundedProjection.test_validated_count_on_midpage_error) (rid='F-CNP') ... FAIL
+  test_validated_count_on_midpage_error (__main__.BoundedProjection.test_validated_count_on_midpage_error) (rid='F-NP') ... FAIL
+  test_validated_count_on_midpage_error (__main__.BoundedProjection.test_validated_count_on_midpage_error) (rid='F-GNP') ... FAIL
+  test_validated_count_on_midpage_error (__main__.BoundedProjection.test_validated_count_on_midpage_error) (rid='F-HEP') ... FAIL
+  test_validated_count_on_midpage_error (__main__.BoundedProjection.test_validated_count_on_midpage_error) (rid='F-TIER') ... FAIL
+
+======================================================================
+FAIL: test_invalid_discarded_suffix_not_projected (__main__.BoundedProjection.test_invalid_discarded_suffix_not_projected) (rid='F-CNP', malformed=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 40, in test_invalid_discarded_suffix_not_projected
+    self.assertEqual(n,500)
+AssertionError: 501 != 500
+
+======================================================================
+FAIL: test_invalid_discarded_suffix_not_projected (__main__.BoundedProjection.test_invalid_discarded_suffix_not_projected) (rid='F-CNP', malformed=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 40, in test_invalid_discarded_suffix_not_projected
+    self.assertEqual(n,500)
+AssertionError: 501 != 500
+
+======================================================================
+FAIL: test_invalid_discarded_suffix_not_projected (__main__.BoundedProjection.test_invalid_discarded_suffix_not_projected) (rid='F-NP', malformed=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 40, in test_invalid_discarded_suffix_not_projected
+    self.assertEqual(n,500)
+AssertionError: 501 != 500
+
+======================================================================
+FAIL: test_invalid_discarded_suffix_not_projected (__main__.BoundedProjection.test_invalid_discarded_suffix_not_projected) (rid='F-NP', malformed=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 40, in test_invalid_discarded_suffix_not_projected
+    self.assertEqual(n,500)
+AssertionError: 501 != 500
+
+======================================================================
+FAIL: test_invalid_discarded_suffix_not_projected (__main__.BoundedProjection.test_invalid_discarded_suffix_not_projected) (rid='F-GNP', malformed=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 40, in test_invalid_discarded_suffix_not_projected
+    self.assertEqual(n,500)
+AssertionError: 501 != 500
+
+======================================================================
+FAIL: test_invalid_discarded_suffix_not_projected (__main__.BoundedProjection.test_invalid_discarded_suffix_not_projected) (rid='F-GNP', malformed=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 40, in test_invalid_discarded_suffix_not_projected
+    self.assertEqual(n,500)
+AssertionError: 501 != 500
+
+======================================================================
+FAIL: test_invalid_discarded_suffix_not_projected (__main__.BoundedProjection.test_invalid_discarded_suffix_not_projected) (rid='F-HEP', malformed=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 40, in test_invalid_discarded_suffix_not_projected
+    self.assertEqual(n,500)
+AssertionError: 501 != 500
+
+======================================================================
+FAIL: test_invalid_discarded_suffix_not_projected (__main__.BoundedProjection.test_invalid_discarded_suffix_not_projected) (rid='F-HEP', malformed=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 40, in test_invalid_discarded_suffix_not_projected
+    self.assertEqual(n,500)
+AssertionError: 501 != 500
+
+======================================================================
+FAIL: test_invalid_discarded_suffix_not_projected (__main__.BoundedProjection.test_invalid_discarded_suffix_not_projected) (rid='F-TIER', malformed=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 40, in test_invalid_discarded_suffix_not_projected
+    self.assertEqual(n,500)
+AssertionError: 501 != 500
+
+======================================================================
+FAIL: test_invalid_discarded_suffix_not_projected (__main__.BoundedProjection.test_invalid_discarded_suffix_not_projected) (rid='F-TIER', malformed=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 40, in test_invalid_discarded_suffix_not_projected
+    self.assertEqual(n,500)
+AssertionError: 501 != 500
+
+======================================================================
+FAIL: test_single_501_projects_only_500 (__main__.BoundedProjection.test_single_501_projects_only_500) (rid='F-CNP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 17, in test_single_501_projects_only_500
+    self.assertEqual(n,500)
+AssertionError: 501 != 500
+
+======================================================================
+FAIL: test_single_501_projects_only_500 (__main__.BoundedProjection.test_single_501_projects_only_500) (rid='F-NP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 17, in test_single_501_projects_only_500
+    self.assertEqual(n,500)
+AssertionError: 501 != 500
+
+======================================================================
+FAIL: test_single_501_projects_only_500 (__main__.BoundedProjection.test_single_501_projects_only_500) (rid='F-GNP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 17, in test_single_501_projects_only_500
+    self.assertEqual(n,500)
+AssertionError: 501 != 500
+
+======================================================================
+FAIL: test_single_501_projects_only_500 (__main__.BoundedProjection.test_single_501_projects_only_500) (rid='F-HEP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 17, in test_single_501_projects_only_500
+    self.assertEqual(n,500)
+AssertionError: 501 != 500
+
+======================================================================
+FAIL: test_single_501_projects_only_500 (__main__.BoundedProjection.test_single_501_projects_only_500) (rid='F-TIER')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 17, in test_single_501_projects_only_500
+    self.assertEqual(n,500)
+AssertionError: 501 != 500
+
+======================================================================
+FAIL: test_third_page_remaining_budget (__main__.BoundedProjection.test_third_page_remaining_budget) (rid='F-CNP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 27, in test_third_page_remaining_budget
+    self.assertEqual(n,500)
+AssertionError: 501 != 500
+
+======================================================================
+FAIL: test_third_page_remaining_budget (__main__.BoundedProjection.test_third_page_remaining_budget) (rid='F-NP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 27, in test_third_page_remaining_budget
+    self.assertEqual(n,500)
+AssertionError: 501 != 500
+
+======================================================================
+FAIL: test_third_page_remaining_budget (__main__.BoundedProjection.test_third_page_remaining_budget) (rid='F-GNP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 27, in test_third_page_remaining_budget
+    self.assertEqual(n,500)
+AssertionError: 501 != 500
+
+======================================================================
+FAIL: test_third_page_remaining_budget (__main__.BoundedProjection.test_third_page_remaining_budget) (rid='F-HEP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 27, in test_third_page_remaining_budget
+    self.assertEqual(n,500)
+AssertionError: 501 != 500
+
+======================================================================
+FAIL: test_third_page_remaining_budget (__main__.BoundedProjection.test_third_page_remaining_budget) (rid='F-TIER')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 27, in test_third_page_remaining_budget
+    self.assertEqual(n,500)
+AssertionError: 501 != 500
+
+======================================================================
+FAIL: test_validated_count_on_midpage_error (__main__.BoundedProjection.test_validated_count_on_midpage_error) (rid='F-CNP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 52, in test_validated_count_on_midpage_error
+    self.assertEqual(r['journal'][0]['validated'],1)
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_validated_count_on_midpage_error (__main__.BoundedProjection.test_validated_count_on_midpage_error) (rid='F-NP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 52, in test_validated_count_on_midpage_error
+    self.assertEqual(r['journal'][0]['validated'],1)
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_validated_count_on_midpage_error (__main__.BoundedProjection.test_validated_count_on_midpage_error) (rid='F-GNP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 52, in test_validated_count_on_midpage_error
+    self.assertEqual(r['journal'][0]['validated'],1)
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_validated_count_on_midpage_error (__main__.BoundedProjection.test_validated_count_on_midpage_error) (rid='F-HEP')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 52, in test_validated_count_on_midpage_error
+    self.assertEqual(r['journal'][0]['validated'],1)
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_validated_count_on_midpage_error (__main__.BoundedProjection.test_validated_count_on_midpage_error) (rid='F-TIER')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-85ae779/bounded_projection_test.py", line 52, in test_validated_count_on_midpage_error
+    self.assertEqual(r['journal'][0]['validated'],1)
+AssertionError: 0 != 1
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.412s
+
+FAILED (failures=25)
