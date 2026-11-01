@@ -47,11 +47,11 @@ def page(rid, items, continue_token=None, rv='rv1'):
     return json.dumps({'kind': kind, 'apiVersion': api, 'metadata': meta, 'items': items})
 
 
-def objects(obj, n):
+def objects(obj, n, offset=0):
     out = []
     for i in range(n):
         x = copy.deepcopy(obj)
-        x['metadata']['name'] = x['metadata']['name'] + '-%d' % i
+        x['metadata']['name'] = x['metadata']['name'] + '-%d' % (offset + i)
         out.append(x)
     return out
 
@@ -164,7 +164,8 @@ def run(overrides=None, ctx=None):
          mock.patch.object(subprocess, 'run', side_effect=mrun), \
          mock.patch.object(fw.sys, 'argv', ['followup.py', '--context', ctx or fw.CTX, '--output', outdir]):
         rc = fw.main()
-    rows = [json.loads(l) for l in open(os.path.join(outdir, 'followup.jsonl'))]
+    with open(os.path.join(outdir, 'followup.jsonl')) as _fh:
+        rows = [json.loads(l) for l in _fh]
     return rc, mrun.calls, rows
 
 
@@ -202,7 +203,9 @@ class TestHappyPath(unittest.TestCase):
         np_argv = [c[1] for c in calls if c[0] == 'F-NP'][0]
         self.assertIn('?limit=200', np_argv[6])
 
-    def test_three_saved_pod_identities(self):
+    def test_three_synthetic_pod_identity_formats(self):
+        # SYNTHETIC fixture (POD/POD_CFG/POD_DIGEST) — format coverage only, not the
+        # archived observed Pods (see TestRemainingContract.test_real_archived_identity_mapping).
         rc, _, rows = run({'F-I1': R(0, podlist([POD, POD_CFG, POD_DIGEST]))})
         self.assertEqual(rc, 0)
         self.assertIsNone(by_id(rows)['F-I1']['category'])
@@ -738,10 +741,11 @@ class TestR2Boundaries(unittest.TestCase):
         self.assertFalse(r['complete'])
 
     def test_two_pages_201_complete(self):
-        rc, _, rows = run({'F-NP': [R(0, page('F-NP', objects(NP, 200), 'a')),
-                                     R(0, page('F-NP', objects(NP, 1), None))]})
+        rc, _, rows = run({'F-NP': [R(0, page('F-NP', objects(NP, 200, 0), 'a')),
+                                     R(0, page('F-NP', objects(NP, 1, 200), None))]})
         self.assertEqual(rc, 0)
         self.assertTrue(by_id(rows)['F-NP']['complete'])
+        self.assertEqual(len(json.loads(by_id(rows)['F-NP']['output'])), 201)
 
 
 class TestR3CRDVersions(unittest.TestCase):
@@ -765,6 +769,142 @@ class TestR3CRDVersions(unittest.TestCase):
     def test_served_bad_string(self):
         rc, _, rows = run({'F-CS': self._crd_versions({'name': 'v1beta1', 'served': 'bad'})})
         self.assertEqual(by_id(rows)['F-CS']['category'], 'PARSE_ERROR')
+
+
+OBJ = {'F-CNP': CNP, 'F-NP': NP, 'F-GNP': GNP, 'F-HEP': HEP, 'F-TIER': TIER}
+
+
+class TestFiveListMatrix(unittest.TestCase):
+    """Parameterized five-list coverage of the pagination/error matrix."""
+
+    def test_empty_complete(self):
+        for rid in OBJ:
+            with self.subTest(rid=rid):
+                rc, _, rows = run({rid: [R(0, page(rid, []))]})
+                self.assertEqual(rc, 0)
+                self.assertTrue(by_id(rows)[rid]['complete'])
+
+    def test_one_page_complete(self):
+        for rid, obj in OBJ.items():
+            with self.subTest(rid=rid):
+                rc, _, rows = run({rid: [R(0, page(rid, [obj]))]})
+                self.assertEqual(rc, 0)
+                self.assertTrue(by_id(rows)[rid]['complete'])
+
+    def test_overlong_201_partial(self):
+        for rid, obj in OBJ.items():
+            with self.subTest(rid=rid):
+                rc, _, rows = run({rid: R(0, page(rid, objects(obj, 201)))})
+                r = by_id(rows)[rid]
+                self.assertEqual((r['category'], r['complete'], r['reason']),
+                                 ('PARTIAL', False, 'page overlong'))
+
+    def test_501_over_cap_partial(self):
+        for rid, obj in OBJ.items():
+            with self.subTest(rid=rid):
+                rc, _, rows = run({rid: R(0, page(rid, objects(obj, 501)))})
+                r = by_id(rows)[rid]
+                self.assertEqual((r['category'], r['complete'], r['reason']),
+                                 ('PARTIAL', False, 'over cap'))
+
+    def test_wrong_list_kind_parse_error(self):
+        for rid in OBJ:
+            with self.subTest(rid=rid):
+                body = {'apiVersion': 'v1', 'kind': 'SecretList',
+                        'metadata': {'resourceVersion': 'r'}, 'items': []}
+                rc, _, rows = run({rid: R(0, json.dumps(body))})
+                self.assertEqual(by_id(rows)[rid]['category'], 'PARSE_ERROR')
+
+    def test_rv_swap_partial(self):
+        for rid, obj in OBJ.items():
+            with self.subTest(rid=rid):
+                rc, _, rows = run({rid: [R(0, page(rid, [obj], 't1', rv='rv1')),
+                                         R(0, page(rid, [obj], None, rv='rv2'))]})
+                self.assertEqual(by_id(rows)[rid]['category'], 'PARTIAL')
+
+    def test_first_page_transport(self):
+        for rid in OBJ:
+            for stderr, cat in [('forbidden', 'FORBIDDEN'),
+                                ("the server doesn't have a resource type", 'API_NOT_SERVED'),
+                                ('connection refused', 'CONNECTION')]:
+                with self.subTest(rid=rid, cat=cat):
+                    rc, _, rows = run({rid: R(1, '', stderr)})
+                    self.assertEqual(by_id(rows)[rid]['category'], cat)
+
+
+class TestRemainingContract(unittest.TestCase):
+    def test_projector_failure_stops_continuation(self):
+        for rid, obj in OBJ.items():
+            with self.subTest(rid=rid):
+                bad = copy.deepcopy(obj)
+                bad['spec'] = 'bad'
+                rc, calls, rows = run({rid: [R(0, page(rid, [bad], 'next')), R(0, page(rid, [obj]))]})
+                r = by_id(rows)[rid]
+                self.assertEqual(sum(c[0] == rid for c in calls), 1)
+                self.assertEqual((rc, r['category'], r['complete'], r['exit'], r['output']),
+                                 (1, 'PARSE_ERROR', False, 0, ''))
+                self.assertEqual(len(rows), 9)
+
+    def test_projector_journal_is_not_success(self):
+        for rid, obj in OBJ.items():
+            with self.subTest(rid=rid):
+                bad = copy.deepcopy(obj)
+                bad['spec'] = 'bad'
+                rc, _, rows = run({rid: R(0, page(rid, [bad]))})
+                r = by_id(rows)[rid]
+                self.assertTrue(r['journal'][0]['cause'])
+                self.assertEqual(r['journal'][0]['validated'], 0)
+                self.assertEqual(r['journal'][0]['returncode'], 0)
+
+    def test_unsupported_stops_continuation(self):
+        for rid, obj in OBJ.items():
+            with self.subTest(rid=rid):
+                bad = copy.deepcopy(obj)
+                bad['spec']['UNKNOWN_SEMANTIC'] = 'SYNTHETIC_CANARY'
+                rc, calls, rows = run({rid: [R(0, page(rid, [bad], 'next')), R(0, page(rid, [obj]))]})
+                r = by_id(rows)[rid]
+                self.assertEqual(sum(c[0] == rid for c in calls), 1)
+                self.assertEqual((r['category'], r['complete'], r['output']), ('UNSUPPORTED', False, ''))
+                self.assertNotIn('SYNTHETIC_CANARY', json.dumps(rows))
+
+    def test_unknown_later_process_returncode_is_null(self):
+        for rid, obj in OBJ.items():
+            for exc in (subprocess.TimeoutExpired('kubectl', 20), OSError('SYNTHETIC_CANARY')):
+                with self.subTest(rid=rid, error=type(exc).__name__):
+                    rc, _, rows = run({rid: [R(0, page(rid, [obj], 'next')), exc]})
+                    r = by_id(rows)[rid]
+                    self.assertIsNone(r['exit'])
+                    self.assertIsNone(r['journal'][-1]['returncode'])
+                    self.assertEqual((rc, r['category'], r['complete']), (1, 'PARTIAL', False))
+                    self.assertEqual(len(json.loads(r['output'])), 1)
+                    self.assertNotIn('SYNTHETIC_CANARY', json.dumps(rows))
+
+    def test_one_journal_record_per_repeated_token_attempt(self):
+        for rid, obj in OBJ.items():
+            with self.subTest(rid=rid):
+                rc, calls, rows = run({rid: [R(0, page(rid, [obj], 'same')), R(0, page(rid, [obj], 'same'))]})
+                r = by_id(rows)[rid]
+                actual = sum(c[0] == rid for c in calls)
+                self.assertEqual(len(r['journal']), actual)
+                self.assertEqual(actual, 2)
+                self.assertTrue(r['journal'][-1]['cause'])
+
+    def test_duplicate_nonselected_versions_rejected(self):
+        for entries in ([{'name': 'v2', 'served': False}, {'name': 'v2', 'served': False}],
+                        [{'name': 'v2', 'served': False}, {'name': 'v2', 'served': True}]):
+            with self.subTest(entries=entries):
+                c = copy.deepcopy(CRD)
+                c['spec']['versions'] += entries
+                rc, calls, rows = run({'F-CS': R(0, json.dumps(c))})
+                r = by_id(rows)['F-CS']
+                self.assertEqual((rc, r['category'], r['output']), (1, 'PARSE_ERROR', ''))
+                self.assertFalse(any(c[0] == 'F-CNP' for c in calls))
+
+    def test_real_archived_identity_mapping(self):
+        fixture = json.load(open(os.path.join(HERE, 'derived-i1-fixture.json')))
+        rc, _, rows = run({'F-I1': R(0, json.dumps(fixture['podlist']))})
+        self.assertEqual(rc, 0)
+        self.assertEqual(json.loads(by_id(rows)['F-I1']['output']), fixture['expected_projection'])
 
 
 if __name__ == '__main__':

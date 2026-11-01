@@ -486,6 +486,7 @@ def project_crd_schema(raw):
     if not isinstance(versions, list):
         raise ValueError('crd versions not a list')
     v1a2 = []
+    seen_names = set()
     for i, v in enumerate(versions):
         if not isinstance(v, dict):
             raise ValueError('crd versions[%d] not an object' % i)
@@ -494,6 +495,9 @@ def project_crd_schema(raw):
             raise ValueError('crd versions[%d].name must be nonempty string' % i)
         if 'served' in v and not isinstance(v['served'], bool):
             raise ValueError('crd versions[%d].served must be bool' % i)
+        if name in seen_names:
+            raise ValueError('crd duplicate version name %r' % name)
+        seen_names.add(name)
         if name == 'v1alpha2':
             v1a2.append(v)
     if len(v1a2) != 1:
@@ -601,10 +605,15 @@ def _j(page, limit, path, token_present, start, end, rc, cause, received, valida
             'received': received, 'validated': validated}
 
 
-def _list_pages(rid, path, ctx, run_fn):
+def _list_pages(rid, path, ctx, run_fn, projector):
+    """Page loop with per-page projection before any continuation.
+
+    Accumulates a bounded list of *projected* items. Exactly one journal entry is
+    appended per attempted request; its cause is finalized exactly once.
+    """
     kind, api = LIST_ENVELOPE[rid]
     journal = []
-    items = []
+    projected = []
     token = None
     rv = None
     seen = set()
@@ -616,104 +625,109 @@ def _list_pages(rid, path, ctx, run_fn):
             p += '&continue=' + quote(token, safe='')
         argv = ['kubectl', '--context', ctx, '--request-timeout=' + REQUEST_TIMEOUT, 'get', '--raw', p]
         start = _now()
+        entry = {'page': page, 'limit': limit, 'path': path, 'continue': token is not None,
+                 'start': start, 'end': None, 'returncode': None, 'cause': None,
+                 'received': None, 'validated': 0}
+
+        def finish(category, reason, items_out, complete):
+            entry['end'] = _now()
+            journal.append(entry)
+            return {'items': items_out, 'complete': complete, 'category': category,
+                    'reason': reason, 'returncode': entry['returncode'], 'journal': journal}
+
         result = None
         try:
             result = run_fn(argv)
         except subprocess.TimeoutExpired:
-            journal.append(_j(page, limit, path, token is not None, start, _now(), None, 'TIMEOUT', None, None))
+            entry['cause'] = 'TIMEOUT'
             if page == 0:
-                return {'items': [], 'complete': False, 'category': 'TIMEOUT', 'reason': 'timeout',
-                        'returncode': None, 'journal': journal}
-            return {'items': items, 'complete': False, 'category': 'PARTIAL', 'reason': 'timeout after page',
-                    'returncode': last_rc, 'journal': journal}
+                return finish('TIMEOUT', 'timeout', [], False)
+            return finish('PARTIAL', 'timeout after page', projected, False)
         except OSError:
-            journal.append(_j(page, limit, path, token is not None, start, _now(), None, 'GET_FAILED', None, None))
+            entry['cause'] = 'GET_FAILED'
             if page == 0:
-                return {'items': [], 'complete': False, 'category': 'GET_FAILED', 'reason': 'os error',
-                        'returncode': None, 'journal': journal}
-            return {'items': items, 'complete': False, 'category': 'PARTIAL', 'reason': 'os error after page',
-                    'returncode': last_rc, 'journal': journal}
+                return finish('GET_FAILED', 'os error', [], False)
+            return finish('PARTIAL', 'os error after page', projected, False)
         rc = result.returncode if result is not None else None
+        entry['returncode'] = rc
         last_rc = rc
         if rc != 0:
             cause = classify(rc, result.stderr if result is not None else '', False)
-            journal.append(_j(page, limit, path, token is not None, start, _now(), rc, cause, None, None))
+            entry['cause'] = cause
             if page == 0:
-                return {'items': [], 'complete': False, 'category': cause, 'reason': cause,
-                        'returncode': rc, 'journal': journal}
-            return {'items': items, 'complete': False, 'category': 'PARTIAL',
-                    'reason': 'next-page ' + (cause or 'GET_FAILED'), 'returncode': rc, 'journal': journal}
+                return finish(cause, cause, [], False)
+            return finish('PARTIAL', 'next-page ' + (cause or 'GET_FAILED'), projected, False)
         try:
             data = json.loads(result.stdout)
         except json.JSONDecodeError:
-            journal.append(_j(page, limit, path, token is not None, start, _now(), rc, 'invalid JSON', None, None))
-            return {'items': [], 'complete': False, 'category': 'PARSE_ERROR', 'reason': 'invalid JSON',
-                    'returncode': rc, 'journal': journal}
+            entry['cause'] = 'invalid JSON'
+            return finish('PARSE_ERROR', 'invalid JSON', [], False)
         if not isinstance(data, dict) or data.get('kind') != kind or data.get('apiVersion') != api:
-            journal.append(_j(page, limit, path, token is not None, start, _now(), rc, 'envelope mismatch', None, None))
-            return {'items': [], 'complete': False, 'category': 'PARSE_ERROR', 'reason': 'envelope mismatch',
-                    'returncode': rc, 'journal': journal}
+            entry['cause'] = 'envelope mismatch'
+            return finish('PARSE_ERROR', 'envelope mismatch', [], False)
         meta = data.get('metadata')
         if not isinstance(meta, dict):
-            journal.append(_j(page, limit, path, token is not None, start, _now(), rc, 'metadata not object', None, None))
-            return {'items': [], 'complete': False, 'category': 'PARSE_ERROR', 'reason': 'metadata not object',
-                    'returncode': rc, 'journal': journal}
+            entry['cause'] = 'metadata not object'
+            return finish('PARSE_ERROR', 'metadata not object', [], False)
         new_rv = meta.get('resourceVersion')
         if not isinstance(new_rv, str) or new_rv == '':
-            journal.append(_j(page, limit, path, token is not None, start, _now(), rc, 'invalid resourceVersion', None, None))
-            return {'items': [], 'complete': False, 'category': 'PARSE_ERROR', 'reason': 'invalid resourceVersion',
-                    'returncode': rc, 'journal': journal}
+            entry['cause'] = 'invalid resourceVersion'
+            return finish('PARSE_ERROR', 'invalid resourceVersion', [], False)
         if rv is not None and new_rv != rv:
-            journal.append(_j(page, limit, path, token is not None, start, _now(), rc, 'resourceVersion changed', None, None))
-            return {'items': items, 'complete': False, 'category': 'PARTIAL', 'reason': 'resourceVersion changed',
-                    'returncode': rc, 'journal': journal}
+            entry['cause'] = 'resourceVersion changed'
+            return finish('PARTIAL', 'resourceVersion changed', projected, False)
         rv = new_rv
         if 'continue' in meta:
             cont = meta['continue']
             if cont is None:
-                journal.append(_j(page, limit, path, token is not None, start, _now(), rc, 'continue null', None, None))
-                return {'items': [], 'complete': False, 'category': 'PARSE_ERROR', 'reason': 'continue null',
-                        'returncode': rc, 'journal': journal}
+                entry['cause'] = 'continue null'
+                return finish('PARSE_ERROR', 'continue null', [], False)
             if not isinstance(cont, str):
-                journal.append(_j(page, limit, path, token is not None, start, _now(), rc, 'continue not string', None, None))
-                return {'items': [], 'complete': False, 'category': 'PARSE_ERROR', 'reason': 'continue not string',
-                        'returncode': rc, 'journal': journal}
+                entry['cause'] = 'continue not string'
+                return finish('PARSE_ERROR', 'continue not string', [], False)
             if cont == '':
                 cont = None
         else:
             cont = None
         page_items = data.get('items')
         if not isinstance(page_items, list):
-            journal.append(_j(page, limit, path, token is not None, start, _now(), rc, 'items not list', None, None))
-            return {'items': [], 'complete': False, 'category': 'PARSE_ERROR', 'reason': 'items not list',
-                    'returncode': rc, 'journal': journal}
+            entry['cause'] = 'items not list'
+            return finish('PARSE_ERROR', 'items not list', [], False)
         received = len(page_items)
+        entry['received'] = received
         for it in page_items:
             if not isinstance(it, dict):
-                journal.append(_j(page, limit, path, token is not None, start, _now(), rc, 'item not object', received, None))
-                return {'items': [], 'complete': False, 'category': 'PARSE_ERROR', 'reason': 'item not object',
-                        'returncode': rc, 'journal': journal}
-        items.extend(page_items)
-        validated = len(items)
-        if validated > TOTAL_CAP:
-            journal.append(_j(page, limit, path, token is not None, start, _now(), rc, 'over cap', received, validated))
-            return {'items': items[:TOTAL_CAP], 'complete': False, 'category': 'PARTIAL', 'reason': 'over cap',
-                    'returncode': rc, 'journal': journal}
+                entry['cause'] = 'item not object'
+                return finish('PARSE_ERROR', 'item not object', [], False)
+        try:
+            page_projected = [projector(it) for it in page_items]
+            json.dumps(page_projected, allow_nan=False)  # reject nonfinite projections
+        except UnsupportedField:
+            entry['cause'] = 'unsupported'
+            return finish('UNSUPPORTED', 'unsupported', [], False)
+        except (json.JSONDecodeError, ValueError, KeyError, TypeError):
+            entry['cause'] = 'projector'
+            return finish('PARSE_ERROR', 'projector', [], False)
+        entry['validated'] = len(page_projected)
+        projected.extend(page_projected)
+        if len(projected) > TOTAL_CAP:
+            entry['cause'] = 'over cap'
+            return finish('PARTIAL', 'over cap', projected[:TOTAL_CAP], False)
         if received > limit:
-            journal.append(_j(page, limit, path, token is not None, start, _now(), rc, 'page overlong', received, validated))
-            return {'items': items, 'complete': False, 'category': 'PARTIAL', 'reason': 'page overlong',
-                    'returncode': rc, 'journal': journal}
-        journal.append(_j(page, limit, path, token is not None, start, _now(), rc, None, received, validated))
+            entry['cause'] = 'page overlong'
+            return finish('PARTIAL', 'page overlong', projected, False)
         if cont is None:
-            return {'items': items, 'complete': True, 'category': None, 'reason': None,
-                    'returncode': rc, 'journal': journal}
+            entry['cause'] = None
+            return finish(None, None, projected, True)
         if cont in seen:
-            journal.append(_j(page, limit, path, token is not None, start, _now(), rc, 'repeated token', received, validated))
-            return {'items': items, 'complete': False, 'category': 'PARTIAL', 'reason': 'repeated continue token',
-                    'returncode': rc, 'journal': journal}
+            entry['cause'] = 'repeated token'
+            return finish('PARTIAL', 'repeated continue token', projected, False)
+        entry['cause'] = None
+        entry['end'] = _now()
+        journal.append(entry)
         seen.add(cont)
         token = cont
-    return {'items': items, 'complete': False, 'category': 'PARTIAL', 'reason': 'cap reached',
+    return {'items': projected, 'complete': False, 'category': 'PARTIAL', 'reason': 'cap reached',
             'returncode': last_rc, 'journal': journal}
 
 
@@ -753,23 +767,13 @@ def main():
             timed_out = False
             result = None
             if entry['paginated']:
-                res = _list_pages(rid, path, args.context, _run)
+                res = _list_pages(rid, path, args.context, _run, PROJECTOR[entry['proj']])
                 journal = res['journal']
                 category = res['category']
                 complete = res['complete']
                 reason = res['reason']
                 exit_code = res.get('returncode')
-                output = ''
-                if res['items']:
-                    try:
-                        output = json.dumps([PROJECTOR[entry['proj']](it) for it in res['items']],
-                                            allow_nan=False)
-                    except UnsupportedField:
-                        category, output = 'UNSUPPORTED', ''
-                    except (json.JSONDecodeError, ValueError, KeyError, TypeError):
-                        category, output = 'PARSE_ERROR', ''
-                if category is not None:
-                    complete = False
+                output = json.dumps(res['items'], allow_nan=False) if res['items'] else ''
                 log.write(json.dumps({'id': rid, 'start': start, 'argv': argv,
                                       'exit': exit_code, 'category': category, 'output': output,
                                       'complete': complete, 'reason': reason, 'journal': journal,
