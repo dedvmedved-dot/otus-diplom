@@ -695,24 +695,25 @@ def _list_pages(rid, path, ctx, run_fn, projector):
             return finish('PARSE_ERROR', 'items not list', [], False)
         received = len(page_items)
         entry['received'] = received
-        for it in page_items:
+        remaining = TOTAL_CAP - len(projected)
+        for it in page_items[:remaining]:
             if not isinstance(it, dict):
                 entry['cause'] = 'item not object'
                 return finish('PARSE_ERROR', 'item not object', [], False)
-        try:
-            page_projected = [projector(it) for it in page_items]
-            json.dumps(page_projected, allow_nan=False)  # reject nonfinite projections
-        except UnsupportedField:
-            entry['cause'] = 'unsupported'
-            return finish('UNSUPPORTED', 'unsupported', [], False)
-        except (json.JSONDecodeError, ValueError, KeyError, TypeError):
-            entry['cause'] = 'projector'
-            return finish('PARSE_ERROR', 'projector', [], False)
-        entry['validated'] = len(page_projected)
-        projected.extend(page_projected)
-        if len(projected) > TOTAL_CAP:
+            try:
+                proj = projector(it)
+                json.dumps(proj, allow_nan=False)  # reject nonfinite per item
+            except UnsupportedField:
+                entry['cause'] = 'unsupported'
+                return finish('UNSUPPORTED', 'unsupported', [], False)
+            except (json.JSONDecodeError, ValueError, KeyError, TypeError):
+                entry['cause'] = 'projector'
+                return finish('PARSE_ERROR', 'projector', [], False)
+            projected.append(proj)
+            entry['validated'] += 1
+        if len(page_items) > remaining:
             entry['cause'] = 'over cap'
-            return finish('PARTIAL', 'over cap', projected[:TOTAL_CAP], False)
+            return finish('PARTIAL', 'over cap', projected, False)
         if received > limit:
             entry['cause'] = 'page overlong'
             return finish('PARTIAL', 'page overlong', projected, False)
