@@ -63,15 +63,19 @@ accepted read table. No automatic retry. A fresh, non-existent output directory 
 wrapper: kubectl --context kubernetes-admin@pak-portal --request-timeout=15s
 subprocess timeout: 20s each
 pagination: limit 200 / 200 / 100 · total cap 500 · max 3 pages (continue token URL-encoded, never emitted)
-max Kubernetes requests on full dependency pass: 4 non-paginated + 5×3 = 19
+max collector-issued kubectl invocations on full dependency pass: 4 non-paginated + 5×3 = 19
 ```
+The19 limit counts collector subprocess invocations, not every HTTP exchange inside kubectl.
+Typed Pod discovery/client behavior may add HTTP requests; this draft makes no exact HTTP cap claim.
+No additional collector resource reads are authorized.
+
 F-CS schema fingerprint is compared to the embedded `CNP_SPEC_SHA256`; well-formed mismatch →
 UNSUPPORTED (blocks F-CNP), malformed → PARSE_ERROR. Unknown semantic fields → UNSUPPORTED;
 malformed/nonfinite → PARSE_ERROR; transport failures keep their distinct categories and a
 per-page journal. Exit 1, PARTIAL, UNSUPPORTED and BLOCKED_NOT_EXECUTED are preserved as actual
 results (they are not "no policy" claims and do not permit a rerun).
 
-### 3.4 Stop conditions (before any subprocess)
+### 3.4 Stop conditions (before the collector's first Kubernetes subprocess)
 - access not evidenced (host-key trust / safe credential) → BLOCKED_EXTERNAL;
 - any pinned file hash mismatch → STOP;
 - `--context` != `kubernetes-admin@pak-portal` → STOP (collector exits before any call);
@@ -85,8 +89,12 @@ results (they are not "no policy" claims and do not permit a rerun).
 - summary of categories and blocked dependencies.
 
 ### 3.6 Additional node commands (for separate agreement — NOT expanded now)
-`hostname -s`, `python3 --version`, `kubectl version -o json` (identity/version preflight only).
-No other command is added by this draft.
+The draft execution block uses local Bash builtins plus cd/test/printf, sha256sum, date,
+`hostname -s` and `python3 -B followup.py`; it writes result/metadata/checksum files in a private
+operator-approved directory. Local extraction additionally uses git and mktemp, not on the node.
+`python3 --version` and `kubectl version -o json` remain proposed preflight commands requiring
+explicit inclusion in a future gate; kubectl version is outside the19 collector-call budget.
+No command in this section is authorized to execute now.
 
 ## 4. Mandatory status (unchanged)
 ```text
