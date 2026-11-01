@@ -43,7 +43,7 @@ REQUEST_TIMEOUT = '15s'
 SUBPROCESS_TIMEOUT = 20
 OUTPUT_FILE = 'followup.jsonl'
 
-CNP_SPEC_SHA256 = '770130a412fd6fab2f02d953edf35f8cc68bf4379db8307e2185937c1e699568'
+CNP_SPEC_SHA256 = 'ff433d3463dfa2264a7a3ff6201baabf1ec789e98664aff3401a7ef79ae7ce5e'
 
 PAGE_LIMIT = 200
 PAGE_LIMIT_LAST = 100
@@ -147,11 +147,15 @@ def _selector(v, field):
 
 
 def _valid_cidr(x):
+    # isCIDR(self): a valid CIDR notation (IP/prefix). Host bits are permitted (e.g. 10.0.0.1/24);
+    # the value is preserved as supplied, never normalized. A bare IP without '/' is not a CIDR.
+    if '/' not in x:
+        return False
     try:
-        net = ipaddress.ip_network(x, strict=False)
+        ipaddress.ip_network(x, strict=False)
+        return True
     except ValueError:
         return False
-    return str(net) == x
 
 
 def _networks(v, field):
@@ -162,7 +166,7 @@ def _networks(v, field):
     out = []
     seen = set()
     for x in v:
-        if not isinstance(x, str) or len(x) > 43 or not _valid_cidr(x):
+        if not isinstance(x, str) or not _valid_cidr(x):
             raise ValueError(field + ' invalid CIDR ' + repr(x))
         if x in seen:
             raise ValueError(field + ' duplicate CIDR ' + x)
@@ -240,13 +244,18 @@ def _destination_port(v, field):
 
 def _protocol(p, field):
     o = _dict_req(p, field)
-    _check_keys(o, CNP_PROTOCOL, field)
-    keys = [k for k in CNP_PROTOCOL if k in o]
+    _check_keys(o, {'destinationNamedPort', 'tcp', 'udp', 'sctp'}, field)
+    keys = [k for k in ('destinationNamedPort', 'tcp', 'udp', 'sctp') if k in o]
     if len(keys) != 1:
-        raise ValueError(field + ' must set exactly one of tcp/udp/sctp')
+        raise ValueError(field + ' must set exactly one of destinationNamedPort/tcp/udp/sctp')
     k = keys[0]
     if o[k] is None:
         raise ValueError(field + '.' + k + ' cannot be null')
+    if k == 'destinationNamedPort':
+        v = o[k]
+        if not isinstance(v, str):
+            raise ValueError(field + '.destinationNamedPort must be a string')
+        return {'destinationNamedPort': v}
     po = _dict_req(o[k], field + '.' + k)
     _check_keys(po, {'destinationPort'}, field + '.' + k)
     if 'destinationPort' not in po or po['destinationPort'] is None:
@@ -552,7 +561,7 @@ def _project_d1(raw):
 READS = [
     {'id': 'F-D1', 'argv': ['get', '--raw', '/apis/crd.projectcalico.org/v1'], 'kind': 'discovery',
      'deps': [], 'proj': 'd1', 'paginated': False},
-    {'id': 'F-I1', 'argv': ['get', 'pods', '-n', 'kube-system', '-l', 'k8s-app=calico-node', '-o', 'json'],
+    {'id': 'F-I1', 'argv': ['get', '--raw', '/api/v1/namespaces/kube-system/pods?labelSelector=k8s-app%3Dcalico-node&limit=200'],
      'kind': 'podlist', 'deps': [], 'proj': 'i1', 'paginated': False},
     {'id': 'F-CS', 'argv': ['get', '--raw',
                             '/apis/apiextensions.k8s.io/v1/customresourcedefinitions/clusternetworkpolicies.policy.networking.k8s.io'],
@@ -732,6 +741,61 @@ def _list_pages(rid, path, ctx, run_fn, projector):
             'returncode': last_rc, 'journal': journal}
 
 
+I1_LIMIT = 200  # F-I1 raw GET requests limit=200; more items is overlong (no identity approval)
+
+
+def _i1(category, diag, complete):
+    return {'category': category, 'diag': diag, 'output': '', 'complete': complete}
+
+
+def _read_podlist(stdout):
+    """Parse + project the F-I1 PodList (raw GET /api/v1/.../pods) and verify identity.
+
+    Returns a disposition dict {category, diag, output, complete}. Diagnostics use finite
+    value-free stage codes only — never raw field values, tokens, or objects.
+    """
+    try:
+        data = json.loads(stdout)
+    except json.JSONDecodeError:
+        return _i1('PARSE_ERROR', 'ENVELOPE', False)
+    if not isinstance(data, dict) or data.get('kind') != 'PodList' or data.get('apiVersion') != 'v1':
+        return _i1('PARSE_ERROR', 'ENVELOPE', False)
+    meta = data.get('metadata')
+    if not isinstance(meta, dict):
+        return _i1('PARSE_ERROR', 'METADATA', False)
+    rv = meta.get('resourceVersion')
+    if not isinstance(rv, str) or rv == '':
+        return _i1('PARSE_ERROR', 'METADATA', False)
+    cont = meta.get('continue')
+    if cont is not None and (not isinstance(cont, str) or cont != ''):
+        return _i1('PARSE_ERROR', 'COMPLETENESS', False)
+    items = data.get('items')
+    if not isinstance(items, list):
+        return _i1('PARSE_ERROR', 'ITEM', False)
+    if len(items) > I1_LIMIT:
+        return _i1('PARTIAL', 'OVERLONG', False)
+    proj = []
+    for it in items:
+        if not isinstance(it, dict):
+            return _i1('PARSE_ERROR', 'ITEM', False)
+        try:
+            proj.append(project_pod_identity(it, 'kube-system'))
+        except (ValueError, TypeError, KeyError):
+            return _i1('PARSE_ERROR', 'ITEM', False)
+    try:
+        output = json.dumps(proj, allow_nan=False)
+    except (ValueError, TypeError):
+        return _i1('PARSE_ERROR', 'ITEM', False)
+    try:
+        verify_calico_identity(proj)
+    except UnsupportedIdentity:
+        # valid-but-unbound (or empty) identity: keep the safe projected identity, no raw fallback
+        return {'category': 'UNSUPPORTED', 'diag': 'IDENTITY', 'output': output, 'complete': False}
+    except (ValueError, TypeError):
+        return _i1('PARSE_ERROR', 'IDENTITY', False)
+    return {'category': None, 'diag': None, 'output': output, 'complete': True}
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--context', required=True)
@@ -796,40 +860,29 @@ def main():
             unsupported = False
             complete = None
             verdicts = None
+            diag = None
+            partial = False
             if ok:
                 try:
                     kind = entry['kind']
                     if kind == 'discovery':
                         output, verdicts = _project_d1(result.stdout)
                     elif kind == 'podlist':
-                        data = json.loads(result.stdout)
-                        if not isinstance(data, dict) or data.get('kind') != 'PodList' or data.get('apiVersion') != 'v1':
-                            raise ValueError('pod list envelope mismatch')
-                        meta = data.get('metadata')
-                        if not isinstance(meta, dict):
-                            raise ValueError('pod list metadata not an object')
-                        rv = meta.get('resourceVersion')
-                        if not isinstance(rv, str) or rv == '':
-                            raise ValueError('pod list resourceVersion must be nonempty string')
-                        if 'continue' in meta:
-                            cont = meta['continue']
-                            if cont is None:
-                                raise ValueError('pod list continue cannot be null')
-                            if not isinstance(cont, str):
-                                raise ValueError('pod list continue must be string')
-                            if cont:
-                                raise ValueError('pod list incomplete (continue present)')
-                        items = data.get('items')
-                        if not isinstance(items, list):
-                            raise ValueError('items not a list')
-                        proj = []
-                        for it in items:
-                            if not isinstance(it, dict):
-                                raise ValueError('item not an object')
-                            proj.append(project_pod_identity(it, 'kube-system'))
-                        output = json.dumps(proj, allow_nan=False)
-                        verify_calico_identity(proj)
-                        complete = True
+                        disp = _read_podlist(result.stdout)
+                        output = disp['output']
+                        complete = disp['complete']
+                        diag = disp['diag']
+                        if disp['category'] == 'UNSUPPORTED':
+                            unsupported = True
+                        elif disp['category'] == 'PARTIAL':
+                            partial = True
+                        elif disp['category'] == 'PARSE_ERROR':
+                            failures += 1
+                            log.write(json.dumps({'id': rid, 'start': start, 'argv': argv,
+                                                  'exit': 0, 'category': 'PARSE_ERROR', 'output': '',
+                                                  'complete': False, 'diag': diag, 'end': _now()},
+                                                 allow_nan=False) + '\n')
+                            continue
                     elif kind == 'crd':
                         proj = project_crd_schema(result.stdout)
                         if not proj['compatible']:
@@ -852,9 +905,12 @@ def main():
                     failures += 1
                     log.write(json.dumps({'id': rid, 'start': start, 'argv': argv,
                                           'exit': 0, 'category': 'PARSE_ERROR', 'output': '',
-                                          'complete': False, 'end': _now()}, allow_nan=False) + '\n')
+                                          'complete': False, 'diag': diag, 'end': _now()},
+                                         allow_nan=False) + '\n')
                     continue
-            if unsupported:
+            if partial:
+                category = 'PARTIAL'
+            elif unsupported:
                 category = 'UNSUPPORTED'
             else:
                 category = classify(None if result is None else result.returncode,
@@ -870,7 +926,7 @@ def main():
             log.write(json.dumps({'id': rid, 'start': start, 'argv': argv,
                                   'exit': None if result is None else result.returncode,
                                   'category': category, 'output': output, 'complete': complete,
-                                  'end': _now()}, allow_nan=False) + '\n')
+                                  'diag': diag, 'end': _now()}, allow_nan=False) + '\n')
     return 1 if failures else 0
 
 

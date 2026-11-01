@@ -46,7 +46,7 @@ Table paths are literal argv elements following get --raw unless explicitly stat
 | ID | Requirement / existing fact | Exact path or argv tail | Shape/scope | Dependencies | Projection / FLOW-ID |
 |---|---|---|---|---|---|
 | F-D1 | Renew Calico served-kind guard; previous D1 known | /apis/crd.projectcalico.org/v1 | APIResourceList | none | name/kind/namespaced/verbs; BASELINE/CNI |
-| F-I1 | Current bound identity before blocked Calico reads; old I1 accepted as historical | get pods -n kube-system -l k8s-app=calico-node -o json | PodList, kube-system | none | existing safe pod projector + accepted finite identity; CNI |
+| F-I1 | Current bound identity before blocked Calico reads; raw GET PodList (not kubectl generic List) | /api/v1/namespaces/kube-system/pods?labelSelector=k8s-app%3Dcalico-node&limit=200 | PodList, kube-system | none | existing safe pod projector + accepted finite identity; CNI |
 | F-CS | Compare exact CNP spec contract, which D2 cannot prove | /apis/apiextensions.k8s.io/v1/customresourcedefinitions/clusternetworkpolicies.policy.networking.k8s.io | one cluster-scoped CRD | none | safe schema fingerprint only; BASELINE |
 | F-CNP | Actual CNP objects; D2 observed discovery only | /apis/policy.networking.k8s.io/v1alpha2/clusternetworkpolicies | ClusterNetworkPolicyList, cluster | F-CS compatible | CNP contract below; BASELINE |
 | F-NP | Prior C3 BLOCKED | /apis/crd.projectcalico.org/v1/networkpolicies | NetworkPolicyList, all namespaces | F-D1 + F-I1 | existing NP projector; BASELINE |
@@ -86,7 +86,7 @@ Allowlist validation implements the referenced type/required/enum/min/max/string
 array-size/exactly-one/allOf/anyOf contracts. Only four CEL rules occur in the new extracted
 specs; implement their explicit equivalents, not a generic CEL interpreter:
 - port range start < end;
-- network CIDR is valid and canonical/masked;
+- network CIDR is a valid CIDR notation (isCIDR): host bits are permitted and the value is preserved as supplied, never normalized;
 - HEP has nonempty interfaceName OR nonempty expectedIPs;
 - HEP node is present and nonempty.
 Kubernetes LabelSelector: matchLabels string map; expression key/operator required,
@@ -119,7 +119,7 @@ schema_normalization_reference.py. The accepted pinned hash remains unchanged.
 Canonicalize:
 JSON UTF-8, sorted keys, separators comma/colon, ensure_ascii=false, allow_nan=false;
 preserve array order and all other keys. Compare SHA256 to
-770130a412fd6fab2f02d953edf35f8cc68bf4379db8307e2185937c1e699568.
+ff433d3463dfa2264a7a3ff6201baabf1ec789e98664aff3401a7ef79ae7ce5e.
 A well-formed mismatch → UNSUPPORTED; malformed → PARSE_ERROR.
 Do not infer compatibility from apiVersion/kind/scope alone.
 Output ONLY validated identity, group/kind/plural/scope/version/served and computed
@@ -136,9 +136,9 @@ selector or pods object. NamespacedPod requires podSelector; namespaceSelector o
 Ingress/egress optional arrays max25. Rule action Accept|Deny|Pass required; name optional
 string max100; from/to required arrays 1..25. Preserve rule order.
 Ingress peer exactly one namespaces|pods. Egress peer exactly one namespaces|pods|networks.
-Networks array 1..25 canonical CIDRs (each max43 chars). Do not invent ingress networks.
-Optional protocols array 1..25; each exactly one tcp|udp|sctp; protocol object nonempty;
-destinationPort exactly one number(1..65535)|range(start,end 1..65535,start<end).
+Networks array 1..25 valid CIDR strings (host bits permitted, value preserved as supplied). Do not invent ingress networks.
+Optional protocols array 1..25; each exactly one destinationNamedPort|tcp|udp|sctp; protocol object nonempty;
+destinationNamedPort is a string preserved as supplied; destinationPort exactly one number(1..65535)|range(start,end 1..65535,start<end).
 Subject/peer/selector/protocol unknown keys fail UNSUPPORTED, never silently widen matches.
 Empty ingress/egress vs absent have their source semantics; no "healthy/no policies"
 claim merely from absent fields. Status is not part of policy execution input here.
@@ -168,8 +168,9 @@ Require valid list shape, metadata.continue string if present; track resourceVer
 across pages. Nonempty continue at cap, changed resourceVersion, repeated token or
 next-page failure => incomplete/PARTIAL, never complete []. Preserve only validated
 items, collected count and reason; do not emit the continue token. No retries or mutation.
-F-I1 existing kubectl list must expose/inspect metadata.continue; if nonempty, block
-identity-dependent reads rather than accepting an incomplete list. No extra Pod read.
+F-I1 raw PodList GET must reject a nonempty metadata.continue (incomplete → block identity-dependent
+reads) and more than 200 items (overlong → PARTIAL, no identity approval). Diagnostics use finite
+value-free stage codes (ENVELOPE/METADATA/COMPLETENESS/ITEM/IDENTITY/OVERLONG). No extra Pod read.
 Discovery and named reads are not paginated. Future maximum scheduled object/discovery
 calls: 9 initial + at most10 list-continuation calls. Version checks need their own Gate.
 

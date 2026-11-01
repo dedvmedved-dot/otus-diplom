@@ -345,9 +345,55 @@ class TestCNP(unittest.TestCase):
         rc, _, rows = run({'F-CNP': self._cnp(lambda c: c['spec']['ingress'][0].update(action='Allow'))})
         self.assertEqual(by_id(rows)['F-CNP']['category'], 'PARSE_ERROR')
 
-    def test_noncanonical_cidr(self):
+    def test_host_bits_cidr_ipv4_accepted(self):
         rc, _, rows = run({'F-CNP': self._cnp(
             lambda c: c['spec']['egress'][0].update(to=[{'networks': ['10.244.0.5/24']}]))})
+        self.assertIsNone(by_id(rows)['F-CNP']['category'])
+        self.assertIn('10.244.0.5/24', by_id(rows)['F-CNP']['output'])
+
+    def test_host_bits_cidr_ipv6_accepted(self):
+        rc, _, rows = run({'F-CNP': self._cnp(
+            lambda c: c['spec']['egress'][0].update(to=[{'networks': ['2001:db8::5/64']}]))})
+        self.assertIsNone(by_id(rows)['F-CNP']['category'])
+        self.assertIn('2001:db8::5/64', by_id(rows)['F-CNP']['output'])
+
+    def test_malformed_cidr_rejected(self):
+        for bad in ['not-a-cidr', '999.1.1.1/24', '10.244.0.0/33']:
+            with self.subTest(bad=bad):
+                rc, _, rows = run({'F-CNP': self._cnp(
+                    lambda c: c['spec']['egress'][0].update(to=[{'networks': [bad]}]))})
+                self.assertEqual(by_id(rows)['F-CNP']['category'], 'PARSE_ERROR')
+
+    def test_bare_ip_not_cidr_rejected(self):
+        rc, _, rows = run({'F-CNP': self._cnp(
+            lambda c: c['spec']['egress'][0].update(to=[{'networks': ['10.244.0.5']}]))})
+        self.assertEqual(by_id(rows)['F-CNP']['category'], 'PARSE_ERROR')
+
+    def test_named_port_ingress(self):
+        rc, _, rows = run({'F-CNP': self._cnp(
+            lambda c: c['spec']['ingress'][0].update(protocols=[{'destinationNamedPort': 'postgres'}]))})
+        self.assertIsNone(by_id(rows)['F-CNP']['category'])
+        self.assertIn('destinationNamedPort', by_id(rows)['F-CNP']['output'])
+
+    def test_named_port_egress(self):
+        rc, _, rows = run({'F-CNP': self._cnp(
+            lambda c: c['spec']['egress'][0].update(protocols=[{'destinationNamedPort': 'postgres'}]))})
+        self.assertIsNone(by_id(rows)['F-CNP']['category'])
+        self.assertIn('destinationNamedPort', by_id(rows)['F-CNP']['output'])
+
+    def test_named_port_wrong_type(self):
+        rc, _, rows = run({'F-CNP': self._cnp(
+            lambda c: c['spec']['ingress'][0].update(protocols=[{'destinationNamedPort': 123}]))})
+        self.assertEqual(by_id(rows)['F-CNP']['category'], 'PARSE_ERROR')
+
+    def test_named_port_null(self):
+        rc, _, rows = run({'F-CNP': self._cnp(
+            lambda c: c['spec']['ingress'][0].update(protocols=[{'destinationNamedPort': None}]))})
+        self.assertEqual(by_id(rows)['F-CNP']['category'], 'PARSE_ERROR')
+
+    def test_named_port_union_conflict(self):
+        rc, _, rows = run({'F-CNP': self._cnp(
+            lambda c: c['spec']['ingress'][0].update(protocols=[{'destinationNamedPort': 'p', 'tcp': {'destinationPort': {'number': 1}}}]))})
         self.assertEqual(by_id(rows)['F-CNP']['category'], 'PARSE_ERROR')
 
     def test_subject_two_fields(self):
@@ -968,6 +1014,75 @@ class TestBoundedProjection(unittest.TestCase):
                 self.assertEqual(sum(c[0] == rid for c in calls), 1)
                 self.assertEqual(r['journal'][0]['received'], 2)
                 self.assertEqual(r['journal'][0]['validated'], 1)
+
+
+class TestI1Transport(unittest.TestCase):
+    """F-I1 request-boundary correction (raw GET PodList) + finite diagnostic stages."""
+
+    def _dependents(self, calls):
+        return sum(rid in ('F-NP', 'F-GNP', 'F-FELIX', 'F-HEP', 'F-TIER') for rid, _ in calls)
+
+    def test_literal_raw_argv(self):
+        rc, calls, rows = run({'F-I1': R(0, podlist([POD]))})
+        argv = [c[1] for c in calls if c[0] == 'F-I1'][0]
+        # full argv tail must be the literal raw GET (labelSelector URL-encoded, limit=200)
+        self.assertEqual(argv[4:], ['get', '--raw',
+                                    '/api/v1/namespaces/kube-system/pods?labelSelector=k8s-app%3Dcalico-node&limit=200'])
+
+    def test_valid_identity_permits_five(self):
+        rc, calls, rows = run({'F-I1': R(0, podlist([POD]))})
+        self.assertIsNone(by_id(rows)['F-I1']['category'])
+        self.assertEqual(self._dependents(calls), 5)
+
+    def test_overlong_partial_no_identity(self):
+        rc, calls, rows = run({'F-I1': R(0, podlist([POD] * 201))})
+        r = by_id(rows)['F-I1']
+        self.assertEqual((r['category'], r['complete'], r['diag'], r['output']),
+                         ('PARTIAL', False, 'OVERLONG', ''))
+        self.assertEqual(self._dependents(calls), 0)
+
+    def test_nonempty_continue_incomplete(self):
+        rc, calls, rows = run({'F-I1': R(0, podlist([POD], continue_token='abc'))})
+        r = by_id(rows)['F-I1']
+        self.assertEqual((r['category'], r['diag']), ('PARSE_ERROR', 'COMPLETENESS'))
+        self.assertEqual(self._dependents(calls), 0)
+
+    def test_empty_continue_is_complete(self):
+        rc, calls, rows = run({'F-I1': R(0, podlist([POD], continue_token=''))})
+        self.assertIsNone(by_id(rows)['F-I1']['category'])
+
+    def test_old_kubectl_list_regression(self):
+        # The OLD transport `kubectl get pods -o json` returns a generic List, not PodList.
+        # This is a regression documenting why that transport was invalid (must never pass).
+        raw = json.loads(podlist([POD]))
+        raw['kind'] = 'List'
+        rc, calls, rows = run({'F-I1': R(0, json.dumps(raw))})
+        r = by_id(rows)['F-I1']
+        self.assertEqual((r['category'], r['diag']), ('PARSE_ERROR', 'ENVELOPE'))
+        self.assertEqual(self._dependents(calls), 0)
+
+    def test_missing_rv_metadata_diag(self):
+        raw = json.loads(podlist([POD]))
+        raw['metadata']['resourceVersion'] = ''
+        rc, calls, rows = run({'F-I1': R(0, json.dumps(raw))})
+        r = by_id(rows)['F-I1']
+        self.assertEqual((r['category'], r['diag']), ('PARSE_ERROR', 'METADATA'))
+        self.assertEqual(self._dependents(calls), 0)
+
+    def test_item_not_object_diag(self):
+        raw = json.loads(podlist([POD]))
+        raw['items'] = [None]
+        rc, _, rows = run({'F-I1': R(0, json.dumps(raw))})
+        r = by_id(rows)['F-I1']
+        self.assertEqual((r['category'], r['diag']), ('PARSE_ERROR', 'ITEM'))
+
+    def test_unbound_identity_diag(self):
+        p = copy.deepcopy(POD)
+        p['spec']['containers'][0]['image'] = 'quay.io/calico/node:v3.31.0'
+        rc, _, rows = run({'F-I1': R(0, podlist([p]))})
+        r = by_id(rows)['F-I1']
+        self.assertEqual((r['category'], r['diag']), ('UNSUPPORTED', 'IDENTITY'))
+        self.assertNotEqual(r['output'], '')  # safe projected identity retained
 
 
 if __name__ == '__main__':

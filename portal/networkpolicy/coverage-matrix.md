@@ -62,3 +62,16 @@ Live identity/digest compatibility, effective Felix configuration, host/tier pol
 evaluation, S3 routing, Barman directed traffic and monitoring completeness remain
 UNKNOWN as specified in supplemental-design.md and gaps.md.
 No new read, provider, accepted runtime format or apply/CI/production gate is added.
+
+## Compatibility fix (2026-11-01, review 3a0afb4)
+
+| Requirement | Code | Test | Evidence |
+|---|---|---|---|
+| F-I1 raw GET PodList (not kubectl generic List) | followup.py READS F-I1 argv + `_read_podlist` | TestI1Transport.test_literal_raw_argv / test_old_kubectl_list_regression | result.md (20261101T200000Z) |
+| nonempty continue → incomplete; >200 → PARTIAL no identity | `_read_podlist` COMPLETENESS / OVERLONG | test_nonempty_continue_incomplete / test_overlong_partial_no_identity | result.md |
+| finite value-free F-I1 diagnostic stages | `_read_podlist` stage codes | test_missing_rv_metadata_diag / test_item_not_object_diag / test_unbound_identity_diag | result.md |
+| CNP pin = Calico manifest schema | followup.py CNP_SPEC_SHA256 + typed-contract.json | test_cs_output (compatible=True) | result.md |
+| destinationNamedPort ingress/egress | `_protocol` | test_named_port_ingress / _egress / _wrong_type / _null / _union_conflict | result.md |
+| host-bit CIDR preserved, malformed rejected | `_valid_cidr` / `_networks` | test_host_bits_cidr_ipv4/ipv6_accepted / test_malformed_cidr_rejected / test_bare_ip_not_cidr_rejected | result.md |
+
+supplemental.py / supplemental_test.py remain byte-identical (36/36 reused, not rerun).
