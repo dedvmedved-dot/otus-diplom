@@ -59,3 +59,21 @@ Three matching image tags and ebpf-bootstrap names do not prove effective CNI mo
 Access-method provenance is NOT_FULLY_EVIDENCED; existing operator records may clarify
 host-key authentication and non-use of previously disclosed credentials without new login.
 ONE_RUN_BUDGET=CONSUMED. Only source-only follow-up task is authorized; no new cluster reads.
+
+## Phase-3 follow-up one-run 20261101 (gate fbaa9a4)
+
+Artifact: evidence/P8/20261101T193800Z-p8c-rv02-followup-onerun/ (followup.jsonl, 9 records, EXIT=1).
+
+- F-D1 **OK** — `crd.projectcalico.org/v1` serves 23 Calico CRDs (incl. networkpolicies,
+  globalnetworkpolicies, felixconfigurations, hostendpoints, tiers, networksets,
+  globalnetworksets, ippools, ipamblocks, bgppeers, bgpconfigurations, blockaffinities,
+  bgpfilters, caliconodestatuses, clusterinformations, ipamconfigs, ipamhandles,
+  ipreservations, kubecontrollersconfigurations, staged* variants). Confirms the Calico policy
+  API surface is live.
+- F-I1 **PARSE_ERROR** — `get pods -n kube-system -l k8s-app=calico-node -o json` exit 0 but
+  typed projection/identity parse fails (empty output) → blocks F-NP/F-GNP/F-FELIX/F-HEP/F-TIER.
+  (Historical phase-2 I1 was UNSUPPORTED; this run returns PARSE_ERROR — a new disposition.)
+- F-CS **UNSUPPORTED** — CNP `v1alpha2` served=true but schema SHA256 `ff433d34…` ≠ pinned
+  `770130a4…` (compatible=false) → blocks F-CNP. The CNP schema changed since pinning.
+- No effective-policy-union, per-node CNI mode or traffic/directed-flow conclusion is drawn.
+  BAR-5432/API-6443/MON-9187/S3-443/ENV-* gaps unchanged. NEW_GATE_RUN_BUDGET=CONSUMED.
