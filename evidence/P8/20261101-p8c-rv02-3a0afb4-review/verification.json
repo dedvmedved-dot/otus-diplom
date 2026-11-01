@@ -1,0 +1,120 @@
+{
+  "review_head": "3a0afb45b07daa8ac5e5ceb41563fc518db87dc9",
+  "start_utc": "2026-11-01T19:43:51.564817+00:00",
+  "end_utc": "2026-11-01T19:43:51.855447+00:00",
+  "python": "3.12.14",
+  "pyyaml": "6.0.3",
+  "hashes": {
+    "followup.py": {
+      "expected": "f48cfc825f25a002cac6afcc63da9f7d5800a3a92b5bc231eeb456b7d6328b98",
+      "actual": "f48cfc825f25a002cac6afcc63da9f7d5800a3a92b5bc231eeb456b7d6328b98",
+      "match": true
+    },
+    "supplemental.py": {
+      "expected": "ddd9a4dc17bca97d6b36ae6b4d501e1722c5d38d6e5ac8c7b051698fa0b15491",
+      "actual": "ddd9a4dc17bca97d6b36ae6b4d501e1722c5d38d6e5ac8c7b051698fa0b15491",
+      "match": true
+    },
+    "followup.jsonl": {
+      "expected": "d977af0cab4d434cf6cdfc1080c8e81abbb620ff5bf98cce025457b8bab78675",
+      "actual": "d977af0cab4d434cf6cdfc1080c8e81abbb620ff5bf98cce025457b8bab78675",
+      "match": true
+    },
+    "run-meta.txt": {
+      "expected": "ad356bb25850e902d7fade466be753768f8848ef386f25069374e816f2327efe",
+      "actual": "ad356bb25850e902d7fade466be753768f8848ef386f25069374e816f2327efe",
+      "match": true
+    }
+  },
+  "records": 9,
+  "categories": {
+    "OK": 1,
+    "PARSE_ERROR": 1,
+    "UNSUPPORTED": 1,
+    "BLOCKED_NOT_EXECUTED": 6
+  },
+  "recorded_collector_invocations": 3,
+  "identity_reproduction": [
+    {
+      "fixture": "SYNTHETIC_KUBECTL_ENVELOPE_VARIANT",
+      "kind": "PodList",
+      "resourceVersion": "rv1",
+      "category": null,
+      "dependent_calls": 5
+    },
+    {
+      "fixture": "SYNTHETIC_KUBECTL_ENVELOPE_VARIANT",
+      "kind": "List",
+      "resourceVersion": "rv1",
+      "category": "PARSE_ERROR",
+      "dependent_calls": 0
+    },
+    {
+      "fixture": "SYNTHETIC_KUBECTL_ENVELOPE_VARIANT",
+      "kind": "PodList",
+      "resourceVersion": "",
+      "category": "PARSE_ERROR",
+      "dependent_calls": 0
+    },
+    {
+      "fixture": "SYNTHETIC_KUBECTL_ENVELOPE_VARIANT",
+      "kind": "List",
+      "resourceVersion": "",
+      "category": "PARSE_ERROR",
+      "dependent_calls": 0
+    }
+  ],
+  "manifest_schema_projection": {
+    "apiVersion": "apiextensions.k8s.io/v1",
+    "kind": "CustomResourceDefinition",
+    "name": "clusternetworkpolicies.policy.networking.k8s.io",
+    "group": "policy.networking.k8s.io",
+    "names_kind": "ClusterNetworkPolicy",
+    "plural": "clusternetworkpolicies",
+    "scope": "Cluster",
+    "version": "v1alpha2",
+    "served": true,
+    "spec_schema_sha256": "ff433d3463dfa2264a7a3ff6201baabf1ec789e98664aff3401a7ef79ae7ce5e",
+    "compatible": false
+  },
+  "schema_differences": [
+    {
+      "path": "/properties/egress/items/properties/protocols/items/properties/destinationNamedPort",
+      "before": null,
+      "after": {
+        "type": "string"
+      }
+    },
+    {
+      "path": "/properties/egress/items/properties/to/items/properties/networks/items/x-kubernetes-validations",
+      "before": [
+        {
+          "message": "Invalid CIDR format provided",
+          "rule": "isCIDR(self) && cidr(self) == cidr(self).masked()"
+        }
+      ],
+      "after": [
+        {
+          "message": "Invalid CIDR format provided",
+          "rule": "isCIDR(self)"
+        }
+      ]
+    },
+    {
+      "path": "/properties/ingress/items/properties/protocols/items/properties/destinationNamedPort",
+      "before": null,
+      "after": {
+        "type": "string"
+      }
+    }
+  ],
+  "kubectl_source_sha256": "100e2a2fda990e8086a14c63da87ba71f1196f46fdcb389d651399470226a660",
+  "calico_manifest_sha256": "8d4b2b1bb97a36d7bf196cc84047aafa41fea5152d678a3fe3994604e8ade3c1",
+  "all_assertions_passed": true,
+  "cluster_calls": 0,
+  "limits": [
+    "Synthetic identity envelope reproduction, not recovered live stdout",
+    "Runtime/preflight statements outside JSONL are operator-reported",
+    "Matching schema subtree hash does not prove whole-CRD equality or mutation history"
+  ]
+}

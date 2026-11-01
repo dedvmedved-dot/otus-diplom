@@ -64,7 +64,7 @@ ONE_RUN_BUDGET=CONSUMED. Only source-only follow-up task is authorized; no new c
 
 Artifact: evidence/P8/20261101T193800Z-p8c-rv02-followup-onerun/ (followup.jsonl, 9 records, EXIT=1).
 
-- F-D1 **OK** — `crd.projectcalico.org/v1` serves 23 Calico CRDs (incl. networkpolicies,
+- F-D1 **OK** — `crd.projectcalico.org/v1` lists 23 Calico API resource descriptors, including a status subresource (incl. networkpolicies,
   globalnetworkpolicies, felixconfigurations, hostendpoints, tiers, networksets,
   globalnetworksets, ippools, ipamblocks, bgppeers, bgpconfigurations, blockaffinities,
   bgpfilters, caliconodestatuses, clusterinformations, ipamconfigs, ipamhandles,
@@ -74,6 +74,19 @@ Artifact: evidence/P8/20261101T193800Z-p8c-rv02-followup-onerun/ (followup.jsonl
   typed projection/identity parse fails (empty output) → blocks F-NP/F-GNP/F-FELIX/F-HEP/F-TIER.
   (Historical phase-2 I1 was UNSUPPORTED; this run returns PARSE_ERROR — a new disposition.)
 - F-CS **UNSUPPORTED** — CNP `v1alpha2` served=true but schema SHA256 `ff433d34…` ≠ pinned
-  `770130a4…` (compatible=false) → blocks F-CNP. The CNP schema changed since pinning.
+  `770130a4…` (compatible=false) → blocks F-CNP. The observed normalized spec hash matches the repository-pinned Calico v3.32.0 manifest; the old comparison pin came from a different upstream candidate. Live schema drift is NOT established.
 - No effective-policy-union, per-node CNI mode or traffic/directed-flow conclusion is drawn.
   BAR-5432/API-6443/MON-9187/S3-443/ENV-* gaps unchanged. NEW_GATE_RUN_BUDGET=CONSUMED.
+
+## Architect review 3a0afb4 — current interpretation
+
+Review: docs/architecture/P8C_RV02_REVIEW_3a0afb4_20261101.md.
+F-I1 request/parser incompatibility is reproduced offline: kubectl generic List output versus
+strict API PodList/nonempty resourceVersion expectation. Exact live failing field remains
+unavailable because raw stdout was suppressed; this is not evidence of a Calico change.
+F-CS hash ff433d3463dfa2264a7a3ff6201baabf1ec789e98664aff3401a7ef79ae7ce5e matches
+the normalized spec subtree in calico-v3.32.0.yaml, blob21ea9b4b163305ea479bc7708965104465ffc716.
+Source compatibility corrections are authorized offline only. Accepted immutable identity
+binding and Owner access attestations supersede older historical UNPROVEN/access paragraphs;
+current live identity and policy configuration remain uncollected by this follow-up.
+NEW_GATE_RUN_BUDGET=CONSUMED; PHASE2_NEW_RUN_APPROVED=NO; NETPOL_APPROVED_FOR_APPLY=NO.
