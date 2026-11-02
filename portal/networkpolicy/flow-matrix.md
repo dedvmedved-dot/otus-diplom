@@ -1,5 +1,48 @@
 # P8C RV-02 — flow matrix (reconciled, LI-01..03 corrected)
 
+## Current Architect decision — c872eed (2026-11-02)
+
+Authority: docs/architecture/P8C_RV02_ACCEPTANCE_c872eed_20261102.md.
+AUTHORIZED_READ_SET_COMPLETE=YES; FOLLOWUP_LIVE_ARTIFACT=ACCEPTED_WITH_LIMITS.
+FLOW_MATRIX_COMPLETE=NO; EFFECTIVE_POLICY_UNION=UNKNOWN; NETPOL_APPROVED_FOR_APPLY=NO.
+This current decision supersedes conflicting historical status paragraphs below.
+F-I1 succeeded for three Calico Pods; historical failing field remains UNKNOWN.
+F-CNP/F-NP/F-GNP/F-HEP were complete empty lists at 2026-11-02T09:35:24–25Z.
+F-NP is crd.projectcalico.org/v1, not a new networking.k8s.io NetworkPolicy inventory.
+F-FELIX observes default Auto only; F-TIER observes three tier configurations, not traffic effects.
+The one-run budget is consumed; no further live run is authorized.
+Next authorized work is the bounded OFFLINE-ROLLOUT-DECISION in the linked decision.
+No collector/source rework or accepted platform tests are required.
+
+## Current 14-flow reconciliation — c872eed
+
+Evidence F-* refers to evidence/P8/20261102T094000Z-p8c-rv02-podlist-onerun/followup.jsonl.
+The nine successful reads establish identity/policy configuration, not new directed traffic.
+All previous observations retain their original timestamps; current emptiness must not be
+combined with October observations as if they were one atomic snapshot.
+
+| FLOW-ID | Effect of this run / remaining decision |
+|---|---|
+| REP-5432 | No new replication observation; base R1–R3 remain configuration proof. Preserve existing CNPG traffic in candidate isolation plan. |
+| IM-8000 | No new instance-manager flow observation; retain versioned/base proof and assess both directions. |
+| OP-IM-8000 | No new operator traffic observation; exact existing selector/direction requires source-based decision. |
+| BAR-5432 (legacy) | No new Barman reading; controller 9090 versus sidecar backup/WAL roles remain distinct; no controller→DB5432 permission inferred. |
+| MON-9187 | No new monitoring survey; not-found in older surveyed sources does not establish universal absence. |
+| DNS-53 | Base Service/EndpointSlice configuration retained; destination representation under proposed CNI rules remains a design decision. |
+| API-6443 | F-I1 confirms Calico identity; F-FELIX default Auto does not resolve effective mode or Service DNAT enforcement. |
+| S3-443 | Prior endpoint configuration retained; actual routed destination/allowlist is not established by this run. |
+| APP-DB-5432 | PLANNED; read-only inventory does not deploy Portal or prove DB TLS connectivity. |
+| APP-MET-9187 | PLANNED; exact application-to-CNPG selector/port remains candidate design. |
+| MIG-DB-5432 | PLANNED; migrator requires only its accepted DB/DNS dependencies, not platform mutation rights. |
+| ENV-XDS-18000 | PLANNED; prior control-plane configuration retained, no new dataplane evidence. |
+| ENV-BACK-8080 | PLANNED; Gateway-owned source namespace/name and Portal selector remain required. |
+| ENV-LISTENER | PLANNED; external listener/backend/health-check treatment must be explicit before apply review. |
+
+Shared baseline: F-CNP/F-NP/F-GNP/F-HEP complete empty; F-TIER has three configured tiers.
+This closes blocked follow-up reads, not effective-policy-union evaluation. No change to candidate
+policy YAML or permission to isolate CNPG follows. FLOW_MATRIX_COMPLETE=NO.
+
+
 Proof types: `OBSERVED_CONFIG` / `OBSERVED_STATUS` (inventory.jsonl record R#),
 `VERSIONED_DESIGN` (source manifests), `PLANNED` (not created), `UNKNOWN`.
 Base evidence: `evidence/P8/20261026T173244Z-p8c-rv02-live-inventory/inventory.jsonl`.

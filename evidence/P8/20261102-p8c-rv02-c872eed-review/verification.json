@@ -1,0 +1,290 @@
+{
+  "review_head": "c872eed41a49e5923e91d260e4dcb3b12a1f903b",
+  "utc": "2026-11-02T11:13:46.151915+00:00",
+  "checks": [
+    {
+      "check": "SHA256SUMS.evidence:followup.jsonl",
+      "pass": true
+    },
+    {
+      "check": "SHA256SUMS.evidence:run-meta.txt",
+      "pass": true
+    },
+    {
+      "check": "SHA256SUMS.evidence:hash-check.txt",
+      "pass": true
+    },
+    {
+      "check": "SHA256SUMS.evidence:SHA256SUMS.result",
+      "pass": true
+    },
+    {
+      "check": "SHA256SUMS.evidence:preflight.txt",
+      "pass": true
+    },
+    {
+      "check": "SHA256SUMS.evidence:hash-check-local.txt",
+      "pass": true
+    },
+    {
+      "check": "SHA256SUMS.evidence:run-intent.txt",
+      "pass": true
+    },
+    {
+      "check": "SHA256SUMS.evidence:result.md",
+      "pass": true
+    },
+    {
+      "check": "SHA256SUMS.result:followup.py",
+      "pass": true
+    },
+    {
+      "check": "SHA256SUMS.result:supplemental.py",
+      "pass": true
+    },
+    {
+      "check": "SHA256SUMS.result:followup-output/followup.jsonl",
+      "pass": true
+    },
+    {
+      "check": "SHA256SUMS.result:run-meta.txt",
+      "pass": true
+    },
+    {
+      "check": "SHA256SUMS.result:hash-check.txt",
+      "pass": true
+    },
+    {
+      "check": "output digest",
+      "pass": true
+    },
+    {
+      "check": "nine unique ordered IDs",
+      "pass": true
+    },
+    {
+      "check": "F-D1:argv",
+      "pass": true
+    },
+    {
+      "check": "F-D1:success",
+      "pass": true
+    },
+    {
+      "check": "F-D1:time",
+      "pass": true
+    },
+    {
+      "check": "F-I1:argv",
+      "pass": true
+    },
+    {
+      "check": "F-I1:success",
+      "pass": true
+    },
+    {
+      "check": "F-I1:time",
+      "pass": true
+    },
+    {
+      "check": "F-CS:argv",
+      "pass": true
+    },
+    {
+      "check": "F-CS:success",
+      "pass": true
+    },
+    {
+      "check": "F-CS:time",
+      "pass": true
+    },
+    {
+      "check": "F-CNP:argv",
+      "pass": true
+    },
+    {
+      "check": "F-CNP:success",
+      "pass": true
+    },
+    {
+      "check": "F-CNP:time",
+      "pass": true
+    },
+    {
+      "check": "F-CNP:complete page",
+      "pass": true
+    },
+    {
+      "check": "F-CNP:counts",
+      "pass": true
+    },
+    {
+      "check": "F-NP:argv",
+      "pass": true
+    },
+    {
+      "check": "F-NP:success",
+      "pass": true
+    },
+    {
+      "check": "F-NP:time",
+      "pass": true
+    },
+    {
+      "check": "F-NP:complete page",
+      "pass": true
+    },
+    {
+      "check": "F-NP:counts",
+      "pass": true
+    },
+    {
+      "check": "F-GNP:argv",
+      "pass": true
+    },
+    {
+      "check": "F-GNP:success",
+      "pass": true
+    },
+    {
+      "check": "F-GNP:time",
+      "pass": true
+    },
+    {
+      "check": "F-GNP:complete page",
+      "pass": true
+    },
+    {
+      "check": "F-GNP:counts",
+      "pass": true
+    },
+    {
+      "check": "F-FELIX:argv",
+      "pass": true
+    },
+    {
+      "check": "F-FELIX:success",
+      "pass": true
+    },
+    {
+      "check": "F-FELIX:time",
+      "pass": true
+    },
+    {
+      "check": "F-HEP:argv",
+      "pass": true
+    },
+    {
+      "check": "F-HEP:success",
+      "pass": true
+    },
+    {
+      "check": "F-HEP:time",
+      "pass": true
+    },
+    {
+      "check": "F-HEP:complete page",
+      "pass": true
+    },
+    {
+      "check": "F-HEP:counts",
+      "pass": true
+    },
+    {
+      "check": "F-TIER:argv",
+      "pass": true
+    },
+    {
+      "check": "F-TIER:success",
+      "pass": true
+    },
+    {
+      "check": "F-TIER:time",
+      "pass": true
+    },
+    {
+      "check": "F-TIER:complete page",
+      "pass": true
+    },
+    {
+      "check": "F-TIER:counts",
+      "pass": true
+    },
+    {
+      "check": "discovery descriptors",
+      "pass": true
+    },
+    {
+      "check": "identity complete three pods",
+      "pass": true
+    },
+    {
+      "check": "identity:calico-node-4krkt",
+      "pass": true
+    },
+    {
+      "check": "identity:calico-node-lgmtz",
+      "pass": true
+    },
+    {
+      "check": "identity:calico-node-mqrgg",
+      "pass": true
+    },
+    {
+      "check": "schema compatible",
+      "pass": true
+    },
+    {
+      "check": "F-CNP:empty",
+      "pass": true
+    },
+    {
+      "check": "F-NP:empty",
+      "pass": true
+    },
+    {
+      "check": "F-GNP:empty",
+      "pass": true
+    },
+    {
+      "check": "F-HEP:empty",
+      "pass": true
+    },
+    {
+      "check": "Felix default Auto",
+      "pass": true
+    },
+    {
+      "check": "tier facts",
+      "pass": true
+    },
+    {
+      "check": "run binding",
+      "pass": true
+    },
+    {
+      "check": "preflight seven exits",
+      "pass": true
+    },
+    {
+      "check": "remote hash check success",
+      "pass": true
+    },
+    {
+      "check": "limited content scan",
+      "pass": true
+    }
+  ],
+  "passed": 68,
+  "failed": 0,
+  "collector_invocations": 9,
+  "raw_success_category": null,
+  "interpretation": "OK derived from exit=0 and category=null; empty list output is empty string by accepted source design",
+  "limits": [
+    "No live actions; no source test suites rerun.",
+    "Host-key/key-only connection is operator-attested, not independently reproduced.",
+    "Preflight version output is summarized; full JSON and exact invocation not retained.",
+    "Content scan is bounded, not proof of universal secret absence.",
+    "Historical failing field and full effective policy union remain unproven."
+  ]
+}

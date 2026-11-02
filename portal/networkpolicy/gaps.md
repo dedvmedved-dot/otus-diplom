@@ -1,5 +1,20 @@
 # P8C RV-02 — gaps (reconciled, LI-01..03 corrected)
 
+## Current Architect decision — c872eed (2026-11-02)
+
+Authority: docs/architecture/P8C_RV02_ACCEPTANCE_c872eed_20261102.md.
+AUTHORIZED_READ_SET_COMPLETE=YES; FOLLOWUP_LIVE_ARTIFACT=ACCEPTED_WITH_LIMITS.
+FLOW_MATRIX_COMPLETE=NO; EFFECTIVE_POLICY_UNION=UNKNOWN; NETPOL_APPROVED_FOR_APPLY=NO.
+This current decision supersedes conflicting historical status paragraphs below.
+F-I1 succeeded for three Calico Pods; historical failing field remains UNKNOWN.
+F-CNP/F-NP/F-GNP/F-HEP were complete empty lists at 2026-11-02T09:35:24–25Z.
+F-NP is crd.projectcalico.org/v1, not a new networking.k8s.io NetworkPolicy inventory.
+F-FELIX observes default Auto only; F-TIER observes three tier configurations, not traffic effects.
+The one-run budget is consumed; no further live run is authorized.
+Next authorized work is the bounded OFFLINE-ROLLOUT-DECISION in the linked decision.
+No collector/source rework or accepted platform tests are required.
+
+
 Base evidence: `evidence/P8/20261026T173244Z-p8c-rv02-live-inventory/inventory.jsonl`.
 
 1. BAR-5432 — **PARTIAL DESIGN / LIVE IDENTITY OBSERVED** (legacy ID).

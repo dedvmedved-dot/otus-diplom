@@ -1,5 +1,24 @@
 # P8C NetworkPolicy plan (D1) — read-only preparation, not yet applied
 
+## Current Architect decision — c872eed (2026-11-02)
+
+Authority: docs/architecture/P8C_RV02_ACCEPTANCE_c872eed_20261102.md.
+AUTHORIZED_READ_SET_COMPLETE=YES; FOLLOWUP_LIVE_ARTIFACT=ACCEPTED_WITH_LIMITS.
+FLOW_MATRIX_COMPLETE=NO; EFFECTIVE_POLICY_UNION=UNKNOWN; NETPOL_APPROVED_FOR_APPLY=NO.
+This current decision supersedes conflicting historical status paragraphs below.
+F-I1 succeeded for three Calico Pods; historical failing field remains UNKNOWN.
+F-CNP/F-NP/F-GNP/F-HEP were complete empty lists at 2026-11-02T09:35:24–25Z.
+F-NP is crd.projectcalico.org/v1, not a new networking.k8s.io NetworkPolicy inventory.
+F-FELIX observes default Auto only; F-TIER observes three tier configurations, not traffic effects.
+The one-run budget is consumed; no further live run is authorized.
+Next authorized work is the bounded OFFLINE-ROLLOUT-DECISION in the linked decision.
+No collector/source rework or accepted platform tests are required.
+
+The older rollout sections remain historical candidates, not execution instructions.
+The old S3 'live value UNKNOWN' row is superseded by accepted Phase-2 endpoint configuration;
+routing remains UNKNOWN. No new live activity is implied by documentary reconciliation.
+
+
 Live policy rollout is deferred until supply-chain (R3) and auth/pull (R4)
 preconditions are ready (per D1/R2: "не вводить live policies без необходимости
 deploy"). This document records candidate flows and known source facts. It does not certify the live inventory.
