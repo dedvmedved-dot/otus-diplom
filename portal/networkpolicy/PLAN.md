@@ -1,18 +1,15 @@
 # P8C NetworkPolicy plan (D1) — read-only preparation, not yet applied
 
-## Current Architect decision — c872eed (2026-11-02)
+## Current Architect decision — b5d8cab (2026-11-02, OD-01..05)
 
-Authority: docs/architecture/P8C_RV02_ACCEPTANCE_c872eed_20261102.md.
-AUTHORIZED_READ_SET_COMPLETE=YES; FOLLOWUP_LIVE_ARTIFACT=ACCEPTED_WITH_LIMITS.
-FLOW_MATRIX_COMPLETE=NO; EFFECTIVE_POLICY_UNION=UNKNOWN; NETPOL_APPROVED_FOR_APPLY=NO.
-This current decision supersedes conflicting historical status paragraphs below.
-F-I1 succeeded for three Calico Pods; historical failing field remains UNKNOWN.
-F-CNP/F-NP/F-GNP/F-HEP were complete empty lists at 2026-11-02T09:35:24–25Z.
-F-NP is crd.projectcalico.org/v1, not a new networking.k8s.io NetworkPolicy inventory.
-F-FELIX observes default Auto only; F-TIER observes three tier configurations, not traffic effects.
-The one-run budget is consumed; no further live run is authorized.
-Next authorized work is the bounded OFFLINE-ROLLOUT-DECISION in the linked decision.
-No collector/source rework or accepted platform tests are required.
+Authority: docs/architecture/P8C_RV02_REVIEW_a9e6fac_20261102.md.
+AUTHORIZED_READ_SET_COMPLETE=YES; FLOW_MATRIX_COMPLETE=NO; EFFECTIVE_POLICY_UNION=UNKNOWN.
+NETPOL_APPROVED_FOR_APPLY=NO; CI/PRODUCTION=NOT_AUTHORIZED; P8C=NOT_FINAL_ACCEPTED.
+Rollout plan reworked (R1): docs/architecture/P8C_RV02_OFFLINE_ROLLOUT_DECISION_20261102.md.
+PR-1/PR-2 removed; B1 (API DNAT) resolved by representation-robust rule (10.96.0.1/32:443 +
+172.30.140.101/102/103/32:6443); B2 (S3) resolved via P7 historical fact; B3 (ingress) resolved
+from gateway.yaml/deployment.yaml; union-aware state/rollback (S0–S4); candidate delta NOT_APPROVED
+(Barman controller→5432, API /24). Candidate policy YAML unchanged.
 
 The older rollout sections remain historical candidates, not execution instructions.
 The old S3 'live value UNKNOWN' row is superseded by accepted Phase-2 endpoint configuration;

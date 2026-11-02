@@ -1,21 +1,29 @@
 # P8C RV-02 — flow matrix (reconciled, LI-01..03 corrected)
 
-## Current Architect decision — c872eed (2026-11-02)
+## Current Architect decision — b5d8cab (2026-11-02, OD-01..05)
+
+Authority: docs/architecture/P8C_RV02_REVIEW_a9e6fac_20261102.md (REVIEW_HEAD=a9e6fac).
+AUTHORIZED_READ_SET_COMPLETE=YES; FLOW_MATRIX_COMPLETE=NO; EFFECTIVE_POLICY_UNION=UNKNOWN.
+NETPOL_APPROVED_FOR_APPLY=NO; CI/PRODUCTION=NOT_AUTHORIZED; P8C=NOT_FINAL_ACCEPTED.
+This decision supersedes the c872eed header below. The offline rollout plan was reworked (R1):
+docs/architecture/P8C_RV02_OFFLINE_ROLLOUT_DECISION_20261102.md resolves OD-01..05 —
+PR-1 (CalicoNodeStatus backend) and PR-2 (IPPool/DNS) REMOVED; B1 resolved by a
+representation-robust API rule (10.96.0.1/32:443 + 172.30.140.101/102/103/32:6443, not /24);
+B2 resolved via P7 historical S3 fact + Barman role decomposition; B3 resolved from
+gateway.yaml/deployment.yaml; union-aware state/rollback; candidate delta NOT_APPROVED
+(Barman controller→5432, API /24). Candidate policy YAML unchanged.
+
+## Historical Architect decision — c872eed (2026-11-02)
 
 Authority: docs/architecture/P8C_RV02_ACCEPTANCE_c872eed_20261102.md.
 AUTHORIZED_READ_SET_COMPLETE=YES; FOLLOWUP_LIVE_ARTIFACT=ACCEPTED_WITH_LIMITS.
 FLOW_MATRIX_COMPLETE=NO; EFFECTIVE_POLICY_UNION=UNKNOWN; NETPOL_APPROVED_FOR_APPLY=NO.
-This current decision supersedes conflicting historical status paragraphs below.
+This supersedes conflicting historical status paragraphs below.
 F-I1 succeeded for three Calico Pods; historical failing field remains UNKNOWN.
 F-CNP/F-NP/F-GNP/F-HEP were complete empty lists at 2026-11-02T09:35:24–25Z.
 F-NP is crd.projectcalico.org/v1, not a new networking.k8s.io NetworkPolicy inventory.
 F-FELIX observes default Auto only; F-TIER observes three tier configurations, not traffic effects.
 The one-run budget is consumed; no further live run is authorized.
-Next authorized work is the bounded OFFLINE-ROLLOUT-DECISION in the linked decision.
-No collector/source rework or accepted platform tests are required.
-Produced: docs/architecture/P8C_RV02_OFFLINE_ROLLOUT_DECISION_20261102.md
-(14-flow decision table; blocking UNKNOWNs B1=DNAT API/DNS, B2=S3 resolution+reachability,
-B3=ENV-LISTENER design; smallest-read proposal PR-1/PR-2 — proposal only; rollout/rollback order).
 
 ## Current 14-flow reconciliation — c872eed
 
