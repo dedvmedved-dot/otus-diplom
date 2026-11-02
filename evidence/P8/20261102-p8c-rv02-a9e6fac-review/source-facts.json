@@ -1,0 +1,119 @@
+{
+  "review_head": "a9e6facda8988a694722b436526ed2ed844ce41b",
+  "utc": "2026-11-02T15:10:42.114047+00:00",
+  "node_status_status_fields": [
+    "agent",
+    "bgp",
+    "lastUpdated",
+    "routes"
+  ],
+  "node_status_agent_fields": [
+    "birdV4",
+    "birdV6"
+  ],
+  "ippool_root_fields": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "ippool_spec_fields": [
+    "allowedUses",
+    "assignmentMode",
+    "blockSize",
+    "cidr",
+    "disableBGPExport",
+    "disabled",
+    "ipipMode",
+    "namespaceSelector",
+    "natOutgoing",
+    "nodeSelector",
+    "vxlanMode"
+  ],
+  "first_policy": {
+    "selector": {
+      "matchLabels": {
+        "cnpg.io/cluster": "portal-db",
+        "cnpg.io/podRole": "instance"
+      }
+    },
+    "policyTypes": [
+      "Ingress",
+      "Egress"
+    ]
+  },
+  "baseline_deny": {
+    "podSelector": {},
+    "policyTypes": [
+      "Ingress",
+      "Egress"
+    ]
+  },
+  "dataplane_policyTypes": [
+    "Egress"
+  ],
+  "gateway_listeners": [
+    {
+      "name": "https",
+      "port": 443,
+      "protocol": "HTTPS",
+      "hostname": "portal.demo-pak.test",
+      "tls": {
+        "mode": "Terminate",
+        "certificateRefs": [
+          {
+            "kind": "Secret",
+            "name": "portal-ui-tls"
+          }
+        ]
+      },
+      "allowedRoutes": {
+        "namespaces": {
+          "from": "Same"
+        }
+      }
+    }
+  ],
+  "httproute": {
+    "parentRefs": [
+      {
+        "name": "portal-gateway",
+        "sectionName": "https"
+      }
+    ],
+    "hostnames": [
+      "portal.demo-pak.test"
+    ],
+    "rules": [
+      {
+        "matches": [
+          {
+            "path": {
+              "type": "PathPrefix",
+              "value": "/"
+            }
+          }
+        ],
+        "backendRefs": [
+          {
+            "name": "portal",
+            "port": 80
+          }
+        ]
+      }
+    ]
+  },
+  "portal_service": {
+    "type": "ClusterIP",
+    "selector": {
+      "app.kubernetes.io/name": "pak-portal"
+    },
+    "ports": [
+      {
+        "name": "http",
+        "port": 80,
+        "targetPort": "http"
+      }
+    ]
+  }
+}

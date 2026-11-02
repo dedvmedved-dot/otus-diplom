@@ -103,3 +103,15 @@ is UNPROVEN (not established platform-child). C3/C4/C5 were NOT_EXECUTED.
 S1/S2 establish per-instance native sidecar (restartPolicy=Always) and controller identity,
 not traffic direction. C1 URL path is discarded; bucket suffix/prefix not collected.
 ONE_RUN_BUDGET=CONSUMED; NEW_LIVE_RUN_APPROVED=NO; FLOW_MATRIX_COMPLETE=NO.
+
+## Review of offline decision a9e6fac — current scope
+
+Authority: docs/architecture/P8C_RV02_REVIEW_a9e6fac_20261102.md.
+OFFLINE_ROLLOUT_DECISION=PARTIAL / REWORK_REQUIRED (OD-01…05).
+PR-1 CalicoNodeStatus does not expose the proposed dataplane/DNAT field; PR-2 IPPool/DNS
+must not be represented as proof of CNPG S3 reachability. Neither proposal is authorized.
+The first selecting Ingress/Egress CNPG policy already isolates its Pods; state-dependent
+rollback and a completed ingress design are required before apply review.
+Accepted c872eed inventory and eed114e collector remain CLOSED. No new collector/run/tests.
+Only OFFLINE-ROLLOUT-DECISION-R1 documentary corrections are authorized.
+FLOW_MATRIX_COMPLETE=NO; NETPOL_APPROVED_FOR_APPLY=NO; CI/production remain closed.

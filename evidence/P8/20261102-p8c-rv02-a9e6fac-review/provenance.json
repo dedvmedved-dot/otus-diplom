@@ -1,0 +1,79 @@
+{
+  "review_head": "a9e6facda8988a694722b436526ed2ed844ce41b",
+  "parent": "3ee0ca08b43fd1d1cbf8ca1311e7095ad15a588d",
+  "reviewed_doc_blob": "97caa5ed2a4f7e82821dd10825f9e1e543583a41",
+  "connector_sources": [
+    {
+      "path": "ansible/playbooks/files/calico-v3.32.0.yaml",
+      "blob": "21ea9b4b163305ea479bc7708965104465ffc716"
+    },
+    {
+      "path": "portal/manifests/networkpolicy.yaml",
+      "blob": "fccb8432135a18f8b7099e131471a48808df1ed7"
+    },
+    {
+      "path": "portal/manifests/gateway.yaml",
+      "blob": "1e1f48a3c6d03c4558f4b4c3cca24bc12c22b763"
+    },
+    {
+      "path": "portal/manifests/deployment.yaml",
+      "blob": "2cb27165330fe4b6772af3a06a1940d661efc72f"
+    },
+    {
+      "path": "manifests/envoy-gateway/p6c-envoy-gateway-values.yaml",
+      "blob": "6b1ea60d8e4120016f5675771c46f92f96dadc0e"
+    },
+    {
+      "path": "portal/networkpolicy/supplemental-design.md",
+      "blob": "a4de674f9b98f7ecc2dc063db15ccfca7195484b"
+    },
+    {
+      "path": "evidence/P7/20261019T030033Z-task-p7c-b2-r1-dns1-coredns-resume/15-dns-after-demo-pak.txt",
+      "blob": "89cd2fe653f09924ede7adcd4a90bbaf515211cc"
+    },
+    {
+      "path": "evidence/P7/20261019T030033Z-task-p7c-b2-r1-dns1-coredns-resume/16-bind-authority-check.txt",
+      "blob": "680e504cf1027789d124e8c8bf7b29121e24a23e"
+    },
+    {
+      "path": "evidence/P7/20261019T113205Z-task-p7c-b2-r2-canonical-reproducibility-closure/09-live-dns-s3-contract.txt",
+      "blob": "078398f07263bae41e1f824b609edc7bd03ec24b"
+    }
+  ],
+  "external_primary_sources": [
+    {
+      "url": "https://v1-36.docs.kubernetes.io/docs/concepts/services-networking/network-policies/",
+      "sections": [
+        "Two sorts of pod isolation",
+        "ipBlock"
+      ],
+      "claims": "A selecting Ingress/Egress policy introduces isolation; NAT order is implementation dependent."
+    }
+  ],
+  "static_check": {
+    "method": "Python json + yaml.safe_load(_all) on exact Connector file contents; extracted selected CRD property names and candidate manifest specs",
+    "exit_code": 0,
+    "assertions": [
+      "CalicoNodeStatus.status fields exactly agent/bgp/lastUpdated/routes",
+      "CalicoNodeStatus.status.agent fields exactly birdV4/birdV6",
+      "IPPool schema has no status property",
+      "First CNPG policyTypes = Ingress,Egress",
+      "Dataplane candidate policyTypes = Egress"
+    ]
+  },
+  "observations_not_runtime": [
+    "Existing Gateway HTTPS443 TLS termination and HTTPRoute->portal:80->http8080",
+    "P7 accepted DNS/path observations retained with original timestamps",
+    "No assertion of current live connectivity or full effective policy union"
+  ],
+  "live_actions": "NONE",
+  "source_tests_rerun": false,
+  "accepted_inventory": "NOT_REOPENED",
+  "finding_ids": [
+    "OD-01",
+    "OD-02",
+    "OD-03",
+    "OD-04",
+    "OD-05"
+  ]
+}
