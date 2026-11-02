@@ -1,0 +1,148 @@
+{
+  "review_head": "1a0b4c1faf9d0472b77201647eb4d19266068a55",
+  "parent": "4f724ef85342a370dcecff4398fd65c686fa79eb",
+  "review_type": "offline document/source review via GitHub Connector",
+  "scope": {
+    "changed_files": 5,
+    "collector_changed": false,
+    "application_changed": false,
+    "policy_yaml_changed": false,
+    "historical_evidence_modified": false,
+    "live_calls": 0,
+    "accepted_tests_rerun": false
+  },
+  "reviewed_document": {
+    "path": "docs/architecture/P8C_RV02_OFFLINE_ROLLOUT_DECISION_20261102.md",
+    "blob": "d4c514c42b742fa93af39667f779dabbf9f76996"
+  },
+  "findings": [
+    {
+      "id": "A1",
+      "fact": "Plan uses status.instancesReady; pinned CNPG source declares json readyInstances.",
+      "source": {
+        "repository": "cloudnative-pg/cloudnative-pg",
+        "ref": "v1.30.1",
+        "path": "api/v1/cluster_types.go",
+        "blob": "891424dde2287deffcf22b88683f4d8f96376993"
+      },
+      "evidence": [
+        "\tReadyInstances int `json:\"readyInstances,omitempty\"`",
+        "// +kubebuilder:printcolumn:name=\"Ready\",type=\"integer\",JSONPath=\".status.readyInstances\",description=\"Number of ready instances\""
+      ]
+    },
+    {
+      "id": "A2",
+      "fact": "Plan requires Cluster firstRecoverabilityPoint to advance in 120s. CNPG source marks it not set for backup plugins; Barman defines first point of recovery, not last archived WAL.",
+      "sources": [
+        {
+          "repository": "cloudnative-pg/cloudnative-pg",
+          "ref": "v1.30.1",
+          "blob": "891424dde2287deffcf22b88683f4d8f96376993",
+          "path": "api/v1/cluster_types.go"
+        },
+        {
+          "repository": "cloudnative-pg/plugin-barman-cloud",
+          "ref": "v0.13.0",
+          "blob": "928d52c982b56f11b2eb00f4f88dea4e75916e12",
+          "path": "api/v1/objectstore_types.go"
+        },
+        {
+          "path": "docs/architecture/P8B_POSTGRES_BACKUP_CONTRACT.md",
+          "blob": "b1e2b51ff46bda7f172432ce43713b7d1a7415c0",
+          "archive_timeout_seconds": 300
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "fact": "Canonical plan no longer contains 14-flow table; refers to missing current sections 6 and 8.",
+      "current_sections": [
+        "## 0. Словарь источников и селекторов (однозначные ссылки)",
+        "## 1. RR-01 — законченный ingress-дизайн (OD-03)",
+        "## 2. RR-02 — S0–S4 с условным baseline, union-aware rollback и реальными проверками",
+        "## 3. RR-03 — точные selectors/provenance и исполнимые proposals",
+        "## 4. Авторский vs Architect статус (не выдавать RESOLVED за Architect)",
+        "## 5. Итог"
+      ],
+      "previous_table": {
+        "ref": "f7bf263ed0141a7ae8b77b439b75b10d7a6eda10",
+        "blob": "3833b2b7456a4bb61feca2e75c9772e3650c74b0",
+        "section": 6
+      },
+      "checked_by": "full content comparison"
+    },
+    {
+      "id": "C1",
+      "fact": "Existing Portal Handler contains auth before route. TLS and hostname matching alone are not client authentication.",
+      "sources": [
+        {
+          "path": "portal/internal/httpapi/server.go",
+          "blob": "c804bf231fc68bb0cfed1b4a0c058a1b938345d4"
+        },
+        {
+          "path": "portal/internal/auth/auth.go",
+          "blob": "62c7a0586895bfe2a03fd8207daf5641dc664f0c"
+        }
+      ],
+      "network_reference": "https://metallb.io/concepts/layer2/",
+      "limit": "No live dataplane behavior measured."
+    },
+    {
+      "id": "C2",
+      "fact": "PR-5 has owning-name selector without owning-namespace and omits healthCheckNodePort. PR-3/5 generic get do not specify bounded completeness."
+    },
+    {
+      "id": "C3",
+      "fact": "PR-6 omits HostEndpoint and projects only identity/selectors, insufficient to detect rule changes under same UID. Full effective union remains unknown."
+    }
+  ],
+  "source_dictionary": [
+    {
+      "path": "evidence/P8/20261026T173244Z-p8c-rv02-live-inventory/inventory.jsonl",
+      "ref": "1a0b4c1faf9d0472b77201647eb4d19266068a55",
+      "blob": "c1f59c8d0ebcbab1f9cfc40171add6aa2289450c"
+    },
+    {
+      "path": "evidence/P8/20261027T140000Z-p8c-rv02-phase2-live/result/supplemental.jsonl",
+      "ref": "1a0b4c1faf9d0472b77201647eb4d19266068a55",
+      "blob": "7c6151b490c02a79ecfe2337e6f262addd36519a"
+    },
+    {
+      "path": "evidence/P8/20261102T094000Z-p8c-rv02-podlist-onerun/followup.jsonl",
+      "ref": "1a0b4c1faf9d0472b77201647eb4d19266068a55",
+      "blob": "84ceb7cbacb647f2b3cd7fcbbe545992c7e2e35e"
+    },
+    {
+      "path": "evidence/P7/20261019T030033Z-task-p7c-b2-r1-dns1-coredns-resume/15-dns-after-demo-pak.txt",
+      "ref": "1a0b4c1faf9d0472b77201647eb4d19266068a55",
+      "blob": "89cd2fe653f09924ede7adcd4a90bbaf515211cc"
+    },
+    {
+      "path": "evidence/P7/20261019T030033Z-task-p7c-b2-r1-dns1-coredns-resume/16-bind-authority-check.txt",
+      "ref": "1a0b4c1faf9d0472b77201647eb4d19266068a55",
+      "blob": "680e504cf1027789d124e8c8bf7b29121e24a23e"
+    },
+    {
+      "path": "evidence/P7/20261019T113205Z-task-p7c-b2-r2-canonical-reproducibility-closure/09-live-dns-s3-contract.txt",
+      "ref": "1a0b4c1faf9d0472b77201647eb4d19266068a55",
+      "blob": "078398f07263bae41e1f824b609edc7bd03ec24b"
+    },
+    {
+      "path": "evidence/P6/20260909T232839Z-task-p6d-r2-final-evidence-contract-closure/25a-loadbalancer-service-raw.json",
+      "ref": "1a0b4c1faf9d0472b77201647eb4d19266068a55",
+      "blob": "b71e1453e890bab06b90bdaa697aa18e7c9124c4"
+    },
+    {
+      "path": "manifests/envoy-gateway/p6c-gatewayclass.yaml",
+      "ref": "1a0b4c1faf9d0472b77201647eb4d19266068a55",
+      "blob": "80b1d683a7193fd1cebc5d29d6f6b0a671f5d1b6"
+    }
+  ],
+  "limits": [
+    "No tests executed for this document-only review.",
+    "Repository tree entries establish path/blob, not new live facts.",
+    "9/9 inventory accepted; no requests to repeat.",
+    "No live/apply/CI/production authorization."
+  ],
+  "verdict": "PARTIAL / RESIDUAL_REQUIRED"
+}

@@ -1,20 +1,19 @@
 # P8C RV-02 — flow matrix (reconciled, LI-01..03 corrected)
 
-## Current Architect review — f7bf263
+## Current Architect review — 1a0b4c1
 
-Authority: docs/architecture/P8C_RV02_REVIEW_f7bf263_20261102.md.
+Authority: docs/architecture/P8C_RV02_REVIEW_1a0b4c1_20261102.md.
 OFFLINE_ROLLOUT_DECISION=PARTIAL / RESIDUAL_REQUIRED.
-The R1 RESOLVED statements below are author proposals, not full Architect acceptance.
-Accepted: removal of PR-1/PR-2; historical S3 evidence/role separation; bounded API tuple
-candidate; recognition that the first policy isolates Pods; UID-safe rollback principle.
-Remaining: RR-01 ingress design, RR-02 state/check/rollback details,
-RR-03 exact selectors/provenance and bounded executable read proposals.
-The existing candidate policy YAML is unchanged and NOT_APPROVED_FOR_APPLY.
-Collector/source and c872eed 9/9 live inventory remain accepted; no new collector/run/tests.
-Only offline R1 residual documentation is authorized. CI/production/P8D–P8G/P9 remain closed.
+Accepted: chosen candidate ingress model, conditional S0 and split policy stages,
+separate deployment rollback, corrected selector keys and author/Architect distinction.
+Remaining: A actual CNPG/WAL checks and stage/exposure semantics; B restore the 14-flow
+table and complete provenance; C auth/Service accuracy and bounded read proposals.
+Collector/source and c872eed 9/9 remain accepted; no collector development or accepted-test reruns.
+Only offline documentation/evidence correction is authorized for primary Hermes (not Hermes2).
+PHASE2_NEW_RUN_APPROVED=NO; NETPOL_APPROVED_FOR_APPLY=NO; CI/production/P8D–P8G/P9 closed.
+Candidate policy YAML remains unchanged and NOT_APPROVED_FOR_APPLY.
 
-
-## Current status — f7bf263 (2026-11-02)
+## Historical status — f7bf263 (2026-11-02)
 
 Authority: docs/architecture/P8C_RV02_REVIEW_f7bf263_20261102.md (REVIEW_HEAD=f7bf263).
 AUTHORIZED_READ_SET_COMPLETE=YES; FLOW_MATRIX_COMPLETE=NO; EFFECTIVE_POLICY_UNION=UNKNOWN.

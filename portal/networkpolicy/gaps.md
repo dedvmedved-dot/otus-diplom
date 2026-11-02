@@ -195,3 +195,11 @@ ARCHITECT_ACCEPTED: удаление PR-1/PR-2, P7 historical S3, огранич
 UID-precondition rollback, candidate delta (Barman controller→5432, API /24) NOT_APPROVED.
 AUTHOR_PROPOSAL (не Architect-accepted): ingress-модель, union-aware S0–S4 rollback, PR-3..6.
 Candidate policy YAML unchanged; FLOW_MATRIX_COMPLETE=NO; NETPOL_APPROVED_FOR_APPLY=NO.
+
+
+## Architect review 1a0b4c1 — 2026-11-02
+
+Authority: docs/architecture/P8C_RV02_REVIEW_1a0b4c1_20261102.md.
+The residual proposal remains PARTIAL. Document corrections A/B/C are required; this does not reopen
+accepted source or 9/9 inventory. No live read, collector test, apply, CI or production gate is opened.
+FLOW_MATRIX_COMPLETE=NO; EFFECTIVE_POLICY_UNION=UNKNOWN; P8C=NOT_FINAL_ACCEPTED.
