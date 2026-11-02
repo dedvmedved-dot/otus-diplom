@@ -90,3 +90,20 @@ Source compatibility corrections are authorized offline only. Accepted immutable
 binding and Owner access attestations supersede older historical UNPROVEN/access paragraphs;
 current live identity and policy configuration remain uncollected by this follow-up.
 NEW_GATE_RUN_BUDGET=CONSUMED; PHASE2_NEW_RUN_APPROVED=NO; NETPOL_APPROVED_FOR_APPLY=NO.
+
+## Phase-4 compat one-run 20261102 (gate e9553b8)
+
+Artifact: evidence/P8/20261102T023500Z-p8c-rv02-followup-compat-onerun/ (followup.jsonl, 9 records, EXIT=1, 4 collector invocations).
+
+- F-D1 **OK** — 23 Calico API resource descriptors served (unchanged surface).
+- F-CS **compatible=true** — live CNP v1alpha2 normalized spec hash `ff433d34…` equals the pinned
+  Calico manifest value. The earlier "schema drift" was a wrong pin, not a live change (LR-02 confirmed).
+- F-CNP **OK, 0 items** — `clusternetworkpolicies` list is empty: **no ClusterNetworkPolicy
+  objects deployed** in the cluster.
+- F-I1 **PARSE_ERROR (diag=ITEM)** — raw GET PodList envelope/metadata parsed (exit 0) but a
+  calico-node pod item failed the accepted `project_pod_identity`; identity not approved →
+  F-NP/F-GNP/F-FELIX/F-HEP/F-TIER remain BLOCKED_NOT_EXECUTED. Failing field not recovered
+  (raw stdout suppressed by design).
+- BASELINE: CNP schema present + compatible, CNP object count = 0. CNI: identity still unresolved
+  (now at ITEM stage, not envelope). No effective-policy-union / per-node mode / traffic-flow
+  conclusion. NEW_GATE_RUN_BUDGET=CONSUMED; PHASE2_NEW_RUN_APPROVED=NO.
