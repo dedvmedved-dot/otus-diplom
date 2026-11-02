@@ -1,5 +1,19 @@
 # P8C NetworkPolicy plan (D1) — read-only preparation, not yet applied
 
+## Current Architect review — f7bf263
+
+Authority: docs/architecture/P8C_RV02_REVIEW_f7bf263_20261102.md.
+OFFLINE_ROLLOUT_DECISION=PARTIAL / RESIDUAL_REQUIRED.
+The R1 RESOLVED statements below are author proposals, not full Architect acceptance.
+Accepted: removal of PR-1/PR-2; historical S3 evidence/role separation; bounded API tuple
+candidate; recognition that the first policy isolates Pods; UID-safe rollback principle.
+Remaining: RR-01 ingress design, RR-02 state/check/rollback details,
+RR-03 exact selectors/provenance and bounded executable read proposals.
+The existing candidate policy YAML is unchanged and NOT_APPROVED_FOR_APPLY.
+Collector/source and c872eed 9/9 live inventory remain accepted; no new collector/run/tests.
+Only offline R1 residual documentation is authorized. CI/production/P8D–P8G/P9 remain closed.
+
+
 ## Current Architect decision — b5d8cab (2026-11-02, OD-01..05)
 
 Authority: docs/architecture/P8C_RV02_REVIEW_a9e6fac_20261102.md.

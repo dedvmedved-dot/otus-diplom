@@ -1,0 +1,103 @@
+{
+  "head": "f7bf263ed0141a7ae8b77b439b75b10d7a6eda10",
+  "document_blob": "3833b2b7456a4bb61feca2e75c9772e3650c74b0",
+  "changed_paths": [
+    "docs/architecture/P8C_RV02_OFFLINE_ROLLOUT_DECISION_20261102.md",
+    "portal/networkpolicy/PLAN.md",
+    "portal/networkpolicy/flow-matrix.md"
+  ],
+  "anchors": [
+    {
+      "marker": "Внешний listener→dataplane НЕ",
+      "matches": [
+        {
+          "line": 99,
+          "text": "  ограничен. Внешний listener→dataplane НЕ моделируется в policy (требует будущего design-reшение);"
+        }
+      ]
+    },
+    {
+      "marker": "k8s.io/metadata.name",
+      "matches": [
+        {
+          "line": 129,
+          "text": "`k8s.io/metadata.name` — label на Namespace. Порт указан до/после Service, где различается."
+        }
+      ]
+    },
+    {
+      "marker": "S0 baseline",
+      "matches": [
+        {
+          "line": 111,
+          "text": "| S0 baseline | — | portal: CNPG/др. Pods не ограничены (F-NP пусто на срезе) | — |"
+        }
+      ]
+    },
+    {
+      "marker": "pre/post checks (будущий",
+      "matches": [
+        {
+          "line": 122,
+          "text": "- pre/post checks (будущий execute-gate): command/field/time-window/timeout/STOP/rollback. Ready3/3"
+        }
+      ]
+    },
+    {
+      "marker": "kubectl get endpoints/default/kubernetes",
+      "matches": [
+        {
+          "line": 160,
+          "text": "  `kubectl get endpoints/default/kubernetes` (field: subsets.addresses.ip + ports.port) для"
+        }
+      ]
+    },
+    {
+      "marker": "resolver/qname/type",
+      "matches": [
+        {
+          "line": 164,
+          "text": "  (POD_DNS_TO_S3/POD_TO_S3_PATH), НЕ новый DNS-проб; resolver/qname/type/source/timeout/attempts/"
+        }
+      ]
+    },
+    {
+      "marker": "будущее design",
+      "matches": []
+    }
+  ],
+  "expected_namespace_label": "kubernetes.io/metadata.name",
+  "candidate_contains_expected_namespace_label": true,
+  "old_proposals_removed": true,
+  "collector_reopened": false,
+  "live_actions": "NONE",
+  "envoy_gateway": {
+    "tag": "v1.9.1",
+    "commit": "0260554fd4f33b787aad77a129fc0ffeb00c1f29",
+    "sources": [
+      {
+        "path": "internal/gatewayapi/translator.go",
+        "blob": "4f2fb0eee7a8b86cd36f9a51af33697d0d4d0044",
+        "fact": "minEphemeralPort=1024; wellKnownPortShift=10000"
+      },
+      {
+        "path": "internal/gatewayapi/listener.go",
+        "blob": "3d8376553ad570ab22476a7d163053eaf32d3883",
+        "fact": "servicePortToContainerPort: default managed Kubernetes maps privileged port +10000; Host/remote/no-switch exceptions exist"
+      },
+      {
+        "path": "internal/infrastructure/kubernetes/proxy/resource_provider.go",
+        "blob": "3ce6421fae1b4c521190cb48feca11a4d9172bcd",
+        "fact": "Service port uses port.ServicePort, targetPort uses port.ContainerPort; provider patch can affect generated object"
+      }
+    ],
+    "derived_candidate_https_mapping": "443 -> 10443 under default managed Kubernetes port-switch conditions, not a live observation"
+  },
+  "external_primary": "https://v1-36.docs.kubernetes.io/docs/concepts/services-networking/network-policies/",
+  "limits": [
+    "Evidence inspection only; no source suites or live tests.",
+    "Dual API tuples accepted only as bounded offline candidate with separately paired addresses and ports, not runtime proof.",
+    "Existing P7 observations retain their historical timestamps.",
+    "No assertion that ingress, rollback or pre/post checks are complete."
+  ]
+}
