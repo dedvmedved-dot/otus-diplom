@@ -1,0 +1,11 @@
+test_both_typemeta_absent (__main__.TestTypedPodListBoundary.test_both_typemeta_absent) ... ok
+test_explicit_typemeta_control (__main__.TestTypedPodListBoundary.test_explicit_typemeta_control) ... ok
+test_kind_absent (__main__.TestTypedPodListBoundary.test_kind_absent) ... ok
+test_omission_does_not_bypass_identity_gate (__main__.TestTypedPodListBoundary.test_omission_does_not_bypass_identity_gate) ... ok
+test_present_invalid_typemeta_stays_rejected (__main__.TestTypedPodListBoundary.test_present_invalid_typemeta_stays_rejected) ... ok
+test_version_absent (__main__.TestTypedPodListBoundary.test_version_absent) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.039s
+
+OK

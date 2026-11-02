@@ -1,0 +1,9 @@
+test_optional_status_does_not_mask_image (item_diag_regression_test.TestOptionalStatusDiagnostic.test_optional_status_does_not_mask_image) ... ok
+test_optional_status_does_not_mask_ports (item_diag_regression_test.TestOptionalStatusDiagnostic.test_optional_status_does_not_mask_ports) ... ok
+test_optional_status_does_not_mask_restart (item_diag_regression_test.TestOptionalStatusDiagnostic.test_optional_status_does_not_mask_restart) ... ok
+test_true_malformed_status_stays_status (item_diag_regression_test.TestOptionalStatusDiagnostic.test_true_malformed_status_stays_status) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.035s
+
+OK

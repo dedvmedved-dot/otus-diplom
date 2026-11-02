@@ -1,0 +1,81 @@
+test_optional_status_does_not_mask_image (__main__.TestOptionalStatusDiagnostic.test_optional_status_does_not_mask_image) ... 
+  test_optional_status_does_not_mask_image (__main__.TestOptionalStatusDiagnostic.test_optional_status_does_not_mask_image) (mode='absent') ... FAIL
+  test_optional_status_does_not_mask_image (__main__.TestOptionalStatusDiagnostic.test_optional_status_does_not_mask_image) (mode='null') ... FAIL
+test_optional_status_does_not_mask_ports (__main__.TestOptionalStatusDiagnostic.test_optional_status_does_not_mask_ports) ... 
+  test_optional_status_does_not_mask_ports (__main__.TestOptionalStatusDiagnostic.test_optional_status_does_not_mask_ports) (mode='absent') ... FAIL
+  test_optional_status_does_not_mask_ports (__main__.TestOptionalStatusDiagnostic.test_optional_status_does_not_mask_ports) (mode='null') ... FAIL
+test_optional_status_does_not_mask_restart (__main__.TestOptionalStatusDiagnostic.test_optional_status_does_not_mask_restart) ... 
+  test_optional_status_does_not_mask_restart (__main__.TestOptionalStatusDiagnostic.test_optional_status_does_not_mask_restart) (mode='absent') ... FAIL
+  test_optional_status_does_not_mask_restart (__main__.TestOptionalStatusDiagnostic.test_optional_status_does_not_mask_restart) (mode='null') ... FAIL
+test_true_malformed_status_stays_status (__main__.TestOptionalStatusDiagnostic.test_true_malformed_status_stays_status) ... ok
+
+======================================================================
+FAIL: test_optional_status_does_not_mask_image (__main__.TestOptionalStatusDiagnostic.test_optional_status_does_not_mask_image) (mode='absent')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4913f07/repo/portal/networkpolicy/item_diag_regression_test.py", line 38, in test_optional_status_does_not_mask_image
+    with self.subTest(mode=mode): self.check(mode,'image',123,'IMAGE')
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/14185c8f871f/review-4913f07/repo/portal/networkpolicy/item_diag_regression_test.py", line 34, in check
+    self.assertIn(r['itemDiag'],(code,'OTHER'))
+AssertionError: 'STATUS' not found in ('IMAGE', 'OTHER')
+
+======================================================================
+FAIL: test_optional_status_does_not_mask_image (__main__.TestOptionalStatusDiagnostic.test_optional_status_does_not_mask_image) (mode='null')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4913f07/repo/portal/networkpolicy/item_diag_regression_test.py", line 38, in test_optional_status_does_not_mask_image
+    with self.subTest(mode=mode): self.check(mode,'image',123,'IMAGE')
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/14185c8f871f/review-4913f07/repo/portal/networkpolicy/item_diag_regression_test.py", line 34, in check
+    self.assertIn(r['itemDiag'],(code,'OTHER'))
+AssertionError: 'STATUS' not found in ('IMAGE', 'OTHER')
+
+======================================================================
+FAIL: test_optional_status_does_not_mask_ports (__main__.TestOptionalStatusDiagnostic.test_optional_status_does_not_mask_ports) (mode='absent')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4913f07/repo/portal/networkpolicy/item_diag_regression_test.py", line 42, in test_optional_status_does_not_mask_ports
+    with self.subTest(mode=mode): self.check(mode,'ports',[{'containerPort':0}],'PORTS')
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/14185c8f871f/review-4913f07/repo/portal/networkpolicy/item_diag_regression_test.py", line 34, in check
+    self.assertIn(r['itemDiag'],(code,'OTHER'))
+AssertionError: 'STATUS' not found in ('PORTS', 'OTHER')
+
+======================================================================
+FAIL: test_optional_status_does_not_mask_ports (__main__.TestOptionalStatusDiagnostic.test_optional_status_does_not_mask_ports) (mode='null')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4913f07/repo/portal/networkpolicy/item_diag_regression_test.py", line 42, in test_optional_status_does_not_mask_ports
+    with self.subTest(mode=mode): self.check(mode,'ports',[{'containerPort':0}],'PORTS')
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/14185c8f871f/review-4913f07/repo/portal/networkpolicy/item_diag_regression_test.py", line 34, in check
+    self.assertIn(r['itemDiag'],(code,'OTHER'))
+AssertionError: 'STATUS' not found in ('PORTS', 'OTHER')
+
+======================================================================
+FAIL: test_optional_status_does_not_mask_restart (__main__.TestOptionalStatusDiagnostic.test_optional_status_does_not_mask_restart) (mode='absent')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4913f07/repo/portal/networkpolicy/item_diag_regression_test.py", line 46, in test_optional_status_does_not_mask_restart
+    with self.subTest(mode=mode): self.check(mode,'restartPolicy',False,'RESTART_POLICY')
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/14185c8f871f/review-4913f07/repo/portal/networkpolicy/item_diag_regression_test.py", line 34, in check
+    self.assertIn(r['itemDiag'],(code,'OTHER'))
+AssertionError: 'STATUS' not found in ('RESTART_POLICY', 'OTHER')
+
+======================================================================
+FAIL: test_optional_status_does_not_mask_restart (__main__.TestOptionalStatusDiagnostic.test_optional_status_does_not_mask_restart) (mode='null')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-4913f07/repo/portal/networkpolicy/item_diag_regression_test.py", line 46, in test_optional_status_does_not_mask_restart
+    with self.subTest(mode=mode): self.check(mode,'restartPolicy',False,'RESTART_POLICY')
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/14185c8f871f/review-4913f07/repo/portal/networkpolicy/item_diag_regression_test.py", line 34, in check
+    self.assertIn(r['itemDiag'],(code,'OTHER'))
+AssertionError: 'STATUS' not found in ('RESTART_POLICY', 'OTHER')
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.031s
+
+FAILED (failures=6)

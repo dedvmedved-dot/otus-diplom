@@ -1,0 +1,66 @@
+{
+  "review_head": "4913f07abd2914dbfa24f39526e05bbc9f0f4ca1",
+  "actual_parent": "239c593b76830889b290c8c091be671f522218f3",
+  "python": "3.12.14",
+  "hashes": {
+    "repo/portal/networkpolicy/followup.py": {
+      "blob": "4292774bb7031e2be9c2c4fffb19169c2e88f55f",
+      "sha256": "374e4be65d58da1c64090429f6808380a1a453a8b65c55e08898184d6220397e"
+    },
+    "repo/portal/networkpolicy/followup_test.py": {
+      "blob": "23d969d02518e348e4f720e9b87c741fa01786be",
+      "sha256": "913f38481d00ce909865664c63dabef7137821e3f853403793dc771a9915a10e"
+    },
+    "repo/portal/networkpolicy/supplemental.py": {
+      "blob": "1b613fbd1e35a109072d2843d6e5f3a3fd47b3d6",
+      "sha256": "ddd9a4dc17bca97d6b36ae6b4d501e1722c5d38d6e5ac8c7b051698fa0b15491"
+    },
+    "repo/portal/networkpolicy/supplemental_test.py": {
+      "blob": "fce1e7293346c7825a9a56f93efaa8d169ca3b5d",
+      "sha256": "12625fa6923d8948eb4e5752b4a7354846870ce207046159b58aceded2cd32e5"
+    },
+    "repo/portal/networkpolicy/derived-i1-fixture.json": {
+      "blob": "4dca83405d37d72d551007930e742e8d4b102b9b",
+      "sha256": "633e2a5690c40cb4eb460153e14348a36287e9e76ee3dda2a83a0c4c994acd25"
+    },
+    "repo/portal/networkpolicy/followup-typed-contract.json": {
+      "blob": "cd92740a4b857c6b8c9226eba579e5d9525494d0",
+      "sha256": "95d76352cb4235820af2684660379ff0436b624e5ebe4d55401f2a3343b3fd6b"
+    },
+    "repo/ansible/playbooks/files/calico-v3.32.0.yaml": {
+      "blob": "21ea9b4b163305ea479bc7708965104465ffc716",
+      "sha256": "8d4b2b1bb97a36d7bf196cc84047aafa41fea5152d678a3fe3994604e8ade3c1"
+    },
+    "repo/portal/networkpolicy/podlist_boundary_regression_test.py": {
+      "blob": "111bfd2f2db89967d321dfec014f218aac17ab86",
+      "sha256": "049afdf96eef6a8a1d8e0a568bd301ade23caf7f4de929370d839072917e33b3"
+    }
+  },
+  "before": {
+    "command": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "item_diag_regression_test.py"
+    ],
+    "start": "2026-11-02T07:46:23.003101+00:00",
+    "end": "2026-11-02T07:46:23.144763+00:00",
+    "exit": 1,
+    "methods": 4,
+    "subcases": 14,
+    "passed_subcases": 8,
+    "failed_subcases": 6
+  },
+  "review_only_candidate": {
+    "start": "2026-11-02T07:46:23.144875+00:00",
+    "end": "2026-11-02T07:46:23.180438+00:00",
+    "methods": 4,
+    "subcases": 14,
+    "passed_subcases": 14,
+    "source_changed": false
+  },
+  "mi01_no_input_mutation": "PASS",
+  "mi01": "CLOSED",
+  "mi02_value_free_fail_closed": "PASS",
+  "mi02_diagnostic_accuracy": "PARTIAL: absent/null optional status masks IMAGE/PORTS/RESTART_POLICY",
+  "live_failing_field": "UNKNOWN",
+  "live_calls": 0
+}

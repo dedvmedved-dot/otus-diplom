@@ -127,3 +127,15 @@ source-only. Shared S1/digest guard and accepted LC-01/02/03 are not reopened.
 Preflight/remote hash-check details remain operator-attested (no separate raw transcript).
 NEW_GATE_RUN_BUDGET=CONSUMED; PHASE2_NEW_RUN_APPROVED=NO;
 NETPOL_APPROVED_FOR_APPLY=NO; FLOW_MATRIX_COMPLETE=NO.
+
+## Architect review 4913f07 — MI-01 closed, MI-02A diagnostic residual
+
+Review: docs/architecture/P8C_RV02_REVIEW_4913f07_20261102.md.
+MI-01 typed-PodList TypeMeta adaptation independently accepted (143/36/6 suites pass;
+input immutability checked). Supplemental/S1 remain byte-identical. Historical live
+failing field remains UNKNOWN; TypeMeta omission is an offline-proven compatibility defect.
+MI-02 empty-output/fail-closed/value-free behavior passes. One diagnostic accuracy issue:
+absent/null optional status masks malformed image/ports/restartPolicy as STATUS. Supplied
+14-case regression: 8 pass / 6 fail; narrow diagnostic None-to-{} correction authorized offline.
+Do not reopen MI-01 or rerun accepted platform tests. PHASE2_NEW_RUN_APPROVED=NO;
+OWNER_PHASE2_HANDOFF_ALLOWED=NO; NETPOL_APPROVED_FOR_APPLY=NO; FLOW_MATRIX_COMPLETE=NO.

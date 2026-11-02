@@ -1,0 +1,35 @@
+{
+  "python": "3.12.14",
+  "runs": [
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "followup_test.py"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review-4913f07/repo/portal/networkpolicy",
+      "start": "2026-11-02T07:44:39.174199+00:00",
+      "end": "2026-11-02T07:44:41.085862+00:00",
+      "exit": 0
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "supplemental_test.py"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review-4913f07/repo/portal/networkpolicy",
+      "start": "2026-11-02T07:44:41.086113+00:00",
+      "end": "2026-11-02T07:44:41.318440+00:00",
+      "exit": 0
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "podlist_boundary_regression_test.py"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review-4913f07/repo/portal/networkpolicy",
+      "start": "2026-11-02T07:44:41.318671+00:00",
+      "end": "2026-11-02T07:44:41.468591+00:00",
+      "exit": 0
+    }
+  ]
+}
