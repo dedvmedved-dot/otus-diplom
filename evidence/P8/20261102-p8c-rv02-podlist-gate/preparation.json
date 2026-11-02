@@ -1,0 +1,51 @@
+{
+  "gate_id": "P8C-RV02-PODLIST-ONE-RUN-20261102",
+  "prepared_utc": "2026-11-02T09:32:39.540567Z",
+  "recovery_main_sha": "b32fa58d4d8615465e525bb3575ba5a69c469196",
+  "source_sha": "eed114e2201f75c3235b33779780038f1e8822df",
+  "connector_reads": [
+    "branches/main",
+    "docs/architecture/P8C_RV02_ACCEPTANCE_eed114e_20261102.md",
+    "docs/architecture/P8C_RV02_FOLLOWUP_COMPAT_ONE_RUN_GATE_20261102.md",
+    "portal/networkpolicy/followup.py@eed114e",
+    "portal/networkpolicy/supplemental.py@eed114e"
+  ],
+  "files": [
+    {
+      "path": "portal/networkpolicy/followup.py",
+      "blob": "4917bc9db76748202dfa3e799651474808aaf567",
+      "sha256": "8e01355087db65d3c124f0a21ac5a4dd89acf0caaabc092836d469169fe57a7b"
+    },
+    {
+      "path": "portal/networkpolicy/supplemental.py",
+      "blob": "1b613fbd1e35a109072d2843d6e5f3a3fd47b3d6",
+      "sha256": "ddd9a4dc17bca97d6b36ae6b4d501e1722c5d38d6e5ac8c7b051698fa0b15491"
+    }
+  ],
+  "verification": "Connector bytes hashed locally with hashlib.sha256 and Git blob SHA1 header; both matched pins.",
+  "gate_document_sha256": "412ad972516d47dca0273c5eee9dcf7cc42434d58caf9b7a271818997ef58b26",
+  "syntax_checks": [
+    {
+      "command": "bash -n gate-check-0.sh",
+      "scope": "first Bash block extracted verbatim from gate",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "bash -n gate-check-1.sh",
+      "scope": "second Bash block extracted verbatim from gate",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "limitations": [
+    "Syntax checks only: blocks not executed.",
+    "No source tests repeated; accepted source unchanged.",
+    "No SSH, live API reads, registry, CI, NetworkPolicy or production action executed by Architect.",
+    "Prior one-run gates consumed; this gate is a new bounded authorization for primary Hermes."
+  ],
+  "netpol_approved_for_apply": false,
+  "p8c": "NOT_FINAL_ACCEPTED"
+}
