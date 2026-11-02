@@ -1,17 +1,17 @@
 # P8C NetworkPolicy plan (D1) — read-only preparation, not yet applied
 
-## Current Architect review — 1a0b4c1
+## Current Architect acceptance — 1b32e4d
 
-Authority: docs/architecture/P8C_RV02_REVIEW_1a0b4c1_20261102.md.
-OFFLINE_ROLLOUT_DECISION=PARTIAL / RESIDUAL_REQUIRED.
-Accepted: chosen candidate ingress model, conditional S0 and split policy stages,
-separate deployment rollback, corrected selector keys and author/Architect distinction.
-Remaining: A actual CNPG/WAL checks and stage/exposure semantics; B restore the 14-flow
-table and complete provenance; C auth/Service accuracy and bounded read proposals.
-Collector/source and c872eed 9/9 remain accepted; no collector development or accepted-test reruns.
-Only offline documentation/evidence correction is authorized for primary Hermes (not Hermes2).
+Authority: docs/architecture/P8C_RV02_ACCEPTANCE_1b32e4d_20261102.md.
+OFFLINE_DESIGN=ACCEPTED_WITH_RUNTIME_LIMITS; DOCUMENT_REWORK_REQUIRED=NO.
+A/B/C document corrections are closed in the canonical plan published with this acceptance.
+The author commit alone is not declared error-free; Architect corrections are recorded.
+Collector/source and c872eed 9/9 remain accepted; no reruns or source changes.
+FLOW_MATRIX_COMPLETE=NO; EFFECTIVE_POLICY_UNION=UNKNOWN; EXECUTION_GATE_READY=NO.
+Fresh S3/WAL verification and current baseline remain runtime dependencies; S1 cannot start.
 PHASE2_NEW_RUN_APPROVED=NO; NETPOL_APPROVED_FOR_APPLY=NO; CI/production/P8D–P8G/P9 closed.
-Candidate policy YAML remains unchanged and NOT_APPROVED_FOR_APPLY.
+No new task to rework the offline document is assigned to Hermes or Hermes2.
+Candidate policy YAML is unchanged and NOT_APPROVED_FOR_APPLY.
 
 ## Historical Architect decision — b5d8cab (2026-11-02, OD-01..05)
 

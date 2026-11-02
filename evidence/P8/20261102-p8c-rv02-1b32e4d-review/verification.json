@@ -1,0 +1,264 @@
+{
+  "review_head": "1b32e4d87f9925339f2192c7893fc74f2ddae5eb",
+  "parent": "d9a322ad8c4f77ef03aa12566e1c7a9f442bf9cf",
+  "connector_compare": {
+    "ahead": 1,
+    "behind": 0,
+    "files": [
+      {
+        "filename": "docs/architecture/P8C_RV02_OFFLINE_ROLLOUT_DECISION_20261102.md",
+        "status": "modified",
+        "additions": 163,
+        "deletions": 162,
+        "changes": 325,
+        "previous_filename": null
+      },
+      {
+        "filename": "evidence/P8/20261102-p8c-rv02-rollout-r1-residual/source-extractions.md",
+        "status": "modified",
+        "additions": 27,
+        "deletions": 21,
+        "changes": 48,
+        "previous_filename": null
+      }
+    ]
+  },
+  "document_received_blob": "89a878bf2b5a44b861b2e9391307d2e3892eace2",
+  "outcome": "ACCEPTED_WITH_RUNTIME_LIMITS_AFTER_ARCHITECT_DOCUMENT_CORRECTIONS",
+  "runtime_verified": false,
+  "live_requests": 0,
+  "accepted_test_reruns": 0,
+  "consistency": {
+    "flow_ids": [
+      "REP-5432",
+      "IM-8000",
+      "OP-IM-8000",
+      "BAR-5432",
+      "MON-9187",
+      "DNS-53",
+      "API-6443",
+      "S3-443",
+      "APP-DB-5432",
+      "APP-MET-9187",
+      "MIG-DB-5432",
+      "ENV-XDS-18000",
+      "ENV-BACK-8080",
+      "ENV-LISTENER"
+    ],
+    "flow_count": 14,
+    "unique_count": 14,
+    "repo_dictionary_matches": 17,
+    "repo_dictionary_mismatches": [],
+    "no_bad_cnpg_field": true,
+    "no_bad_resource_slash": true,
+    "correct_owning_name": true,
+    "prs_3_5_6_get_budget": 11,
+    "checks_are_design_only": true,
+    "raw_commands_executed": false
+  },
+  "source_dictionary": [
+    {
+      "key": "INV",
+      "path": "evidence/P8/20261026T173244Z-p8c-rv02-live-inventory/inventory.jsonl",
+      "expected": "c1f59c8d0ebcbab1f9cfc40171add6aa2289450c",
+      "actual": "c1f59c8d0ebcbab1f9cfc40171add6aa2289450c",
+      "match": true
+    },
+    {
+      "key": "PH2",
+      "path": "evidence/P8/20261027T140000Z-p8c-rv02-phase2-live/result/supplemental.jsonl",
+      "expected": "7c6151b490c02a79ecfe2337e6f262addd36519a",
+      "actual": "7c6151b490c02a79ecfe2337e6f262addd36519a",
+      "match": true
+    },
+    {
+      "key": "ONERUN",
+      "path": "evidence/P8/20261102T094000Z-p8c-rv02-podlist-onerun/followup.jsonl",
+      "expected": "84ceb7cbacb647f2b3cd7fcbbe545992c7e2e35e",
+      "actual": "84ceb7cbacb647f2b3cd7fcbbe545992c7e2e35e",
+      "match": true
+    },
+    {
+      "key": "P7-DNS",
+      "path": "evidence/P7/20261019T030033Z-task-p7c-b2-r1-dns1-coredns-resume/15-dns-after-demo-pak.txt",
+      "expected": "89cd2fe653f09924ede7adcd4a90bbaf515211cc",
+      "actual": "89cd2fe653f09924ede7adcd4a90bbaf515211cc",
+      "match": true
+    },
+    {
+      "key": "P7-BIND",
+      "path": "evidence/P7/20261019T030033Z-task-p7c-b2-r1-dns1-coredns-resume/16-bind-authority-check.txt",
+      "expected": "680e504cf1027789d124e8c8bf7b29121e24a23e",
+      "actual": "680e504cf1027789d124e8c8bf7b29121e24a23e",
+      "match": true
+    },
+    {
+      "key": "P7-S3",
+      "path": "evidence/P7/20261019T113205Z-task-p7c-b2-r2-canonical-reproducibility-closure/09-live-dns-s3-contract.txt",
+      "expected": "078398f07263bae41e1f824b609edc7bd03ec24b",
+      "actual": "078398f07263bae41e1f824b609edc7bd03ec24b",
+      "match": true
+    },
+    {
+      "key": "P6-LBSVC",
+      "path": "evidence/P6/20260909T232839Z-task-p6d-r2-final-evidence-contract-closure/25a-loadbalancer-service-raw.json",
+      "expected": "b71e1453e890bab06b90bdaa697aa18e7c9124c4",
+      "actual": "b71e1453e890bab06b90bdaa697aa18e7c9124c4",
+      "match": true
+    },
+    {
+      "key": "EG-GWC",
+      "path": "manifests/envoy-gateway/p6c-gatewayclass.yaml",
+      "expected": "80b1d683a7193fd1cebc5d29d6f6b0a671f5d1b6",
+      "actual": "80b1d683a7193fd1cebc5d29d6f6b0a671f5d1b6",
+      "match": true
+    },
+    {
+      "key": "EG-VALUES",
+      "path": "manifests/envoy-gateway/p6c-envoy-gateway-values.yaml",
+      "expected": "6b1ea60d8e4120016f5675771c46f92f96dadc0e",
+      "actual": "6b1ea60d8e4120016f5675771c46f92f96dadc0e",
+      "match": true
+    },
+    {
+      "key": "EG-SRC",
+      "path": "Envoy Gateway v1.9.1 internal/gatewayapi/listener.go (commit 0260554f…)",
+      "expected": "3d8376553ad570ab22476a7d163053eaf32d3883",
+      "actual": null,
+      "match": null
+    },
+    {
+      "key": "CALICO",
+      "path": "ansible/playbooks/files/calico-v3.32.0.yaml",
+      "expected": "21ea9b4b163305ea479bc7708965104465ffc716",
+      "actual": "21ea9b4b163305ea479bc7708965104465ffc716",
+      "match": true
+    },
+    {
+      "key": "BARMAND",
+      "path": "portal/networkpolicy/supplemental-design.md",
+      "expected": "a4de674f9b98f7ecc2dc063db15ccfca7195484b",
+      "actual": "a4de674f9b98f7ecc2dc063db15ccfca7195484b",
+      "match": true
+    },
+    {
+      "key": "NP-YAML",
+      "path": "portal/manifests/networkpolicy.yaml",
+      "expected": "fccb8432135a18f8b7099e131471a48808df1ed7",
+      "actual": "fccb8432135a18f8b7099e131471a48808df1ed7",
+      "match": true
+    },
+    {
+      "key": "GW-YAML",
+      "path": "portal/manifests/gateway.yaml",
+      "expected": "1e1f48a3c6d03c4558f4b4c3cca24bc12c22b763",
+      "actual": "1e1f48a3c6d03c4558f4b4c3cca24bc12c22b763",
+      "match": true
+    },
+    {
+      "key": "DEP-YAML",
+      "path": "portal/manifests/deployment.yaml",
+      "expected": "2cb27165330fe4b6772af3a06a1940d661efc72f",
+      "actual": "2cb27165330fe4b6772af3a06a1940d661efc72f",
+      "match": true
+    },
+    {
+      "key": "CNPG-TYPES",
+      "path": "cloudnative-pg/cloudnative-pg v1.30.1 api/v1/cluster_types.go",
+      "expected": "891424dde2287deffcf22b88683f4d8f96376993",
+      "actual": null,
+      "match": null
+    },
+    {
+      "key": "BARMAN-TYPES",
+      "path": "cloudnative-pg/plugin-barman-cloud v0.13.0 api/v1/objectstore_types.go",
+      "expected": "928d52c982b56f11b2eb00f4f88dea4e75916e12",
+      "actual": null,
+      "match": null
+    },
+    {
+      "key": "BACKUP-CONTRACT",
+      "path": "docs/architecture/P8B_POSTGRES_BACKUP_CONTRACT.md",
+      "expected": "b1e2b51ff46bda7f172432ce43713b7d1a7415c0",
+      "actual": "b1e2b51ff46bda7f172432ce43713b7d1a7415c0",
+      "match": true
+    },
+    {
+      "key": "PORTAL-HTTPSRV",
+      "path": "portal/internal/httpapi/server.go",
+      "expected": "c804bf231fc68bb0cfed1b4a0c058a1b938345d4",
+      "actual": "c804bf231fc68bb0cfed1b4a0c058a1b938345d4",
+      "match": true
+    },
+    {
+      "key": "PORTAL-AUTH",
+      "path": "portal/internal/auth/auth.go",
+      "expected": "62c7a0586895bfe2a03fd8207daf5641dc664f0c",
+      "actual": "62c7a0586895bfe2a03fd8207daf5641dc664f0c",
+      "match": true
+    },
+    {
+      "key": "METALLB-L2",
+      "path": "https://metallb.io/concepts/layer2/",
+      "expected": "— (doc reference)",
+      "actual": null,
+      "match": null
+    }
+  ],
+  "external_sources": [
+    {
+      "id": "cnpg",
+      "repository_full_name": "cloudnative-pg/cloudnative-pg",
+      "path": "api/v1/cluster_types.go",
+      "ref": "v1.30.1",
+      "blob": "891424dde2287deffcf22b88683f4d8f96376993",
+      "match": true
+    },
+    {
+      "id": "barman",
+      "repository_full_name": "cloudnative-pg/plugin-barman-cloud",
+      "path": "api/v1/objectstore_types.go",
+      "ref": "v0.13.0",
+      "blob": "928d52c982b56f11b2eb00f4f88dea4e75916e12",
+      "match": true
+    },
+    {
+      "id": "envoy",
+      "repository_full_name": "envoyproxy/gateway",
+      "path": "internal/gatewayapi/listener.go",
+      "ref": "0260554fd4f33b787aad77a129fc0ffeb00c1f29",
+      "blob": "3d8376553ad570ab22476a7d163053eaf32d3883",
+      "match": true
+    }
+  ],
+  "kubectl_source": {
+    "repository": "kubernetes/kubernetes",
+    "ref": "v1.36.2",
+    "path": "staging/src/k8s.io/cli-runtime/pkg/resource/builder.go",
+    "blob": "37e830852c9a29eaca8c545143ee95c108ac2ef7",
+    "function": "splitResourceTypeName",
+    "finding": "Slash separates resource type and name; resource.group/v1 is not version pinning."
+  },
+  "operator_source": {
+    "path": "evidence/P8/20261026T173244Z-p8c-rv02-live-inventory/inventory.jsonl",
+    "blob": "c1f59c8d0ebcbab1f9cfc40171add6aa2289450c",
+    "record": 1,
+    "observed_pod": "cnpg-controller-manager-656d97c7d4-jjbcp",
+    "selector": "app.kubernetes.io/name=cloudnative-pg",
+    "limit": "Historical selector; no current readiness asserted."
+  },
+  "evidence_preservation": {
+    "original_path": "evidence/P8/20261102-p8c-rv02-rollout-r1-residual/source-extractions.md",
+    "restore_blob": "ec873db6970d661da9dccf66fe9db24a88afeadd",
+    "author_revision_blob": "c84555ed6bee4046556da174ae681e0097a37722",
+    "archive_path": "evidence/P8/20261102-p8c-rv02-1b32e4d-review/author-source-extractions-1b32e4d.md",
+    "method": "new fast-forward commit; no history rewriting"
+  },
+  "authority": {
+    "new_live_run": false,
+    "apply": false,
+    "ci": false,
+    "production": false,
+    "p8c_final_accepted": false
+  }
+}
