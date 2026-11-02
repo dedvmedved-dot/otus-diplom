@@ -75,3 +75,11 @@ No new read, provider, accepted runtime format or apply/CI/production gate is ad
 | host-bit CIDR preserved, malformed rejected | `_valid_cidr` / `_networks` | test_host_bits_cidr_ipv4/ipv6_accepted / test_malformed_cidr_rejected / test_bare_ip_not_cidr_rejected | result.md |
 
 supplemental.py / supplemental_test.py remain byte-identical (36/36 reused, not rerun).
+
+## Residual corrections (2026-11-02, review f20f57f)
+
+| Requirement | Code | Test | Evidence |
+|---|---|---|---|
+| explicit null `continue` (and bool/number/list/object) blocks consumers | `_read_podlist` presence check (`'continue' in meta`) | TestCompatibilityRemaining.test_explicit_null_continue_blocks_all_consumers / test_continue_present_nonstring | result.md (20261102) |
+| Kubernetes CEL isCIDR semantics (no dotted netmask/zone/mapped-v6/leading-zero, maxLength 43) | `_valid_cidr` + `_networks` | TestCompatibilityRemaining.test_cidr_cel_and_schema_negatives / test_host_bits_and_named_ports_preserved | result.md (20261102) |
+| CNP pin provenance from actual manifest + old-candidate mismatch | — | TestManifestProvenance.test_manifest_schema_matches_pin / test_old_candidate_mismatch | result.md (20261102) |

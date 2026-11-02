@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Offline tests for followup.py (F-D1..F-TIER), FU-01..08 corrective suite."""
 import copy
+import hashlib
 import json
 import os
 import shutil
@@ -14,6 +15,9 @@ from unittest import mock
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import followup as fw  # noqa: E402
+import yaml  # noqa: E402
+
+REPO_ROOT = os.path.dirname(os.path.dirname(HERE))
 
 CANARY = "SYNTHETIC_FOLLOWUP_CANARY_NOT_A_SECRET"
 PINNED_HEX = "f4fafd8ba641d96c5a91b01e5a519117d77d55dee789a3562ba3ad4aa125b36a"
@@ -1083,6 +1087,85 @@ class TestI1Transport(unittest.TestCase):
         r = by_id(rows)['F-I1']
         self.assertEqual((r['category'], r['diag']), ('UNSUPPORTED', 'IDENTITY'))
         self.assertNotEqual(r['output'], '')  # safe projected identity retained
+
+
+DEPS5 = ('F-NP', 'F-GNP', 'F-FELIX', 'F-HEP', 'F-TIER')
+
+
+class TestCompatibilityRemaining(unittest.TestCase):
+    """LC-01/LC-02 residual cases (explicit null continue + Kubernetes isCIDR semantics)."""
+
+    def _deps(self, calls):
+        return sum(rid in DEPS5 for rid, _ in calls)
+
+    def test_explicit_null_continue_blocks_all_consumers(self):
+        raw = json.loads(podlist([POD]))
+        raw['metadata']['continue'] = None
+        rc, calls, rows = run({'F-I1': R(0, json.dumps(raw))})
+        r = by_id(rows)['F-I1']
+        self.assertEqual((rc, r['category'], r['complete'], r['output'], r['diag']),
+                         (1, 'PARSE_ERROR', False, '', 'COMPLETENESS'))
+        self.assertEqual(self._deps(calls), 0)
+
+    def test_continue_present_nonstring(self):
+        for bad in (True, 5, ['x'], {'k': 'v'}):
+            with self.subTest(bad=bad):
+                raw = json.loads(podlist([POD]))
+                raw['metadata']['continue'] = bad
+                rc, calls, rows = run({'F-I1': R(0, json.dumps(raw))})
+                r = by_id(rows)['F-I1']
+                self.assertEqual((r['category'], r['diag']), ('PARSE_ERROR', 'COMPLETENESS'))
+                self.assertEqual(self._deps(calls), 0)
+
+    def test_cidr_cel_and_schema_negatives(self):
+        cases = {
+            'dotted_netmask': '10.0.0.5/255.255.255.0',
+            'dotted_hostmask': '10.0.0.5/0.0.0.255',
+            'zone': 'fe80::1%eth0/64',
+            'mapped_v6': '::ffff:192.0.2.1/128',
+            'leading_zero_prefix': '10.0.0.5/024',
+            'schema_length_49': '2001:0db8:0000:0000:0000:0000:192.168.100.100/128',
+        }
+        for name, value in cases.items():
+            with self.subTest(name=name):
+                obj = copy.deepcopy(CNP)
+                obj['spec']['egress'][0]['to'] = [{'networks': [value]}]
+                rc, _, rows = run({'F-CNP': R(0, page('F-CNP', [obj]))})
+                r = by_id(rows)['F-CNP']
+                self.assertEqual((rc, r['category'], r['complete'], r['output']),
+                                 (1, 'PARSE_ERROR', False, ''))
+
+    def test_host_bits_and_named_ports_preserved(self):
+        for cidr in ('10.0.0.5/24', '2001:db8::5/64', '0.0.0.0/0', '::/0'):
+            obj = copy.deepcopy(CNP)
+            obj['spec']['egress'][0]['to'] = [{'networks': [cidr]}]
+            out = fw.project_cnp(obj)
+            self.assertEqual(out['spec']['egress'][0]['to'][0]['networks'], [cidr])
+        for direction in ('ingress', 'egress'):
+            for name in ('http', '', 'Mixed.Case'):
+                obj = copy.deepcopy(CNP)
+                obj['spec'][direction][0]['protocols'] = [{'destinationNamedPort': name}]
+                out = fw.project_cnp(obj)
+                self.assertEqual(out['spec'][direction][0]['protocols'], [{'destinationNamedPort': name}])
+
+
+class TestManifestProvenance(unittest.TestCase):
+    """CNP pin provenance: the manifest-derived hash, not the old upstream candidate."""
+
+    def test_manifest_schema_matches_pin(self):
+        yaml_path = os.path.join(REPO_ROOT, 'ansible/playbooks/files/calico-v3.32.0.yaml')
+        docs = list(yaml.safe_load_all(open(yaml_path)))
+        crd = next(d for d in docs if d and d.get('metadata', {}).get('name') == 'clusternetworkpolicies.policy.networking.k8s.io')
+        v = next(x for x in crd['spec']['versions'] if x['name'] == 'v1alpha2')
+        subtree = v['schema']['openAPIV3Schema']['properties']['spec']
+        canon = json.dumps(fw.normalize_schema(subtree), sort_keys=True, ensure_ascii=False, separators=(',', ':'))
+        self.assertEqual(hashlib.sha256(canon.encode()).hexdigest(), fw.CNP_SPEC_SHA256)
+
+    def test_old_candidate_mismatch(self):
+        # The prior network-policy-api candidate hash differs from the current Calico manifest pin.
+        old = '770130a412fd6fab2f02d953edf35f8cc68bf4379db8307e2185937c1e699568'
+        self.assertNotEqual(old, fw.CNP_SPEC_SHA256)
+        self.assertEqual(fw.CNP_SPEC_SHA256, 'ff433d3463dfa2264a7a3ff6201baabf1ec789e98664aff3401a7ef79ae7ce5e')
 
 
 if __name__ == '__main__':

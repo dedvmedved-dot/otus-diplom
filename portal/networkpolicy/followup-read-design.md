@@ -18,18 +18,20 @@ fresh prerequisites to previously BLOCKED Calico reads, not to repeat accepted r
 
 ## Source pins and machine-readable types
 
-1. Calico source: ansible/playbooks/files/calico-v3.32.0.yaml at
-bcda2f78e20a5f83a05f021c5bb4726202f6ca0e, blob 21ea9b4b163305ea479bc7708965104465ffc716.
-2. CNP candidate: kubernetes-sigs/network-policy-api commit
-730bd5474d82a2cf82be8b0c6c2a5515598cc44e, types blob
-8f534d3c92ce0acdce8560d8190ebb574ee4240b, standard CRD blob
-eca1eca97c14f56836aaf8f2394fa03479e01b5f (bundle v0.2.0/standard in upstream header).
-This is a candidate source contract, NOT proof of installed bundle/channel.
+1. Calico source (CURRENT CNP spec authority): ansible/playbooks/files/calico-v3.32.0.yaml,
+   blob 21ea9b4b163305ea479bc7708965104465ffc716 (commit dd00e2f36fdae9cb91baab256ecf9ecf2f662249).
+   Its normalized CNP v1alpha2 spec subtree hashes to
+   ff433d3463dfa2264a7a3ff6201baabf1ec789e98664aff3401a7ef79ae7ce5e — the pinned CNP_SPEC_SHA256.
+2. HISTORICAL CNP candidate (NOT the current pin): kubernetes-sigs/network-policy-api commit
+   730bd5474d82a2cf82be8b0c6c2a5515598cc44e, standard CRD blob
+   eca1eca97c14f56836aaf8f2394fa03479e01b5f. Its normalized hash
+   770130a412fd6fab2f02d953edf35f8cc68bf4379db8307e2185937c1e699568 was the prior pin and is
+   retained only as a historical/mismatch fixture, not as a dual-accepted schema.
 3. portal/networkpolicy/followup-typed-contract.json is a mechanical extraction of
-the spec schemas for CNP, HostEndpoint and Tier at those pins. Only description keys
-were removed recursively; types, required, bounds, defaults, allOf/anyOf, CEL and
-Kubernetes extensions are preserved. This artifact is part of the contract, not a
-placeholder such as "Peer"/"Protocol to be defined".
+   the spec schemas for CNP (Calico manifest above), HostEndpoint and Tier. Only description keys
+   were removed recursively; types, required, bounds, defaults, allOf/anyOf, CEL and
+   Kubernetes extensions are preserved. This artifact is part of the contract, not a
+   placeholder such as "Peer"/"Protocol to be defined".
 
 The baseline NP/GNP/Felix projection is the already reviewed supplemental.py at
 source 3139e08e4243868d5de2aa9f52d054e424e0a653, blob
@@ -115,7 +117,8 @@ definitions/$defs/dependentSchemas maps (including a property called description
 Traverse schema-valued nodes and schema arrays; preserve literal defaults/enums/
 examples and extension payloads. Do not apply a blind recursive key deletion.
 See FU-05 in docs/architecture/P8C_RV02_REVIEW_4c21b2a_20261028.md and its offline
-schema_normalization_reference.py. The accepted pinned hash remains unchanged.
+schema_normalization_reference.py. The normalizer is unchanged; the pinned hash is now the
+Calico manifest value below (the prior network-policy-api candidate pin is HISTORICAL).
 Canonicalize:
 JSON UTF-8, sorted keys, separators comma/colon, ensure_ascii=false, allow_nan=false;
 preserve array order and all other keys. Compare SHA256 to

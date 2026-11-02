@@ -1,0 +1,9 @@
+test_cidr_cel_and_schema_negatives (__main__.TestCompatibilityRemaining.test_cidr_cel_and_schema_negatives) ... ok
+test_explicit_null_continue_blocks_all_consumers (__main__.TestCompatibilityRemaining.test_explicit_null_continue_blocks_all_consumers) ... ok
+test_host_bits_and_named_ports_preserved (__main__.TestCompatibilityRemaining.test_host_bits_and_named_ports_preserved) ... ok
+test_identity_valid_and_overlong_controls (__main__.TestCompatibilityRemaining.test_identity_valid_and_overlong_controls) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.046s
+
+OK

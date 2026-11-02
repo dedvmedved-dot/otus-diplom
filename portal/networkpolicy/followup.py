@@ -13,6 +13,7 @@ import hashlib
 import ipaddress
 import json
 import math
+import re
 import shutil
 import subprocess
 import sys
@@ -147,15 +148,26 @@ def _selector(v, field):
 
 
 def _valid_cidr(x):
-    # isCIDR(self): a valid CIDR notation (IP/prefix). Host bits are permitted (e.g. 10.0.0.1/24);
-    # the value is preserved as supplied, never normalized. A bare IP without '/' is not a CIDR.
-    if '/' not in x:
+    # Kubernetes CEL isCIDR = Go netip.ParsePrefix + explicit Is4In6 rejection.
+    # Host bits are permitted and the value is preserved as supplied. Rejects dotted
+    # netmasks, zone IDs, IPv4-mapped IPv6, leading-zero prefix lengths and bare IPs.
+    if x.count('/') != 1:
+        return False
+    addr, prefix = x.split('/', 1)
+    if not re.fullmatch(r'(0|[1-9][0-9]*)', prefix):
+        return False
+    if '%' in addr:
         return False
     try:
-        ipaddress.ip_network(x, strict=False)
-        return True
+        ip = ipaddress.ip_address(addr)
     except ValueError:
         return False
+    if isinstance(ip, ipaddress.IPv6Address) and ip.ipv4_mapped is not None:
+        return False
+    p = int(prefix)
+    if isinstance(ip, ipaddress.IPv4Address):
+        return p <= 32
+    return p <= 128
 
 
 def _networks(v, field):
@@ -166,7 +178,7 @@ def _networks(v, field):
     out = []
     seen = set()
     for x in v:
-        if not isinstance(x, str) or not _valid_cidr(x):
+        if not isinstance(x, str) or len(x) > 43 or not _valid_cidr(x):
             raise ValueError(field + ' invalid CIDR ' + repr(x))
         if x in seen:
             raise ValueError(field + ' duplicate CIDR ' + x)
@@ -766,9 +778,10 @@ def _read_podlist(stdout):
     rv = meta.get('resourceVersion')
     if not isinstance(rv, str) or rv == '':
         return _i1('PARSE_ERROR', 'METADATA', False)
-    cont = meta.get('continue')
-    if cont is not None and (not isinstance(cont, str) or cont != ''):
-        return _i1('PARSE_ERROR', 'COMPLETENESS', False)
+    if 'continue' in meta:
+        cont = meta['continue']
+        if cont is None or not isinstance(cont, str) or cont != '':
+            return _i1('PARSE_ERROR', 'COMPLETENESS', False)
     items = data.get('items')
     if not isinstance(items, list):
         return _i1('PARSE_ERROR', 'ITEM', False)
