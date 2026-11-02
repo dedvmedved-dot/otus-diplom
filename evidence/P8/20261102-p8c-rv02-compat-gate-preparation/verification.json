@@ -1,0 +1,27 @@
+{
+  "recovery_main_sha": "d81cf2134a2f8df13bf0c3268225a8901fc3e528",
+  "accepted_source_sha": "fdfc776570c7f44e559eefcd092e2ca58595ee48",
+  "acceptance_blob": "284d9d7575db60c7c11f98410db92645f4a4fb3c",
+  "checks": [
+    {
+      "argv": [
+        "bash",
+        "-n",
+        "gate-20261102-extract.sh"
+      ],
+      "exit": 0
+    },
+    {
+      "argv": [
+        "bash",
+        "-n",
+        "gate-20261102-run.sh"
+      ],
+      "exit": 0
+    }
+  ],
+  "verification": "syntax only; no command blocks executed; source tests not repeated",
+  "live_calls": 0,
+  "run_budget_started_by_architect": false,
+  "executor": "PRIMARY_HERMES_ONLY"
+}
