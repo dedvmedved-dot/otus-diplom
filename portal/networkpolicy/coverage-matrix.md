@@ -113,3 +113,13 @@ Evidence root: evidence/P8/20261102-p8c-rv02-fdfc776-review/
 | S1 / supplemental preserved | supplemental.py unchanged | 36/36 fresh PASS | evidence/P8/20261102-p8c-rv02-fdfc776-review/execution.json [1]; evidence/P8/20261102-p8c-rv02-fdfc776-review/supplemental_test.txt |
 
 LC-01/02/03 CLOSED. Source accepted; live collection is not complete. No live/apply/CI/production permission.
+
+## Current MI acceptance eed114e (2026-11-02)
+
+Architect decision: docs/architecture/P8C_RV02_ACCEPTANCE_eed114e_20261102.md.
+Accepted source: eed114e2201f75c3235b33779780038f1e8822df.
+MI-01 accepted without reopening. MI-02/MI-02A independently CLOSED:
+_i1_item_diag normalizes only None status to {}, preserving malformed non-null rejection.
+TestOptionalStatusDiagnostic + supplied item_diag_regression_test.py: 4 methods/14 subcases PASS;
+full followup suite 147/147 PASS. Evidence: evidence/P8/20261102-p8c-rv02-eed114e-review/.
+Supplemental/S1 unchanged; no new live approval or Portal final acceptance.

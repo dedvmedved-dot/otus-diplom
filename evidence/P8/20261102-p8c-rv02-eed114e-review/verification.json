@@ -1,0 +1,66 @@
+{
+  "review_head": "eed114e2201f75c3235b33779780038f1e8822df",
+  "actual_parent": "648be2ad2702c8525a785345074cfb1da42c409c",
+  "python": "3.12.14",
+  "hashes": {
+    "repo/portal/networkpolicy/followup.py": {
+      "blob": "4917bc9db76748202dfa3e799651474808aaf567",
+      "sha256": "8e01355087db65d3c124f0a21ac5a4dd89acf0caaabc092836d469169fe57a7b"
+    },
+    "repo/portal/networkpolicy/followup_test.py": {
+      "blob": "fb1b191bc54c8382263cab68efbaebde7173a145",
+      "sha256": "ed3356d1f9d576aa355ce66360e9a0066419067f4e1929053505bd6d3b4a20b3"
+    },
+    "repo/portal/networkpolicy/supplemental.py": {
+      "blob": "1b613fbd1e35a109072d2843d6e5f3a3fd47b3d6",
+      "sha256": "ddd9a4dc17bca97d6b36ae6b4d501e1722c5d38d6e5ac8c7b051698fa0b15491"
+    },
+    "repo/portal/networkpolicy/supplemental_test.py": {
+      "blob": "fce1e7293346c7825a9a56f93efaa8d169ca3b5d",
+      "sha256": "12625fa6923d8948eb4e5752b4a7354846870ce207046159b58aceded2cd32e5"
+    },
+    "repo/portal/networkpolicy/derived-i1-fixture.json": {
+      "blob": "4dca83405d37d72d551007930e742e8d4b102b9b",
+      "sha256": "633e2a5690c40cb4eb460153e14348a36287e9e76ee3dda2a83a0c4c994acd25"
+    },
+    "repo/portal/networkpolicy/followup-typed-contract.json": {
+      "blob": "cd92740a4b857c6b8c9226eba579e5d9525494d0",
+      "sha256": "95d76352cb4235820af2684660379ff0436b624e5ebe4d55401f2a3343b3fd6b"
+    },
+    "repo/ansible/playbooks/files/calico-v3.32.0.yaml": {
+      "blob": "21ea9b4b163305ea479bc7708965104465ffc716",
+      "sha256": "8d4b2b1bb97a36d7bf196cc84047aafa41fea5152d678a3fe3994604e8ade3c1"
+    },
+    "repo/portal/networkpolicy/podlist_boundary_regression_test.py": {
+      "blob": "111bfd2f2db89967d321dfec014f218aac17ab86",
+      "sha256": "049afdf96eef6a8a1d8e0a568bd301ade23caf7f4de929370d839072917e33b3"
+    }
+  },
+  "runs": [
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "followup_test.py"
+      ],
+      "start": "2026-11-02T09:12:01.040172+00:00",
+      "end": "2026-11-02T09:12:02.605107+00:00",
+      "exit": 0
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "item_diag_regression_test.py"
+      ],
+      "start": "2026-11-02T09:12:02.605434+00:00",
+      "end": "2026-11-02T09:12:02.763764+00:00",
+      "exit": 0
+    }
+  ],
+  "supplemental_suite": "NOT_RERUN_BYTE_IDENTICAL",
+  "live_calls": 0,
+  "supplied_regression": {
+    "repository_path": "evidence/P8/20261102-p8c-rv02-4913f07-review/item_diag_regression_test.py",
+    "blob": "625dd4c7eb71fa7f9cb274d62a613de62405c746",
+    "sha256": "2f894e5b70b0fee6324ab1a14de58d9cbfd38926e7444cba323769267c89a9c2"
+  }
+}

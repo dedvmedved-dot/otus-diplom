@@ -140,3 +140,15 @@ absent/null optional status masks malformed image/ports/restartPolicy as STATUS.
 14-case regression: 8 pass / 6 fail; narrow diagnostic None-to-{} correction authorized offline.
 Do not reopen MI-01 or rerun accepted platform tests. PHASE2_NEW_RUN_APPROVED=NO;
 OWNER_PHASE2_HANDOFF_ALLOWED=NO; NETPOL_APPROVED_FOR_APPLY=NO; FLOW_MATRIX_COMPLETE=NO.
+
+## Architect acceptance eed114e — source compatibility closed
+
+Decision: docs/architecture/P8C_RV02_ACCEPTANCE_eed114e_20261102.md.
+MI-01 remains accepted; MI-02/MI-02A CLOSED / INDEPENDENTLY VERIFIED.
+Fresh followup 147/147 and supplied diagnostic regression 4 methods/14 subcases PASS.
+Supplemental/S1 byte-identical. No further source rework for these findings.
+This supersedes the preceding MI-02A residual paragraph for current source status only;
+all historical live results are unchanged. LIVE_FAILING_FIELD=UNKNOWN;
+FLOW_MATRIX_COMPLETE=NO; last live F-I1 still unresolved until a separately authorized run.
+PHASE2_NEW_RUN_APPROVED=NO; OWNER_PHASE2_HANDOFF_ALLOWED=NO;
+NETPOL_APPROVED_FOR_APPLY=NO; P8C=NOT_FINAL_ACCEPTED.
