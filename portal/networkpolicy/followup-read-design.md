@@ -174,6 +174,15 @@ items, collected count and reason; do not emit the continue token. No retries or
 F-I1 raw PodList GET must reject a nonempty metadata.continue (incomplete → block identity-dependent
 reads) and more than 200 items (overlong → PARTIAL, no identity approval). Diagnostics use finite
 value-free stage codes (ENVELOPE/METADATA/COMPLETENESS/ITEM/IDENTITY/OVERLONG). No extra Pod read.
+Typed core/v1 PodList items legitimately omit TypeMeta (Kubernetes serializes []Pod without
+kind/apiVersion); F-I1 fills ONLY absent kind/apiVersion from the verified PodList/Pod/v1 context
+on a copy (never mutates input), and rejects any present-but-invalid value as PARSE_ERROR. The
+unchanged strict project_pod_identity + S1 gate run afterward; supplemental.py stays byte-identical.
+ITEM failures carry an optional finite itemDiag code (never a raw value):
+TYPEMETA_KIND | TYPEMETA_API_VERSION | METADATA | SPEC | CONTAINERS | CONTAINER_NAME | IMAGE |
+IMAGE_ID | PORTS | RESTART_POLICY | STATUS | SERIALIZATION | OTHER.
+valid-but-unbound identity remains UNSUPPORTED with the safe projection (no itemDiag, no allowlist
+expansion).
 Discovery and named reads are not paginated. Future maximum scheduled object/discovery
 calls: 9 initial + at most10 list-continuation calls. Version checks need their own Gate.
 

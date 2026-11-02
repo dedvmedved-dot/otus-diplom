@@ -755,9 +755,93 @@ def _list_pages(rid, path, ctx, run_fn, projector):
 
 I1_LIMIT = 200  # F-I1 raw GET requests limit=200; more items is overlong (no identity approval)
 
+# Finite value-free F-I1 item-diagnostic codes (MI-02): the failure CLASS, never a raw value.
+I1_ITEM_CODES = ('TYPEMETA_KIND', 'TYPEMETA_API_VERSION', 'METADATA', 'SPEC', 'CONTAINERS',
+                 'CONTAINER_NAME', 'IMAGE', 'IMAGE_ID', 'PORTS', 'RESTART_POLICY', 'STATUS',
+                 'SERIALIZATION', 'OTHER')
 
-def _i1(category, diag, complete):
-    return {'category': category, 'diag': diag, 'output': '', 'complete': complete}
+
+def _i1(category, diag, complete, item_diag=None):
+    d = {'category': category, 'diag': diag, 'output': '', 'complete': complete}
+    if item_diag is not None:
+        d['itemDiag'] = item_diag
+    return d
+
+
+def _i1_adapt_type_meta(item):
+    """MI-01: narrow F-I1 item TypeMeta adapter. Returns an itemDiag code for a present-but-invalid
+    key, or None. Fills only ABSENT kind/apiVersion on the caller's copy from the verified
+    typed-list context (Pod/v1); never overwrites a present key."""
+    if 'kind' in item:
+        if item['kind'] != 'Pod':
+            return 'TYPEMETA_KIND'
+    else:
+        item['kind'] = 'Pod'
+    if 'apiVersion' in item:
+        if item['apiVersion'] != 'v1':
+            return 'TYPEMETA_API_VERSION'
+    else:
+        item['apiVersion'] = 'v1'
+    return None
+
+
+def _i1_item_diag(item):
+    """MI-02: structural classifier mirroring project_pod_identity's checks (after TypeMeta).
+    Returns the first finite failure class, or 'OTHER' when not confidently distinguishable."""
+    md = item.get('metadata')
+    if not isinstance(md, dict):
+        return 'METADATA'
+    if not isinstance(md.get('name'), str) or md.get('name') == '':
+        return 'METADATA'
+    ns = md.get('namespace')
+    if not isinstance(ns, str) or ns == '' or ns != 'kube-system':
+        return 'METADATA'
+    spec = item.get('spec')
+    if not isinstance(spec, dict):
+        return 'SPEC'
+    status = item.get('status')
+    if not isinstance(status, dict):
+        return 'STATUS'
+    for cat in ('containerStatuses', 'initContainerStatuses'):
+        v = status.get(cat)
+        if v is None:
+            continue
+        if not isinstance(v, list):
+            return 'STATUS'
+        for s in v:
+            if not isinstance(s, dict):
+                return 'STATUS'
+            iid = s.get('imageID')
+            if iid is not None and not isinstance(iid, str):
+                return 'IMAGE_ID'
+    for k in ('initContainers', 'containers'):
+        v = spec.get(k)
+        if v is None:
+            continue
+        if not isinstance(v, list):
+            return 'CONTAINERS'
+        for c in v:
+            if not isinstance(c, dict):
+                return 'CONTAINERS'
+            cname = c.get('name')
+            if not isinstance(cname, str) or cname == '':
+                return 'CONTAINER_NAME'
+            if 'image' in c and c.get('image') is not None and not isinstance(c.get('image'), str):
+                return 'IMAGE'
+            ports = c.get('ports')
+            if ports is not None:
+                if not isinstance(ports, list):
+                    return 'PORTS'
+                for p in ports:
+                    if not isinstance(p, dict):
+                        return 'PORTS'
+                    cp = p.get('containerPort')
+                    if isinstance(cp, bool) or not isinstance(cp, int) or not (1 <= cp <= 65535):
+                        return 'PORTS'
+            if ('restartPolicy' in c and c.get('restartPolicy') is not None
+                    and not isinstance(c.get('restartPolicy'), str)):
+                return 'RESTART_POLICY'
+    return 'OTHER'
 
 
 def _read_podlist(stdout):
@@ -790,15 +874,23 @@ def _read_podlist(stdout):
     proj = []
     for it in items:
         if not isinstance(it, dict):
-            return _i1('PARSE_ERROR', 'ITEM', False)
+            return _i1('PARSE_ERROR', 'ITEM', False, 'OTHER')
+        item = dict(it)  # MI-01: operate on a copy; never mutate the input object
+        tdiag = _i1_adapt_type_meta(item)
+        if tdiag is not None:
+            return _i1('PARSE_ERROR', 'ITEM', False, tdiag)
         try:
-            proj.append(project_pod_identity(it, 'kube-system'))
+            proj.append(project_pod_identity(item, 'kube-system'))
         except (ValueError, TypeError, KeyError):
-            return _i1('PARSE_ERROR', 'ITEM', False)
+            try:
+                idiag = _i1_item_diag(item)
+            except Exception:
+                idiag = 'OTHER'
+            return _i1('PARSE_ERROR', 'ITEM', False, idiag)
     try:
         output = json.dumps(proj, allow_nan=False)
     except (ValueError, TypeError):
-        return _i1('PARSE_ERROR', 'ITEM', False)
+        return _i1('PARSE_ERROR', 'ITEM', False, 'SERIALIZATION')
     try:
         verify_calico_identity(proj)
     except UnsupportedIdentity:
@@ -874,6 +966,7 @@ def main():
             complete = None
             verdicts = None
             diag = None
+            item_diag = None
             partial = False
             if ok:
                 try:
@@ -885,16 +978,19 @@ def main():
                         output = disp['output']
                         complete = disp['complete']
                         diag = disp['diag']
+                        item_diag = disp.get('itemDiag')
                         if disp['category'] == 'UNSUPPORTED':
                             unsupported = True
                         elif disp['category'] == 'PARTIAL':
                             partial = True
                         elif disp['category'] == 'PARSE_ERROR':
                             failures += 1
-                            log.write(json.dumps({'id': rid, 'start': start, 'argv': argv,
-                                                  'exit': 0, 'category': 'PARSE_ERROR', 'output': '',
-                                                  'complete': False, 'diag': diag, 'end': _now()},
-                                                 allow_nan=False) + '\n')
+                            rec = {'id': rid, 'start': start, 'argv': argv,
+                                   'exit': 0, 'category': 'PARSE_ERROR', 'output': '',
+                                   'complete': False, 'diag': diag, 'end': _now()}
+                            if item_diag is not None:
+                                rec['itemDiag'] = item_diag
+                            log.write(json.dumps(rec, allow_nan=False) + '\n')
                             continue
                     elif kind == 'crd':
                         proj = project_crd_schema(result.stdout)
@@ -936,10 +1032,13 @@ def main():
                 for rname, vok in verdicts.items():
                     if vok:
                         ok_ids.add('D1:' + rname)
-            log.write(json.dumps({'id': rid, 'start': start, 'argv': argv,
-                                  'exit': None if result is None else result.returncode,
-                                  'category': category, 'output': output, 'complete': complete,
-                                  'diag': diag, 'end': _now()}, allow_nan=False) + '\n')
+            rec = {'id': rid, 'start': start, 'argv': argv,
+                   'exit': None if result is None else result.returncode,
+                   'category': category, 'output': output, 'complete': complete,
+                   'diag': diag, 'end': _now()}
+            if item_diag is not None:
+                rec['itemDiag'] = item_diag
+            log.write(json.dumps(rec, allow_nan=False) + '\n')
     return 1 if failures else 0
 
 

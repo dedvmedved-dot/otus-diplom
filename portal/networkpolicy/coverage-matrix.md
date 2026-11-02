@@ -90,6 +90,14 @@ Historical checkpoint wording only. For the 2026-11-02 acceptance, unchanged sup
 | Kubernetes CEL isCIDR semantics (no dotted netmask/zone/mapped-v6/leading-zero, maxLength 43) | `_valid_cidr` + `_networks` | TestCompatibilityRemaining.test_cidr_cel_and_schema_negatives / test_host_bits_and_named_ports_preserved | result.md (20261102) |
 | CNP pin provenance from actual manifest + old-candidate mismatch | — | TestManifestProvenance.test_manifest_schema_matches_pin / test_old_candidate_mismatch | result.md (20261102) |
 
+## Typed PodList item compatibility (2026-11-02, review 980cee5)
+
+| Requirement | Code | Test | Evidence |
+|---|---|---|---|
+| MI-01: absent TypeMeta derived from verified PodList/Pod/v1; present-invalid rejected | `_i1_adapt_type_meta` + item copy | TestTypedPodListBoundary (6 methods) + TestI1ItemDiag.test_adapter_contract | result.md (20261102) |
+| MI-02: finite value-free itemDiag codes | `_i1_item_diag` + `I1_ITEM_CODES` | TestI1ItemDiag (12 classes) + test_canary_not_leaked_in_item_diag | result.md (20261102) |
+| valid-but-unbound identity stays UNSUPPORTED (no allowlist expansion) | `_read_podlist` UNSUPPORTED path | TestTypedPodListBoundary.test_omission_does_not_bypass_identity_gate | result.md (20261102) |
+
 ## Current acceptance fdfc776 (2026-11-02)
 
 Source fdfc776570c7f44e559eefcd092e2ca58595ee48, actual parent c1644950c618f7ca7221a9500dc3049363d7bfee.

@@ -1168,5 +1168,147 @@ class TestManifestProvenance(unittest.TestCase):
         self.assertEqual(fw.CNP_SPEC_SHA256, 'ff433d3463dfa2264a7a3ff6201baabf1ec789e98664aff3401a7ef79ae7ce5e')
 
 
+class TestTypedPodListBoundary(unittest.TestCase):
+    """Integrated supplied regression: typed core/v1 PodList items may omit TypeMeta."""
+
+    def _fixture(self):
+        with open(os.path.join(HERE, 'derived-i1-fixture.json')) as f:
+            return json.load(f)
+
+    def _payload(self, omit=()):
+        data = copy.deepcopy(self._fixture()['podlist'])
+        for pod in data['items']:
+            for key in omit:
+                pod.pop(key, None)
+        return data
+
+    def _execute(self, data):
+        rc, calls, rows = run({'F-I1': R(0, json.dumps(data))})
+        return rc, calls, by_id(rows)
+
+    def _accepted(self, omit):
+        rc, calls, rows = self._execute(self._payload(omit))
+        r = rows['F-I1']
+        self.assertEqual((rc, r['category'], r['complete']), (0, None, True))
+        self.assertEqual(json.loads(r['output']), self._fixture()['expected_projection'])
+        self.assertEqual({x[0] for x in calls} & set(DEPS5), set(DEPS5))
+
+    def test_explicit_typemeta_control(self):
+        self._accepted(())
+
+    def test_both_typemeta_absent(self):
+        self._accepted(('kind', 'apiVersion'))
+
+    def test_kind_absent(self):
+        self._accepted(('kind',))
+
+    def test_version_absent(self):
+        self._accepted(('apiVersion',))
+
+    def test_present_invalid_typemeta_stays_rejected(self):
+        for key, value in [('kind', None), ('kind', ''), ('kind', 'Service'),
+                           ('kind', False), ('kind', {}), ('apiVersion', None),
+                           ('apiVersion', ''), ('apiVersion', 'v2'),
+                           ('apiVersion', 1), ('apiVersion', [])]:
+            with self.subTest(key=key, value=value):
+                d = self._payload()
+                d['items'][0][key] = value
+                rc, calls, rows = self._execute(d)
+                r = rows['F-I1']
+                self.assertEqual((rc, r['category'], r['complete'], r['output']),
+                                 (1, 'PARSE_ERROR', False, ''))
+                self.assertFalse({x[0] for x in calls} & set(DEPS5))
+                self.assertIsNone(rows['F-CS']['category'])
+                self.assertIsNone(rows['F-CNP']['category'])
+
+    def test_omission_does_not_bypass_identity_gate(self):
+        d = self._payload(('kind', 'apiVersion'))
+        for p in d['items']:
+            for s in p['status'].get('containerStatuses', []):
+                if s['name'] == 'calico-node':
+                    s['imageID'] = 'sha256:' + '0' * 64
+        rc, calls, rows = self._execute(d)
+        r = rows['F-I1']
+        self.assertEqual((rc, r['category'], r['complete']), (1, 'UNSUPPORTED', False))
+        self.assertTrue(r['output'])
+        self.assertFalse({x[0] for x in calls} & set(DEPS5))
+
+
+class TestI1ItemDiag(unittest.TestCase):
+    """MI-02: itemDiag finite codes for each projection failure class."""
+
+    def _case(self, mutate, code):
+        p = copy.deepcopy(POD)
+        mutate(p)
+        rc, calls, rows = run({'F-I1': R(0, podlist([p]))})
+        rid = by_id(rows)
+        r = rid['F-I1']
+        self.assertEqual((r['category'], r['complete'], r['output'], r['itemDiag']),
+                         ('PARSE_ERROR', False, '', code))
+        self.assertFalse({x[0] for x in calls} & set(DEPS5))
+        self.assertIsNone(rid['F-CS']['category'])
+        self.assertIsNone(rid['F-CNP']['category'])
+
+    def test_typemeta_kind(self):
+        self._case(lambda p: p.update(kind='Service'), 'TYPEMETA_KIND')
+
+    def test_typemeta_api_version(self):
+        self._case(lambda p: p.update(apiVersion='v2'), 'TYPEMETA_API_VERSION')
+
+    def test_metadata_namespace(self):
+        self._case(lambda p: p['metadata'].update(namespace='default'), 'METADATA')
+
+    def test_metadata_missing(self):
+        self._case(lambda p: p.pop('metadata'), 'METADATA')
+
+    def test_spec_not_object(self):
+        self._case(lambda p: p.update(spec='x'), 'SPEC')
+
+    def test_status_not_object(self):
+        self._case(lambda p: p.update(status='x'), 'STATUS')
+
+    def test_containers_not_list(self):
+        self._case(lambda p: p['spec'].update(containers='x'), 'CONTAINERS')
+
+    def test_container_name_empty(self):
+        self._case(lambda p: p['spec']['containers'][0].update(name=''), 'CONTAINER_NAME')
+
+    def test_image_wrong_type(self):
+        self._case(lambda p: p['spec']['containers'][0].update(image=123), 'IMAGE')
+
+    def test_image_id_wrong_type(self):
+        self._case(lambda p: p['status']['containerStatuses'][0].update(imageID=123), 'IMAGE_ID')
+
+    def test_ports_invalid(self):
+        self._case(lambda p: p['spec']['containers'][0].update(ports=[{'containerPort': 0}]), 'PORTS')
+
+    def test_restart_policy_wrong_type(self):
+        self._case(lambda p: p['spec']['containers'][0].update(restartPolicy=123), 'RESTART_POLICY')
+
+    def test_non_dict_item(self):
+        rc, calls, rows = run({'F-I1': R(0, podlist([None]))})
+        r = by_id(rows)['F-I1']
+        self.assertEqual((r['category'], r['itemDiag']), ('PARSE_ERROR', 'OTHER'))
+
+    def test_canary_not_leaked_in_item_diag(self):
+        p = copy.deepcopy(POD)
+        p['metadata']['name'] = CANARY  # would be projected if the item were valid
+        p['spec']['containers'][0]['image'] = 123  # triggers PARSE_ERROR (IMAGE)
+        rc, calls, rows = run({'F-I1': R(0, podlist([p]))})
+        r = by_id(rows)['F-I1']
+        self.assertEqual((r['category'], r['itemDiag'], r['output']),
+                         ('PARSE_ERROR', 'IMAGE', ''))
+        self.assertNotIn(CANARY, json.dumps(rows))
+
+    def test_adapter_contract(self):
+        # MI-01: absent keys are filled on the copy; present-invalid keys are rejected, never overwritten.
+        item = {'metadata': {}, 'spec': {}, 'status': {}}
+        self.assertIsNone(fw._i1_adapt_type_meta(item))
+        self.assertEqual((item.get('kind'), item.get('apiVersion')), ('Pod', 'v1'))
+        bad = {'kind': 'Service', 'apiVersion': 'v1'}
+        self.assertEqual(fw._i1_adapt_type_meta(bad), 'TYPEMETA_KIND')
+        self.assertEqual(bad['kind'], 'Service')  # not overwritten
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
