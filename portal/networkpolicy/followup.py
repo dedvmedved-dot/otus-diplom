@@ -800,7 +800,11 @@ def _i1_item_diag(item):
     if not isinstance(spec, dict):
         return 'SPEC'
     status = item.get('status')
-    if not isinstance(status, dict):
+    if status is None:
+        # project_pod_identity uses _dict(status): absent/null -> {} (optional). Do NOT use
+        # truthiness coercion (status or {}), which would hide false/0/''/[].
+        status = {}
+    elif not isinstance(status, dict):
         return 'STATUS'
     for cat in ('containerStatuses', 'initContainerStatuses'):
         v = status.get(cat)

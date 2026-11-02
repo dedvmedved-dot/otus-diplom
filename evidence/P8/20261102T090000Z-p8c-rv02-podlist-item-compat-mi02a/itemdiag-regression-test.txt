@@ -1,0 +1,9 @@
+test_optional_status_does_not_mask_image (__main__.TestOptionalStatusDiagnostic.test_optional_status_does_not_mask_image) ... ok
+test_optional_status_does_not_mask_ports (__main__.TestOptionalStatusDiagnostic.test_optional_status_does_not_mask_ports) ... ok
+test_optional_status_does_not_mask_restart (__main__.TestOptionalStatusDiagnostic.test_optional_status_does_not_mask_restart) ... ok
+test_true_malformed_status_stays_status (__main__.TestOptionalStatusDiagnostic.test_true_malformed_status_stays_status) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.056s
+
+OK

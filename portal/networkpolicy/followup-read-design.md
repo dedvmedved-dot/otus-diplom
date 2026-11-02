@@ -181,6 +181,9 @@ unchanged strict project_pod_identity + S1 gate run afterward; supplemental.py s
 ITEM failures carry an optional finite itemDiag code (never a raw value):
 TYPEMETA_KIND | TYPEMETA_API_VERSION | METADATA | SPEC | CONTAINERS | CONTAINER_NAME | IMAGE |
 IMAGE_ID | PORTS | RESTART_POLICY | STATUS | SERIALIZATION | OTHER.
+The classifier mirrors project_pod_identity's optional-status semantics: absent/null `status` is
+treated as `{}` (NOT an error), so a genuine image/ports/restartPolicy failure is not masked as
+STATUS; non-dict non-null status (false/0/''/list) remains STATUS. No truthiness coercion.
 valid-but-unbound identity remains UNSUPPORTED with the safe projection (no itemDiag, no allowlist
 expansion).
 Discovery and named reads are not paginated. Future maximum scheduled object/discovery

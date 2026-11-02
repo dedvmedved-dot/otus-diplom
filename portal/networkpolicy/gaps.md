@@ -104,10 +104,11 @@ Artifact: evidence/P8/20261102T023500Z-p8c-rv02-followup-compat-onerun/ (followu
   calico-node pod item failed the accepted `project_pod_identity`; identity not approved →
   F-NP/F-GNP/F-FELIX/F-HEP/F-TIER remain BLOCKED_NOT_EXECUTED. Failing field not recovered
   (raw stdout suppressed by design).
-  Post-run review 980cee5 isolated MI-01: typed core/v1 PodList items omit TypeMeta
+  Post-run review 980cee5 isolated MI-01: typed core/v1 PodList items MAY omit TypeMeta
   (kind/apiVersion), which the strict `_require(obj,'Pod','v1')` rejected — a proven source defect
   consistent with the observed ITEM, now fixed offline (absent TypeMeta derived from the verified
-  typed-list context; MI-02 adds finite value-free itemDiag codes). LIVE_FAILING_FIELD=UNKNOWN.
+  typed-list context; MI-02/MI-02A add finite value-free itemDiag codes). The exact live failing
+  field is NOT established from this evidence; LIVE_FAILING_FIELD=UNKNOWN.
 - BASELINE: CNP schema present + compatible, CNP object count = 0. CNI: identity still unresolved
   (now at ITEM stage, not envelope). No effective-policy-union / per-node mode / traffic-flow
   conclusion. NEW_GATE_RUN_BUDGET=CONSUMED; PHASE2_NEW_RUN_APPROVED=NO.

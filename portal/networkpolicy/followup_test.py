@@ -2,6 +2,7 @@
 """Offline tests for followup.py (F-D1..F-TIER), FU-01..08 corrective suite."""
 import copy
 import hashlib
+import io
 import json
 import os
 import shutil
@@ -10,6 +11,7 @@ import sys
 import tempfile
 import unittest
 from collections import defaultdict
+from contextlib import redirect_stdout, redirect_stderr
 from unittest import mock
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -1308,6 +1310,59 @@ class TestI1ItemDiag(unittest.TestCase):
         bad = {'kind': 'Service', 'apiVersion': 'v1'}
         self.assertEqual(fw._i1_adapt_type_meta(bad), 'TYPEMETA_KIND')
         self.assertEqual(bad['kind'], 'Service')  # not overwritten
+
+
+class TestOptionalStatusDiagnostic(unittest.TestCase):
+    """MI-02A: optional status (absent/null/{}) is not an error; never mask a proven leaf failure."""
+
+    def _check(self, status_mode, field, value, code):
+        p = copy.deepcopy(POD_CFG)
+        if status_mode == 'absent':
+            p.pop('status', None)
+        elif status_mode == 'null':
+            p['status'] = None
+        elif status_mode == 'empty':
+            p['status'] = {}
+        p['metadata']['name'] = CANARY
+        p['spec']['containers'][0][field] = value
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            rc, calls, rows = run({'F-I1': R(0, podlist([p]))})
+        r = by_id(rows)['F-I1']
+        self.assertEqual((rc, r['category'], r['diag'], r['complete'], r['output']),
+                         (1, 'PARSE_ERROR', 'ITEM', False, ''))
+        self.assertFalse({c[0] for c in calls} & set(DEPS5))
+        self.assertIsNone(by_id(rows)['F-CS']['category'])
+        self.assertIsNone(by_id(rows)['F-CNP']['category'])
+        self.assertNotIn(CANARY, json.dumps(rows) + stdout.getvalue() + stderr.getvalue())
+        self.assertIn(r['itemDiag'], (code, 'OTHER'))
+
+    def test_optional_status_does_not_mask_image(self):
+        for mode in ('absent', 'null', 'empty'):
+            with self.subTest(mode=mode):
+                self._check(mode, 'image', 123, 'IMAGE')
+
+    def test_optional_status_does_not_mask_ports(self):
+        for mode in ('absent', 'null', 'empty'):
+            with self.subTest(mode=mode):
+                self._check(mode, 'ports', [{'containerPort': 0}], 'PORTS')
+
+    def test_optional_status_does_not_mask_restart(self):
+        for mode in ('absent', 'null', 'empty'):
+            with self.subTest(mode=mode):
+                self._check(mode, 'restartPolicy', False, 'RESTART_POLICY')
+
+    def test_true_malformed_status_stays_status(self):
+        for bad in (False, 0, '', [], [{}]):
+            with self.subTest(bad=bad):
+                p = copy.deepcopy(POD_CFG)
+                p['status'] = bad
+                rc, calls, rows = run({'F-I1': R(0, podlist([p]))})
+                r = by_id(rows)['F-I1']
+                self.assertEqual((rc, r['category'], r['itemDiag'], r['output']),
+                                 (1, 'PARSE_ERROR', 'STATUS', ''))
+                self.assertFalse({c[0] for c in calls} & set(DEPS5))
 
 
 if __name__ == '__main__':
