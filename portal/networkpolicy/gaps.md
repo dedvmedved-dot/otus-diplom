@@ -107,3 +107,19 @@ Artifact: evidence/P8/20261102T023500Z-p8c-rv02-followup-compat-onerun/ (followu
 - BASELINE: CNP schema present + compatible, CNP object count = 0. CNI: identity still unresolved
   (now at ITEM stage, not envelope). No effective-policy-union / per-node mode / traffic-flow
   conclusion. NEW_GATE_RUN_BUDGET=CONSUMED; PHASE2_NEW_RUN_APPROVED=NO.
+
+## Architect review 980cee5 — typed PodList boundary
+
+Review: docs/architecture/P8C_RV02_REVIEW_980cee5_20261102.md.
+Four SHA256SUMS entries independently verified; 9 records / 4 collector calls.
+F-CS compatibility and complete empty F-CNP list are accepted at collection time
+2026-11-02T02:33:09Z only; they do not establish an empty effective policy union.
+F-I1 ITEM remains live-unresolved. Offline reproduction proves that the strict standalone
+Pod projector rejects legal typed PodList items without nested kind/apiVersion.
+Those fields in derived-i1-fixture.json were synthetic, not captured live.
+Exact live failing field remains UNKNOWN; missing TypeMeta is a reproduced source defect,
+not a recovered raw live fact. Narrow F-I1 adapter + value-free item diagnostics authorized
+source-only. Shared S1/digest guard and accepted LC-01/02/03 are not reopened.
+Preflight/remote hash-check details remain operator-attested (no separate raw transcript).
+NEW_GATE_RUN_BUDGET=CONSUMED; PHASE2_NEW_RUN_APPROVED=NO;
+NETPOL_APPROVED_FOR_APPLY=NO; FLOW_MATRIX_COMPLETE=NO.

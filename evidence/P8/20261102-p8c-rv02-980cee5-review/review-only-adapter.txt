@@ -1,0 +1,11 @@
+test_both_typemeta_absent (podlist_boundary_regression_test.TestTypedPodListBoundary.test_both_typemeta_absent) ... ok
+test_explicit_typemeta_control (podlist_boundary_regression_test.TestTypedPodListBoundary.test_explicit_typemeta_control) ... ok
+test_kind_absent (podlist_boundary_regression_test.TestTypedPodListBoundary.test_kind_absent) ... ok
+test_omission_does_not_bypass_identity_gate (podlist_boundary_regression_test.TestTypedPodListBoundary.test_omission_does_not_bypass_identity_gate) ... ok
+test_present_invalid_typemeta_stays_rejected (podlist_boundary_regression_test.TestTypedPodListBoundary.test_present_invalid_typemeta_stays_rejected) ... ok
+test_version_absent (podlist_boundary_regression_test.TestTypedPodListBoundary.test_version_absent) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.042s
+
+OK

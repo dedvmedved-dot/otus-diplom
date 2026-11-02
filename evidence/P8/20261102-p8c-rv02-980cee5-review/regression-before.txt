@@ -1,0 +1,80 @@
+test_both_typemeta_absent (__main__.TestTypedPodListBoundary.test_both_typemeta_absent) ... FAIL
+test_explicit_typemeta_control (__main__.TestTypedPodListBoundary.test_explicit_typemeta_control) ... ok
+test_kind_absent (__main__.TestTypedPodListBoundary.test_kind_absent) ... FAIL
+test_omission_does_not_bypass_identity_gate (__main__.TestTypedPodListBoundary.test_omission_does_not_bypass_identity_gate) ... FAIL
+test_present_invalid_typemeta_stays_rejected (__main__.TestTypedPodListBoundary.test_present_invalid_typemeta_stays_rejected) ... ok
+test_version_absent (__main__.TestTypedPodListBoundary.test_version_absent) ... FAIL
+
+======================================================================
+FAIL: test_both_typemeta_absent (__main__.TestTypedPodListBoundary.test_both_typemeta_absent)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-980cee5/podlist_boundary_regression_test.py", line 38, in test_both_typemeta_absent
+    def test_both_typemeta_absent(self): self.accepted(('kind', 'apiVersion'))
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/14185c8f871f/review-980cee5/podlist_boundary_regression_test.py", line 33, in accepted
+    self.assertEqual((rc, r['category'], r['complete']), (0, None, True))
+AssertionError: Tuples differ: (1, 'PARSE_ERROR', False) != (0, None, True)
+
+First differing element 0:
+1
+0
+
+- (1, 'PARSE_ERROR', False)
++ (0, None, True)
+
+======================================================================
+FAIL: test_kind_absent (__main__.TestTypedPodListBoundary.test_kind_absent)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-980cee5/podlist_boundary_regression_test.py", line 39, in test_kind_absent
+    def test_kind_absent(self): self.accepted(('kind',))
+                                ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/14185c8f871f/review-980cee5/podlist_boundary_regression_test.py", line 33, in accepted
+    self.assertEqual((rc, r['category'], r['complete']), (0, None, True))
+AssertionError: Tuples differ: (1, 'PARSE_ERROR', False) != (0, None, True)
+
+First differing element 0:
+1
+0
+
+- (1, 'PARSE_ERROR', False)
++ (0, None, True)
+
+======================================================================
+FAIL: test_omission_does_not_bypass_identity_gate (__main__.TestTypedPodListBoundary.test_omission_does_not_bypass_identity_gate)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-980cee5/podlist_boundary_regression_test.py", line 64, in test_omission_does_not_bypass_identity_gate
+    self.assertEqual((rc, r['category'], r['complete']), (1, 'UNSUPPORTED', False))
+AssertionError: Tuples differ: (1, 'PARSE_ERROR', False) != (1, 'UNSUPPORTED', False)
+
+First differing element 1:
+'PARSE_ERROR'
+'UNSUPPORTED'
+
+- (1, 'PARSE_ERROR', False)
++ (1, 'UNSUPPORTED', False)
+
+======================================================================
+FAIL: test_version_absent (__main__.TestTypedPodListBoundary.test_version_absent)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-980cee5/podlist_boundary_regression_test.py", line 40, in test_version_absent
+    def test_version_absent(self): self.accepted(('apiVersion',))
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/14185c8f871f/review-980cee5/podlist_boundary_regression_test.py", line 33, in accepted
+    self.assertEqual((rc, r['category'], r['complete']), (0, None, True))
+AssertionError: Tuples differ: (1, 'PARSE_ERROR', False) != (0, None, True)
+
+First differing element 0:
+1
+0
+
+- (1, 'PARSE_ERROR', False)
++ (0, None, True)
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.035s
+
+FAILED (failures=4)
