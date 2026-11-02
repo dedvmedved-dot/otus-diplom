@@ -1,0 +1,122 @@
+test_cidr_cel_and_schema_negatives (__main__.TestCompatibilityRemaining.test_cidr_cel_and_schema_negatives) ... 
+  test_cidr_cel_and_schema_negatives (__main__.TestCompatibilityRemaining.test_cidr_cel_and_schema_negatives) (name='dotted_netmask') ... FAIL
+  test_cidr_cel_and_schema_negatives (__main__.TestCompatibilityRemaining.test_cidr_cel_and_schema_negatives) (name='dotted_hostmask') ... FAIL
+  test_cidr_cel_and_schema_negatives (__main__.TestCompatibilityRemaining.test_cidr_cel_and_schema_negatives) (name='zone') ... FAIL
+  test_cidr_cel_and_schema_negatives (__main__.TestCompatibilityRemaining.test_cidr_cel_and_schema_negatives) (name='mapped_v6') ... FAIL
+  test_cidr_cel_and_schema_negatives (__main__.TestCompatibilityRemaining.test_cidr_cel_and_schema_negatives) (name='leading_zero_prefix') ... FAIL
+  test_cidr_cel_and_schema_negatives (__main__.TestCompatibilityRemaining.test_cidr_cel_and_schema_negatives) (name='schema_length_49') ... FAIL
+test_explicit_null_continue_blocks_all_consumers (__main__.TestCompatibilityRemaining.test_explicit_null_continue_blocks_all_consumers) ... FAIL
+test_host_bits_and_named_ports_preserved (__main__.TestCompatibilityRemaining.test_host_bits_and_named_ports_preserved) ... ok
+test_identity_valid_and_overlong_controls (__main__.TestCompatibilityRemaining.test_identity_valid_and_overlong_controls) ... ok
+
+======================================================================
+FAIL: test_cidr_cel_and_schema_negatives (__main__.TestCompatibilityRemaining.test_cidr_cel_and_schema_negatives) (name='dotted_netmask')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-f20f57f/compatibility_regression_test.py", line 37, in test_cidr_cel_and_schema_negatives
+    self.assertEqual((rc,r['category'],r['complete'],r['output']), (1,'PARSE_ERROR',False,''))
+AssertionError: Tuples differ: (0, None, True, '[{"apiVersion": "policy.n[548 chars]}}]') != (1, 'PARSE_ERROR', False, '')
+
+First differing element 0:
+0
+1
+
+Diff is 681 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_cidr_cel_and_schema_negatives (__main__.TestCompatibilityRemaining.test_cidr_cel_and_schema_negatives) (name='dotted_hostmask')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-f20f57f/compatibility_regression_test.py", line 37, in test_cidr_cel_and_schema_negatives
+    self.assertEqual((rc,r['category'],r['complete'],r['output']), (1,'PARSE_ERROR',False,''))
+AssertionError: Tuples differ: (0, None, True, '[{"apiVersion": "policy.n[544 chars]}}]') != (1, 'PARSE_ERROR', False, '')
+
+First differing element 0:
+0
+1
+
+Diff is 677 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_cidr_cel_and_schema_negatives (__main__.TestCompatibilityRemaining.test_cidr_cel_and_schema_negatives) (name='zone')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-f20f57f/compatibility_regression_test.py", line 37, in test_cidr_cel_and_schema_negatives
+    self.assertEqual((rc,r['category'],r['complete'],r['output']), (1,'PARSE_ERROR',False,''))
+AssertionError: Tuples differ: (0, None, True, '[{"apiVersion": "policy.n[541 chars]}}]') != (1, 'PARSE_ERROR', False, '')
+
+First differing element 0:
+0
+1
+
+Diff is 674 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_cidr_cel_and_schema_negatives (__main__.TestCompatibilityRemaining.test_cidr_cel_and_schema_negatives) (name='mapped_v6')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-f20f57f/compatibility_regression_test.py", line 37, in test_cidr_cel_and_schema_negatives
+    self.assertEqual((rc,r['category'],r['complete'],r['output']), (1,'PARSE_ERROR',False,''))
+AssertionError: Tuples differ: (0, None, True, '[{"apiVersion": "policy.n[546 chars]}}]') != (1, 'PARSE_ERROR', False, '')
+
+First differing element 0:
+0
+1
+
+Diff is 679 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_cidr_cel_and_schema_negatives (__main__.TestCompatibilityRemaining.test_cidr_cel_and_schema_negatives) (name='leading_zero_prefix')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-f20f57f/compatibility_regression_test.py", line 37, in test_cidr_cel_and_schema_negatives
+    self.assertEqual((rc,r['category'],r['complete'],r['output']), (1,'PARSE_ERROR',False,''))
+AssertionError: Tuples differ: (0, None, True, '[{"apiVersion": "policy.n[538 chars]}}]') != (1, 'PARSE_ERROR', False, '')
+
+First differing element 0:
+0
+1
+
+Diff is 671 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_cidr_cel_and_schema_negatives (__main__.TestCompatibilityRemaining.test_cidr_cel_and_schema_negatives) (name='schema_length_49')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-f20f57f/compatibility_regression_test.py", line 37, in test_cidr_cel_and_schema_negatives
+    self.assertEqual((rc,r['category'],r['complete'],r['output']), (1,'PARSE_ERROR',False,''))
+AssertionError: Tuples differ: (0, None, True, '[{"apiVersion": "policy.n[575 chars]}}]') != (1, 'PARSE_ERROR', False, '')
+
+First differing element 0:
+0
+1
+
+Diff is 714 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_explicit_null_continue_blocks_all_consumers (__main__.TestCompatibilityRemaining.test_explicit_null_continue_blocks_all_consumers)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review-f20f57f/compatibility_regression_test.py", line 18, in test_explicit_null_continue_blocks_all_consumers
+    self.assertEqual(actual, (1, 'PARSE_ERROR', False, '', 0))
+AssertionError: Tuples differ: (0, None, True, '[{"metadata": {"name": "c[271 chars]', 5) != (1, 'PARSE_ERROR', False, '', 0)
+
+First differing element 0:
+0
+1
+
++ (1, 'PARSE_ERROR', False, '', 0)
+- (0,
+-  None,
+-  True,
+-  '[{"metadata": {"name": "calico-node-def", "namespace": "kube-system"}, '
+-  '"initContainers": [], "containers": [{"name": "calico-node", "image": '
+-  '"quay.io/calico/node:v3.32.0", "imageID": '
+-  '"sha256:6bc9fa4dc2b10ca1d4b97a1cd570036651898cea8b3c3bcbb1d55cf813e43f65", '
+-  '"ports": [], "restartPolicy": null}]}]',
+-  5)
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.030s
+
+FAILED (failures=7)

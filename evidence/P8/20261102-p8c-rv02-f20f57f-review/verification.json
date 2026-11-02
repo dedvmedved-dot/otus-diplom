@@ -1,0 +1,66 @@
+{
+  "review_head": "f20f57f8da94bf0bed81a29d4323de6887b56b72",
+  "actual_parent": "65d4676e363bfe5e60214c29828bfea447a8cebb",
+  "generated_utc": "2026-11-02T01:13:59.990382+00:00",
+  "python": "3.12.14",
+  "pyyaml": "6.0.3",
+  "hashes": {
+    "followup.py": "7456851ef3c1d679b5a9ca1ec666bf3b7c4ee34c7d7ca761757e9185a5621ea9",
+    "followup_test.py": "f7ba3d960e39229562c2023a918221c3509dc18837621154b381a14dfe326967",
+    "followup-typed-contract.json": "95d76352cb4235820af2684660379ff0436b624e5ebe4d55401f2a3343b3fd6b",
+    "supplemental.py": "ddd9a4dc17bca97d6b36ae6b4d501e1722c5d38d6e5ac8c7b051698fa0b15491"
+  },
+  "schema_projection": {
+    "apiVersion": "apiextensions.k8s.io/v1",
+    "kind": "CustomResourceDefinition",
+    "name": "clusternetworkpolicies.policy.networking.k8s.io",
+    "group": "policy.networking.k8s.io",
+    "names_kind": "ClusterNetworkPolicy",
+    "plural": "clusternetworkpolicies",
+    "scope": "Cluster",
+    "version": "v1alpha2",
+    "served": true,
+    "spec_schema_sha256": "ff433d3463dfa2264a7a3ff6201baabf1ec789e98664aff3401a7ef79ae7ce5e",
+    "compatible": true
+  },
+  "non_cnp_contract_unchanged": true,
+  "source_manifest_subtree_match": true,
+  "old_candidate_hash": "770130a412fd6fab2f02d953edf35f8cc68bf4379db8307e2185937c1e699568",
+  "author_suite_independent_runs": [
+    {
+      "argv": [
+        "python3",
+        "followup_test.py"
+      ],
+      "exit": 0,
+      "tests": 116
+    },
+    {
+      "argv": [
+        "python3",
+        "supplemental_test.py"
+      ],
+      "exit": 0,
+      "tests": 36
+    }
+  ],
+  "reviewer_regression": {
+    "argv": [
+      "python3",
+      "compatibility_regression_test.py"
+    ],
+    "exit": 1,
+    "methods": 4,
+    "passed_methods": 2,
+    "failing_methods": 2,
+    "failing_cases": 7,
+    "transcript": "reviewer-regressions.txt"
+  },
+  "cluster_calls": 0,
+  "source_mutations": 0,
+  "limits": [
+    "Author suites emitted ResourceWarning in test harnesses; no assertion failures.",
+    "This timestamp is report generation, not an invented test start timestamp.",
+    "Negative fixtures are synthetic and all subprocess calls are mocked."
+  ]
+}
