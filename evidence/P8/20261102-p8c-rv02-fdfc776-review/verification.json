@@ -1,0 +1,171 @@
+{
+  "review_head": "fdfc776570c7f44e559eefcd092e2ca58595ee48",
+  "actual_parent": "c1644950c618f7ca7221a9500dc3049363d7bfee",
+  "start_utc": "2026-11-02T01:46:36.024155+00:00",
+  "end_utc": "2026-11-02T01:46:36.348740+00:00",
+  "python": "3.12.14",
+  "pyyaml": "6.0.3",
+  "hashes": {
+    "followup.py": "fc78d03af06f60bbcdde967810ee65a28f37df96a0d85a003807f097fa179e2b",
+    "followup_test.py": "c912db861c7dd5b0b8c8b89f4f905e61251585fa258c36d872c9ad7a4d23325c",
+    "supplemental.py": "ddd9a4dc17bca97d6b36ae6b4d501e1722c5d38d6e5ac8c7b051698fa0b15491",
+    "followup-typed-contract.json": "95d76352cb4235820af2684660379ff0436b624e5ebe4d55401f2a3343b3fd6b"
+  },
+  "observations": [
+    {
+      "case": "continue_absent",
+      "pass": true,
+      "category": null,
+      "dependents": 5
+    },
+    {
+      "case": "continue_empty",
+      "pass": true,
+      "category": null,
+      "dependents": 5
+    },
+    {
+      "case": "continue_null",
+      "pass": true,
+      "category": "PARSE_ERROR",
+      "dependents": 0
+    },
+    {
+      "case": "continue_false",
+      "pass": true,
+      "category": "PARSE_ERROR",
+      "dependents": 0
+    },
+    {
+      "case": "continue_true",
+      "pass": true,
+      "category": "PARSE_ERROR",
+      "dependents": 0
+    },
+    {
+      "case": "continue_zero",
+      "pass": true,
+      "category": "PARSE_ERROR",
+      "dependents": 0
+    },
+    {
+      "case": "continue_number",
+      "pass": true,
+      "category": "PARSE_ERROR",
+      "dependents": 0
+    },
+    {
+      "case": "continue_array",
+      "pass": true,
+      "category": "PARSE_ERROR",
+      "dependents": 0
+    },
+    {
+      "case": "continue_object",
+      "pass": true,
+      "category": "PARSE_ERROR",
+      "dependents": 0
+    },
+    {
+      "case": "continue_token",
+      "pass": true,
+      "category": "PARSE_ERROR",
+      "dependents": 0
+    },
+    {
+      "case": "cidr_10.0.0.5/24",
+      "pass": true,
+      "category": null
+    },
+    {
+      "case": "cidr_2001:db8::5/64",
+      "pass": true,
+      "category": null
+    },
+    {
+      "case": "cidr_0.0.0.0/0",
+      "pass": true,
+      "category": null
+    },
+    {
+      "case": "cidr_::/0",
+      "pass": true,
+      "category": null
+    },
+    {
+      "case": "cidr_255.255.255.255/32",
+      "pass": true,
+      "category": null
+    },
+    {
+      "case": "cidr_ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff/128",
+      "pass": true,
+      "category": null
+    },
+    {
+      "case": "cidr_10.0.0.1/33",
+      "pass": true,
+      "category": "PARSE_ERROR"
+    },
+    {
+      "case": "cidr_::1/129",
+      "pass": true,
+      "category": "PARSE_ERROR"
+    },
+    {
+      "case": "cidr_10.0.0.1/+24",
+      "pass": true,
+      "category": "PARSE_ERROR"
+    },
+    {
+      "case": "cidr_10.0.0.1/-1",
+      "pass": true,
+      "category": "PARSE_ERROR"
+    },
+    {
+      "case": "cidr_10.0.0.1/\u0662\u0664",
+      "pass": true,
+      "category": "PARSE_ERROR"
+    },
+    {
+      "case": "cidr_010.0.0.1/24",
+      "pass": true,
+      "category": "PARSE_ERROR"
+    },
+    {
+      "case": "cidr_10.0.0.1/255.255.255.0",
+      "pass": true,
+      "category": "PARSE_ERROR"
+    },
+    {
+      "case": "cidr_10.0.0.1/0.0.0.255",
+      "pass": true,
+      "category": "PARSE_ERROR"
+    },
+    {
+      "case": "cidr_fe80::1%eth0/64",
+      "pass": true,
+      "category": "PARSE_ERROR"
+    },
+    {
+      "case": "cidr_::ffff:192.0.2.1/128",
+      "pass": true,
+      "category": "PARSE_ERROR"
+    },
+    {
+      "case": "cidr_10.0.0.1/024",
+      "pass": true,
+      "category": "PARSE_ERROR"
+    },
+    {
+      "case": "cidr_2001:0db8:0000:0000:0000:0000:192.168.100.100/128",
+      "pass": true,
+      "category": "PARSE_ERROR"
+    }
+  ],
+  "all_pass": true,
+  "manifest_schema_match": true,
+  "old_candidate_hash": "770130a412fd6fab2f02d953edf35f8cc68bf4379db8307e2185937c1e699568",
+  "live_calls": 0,
+  "fixture_type": "SYNTHETIC; subprocess.run mocked by harness"
+}

@@ -1,4 +1,10 @@
-# P8C RV-02 — verified requirement / code / check / evidence matrix
+# P8C RV-02 — requirement / code / check / evidence matrix
+
+Current authority: docs/architecture/P8C_RV02_ACCEPTANCE_fdfc776_20261102.md.
+The older sections below are historical checkpoints, not current byte-identity assertions.
+Current closure and exact fresh evidence paths are recorded at the end.
+
+## Historical checkpoint 7970620
 
 Architect reconciliation after 7970620, 2026-10-27.
 Reviewed executable source: b623afb2fa9fd624e3e1ff418adeb9c71b1074df.
@@ -74,7 +80,7 @@ No new read, provider, accepted runtime format or apply/CI/production gate is ad
 | destinationNamedPort ingress/egress | `_protocol` | test_named_port_ingress / _egress / _wrong_type / _null / _union_conflict | result.md |
 | host-bit CIDR preserved, malformed rejected | `_valid_cidr` / `_networks` | test_host_bits_cidr_ipv4/ipv6_accepted / test_malformed_cidr_rejected / test_bare_ip_not_cidr_rejected | result.md |
 
-supplemental.py / supplemental_test.py remain byte-identical (36/36 reused, not rerun).
+Historical checkpoint wording only. For the 2026-11-02 acceptance, unchanged supplemental source was independently rerun:36/36 PASS; see the current section below.
 
 ## Residual corrections (2026-11-02, review f20f57f)
 
@@ -83,3 +89,18 @@ supplemental.py / supplemental_test.py remain byte-identical (36/36 reused, not 
 | explicit null `continue` (and bool/number/list/object) blocks consumers | `_read_podlist` presence check (`'continue' in meta`) | TestCompatibilityRemaining.test_explicit_null_continue_blocks_all_consumers / test_continue_present_nonstring | result.md (20261102) |
 | Kubernetes CEL isCIDR semantics (no dotted netmask/zone/mapped-v6/leading-zero, maxLength 43) | `_valid_cidr` + `_networks` | TestCompatibilityRemaining.test_cidr_cel_and_schema_negatives / test_host_bits_and_named_ports_preserved | result.md (20261102) |
 | CNP pin provenance from actual manifest + old-candidate mismatch | — | TestManifestProvenance.test_manifest_schema_matches_pin / test_old_candidate_mismatch | result.md (20261102) |
+
+## Current acceptance fdfc776 (2026-11-02)
+
+Source fdfc776570c7f44e559eefcd092e2ca58595ee48, actual parent c1644950c618f7ca7221a9500dc3049363d7bfee.
+Evidence root: evidence/P8/20261102-p8c-rv02-fdfc776-review/
+
+| Requirement | Code | Executed check | Exact evidence |
+|---|---|---|---|
+| LC-01 presence, zero dependent calls and no token emission | followup.py _read_podlist | 10 independent main-path cases; supplied null regression | evidence/P8/20261102-p8c-rv02-fdfc776-review/verification.json / observations continue_*; evidence/P8/20261102-p8c-rv02-fdfc776-review/compatibility_regression_test.txt |
+| LC-02 strict CIDR, host bits, schema maxLength43 | followup.py _valid_cidr / _networks | 18 independent main-path cases + supplied six negatives | evidence/P8/20261102-p8c-rv02-fdfc776-review/verification.json / observations cidr_*; evidence/P8/20261102-p8c-rv02-fdfc776-review/compatibility_regression_test.txt |
+| LC-03 actual manifest binding; old candidate mismatch | normalize_schema / project_crd_schema | TestManifestProvenance plus independent subtree equality and old hash recomputation | evidence/P8/20261102-p8c-rv02-fdfc776-review/followup_test.txt; evidence/P8/20261102-p8c-rv02-fdfc776-review/verification.json; evidence/P8/20261102-p8c-rv02-fdfc776-review/verify.py |
+| Existing followup behavior | unchanged core and named-port/raw-GET changes | 122/122 fresh PASS | evidence/P8/20261102-p8c-rv02-fdfc776-review/execution.json [0]; evidence/P8/20261102-p8c-rv02-fdfc776-review/followup_test.txt |
+| S1 / supplemental preserved | supplemental.py unchanged | 36/36 fresh PASS | evidence/P8/20261102-p8c-rv02-fdfc776-review/execution.json [1]; evidence/P8/20261102-p8c-rv02-fdfc776-review/supplemental_test.txt |
+
+LC-01/02/03 CLOSED. Source accepted; live collection is not complete. No live/apply/CI/production permission.

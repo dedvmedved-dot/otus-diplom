@@ -28,9 +28,9 @@ fresh prerequisites to previously BLOCKED Calico reads, not to repeat accepted r
    770130a412fd6fab2f02d953edf35f8cc68bf4379db8307e2185937c1e699568 was the prior pin and is
    retained only as a historical/mismatch fixture, not as a dual-accepted schema.
 3. portal/networkpolicy/followup-typed-contract.json is a mechanical extraction of
-   the spec schemas for CNP (Calico manifest above), HostEndpoint and Tier. Only description keys
-   were removed recursively; types, required, bounds, defaults, allOf/anyOf, CEL and
-   Kubernetes extensions are preserved. This artifact is part of the contract, not a
+   the spec schemas for CNP (Calico manifest above), HostEndpoint and Tier. Description annotations may be present in the stored CNP fixture; the
+   schema-aware canonical normalizer removes descriptions only at schema-node positions.
+   Types, required, bounds, defaults, allOf/anyOf, CEL and Kubernetes extensions are preserved. This artifact is part of the contract, not a
    placeholder such as "Peer"/"Protocol to be defined".
 
 The baseline NP/GNP/Felix projection is the already reviewed supplemental.py at

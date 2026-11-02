@@ -1,0 +1,53 @@
+[
+  {
+    "argv": [
+      "python3",
+      "followup_test.py"
+    ],
+    "cwd": "repo/portal/networkpolicy",
+    "start_utc": "2026-11-02T01:45:28.719468+00:00",
+    "end_utc": "2026-11-02T01:45:30.102160+00:00",
+    "exit": 0,
+    "log": "followup_test.txt",
+    "tail": [
+      "----------------------------------------------------------------------",
+      "Ran 122 tests in 1.284s",
+      "",
+      "OK"
+    ]
+  },
+  {
+    "argv": [
+      "python3",
+      "supplemental_test.py"
+    ],
+    "cwd": "repo/portal/networkpolicy",
+    "start_utc": "2026-11-02T01:45:30.102523+00:00",
+    "end_utc": "2026-11-02T01:45:30.227263+00:00",
+    "exit": 0,
+    "log": "supplemental_test.txt",
+    "tail": [
+      "----------------------------------------------------------------------",
+      "Ran 36 tests in 0.055s",
+      "",
+      "OK"
+    ]
+  },
+  {
+    "argv": [
+      "python3",
+      "compatibility_regression_test.py"
+    ],
+    "cwd": "repo/portal/networkpolicy",
+    "start_utc": "2026-11-02T01:45:30.227466+00:00",
+    "end_utc": "2026-11-02T01:45:30.347393+00:00",
+    "exit": 0,
+    "log": "compatibility_regression_test.txt",
+    "tail": [
+      "----------------------------------------------------------------------",
+      "Ran 4 tests in 0.025s",
+      "",
+      "OK"
+    ]
+  }
+]
