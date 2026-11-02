@@ -1,0 +1,137 @@
+COMMAND=go test -count=1 -v ./networkpolicy (workdir portal/)
+GO=go version go1.27.3 linux/amd64
+GOTOOLCHAIN=local
+START_UTC=2026-11-02T21:28:56Z  END_UTC=2026-11-02T21:28:57Z  EXIT=0
+---
+=== RUN   TestCandidatePolicyUnionBothSides
+=== RUN   TestCandidatePolicyUnionBothSides/app-db
+=== RUN   TestCandidatePolicyUnionBothSides/app-metrics
+=== RUN   TestCandidatePolicyUnionBothSides/migrator-db
+=== RUN   TestCandidatePolicyUnionBothSides/migrator-no-metrics
+=== RUN   TestCandidatePolicyUnionBothSides/peer-replication
+=== RUN   TestCandidatePolicyUnionBothSides/peer-manager
+=== RUN   TestCandidatePolicyUnionBothSides/operator-manager
+=== RUN   TestCandidatePolicyUnionBothSides/gateway-backend
+=== RUN   TestCandidatePolicyUnionBothSides/xds
+=== RUN   TestCandidatePolicyUnionBothSides/cross-ns-denied
+=== RUN   TestCandidatePolicyUnionBothSides/management-denied
+=== RUN   TestCandidatePolicyUnionBothSides/udp-db-denied
+=== RUN   TestCandidatePolicyUnionBothSides/db-s3
+=== RUN   TestCandidatePolicyUnionBothSides/app-s3-denied
+=== RUN   TestCandidatePolicyUnionBothSides/migrator-s3-denied
+=== RUN   TestCandidatePolicyUnionBothSides/cnpg-api-clusterip
+=== RUN   TestCandidatePolicyUnionBothSides/cnpg-api-101
+=== RUN   TestCandidatePolicyUnionBothSides/cnpg-api-102
+=== RUN   TestCandidatePolicyUnionBothSides/cnpg-api-103
+=== RUN   TestCandidatePolicyUnionBothSides/portal-api-clusterip
+=== RUN   TestCandidatePolicyUnionBothSides/portal-api-101
+=== RUN   TestCandidatePolicyUnionBothSides/portal-api-102
+=== RUN   TestCandidatePolicyUnionBothSides/portal-api-103
+=== RUN   TestCandidatePolicyUnionBothSides/api-clusterip-6443-denied
+=== RUN   TestCandidatePolicyUnionBothSides/api-101-443-denied
+=== RUN   TestCandidatePolicyUnionBothSides/api-102-443-denied
+=== RUN   TestCandidatePolicyUnionBothSides/api-103-443-denied
+=== RUN   TestCandidatePolicyUnionBothSides/api-vip-denied
+=== RUN   TestCandidatePolicyUnionBothSides/api-104-denied
+=== RUN   TestCandidatePolicyUnionBothSides/api-50-denied
+=== RUN   TestCandidatePolicyUnionBothSides/api-udp-denied
+=== RUN   TestCandidatePolicyUnionBothSides/barman-db-denied
+=== RUN   TestCandidatePolicyUnionBothSides/migrator-api-clusterip-denied
+=== RUN   TestCandidatePolicyUnionBothSides/migrator-api-101-denied
+=== RUN   TestCandidatePolicyUnionBothSides/migrator-api-102-denied
+=== RUN   TestCandidatePolicyUnionBothSides/migrator-api-103-denied
+=== RUN   TestCandidatePolicyUnionBothSides/dataplane-missing-app.kubernetes.io/component
+=== RUN   TestCandidatePolicyUnionBothSides/dataplane-wrong-app.kubernetes.io/component
+=== RUN   TestCandidatePolicyUnionBothSides/dataplane-missing-app.kubernetes.io/managed-by
+=== RUN   TestCandidatePolicyUnionBothSides/dataplane-wrong-app.kubernetes.io/managed-by
+=== RUN   TestCandidatePolicyUnionBothSides/dataplane-missing-app.kubernetes.io/name
+=== RUN   TestCandidatePolicyUnionBothSides/dataplane-wrong-app.kubernetes.io/name
+=== RUN   TestCandidatePolicyUnionBothSides/dataplane-missing-gateway.envoyproxy.io/owning-gateway-name
+=== RUN   TestCandidatePolicyUnionBothSides/dataplane-wrong-gateway.envoyproxy.io/owning-gateway-name
+=== RUN   TestCandidatePolicyUnionBothSides/dataplane-missing-gateway.envoyproxy.io/owning-gateway-namespace
+=== RUN   TestCandidatePolicyUnionBothSides/dataplane-wrong-gateway.envoyproxy.io/owning-gateway-namespace
+=== RUN   TestCandidatePolicyUnionBothSides/dataplane-wrong-ns
+=== RUN   TestCandidatePolicyUnionBothSides/dns-cnpg-udp
+=== RUN   TestCandidatePolicyUnionBothSides/dns-cnpg-tcp
+=== RUN   TestCandidatePolicyUnionBothSides/dns-cnpg-wrong-label
+=== RUN   TestCandidatePolicyUnionBothSides/dns-cnpg-wrong-ns
+=== RUN   TestCandidatePolicyUnionBothSides/dns-portal-udp
+=== RUN   TestCandidatePolicyUnionBothSides/dns-portal-tcp
+=== RUN   TestCandidatePolicyUnionBothSides/dns-portal-wrong-label
+=== RUN   TestCandidatePolicyUnionBothSides/dns-portal-wrong-ns
+=== RUN   TestCandidatePolicyUnionBothSides/dns-migrator-udp
+=== RUN   TestCandidatePolicyUnionBothSides/dns-migrator-tcp
+=== RUN   TestCandidatePolicyUnionBothSides/dns-migrator-wrong-label
+=== RUN   TestCandidatePolicyUnionBothSides/dns-migrator-wrong-ns
+=== RUN   TestCandidatePolicyUnionBothSides/dns-dataplane-udp
+=== RUN   TestCandidatePolicyUnionBothSides/dns-dataplane-tcp
+=== RUN   TestCandidatePolicyUnionBothSides/dns-dataplane-wrong-label
+=== RUN   TestCandidatePolicyUnionBothSides/dns-dataplane-wrong-ns
+--- PASS: TestCandidatePolicyUnionBothSides (0.02s)
+    --- PASS: TestCandidatePolicyUnionBothSides/app-db (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/app-metrics (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/migrator-db (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/migrator-no-metrics (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/peer-replication (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/peer-manager (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/operator-manager (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/gateway-backend (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/xds (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/cross-ns-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/management-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/udp-db-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/db-s3 (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/app-s3-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/migrator-s3-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/cnpg-api-clusterip (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/cnpg-api-101 (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/cnpg-api-102 (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/cnpg-api-103 (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/portal-api-clusterip (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/portal-api-101 (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/portal-api-102 (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/portal-api-103 (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/api-clusterip-6443-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/api-101-443-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/api-102-443-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/api-103-443-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/api-vip-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/api-104-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/api-50-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/api-udp-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/barman-db-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/migrator-api-clusterip-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/migrator-api-101-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/migrator-api-102-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/migrator-api-103-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dataplane-missing-app.kubernetes.io/component (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dataplane-wrong-app.kubernetes.io/component (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dataplane-missing-app.kubernetes.io/managed-by (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dataplane-wrong-app.kubernetes.io/managed-by (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dataplane-missing-app.kubernetes.io/name (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dataplane-wrong-app.kubernetes.io/name (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dataplane-missing-gateway.envoyproxy.io/owning-gateway-name (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dataplane-wrong-gateway.envoyproxy.io/owning-gateway-name (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dataplane-missing-gateway.envoyproxy.io/owning-gateway-namespace (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dataplane-wrong-gateway.envoyproxy.io/owning-gateway-namespace (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dataplane-wrong-ns (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-cnpg-udp (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-cnpg-tcp (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-cnpg-wrong-label (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-cnpg-wrong-ns (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-portal-udp (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-portal-tcp (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-portal-wrong-label (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-portal-wrong-ns (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-migrator-udp (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-migrator-tcp (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-migrator-wrong-label (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-migrator-wrong-ns (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-dataplane-udp (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-dataplane-tcp (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-dataplane-wrong-label (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-dataplane-wrong-ns (0.00s)
+=== RUN   TestCandidatePolicyStructure
+--- PASS: TestCandidatePolicyStructure (0.00s)
+PASS
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/networkpolicy	0.042s

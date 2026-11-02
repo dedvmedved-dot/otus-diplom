@@ -1,0 +1,22 @@
+{
+  "task": "P8C-R1-CANDIDATE-AND-GATES-R2",
+  "reviewed_main_sha": "ba2af0a28ac0209d4db01c72963388b3262044d0",
+  "go": "go1.27.3 linux/amd64 (GOTOOLCHAIN=local)",
+  "files": [
+    {"path": "portal/manifests/networkpolicy.yaml", "blob": "15f0b3245586bf5086e5a24ed02b0460121f7712", "sha256": "159ddb8e44d49f2fde76d62e90b0bd069c6b1741edc12fb9d4b78a24b5882c4f", "role": "candidate policy (stale comment fixed only)"},
+    {"path": "portal/networkpolicy/flows_test.go", "blob": "2eb7bae74bd1190eee954db2624c134ab1d46781", "sha256": "45f6793440d548ab8a0ab525147e72942aa3bbcff043dfce683586c497bd5463", "role": "offline policy union test (T1 coverage)"},
+    {"path": "portal/tools/p8c-portal-release.yml.template", "blob": "0e713e47f7f7a9e940b3113a7481e393aa961f9e", "sha256": "7f28c5c9d8b919cdb22f1e94548820357018dbea20b7010e266b6f5089b9c98f", "role": "release template (UNCHANGED)"},
+    {"path": "portal/tools/install-verified-go.sh", "blob": "2b6e0c9a0127ac0a641feef791f017d287719543", "sha256": "3a34d349b33f032513a21fecd795eeb26129c511c21f3e02f8774b74e7f8d356", "role": "release helper (UNCHANGED)"},
+    {"path": "portal/tools/release-check.py", "blob": "88598da050c07c6475ebcafb793876567c730e87", "sha256": "48ba1486de53729f9c24ad0a97d40ecd1f9870c67e61315e56b038f631451ef6", "role": "release helper (UNCHANGED)"},
+    {"path": "portal/tools/test_release.py", "blob": "cf31c99d9e9d152c8b267007744e19444f7debe9", "sha256": "5ae16c313c3778879333a56db3f71639889d2646ded7b6df5909e0a69d6a4654", "role": "release helper (UNCHANGED)"},
+    {"path": "docs/architecture/P8C_RELEASE_GATE_DRAFT_20261102.md", "blob": "afd8ba4f8fb923b60e41b044f4465bf5bbd0f0dd", "sha256": "cba69336d365aab8561cdab2231b06e83197abadc58dfbedbc9a1199f4a72254", "role": "release gate draft (T3)"},
+    {"path": "docs/architecture/P8C_RUNTIME_READINESS_GATE_DRAFT_20261102.md", "blob": "557c3fd7e51481318b4a84f2beb8dd2432547328", "sha256": "b2ad3651e8b582d8d33a0fc7dc60e645a5f8f189c795cfab64e50d5194214690", "role": "runtime-readiness gate draft (T2)"},
+    {"path": "docs/architecture/P8C_DEPLOYMENT_GATE_DRAFT_20261102.md", "blob": "e015751de3feccf6f5c508917435c3848dc4074a", "sha256": "8e7047278c4414abf7e3501b5d1f6d09533138ea658826d344d059c04dc33d9b", "role": "deployment gate draft (T4)"}
+  ],
+  "secret_scan": {"scanner": "grep heuristic (AKIA/ghp_/gho_/BEGIN PRIVATE KEY)", "scope": "5 changed source/draft files", "exit": 0, "hits": 0, "limits": "heuristic != proof of absence; values not printed"},
+  "accepted_not_reopened": ["collector/source eed114e", "S1 identity gate", "inventory 9/9 c872eed",
+    "offline design 3bbc818 (ACCEPTED_WITH_RUNTIME_LIMITS)", "candidate NP-01..04 (ACCEPTED_SOURCE_ONLY)"],
+  "not_executed": ["CI release", "workflow publication/dispatch", "Owner helpers",
+    "NetworkPolicy apply", "production migration/deployment", "live/SSH/DNS/registry reads",
+    "backup/restore/PITR/failover tests", "PR-3/4/5/6 + pg_stat_archiver reads"]
+}

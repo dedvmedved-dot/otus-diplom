@@ -14,7 +14,8 @@
 # Rollback = delete only these new objects (UID-preconditioned), never mutate existing workloads.
 ---
 # (1) FIRST policy selecting existing CNPG pods: one object with the FULL
-#     verified ingress+egress allowlist. Applying it already isolates CNPG pods.
+#     candidate ingress+egress allowlist (accepted source, NOT runtime-verified).
+#     Applying it already isolates CNPG pods.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:

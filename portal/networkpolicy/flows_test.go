@@ -127,6 +127,7 @@ func allowed(policies []netv1.NetworkPolicy, src, dst peer, port int, protocol s
 	}
 	return true
 }
+
 func withLabel(m map[string]string, k, v string) map[string]string {
 	out := map[string]string{}
 	for kk, vv := range m {
@@ -144,7 +145,9 @@ func withoutLabel(m map[string]string, k string) map[string]string {
 	}
 	return out
 }
-func TestCandidatePolicyUnionBothSides(t *testing.T) {
+
+func loadPolicies(t *testing.T) []netv1.NetworkPolicy {
+	t.Helper()
 	data, e := os.ReadFile("../manifests/networkpolicy.yaml")
 	if e != nil {
 		t.Fatal(e)
@@ -159,6 +162,25 @@ func TestCandidatePolicyUnionBothSides(t *testing.T) {
 			policies = append(policies, p)
 		}
 	}
+	return policies
+}
+
+func subset(policies []netv1.NetworkPolicy, names ...string) []netv1.NetworkPolicy {
+	want := map[string]bool{}
+	for _, n := range names {
+		want[n] = true
+	}
+	out := []netv1.NetworkPolicy{}
+	for _, p := range policies {
+		if want[p.Name] {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
+func TestCandidatePolicyUnionBothSides(t *testing.T) {
+	policies := loadPolicies(t)
 	portal := peer{"portal", map[string]string{"app.kubernetes.io/name": "pak-portal"}, "10.1.1.1"}
 	migrator := peer{"portal", map[string]string{"app.kubernetes.io/name": "pak-portal-migrator"}, "10.1.1.2"}
 	db := peer{"portal", map[string]string{"cnpg.io/cluster": "portal-db", "cnpg.io/podRole": "instance"}, "10.1.1.3"}
@@ -172,6 +194,8 @@ func TestCandidatePolicyUnionBothSides(t *testing.T) {
 	envoy := peer{"envoy-gateway-system", envoyLabels, "10.1.2.1"}
 	control := peer{"envoy-gateway-system", map[string]string{"control-plane": "envoy-gateway"}, "10.1.2.2"}
 	dns := peer{"kube-system", map[string]string{"k8s-app": "kube-dns"}, "10.1.3.1"}
+	dnsWrongLabel := peer{"kube-system", map[string]string{"k8s-app": "other"}, "10.1.3.2"}
+	dnsWrongNS := peer{"other", map[string]string{"k8s-app": "kube-dns"}, "10.1.3.3"}
 	operator := peer{"cnpg-system", map[string]string{"app.kubernetes.io/name": "cloudnative-pg"}, "10.1.4.1"}
 	barman := peer{"cnpg-system", map[string]string{"app": "barman-cloud"}, "10.1.4.2"}
 	other := peer{"other", map[string]string{"app.kubernetes.io/name": "pak-portal"}, "10.1.9.1"}
@@ -181,11 +205,9 @@ func TestCandidatePolicyUnionBothSides(t *testing.T) {
 	api103 := peer{ip: "172.30.140.103"}
 	apiVIP := peer{ip: "172.30.140.100"}
 	api104 := peer{ip: "172.30.140.104"}
+	api50 := peer{ip: "172.30.140.50"}
 	s3 := peer{ip: "172.30.143.10"}
-	envoyWrongOwnerName := peer{envoy.ns, withLabel(envoyLabels, "gateway.envoyproxy.io/owning-gateway-name", "other-gateway"), envoy.ip}
-	envoyWrongOwnerNS := peer{envoy.ns, withLabel(envoyLabels, "gateway.envoyproxy.io/owning-gateway-namespace", "other"), envoy.ip}
-	envoyNoComponent := peer{envoy.ns, withoutLabel(envoyLabels, "app.kubernetes.io/component"), envoy.ip}
-	envoyWrongNS := peer{"other", envoyLabels, envoy.ip}
+
 	tests := []struct {
 		name     string
 		src, dst peer
@@ -203,8 +225,6 @@ func TestCandidatePolicyUnionBothSides(t *testing.T) {
 		{"operator-manager", operator, db, 8000, "TCP", true},
 		{"gateway-backend", envoy, portal, 8080, "TCP", true},
 		{"xds", envoy, control, 18000, "TCP", true},
-		{"dns-udp", portal, dns, 53, "UDP", true},
-		{"dns-tcp", migrator, dns, 53, "TCP", true},
 		{"cross-ns-denied", other, db, 5432, "TCP", false},
 		{"management-denied", envoy, portal, 8081, "TCP", false},
 		{"udp-db-denied", portal, db, 5432, "UDP", false},
@@ -212,32 +232,114 @@ func TestCandidatePolicyUnionBothSides(t *testing.T) {
 		{"db-s3", db, s3, 443, "TCP", true},
 		{"app-s3-denied", portal, s3, 443, "TCP", false},
 		{"migrator-s3-denied", migrator, s3, 443, "TCP", false},
-		// API tuples (NP-01): four allowed
+		// API tuples (NP-01): four allowed for CNPG + Portal
 		{"cnpg-api-clusterip", db, apiClusterIP, 443, "TCP", true},
 		{"cnpg-api-101", db, api101, 6443, "TCP", true},
 		{"cnpg-api-102", db, api102, 6443, "TCP", true},
 		{"cnpg-api-103", db, api103, 6443, "TCP", true},
 		{"portal-api-clusterip", portal, apiClusterIP, 443, "TCP", true},
 		{"portal-api-101", portal, api101, 6443, "TCP", true},
+		{"portal-api-102", portal, api102, 6443, "TCP", true},
+		{"portal-api-103", portal, api103, 6443, "TCP", true},
 		// API cross-product / non-tuple denied (no cartesian product)
 		{"api-clusterip-6443-denied", db, apiClusterIP, 6443, "TCP", false},
 		{"api-101-443-denied", db, api101, 443, "TCP", false},
 		{"api-102-443-denied", db, api102, 443, "TCP", false},
+		{"api-103-443-denied", db, api103, 443, "TCP", false},
 		{"api-vip-denied", db, apiVIP, 6443, "TCP", false},
 		{"api-104-denied", db, api104, 6443, "TCP", false},
+		{"api-50-denied", db, api50, 6443, "TCP", false},
 		{"api-udp-denied", db, apiClusterIP, 443, "UDP", false},
-		{"migrator-api-clusterip-denied", migrator, apiClusterIP, 443, "TCP", false},
-		{"migrator-api-101-denied", migrator, api101, 6443, "TCP", false},
 		// Barman controller -> DB5432 denied (NP-02)
 		{"barman-db-denied", barman, db, 5432, "TCP", false},
-		// dataplane 5-label identity (NP-03)
-		{"dataplane-wrong-owner-name", envoyWrongOwnerName, portal, 8080, "TCP", false},
-		{"dataplane-wrong-owner-ns", envoyWrongOwnerNS, portal, 8080, "TCP", false},
-		{"dataplane-missing-component", envoyNoComponent, portal, 8080, "TCP", false},
-		{"dataplane-wrong-ns", envoyWrongNS, portal, 8080, "TCP", false},
-		// DNS peer precision (namespace AND pod label)
-		{"dns-wrong-label-kubesystem", peer{"kube-system", map[string]string{"k8s-app": "other"}, "10.1.3.2"}, portal, 53, "UDP", false},
-		{"dns-correct-label-wrong-ns", peer{"other", map[string]string{"k8s-app": "kube-dns"}, "10.1.3.3"}, portal, 53, "UDP", false},
+	}
+	// migrator reaches none of the four API tuples
+	for _, tc := range []struct {
+		name string
+		dst  peer
+		port int
+	}{
+		{"migrator-api-clusterip-denied", apiClusterIP, 443},
+		{"migrator-api-101-denied", api101, 6443},
+		{"migrator-api-102-denied", api102, 6443},
+		{"migrator-api-103-denied", api103, 6443},
+	} {
+		tests = append(tests, struct {
+			name     string
+			src, dst peer
+			port     int
+			protocol string
+			want     bool
+		}{tc.name, migrator, tc.dst, tc.port, "TCP", false})
+	}
+	// dataplane 5-label identity: each label missing/wrong, wrong namespace, mgmt 8081
+	labelKeys := []string{
+		"app.kubernetes.io/component",
+		"app.kubernetes.io/managed-by",
+		"app.kubernetes.io/name",
+		"gateway.envoyproxy.io/owning-gateway-name",
+		"gateway.envoyproxy.io/owning-gateway-namespace",
+	}
+	for _, k := range labelKeys {
+		tests = append(tests, struct {
+			name     string
+			src, dst peer
+			port     int
+			protocol string
+			want     bool
+		}{"dataplane-missing-" + k, peer{envoy.ns, withoutLabel(envoyLabels, k), envoy.ip}, portal, 8080, "TCP", false})
+		tests = append(tests, struct {
+			name     string
+			src, dst peer
+			port     int
+			protocol string
+			want     bool
+		}{"dataplane-wrong-" + k, peer{envoy.ns, withLabel(envoyLabels, k, "wrong-value"), envoy.ip}, portal, 8080, "TCP", false})
+	}
+	tests = append(tests, struct {
+		name     string
+		src, dst peer
+		port     int
+		protocol string
+		want     bool
+	}{"dataplane-wrong-ns", peer{"other", envoyLabels, envoy.ip}, portal, 8080, "TCP", false})
+	// DNS per-workload (correct peer UDP/TCP + two wrong peers)
+	for _, wl := range []struct {
+		name string
+		p    peer
+	}{
+		{"cnpg", db}, {"portal", portal}, {"migrator", migrator}, {"dataplane", envoy},
+	} {
+		tests = append(tests,
+			struct {
+				name     string
+				src, dst peer
+				port     int
+				protocol string
+				want     bool
+			}{"dns-" + wl.name + "-udp", wl.p, dns, 53, "UDP", true},
+			struct {
+				name     string
+				src, dst peer
+				port     int
+				protocol string
+				want     bool
+			}{"dns-" + wl.name + "-tcp", wl.p, dns, 53, "TCP", true},
+			struct {
+				name     string
+				src, dst peer
+				port     int
+				protocol string
+				want     bool
+			}{"dns-" + wl.name + "-wrong-label", wl.p, dnsWrongLabel, 53, "UDP", false},
+			struct {
+				name     string
+				src, dst peer
+				port     int
+				protocol string
+				want     bool
+			}{"dns-" + wl.name + "-wrong-ns", wl.p, dnsWrongNS, 53, "UDP", false},
+		)
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -246,25 +348,66 @@ func TestCandidatePolicyUnionBothSides(t *testing.T) {
 			}
 		})
 	}
-	// Omitting the destination's ingress allowance MUST fail despite client egress.
-	reduced := []netv1.NetworkPolicy{}
-	for _, p := range policies {
-		if p.Name != "p8c-cnpg-existing-flows" {
-			reduced = append(reduced, p)
+
+	// Mutation regression: widening the DNS peer (drop podSelector) must make the
+	// previously-denied bad-DNS peer allowed — proving the negative test is sensitive.
+	widened := loadPolicies(t)
+	for i := range widened {
+		for j := range widened[i].Spec.Egress {
+			for k := range widened[i].Spec.Egress[j].To {
+				if widened[i].Spec.Egress[j].To[k].NamespaceSelector != nil {
+					widened[i].Spec.Egress[j].To[k].PodSelector = nil
+				}
+			}
 		}
 	}
+	if !allowed(widened, portal, dnsWrongLabel, 53, "UDP") {
+		t.Fatal("mutation regression: widened DNS peer should be allowed (negative test would miss expansion)")
+	}
+	if allowed(policies, portal, dnsWrongLabel, 53, "UDP") {
+		t.Fatal("unwidened candidate must still deny bad-DNS peer")
+	}
+
+	// Omitting the destination's ingress allowance MUST fail despite client egress.
+	reduced := subset(policies, "baseline-default-deny-all", "baseline-allow-dns-egress",
+		"p8c-portal-flows", "p8c-migrator-flows", "p8c-portal-dataplane-flows")
 	if allowed(reduced, portal, db, 5432, "TCP") {
 		t.Fatal("egress alone incorrectly allowed DB ingress")
 	}
-	// Removal of existing-flows while baseline-default-deny (+allow-dns) remains must NOT
-	// restore S0: CNPG loses S3/API/peer egress; only the explicit DNS allowance survives.
-	denyOnly := []netv1.NetworkPolicy{}
-	for _, p := range policies {
-		if p.Name == "baseline-default-deny-all" || p.Name == "baseline-allow-dns-egress" {
-			denyOnly = append(denyOnly, p)
+
+	// S1 / S2a / S2b individually preserve the necessary CNPG flows.
+	s1 := subset(policies, "p8c-cnpg-existing-flows")
+	s2a := subset(policies, "p8c-cnpg-existing-flows", "baseline-default-deny-all")
+	s2b := subset(policies, "p8c-cnpg-existing-flows", "baseline-default-deny-all", "baseline-allow-dns-egress")
+	cnpgFlows := []struct {
+		name string
+		src  peer
+		dst  peer
+		port int
+		prot string
+	}{
+		{"peer-replication", db, db, 5432, "TCP"},
+		{"peer-manager", db, db, 8000, "TCP"},
+		{"operator-manager", operator, db, 8000, "TCP"},
+		{"cnpg-s3", db, s3, 443, "TCP"},
+		{"cnpg-api-clusterip", db, apiClusterIP, 443, "TCP"},
+		{"cnpg-dns", db, dns, 53, "UDP"},
+	}
+	for _, stage := range []struct {
+		name string
+		ps   []netv1.NetworkPolicy
+	}{{"S1", s1}, {"S2a", s2a}, {"S2b", s2b}} {
+		for _, f := range cnpgFlows {
+			if !allowed(stage.ps, f.src, f.dst, f.port, f.prot) {
+				t.Fatalf("%s must preserve %s", stage.name, f.name)
+			}
 		}
 	}
-	if allowed(denyOnly, db, dns, 53, "UDP") == false {
+
+	// Removal of existing-flows while baseline-default-deny (+allow-dns) remains must NOT
+	// restore S0: CNPG loses S3/API/peer egress; only the explicit DNS allowance survives.
+	denyOnly := subset(policies, "baseline-default-deny-all", "baseline-allow-dns-egress")
+	if !allowed(denyOnly, db, dns, 53, "UDP") {
 		t.Fatal("baseline-allow-dns-egress must still allow DNS for CNPG")
 	}
 	if allowed(denyOnly, db, s3, 443, "TCP") {
@@ -276,6 +419,8 @@ func TestCandidatePolicyUnionBothSides(t *testing.T) {
 	if allowed(denyOnly, db, db, 5432, "TCP") {
 		t.Fatal("removing existing-flows while default-deny remains must not allow peer replication")
 	}
+
+	// Workload labels match candidate policy selectors.
 	deployments, e := os.ReadFile("../manifests/deployment.yaml")
 	if e != nil {
 		t.Fatal(e)
@@ -301,5 +446,76 @@ func TestCandidatePolicyUnionBothSides(t *testing.T) {
 	}
 	if !found["app"] || !found["migrator"] {
 		t.Fatal("candidate workload labels do not match policies")
+	}
+}
+
+func TestCandidatePolicyStructure(t *testing.T) {
+	policies := loadPolicies(t)
+	want := map[string]string{
+		"p8c-cnpg-existing-flows":     "portal",
+		"baseline-default-deny-all":   "portal",
+		"baseline-allow-dns-egress":   "portal",
+		"p8c-portal-flows":            "portal",
+		"p8c-migrator-flows":          "portal",
+		"p8c-portal-dataplane-flows":  "envoy-gateway-system",
+	}
+	if len(policies) != 6 {
+		t.Fatalf("want 6 objects, got %d", len(policies))
+	}
+	seen := map[string]bool{}
+	for _, p := range policies {
+		ns, ok := want[p.Name]
+		if !ok {
+			t.Fatalf("unexpected policy name %q", p.Name)
+		}
+		if p.Namespace != ns {
+			t.Fatalf("%s: namespace %q want %q", p.Name, p.Namespace, ns)
+		}
+		seen[p.Name] = true
+		// no broad CIDR (only /32) and no unrestricted peer (empty To/From) anywhere
+		for _, egr := range p.Spec.Egress {
+			if len(egr.To) == 0 {
+				t.Fatalf("%s: unrestricted egress rule (empty to)", p.Name)
+			}
+			for _, to := range egr.To {
+				if to.IPBlock != nil {
+					if to.IPBlock.CIDR == "" || !strings.HasSuffix(to.IPBlock.CIDR, "/32") {
+						t.Fatalf("%s: broad IPBlock CIDR %q (only /32 allowed)", p.Name, to.IPBlock.CIDR)
+					}
+				}
+			}
+		}
+		for _, ing := range p.Spec.Ingress {
+			if len(ing.From) == 0 {
+				t.Fatalf("%s: unrestricted ingress rule (empty from)", p.Name)
+			}
+		}
+	}
+	for name := range want {
+		if !seen[name] {
+			t.Fatalf("missing policy %q", name)
+		}
+	}
+	// policyTypes spot checks
+	byName := map[string]netv1.NetworkPolicy{}
+	for _, p := range policies {
+		byName[p.Name] = p
+	}
+	hasType := func(name string, t netv1.PolicyType) bool {
+		for _, x := range byName[name].Spec.PolicyTypes {
+			if x == t {
+				return true
+			}
+		}
+		return false
+	}
+	if !hasType("p8c-cnpg-existing-flows", netv1.PolicyTypeIngress) || !hasType("p8c-cnpg-existing-flows", netv1.PolicyTypeEgress) {
+		t.Fatal("existing-flows must be Ingress+Egress")
+	}
+	if hasType("p8c-migrator-flows", netv1.PolicyTypeIngress) {
+		t.Fatal("migrator must be Egress-only")
+	}
+	if hasType("p8c-portal-dataplane-flows", netv1.PolicyTypeIngress) {
+		t.Fatal("dataplane must be Egress-only")
 	}
 }
