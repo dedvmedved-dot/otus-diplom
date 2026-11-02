@@ -185,3 +185,13 @@ Artifact: evidence/P8/20261102T094000Z-p8c-rv02-podlist-onerun/ (followup.jsonl,
   traffic-flow remain UNKNOWN (no policy objects + tier defaults are recorded, not evaluated).
 FLOW_MATRIX_COMPLETE=YES at the read level (all 9 reads OK); semantic limits above stand.
 NEW_GATE_RUN_BUDGET=CONSUMED; PHASE2_NEW_RUN_APPROVED=NO; NETPOL_APPROVED_FOR_APPLY=NO.
+
+## Offline rollout decision status (review f7bf263)
+
+Review: docs/architecture/P8C_RV02_REVIEW_f7bf263_20261102.md.
+OFFLINE_ROLLOUT_DECISION=PARTIAL / RESIDUAL_REQUIRED → R1-RESIDUAL
+(docs/architecture/P8C_RV02_OFFLINE_ROLLOUT_DECISION_20261102.md) closes RR-01…03.
+ARCHITECT_ACCEPTED: удаление PR-1/PR-2, P7 historical S3, ограниченный API /32-кандидат,
+UID-precondition rollback, candidate delta (Barman controller→5432, API /24) NOT_APPROVED.
+AUTHOR_PROPOSAL (не Architect-accepted): ingress-модель, union-aware S0–S4 rollback, PR-3..6.
+Candidate policy YAML unchanged; FLOW_MATRIX_COMPLETE=NO; NETPOL_APPROVED_FOR_APPLY=NO.

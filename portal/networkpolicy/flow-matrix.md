@@ -14,18 +14,18 @@ Collector/source and c872eed 9/9 live inventory remain accepted; no new collecto
 Only offline R1 residual documentation is authorized. CI/production/P8D–P8G/P9 remain closed.
 
 
-## Current Architect decision — b5d8cab (2026-11-02, OD-01..05)
+## Current status — f7bf263 (2026-11-02)
 
-Authority: docs/architecture/P8C_RV02_REVIEW_a9e6fac_20261102.md (REVIEW_HEAD=a9e6fac).
+Authority: docs/architecture/P8C_RV02_REVIEW_f7bf263_20261102.md (REVIEW_HEAD=f7bf263).
 AUTHORIZED_READ_SET_COMPLETE=YES; FLOW_MATRIX_COMPLETE=NO; EFFECTIVE_POLICY_UNION=UNKNOWN.
 NETPOL_APPROVED_FOR_APPLY=NO; CI/PRODUCTION=NOT_AUTHORIZED; P8C=NOT_FINAL_ACCEPTED.
-This decision supersedes the c872eed header below. The offline rollout plan was reworked (R1):
-docs/architecture/P8C_RV02_OFFLINE_ROLLOUT_DECISION_20261102.md resolves OD-01..05 —
-PR-1 (CalicoNodeStatus backend) and PR-2 (IPPool/DNS) REMOVED; B1 resolved by a
-representation-robust API rule (10.96.0.1/32:443 + 172.30.140.101/102/103/32:6443, not /24);
-B2 resolved via P7 historical S3 fact + Barman role decomposition; B3 resolved from
-gateway.yaml/deployment.yaml; union-aware state/rollback; candidate delta NOT_APPROVED
-(Barman controller→5432, API /24). Candidate policy YAML unchanged.
+
+- **ARCHITECT_ACCEPTED** (reviews c872eed/b5d8cab/f7bf263): сбор 9/9, удаление PR-1/PR-2,
+  P7 historical S3-факты, ограниченный API /32-кандидат вместо /24, UID-precondition rollback,
+  candidate delta (Barman controller→5432, API /24) NOT_APPROVED.
+- **AUTHOR_PROPOSAL** (не Architect-accepted): docs/architecture/P8C_RV02_OFFLINE_ROLLOUT_DECISION_20261102.md
+  (R1-RESIDUAL) — ingress-модель (LB+MetalLB L2, Local, 443→10443, L7-граница), union-aware S0–S4
+  rollback с pre/post checks, executable proposals PR-3..6. Это авторское проектное предложение.
 
 ## Historical Architect decision — c872eed (2026-11-02)
 

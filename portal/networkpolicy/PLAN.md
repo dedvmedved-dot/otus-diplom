@@ -14,7 +14,7 @@ Collector/source and c872eed 9/9 live inventory remain accepted; no new collecto
 Only offline R1 residual documentation is authorized. CI/production/P8D–P8G/P9 remain closed.
 
 
-## Current Architect decision — b5d8cab (2026-11-02, OD-01..05)
+## Historical Architect decision — b5d8cab (2026-11-02, OD-01..05)
 
 Authority: docs/architecture/P8C_RV02_REVIEW_a9e6fac_20261102.md.
 AUTHORIZED_READ_SET_COMPLETE=YES; FLOW_MATRIX_COMPLETE=NO; EFFECTIVE_POLICY_UNION=UNKNOWN.
