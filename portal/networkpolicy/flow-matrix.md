@@ -13,6 +13,9 @@ F-FELIX observes default Auto only; F-TIER observes three tier configurations, n
 The one-run budget is consumed; no further live run is authorized.
 Next authorized work is the bounded OFFLINE-ROLLOUT-DECISION in the linked decision.
 No collector/source rework or accepted platform tests are required.
+Produced: docs/architecture/P8C_RV02_OFFLINE_ROLLOUT_DECISION_20261102.md
+(14-flow decision table; blocking UNKNOWNs B1=DNAT API/DNS, B2=S3 resolution+reachability,
+B3=ENV-LISTENER design; smallest-read proposal PR-1/PR-2 — proposal only; rollout/rollback order).
 
 ## Current 14-flow reconciliation — c872eed
 
