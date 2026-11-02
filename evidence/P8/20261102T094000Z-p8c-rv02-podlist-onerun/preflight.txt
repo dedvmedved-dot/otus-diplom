@@ -1,0 +1,35 @@
+CHECK=hostname -s
+UTC=2026-11-02T09:34:48Z
+EXIT=0
+OUTPUT: node-01
+---
+CHECK=id -un
+UTC=2026-11-02T09:34:49Z
+EXIT=0
+OUTPUT: root
+---
+CHECK=python3 --version
+UTC=2026-11-02T09:34:50Z
+EXIT=0
+OUTPUT: Python 3.11.2
+---
+CHECK=command -v python3
+UTC=2026-11-02T09:34:52Z
+EXIT=0
+OUTPUT: /usr/bin/python3
+---
+CHECK=command -v kubectl
+UTC=2026-11-02T09:34:53Z
+EXIT=0
+OUTPUT: /usr/bin/kubectl
+---
+CHECK=admin.conf readable
+UTC=2026-11-02T09:34:54Z
+EXIT=0
+OUTPUT: READABLE
+---
+CHECK=kubectl version -o json
+UTC=2026-11-02T09:34:55Z
+EXIT=0
+OUTPUT: client v1.36.2 server v1.36.2
+---

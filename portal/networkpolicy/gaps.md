@@ -152,3 +152,21 @@ all historical live results are unchanged. LIVE_FAILING_FIELD=UNKNOWN;
 FLOW_MATRIX_COMPLETE=NO; last live F-I1 still unresolved until a separately authorized run.
 PHASE2_NEW_RUN_APPROVED=NO; OWNER_PHASE2_HANDOFF_ALLOWED=NO;
 NETPOL_APPROVED_FOR_APPLY=NO; P8C=NOT_FINAL_ACCEPTED.
+
+## Phase-5 podlist one-run 20261102 (gate 740a620) — complete read (EXIT=0)
+
+Artifact: evidence/P8/20261102T094000Z-p8c-rv02-podlist-onerun/ (followup.jsonl, 9 records, EXIT=0, 9 collector invocations).
+
+- F-I1 **OK** — 3 calico-node pods identified (`calico-node-4krkt`, `calico-node-lgmtz`,
+  `calico-node-mqrgg`); identity approved through the unchanged S1 gate. The MI-01 typed-PodList
+  TypeMeta adapter resolved the previous ITEM failure. LIVE_FAILING_FIELD no longer UNKNOWN at the
+  read level, but the exact historical field that failed the pre-fix run remains unrecovered.
+- F-CS **compatible=true** (ff433d34… = pin); F-CNP/F-NP/F-GNP/F-HEP all **0 items**.
+- F-FELIX **default FelixConfiguration `nftablesMode=Auto`** (bpfEnabled/iptablesBackend/nodeSelector null).
+- F-TIER **3 objects**: `default` (1000000, Deny), `kube-admin` (1000, Pass), `kube-baseline` (10000000, Pass).
+- BASELINE: Calico policy surface live (23 descriptors); no NP/GNP/CNP/HEP objects; 3 tiers present.
+- CNI: identity RESOLVED (3 pods); effective per-node mode still UNKNOWN (only default Felix read,
+  per-node overrides not collected). Effective policy union / tier→endpoint binding / DNAT /
+  traffic-flow remain UNKNOWN (no policy objects + tier defaults are recorded, not evaluated).
+FLOW_MATRIX_COMPLETE=YES at the read level (all 9 reads OK); semantic limits above stand.
+NEW_GATE_RUN_BUDGET=CONSUMED; PHASE2_NEW_RUN_APPROVED=NO; NETPOL_APPROVED_FOR_APPLY=NO.

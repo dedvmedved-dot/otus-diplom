@@ -1,0 +1,5 @@
+HASH_CHECK_LOCAL_UTC=2026-11-02T09:34:33Z
+COMMAND=git hash-object + sha256sum (local checkout, source eed114e2201f75c3235b33779780038f1e8822df)
+followup.py git-blob=4917bc9db76748202dfa3e799651474808aaf567 sha256=8e01355087db65d3c124f0a21ac5a4dd89acf0caaabc092836d469169fe57a7b
+supplemental.py git-blob=1b613fbd1e35a109072d2843d6e5f3a3fd47b3d6 sha256=ddd9a4dc17bca97d6b36ae6b4d501e1722c5d38d6e5ac8c7b051698fa0b15491
+EXIT_CODE=0

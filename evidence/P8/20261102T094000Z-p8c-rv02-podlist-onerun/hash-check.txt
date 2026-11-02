@@ -1,0 +1,6 @@
+HASH_CHECK_START_UTC=2026-11-02T09:35:24Z
+COMMAND=sha256sum --check
+followup.py: ЦЕЛ
+supplemental.py: ЦЕЛ
+HASH_CHECK_END_UTC=2026-11-02T09:35:24Z
+EXIT_CODE=0
