@@ -1,0 +1,84 @@
+COMMAND=go test -count=1 -v ./networkpolicy (workdir portal/)
+GO=go version go1.27.3 linux/amd64
+START_UTC=2026-11-02T20:09:50Z  END_UTC=2026-11-02T20:09:51Z  EXIT=0
+---
+=== RUN   TestCandidatePolicyUnionBothSides
+=== RUN   TestCandidatePolicyUnionBothSides/app-db
+=== RUN   TestCandidatePolicyUnionBothSides/app-metrics
+=== RUN   TestCandidatePolicyUnionBothSides/migrator-db
+=== RUN   TestCandidatePolicyUnionBothSides/migrator-no-metrics
+=== RUN   TestCandidatePolicyUnionBothSides/peer-replication
+=== RUN   TestCandidatePolicyUnionBothSides/peer-manager
+=== RUN   TestCandidatePolicyUnionBothSides/operator-manager
+=== RUN   TestCandidatePolicyUnionBothSides/gateway-backend
+=== RUN   TestCandidatePolicyUnionBothSides/xds
+=== RUN   TestCandidatePolicyUnionBothSides/dns-udp
+=== RUN   TestCandidatePolicyUnionBothSides/dns-tcp
+=== RUN   TestCandidatePolicyUnionBothSides/cross-ns-denied
+=== RUN   TestCandidatePolicyUnionBothSides/management-denied
+=== RUN   TestCandidatePolicyUnionBothSides/udp-db-denied
+=== RUN   TestCandidatePolicyUnionBothSides/db-s3
+=== RUN   TestCandidatePolicyUnionBothSides/app-s3-denied
+=== RUN   TestCandidatePolicyUnionBothSides/migrator-s3-denied
+=== RUN   TestCandidatePolicyUnionBothSides/cnpg-api-clusterip
+=== RUN   TestCandidatePolicyUnionBothSides/cnpg-api-101
+=== RUN   TestCandidatePolicyUnionBothSides/cnpg-api-102
+=== RUN   TestCandidatePolicyUnionBothSides/cnpg-api-103
+=== RUN   TestCandidatePolicyUnionBothSides/portal-api-clusterip
+=== RUN   TestCandidatePolicyUnionBothSides/portal-api-101
+=== RUN   TestCandidatePolicyUnionBothSides/api-clusterip-6443-denied
+=== RUN   TestCandidatePolicyUnionBothSides/api-101-443-denied
+=== RUN   TestCandidatePolicyUnionBothSides/api-102-443-denied
+=== RUN   TestCandidatePolicyUnionBothSides/api-vip-denied
+=== RUN   TestCandidatePolicyUnionBothSides/api-104-denied
+=== RUN   TestCandidatePolicyUnionBothSides/api-udp-denied
+=== RUN   TestCandidatePolicyUnionBothSides/migrator-api-clusterip-denied
+=== RUN   TestCandidatePolicyUnionBothSides/migrator-api-101-denied
+=== RUN   TestCandidatePolicyUnionBothSides/barman-db-denied
+=== RUN   TestCandidatePolicyUnionBothSides/dataplane-wrong-owner-name
+=== RUN   TestCandidatePolicyUnionBothSides/dataplane-wrong-owner-ns
+=== RUN   TestCandidatePolicyUnionBothSides/dataplane-missing-component
+=== RUN   TestCandidatePolicyUnionBothSides/dataplane-wrong-ns
+=== RUN   TestCandidatePolicyUnionBothSides/dns-wrong-label-kubesystem
+=== RUN   TestCandidatePolicyUnionBothSides/dns-correct-label-wrong-ns
+--- PASS: TestCandidatePolicyUnionBothSides (0.01s)
+    --- PASS: TestCandidatePolicyUnionBothSides/app-db (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/app-metrics (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/migrator-db (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/migrator-no-metrics (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/peer-replication (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/peer-manager (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/operator-manager (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/gateway-backend (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/xds (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-udp (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-tcp (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/cross-ns-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/management-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/udp-db-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/db-s3 (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/app-s3-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/migrator-s3-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/cnpg-api-clusterip (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/cnpg-api-101 (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/cnpg-api-102 (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/cnpg-api-103 (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/portal-api-clusterip (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/portal-api-101 (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/api-clusterip-6443-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/api-101-443-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/api-102-443-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/api-vip-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/api-104-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/api-udp-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/migrator-api-clusterip-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/migrator-api-101-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/barman-db-denied (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dataplane-wrong-owner-name (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dataplane-wrong-owner-ns (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dataplane-missing-component (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dataplane-wrong-ns (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-wrong-label-kubesystem (0.00s)
+    --- PASS: TestCandidatePolicyUnionBothSides/dns-correct-label-wrong-ns (0.00s)
+PASS
+ok  	github.com/dedvmedved-dot/otus-diplom/portal/networkpolicy	0.017s

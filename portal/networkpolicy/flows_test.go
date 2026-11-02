@@ -127,6 +127,23 @@ func allowed(policies []netv1.NetworkPolicy, src, dst peer, port int, protocol s
 	}
 	return true
 }
+func withLabel(m map[string]string, k, v string) map[string]string {
+	out := map[string]string{}
+	for kk, vv := range m {
+		out[kk] = vv
+	}
+	out[k] = v
+	return out
+}
+func withoutLabel(m map[string]string, k string) map[string]string {
+	out := map[string]string{}
+	for kk, vv := range m {
+		if kk != k {
+			out[kk] = vv
+		}
+	}
+	return out
+}
 func TestCandidatePolicyUnionBothSides(t *testing.T) {
 	data, e := os.ReadFile("../manifests/networkpolicy.yaml")
 	if e != nil {
@@ -145,12 +162,30 @@ func TestCandidatePolicyUnionBothSides(t *testing.T) {
 	portal := peer{"portal", map[string]string{"app.kubernetes.io/name": "pak-portal"}, "10.1.1.1"}
 	migrator := peer{"portal", map[string]string{"app.kubernetes.io/name": "pak-portal-migrator"}, "10.1.1.2"}
 	db := peer{"portal", map[string]string{"cnpg.io/cluster": "portal-db", "cnpg.io/podRole": "instance"}, "10.1.1.3"}
-	envoy := peer{"envoy-gateway-system", map[string]string{"gateway.envoyproxy.io/owning-gateway-name": "portal-gateway", "gateway.envoyproxy.io/owning-gateway-namespace": "portal"}, "10.1.2.1"}
+	envoyLabels := map[string]string{
+		"app.kubernetes.io/component":                    "proxy",
+		"app.kubernetes.io/managed-by":                   "envoy-gateway",
+		"app.kubernetes.io/name":                         "envoy",
+		"gateway.envoyproxy.io/owning-gateway-name":      "portal-gateway",
+		"gateway.envoyproxy.io/owning-gateway-namespace": "portal",
+	}
+	envoy := peer{"envoy-gateway-system", envoyLabels, "10.1.2.1"}
 	control := peer{"envoy-gateway-system", map[string]string{"control-plane": "envoy-gateway"}, "10.1.2.2"}
 	dns := peer{"kube-system", map[string]string{"k8s-app": "kube-dns"}, "10.1.3.1"}
 	operator := peer{"cnpg-system", map[string]string{"app.kubernetes.io/name": "cloudnative-pg"}, "10.1.4.1"}
+	barman := peer{"cnpg-system", map[string]string{"app": "barman-cloud"}, "10.1.4.2"}
 	other := peer{"other", map[string]string{"app.kubernetes.io/name": "pak-portal"}, "10.1.9.1"}
-	wrongOwner := peer{envoy.ns, map[string]string{"gateway.envoyproxy.io/owning-gateway-name": "portal-gateway", "gateway.envoyproxy.io/owning-gateway-namespace": "other"}, envoy.ip}
+	apiClusterIP := peer{ip: "10.96.0.1"}
+	api101 := peer{ip: "172.30.140.101"}
+	api102 := peer{ip: "172.30.140.102"}
+	api103 := peer{ip: "172.30.140.103"}
+	apiVIP := peer{ip: "172.30.140.100"}
+	api104 := peer{ip: "172.30.140.104"}
+	s3 := peer{ip: "172.30.143.10"}
+	envoyWrongOwnerName := peer{envoy.ns, withLabel(envoyLabels, "gateway.envoyproxy.io/owning-gateway-name", "other-gateway"), envoy.ip}
+	envoyWrongOwnerNS := peer{envoy.ns, withLabel(envoyLabels, "gateway.envoyproxy.io/owning-gateway-namespace", "other"), envoy.ip}
+	envoyNoComponent := peer{envoy.ns, withoutLabel(envoyLabels, "app.kubernetes.io/component"), envoy.ip}
+	envoyWrongNS := peer{"other", envoyLabels, envoy.ip}
 	tests := []struct {
 		name     string
 		src, dst peer
@@ -158,7 +193,51 @@ func TestCandidatePolicyUnionBothSides(t *testing.T) {
 		protocol string
 		want     bool
 	}{
-		{"app-db", portal, db, 5432, "TCP", true}, {"app-metrics", portal, db, 9187, "TCP", true}, {"migrator-db", migrator, db, 5432, "TCP", true}, {"migrator-no-metrics", migrator, db, 9187, "TCP", false}, {"peer-replication", db, db, 5432, "TCP", true}, {"peer-manager", db, db, 8000, "TCP", true}, {"operator-manager", operator, db, 8000, "TCP", true}, {"gateway-backend", envoy, portal, 8080, "TCP", true}, {"xds", envoy, control, 18000, "TCP", true}, {"dns-udp", portal, dns, 53, "UDP", true}, {"dns-tcp", migrator, dns, 53, "TCP", true}, {"cross-ns-denied", other, db, 5432, "TCP", false}, {"wrong-owner-denied", wrongOwner, portal, 8080, "TCP", false}, {"management-denied", envoy, portal, 8081, "TCP", false}, {"udp-db-denied", portal, db, 5432, "UDP", false}, {"migrator-api-denied", migrator, peer{ip: "172.30.140.100"}, 6443, "TCP", false}, {"app-s3-denied", portal, peer{ip: "172.30.143.10"}, 443, "TCP", false}, {"db-s3", db, peer{ip: "172.30.143.10"}, 443, "TCP", true},
+		// existing flows (NP-04 preserved)
+		{"app-db", portal, db, 5432, "TCP", true},
+		{"app-metrics", portal, db, 9187, "TCP", true},
+		{"migrator-db", migrator, db, 5432, "TCP", true},
+		{"migrator-no-metrics", migrator, db, 9187, "TCP", false},
+		{"peer-replication", db, db, 5432, "TCP", true},
+		{"peer-manager", db, db, 8000, "TCP", true},
+		{"operator-manager", operator, db, 8000, "TCP", true},
+		{"gateway-backend", envoy, portal, 8080, "TCP", true},
+		{"xds", envoy, control, 18000, "TCP", true},
+		{"dns-udp", portal, dns, 53, "UDP", true},
+		{"dns-tcp", migrator, dns, 53, "TCP", true},
+		{"cross-ns-denied", other, db, 5432, "TCP", false},
+		{"management-denied", envoy, portal, 8081, "TCP", false},
+		{"udp-db-denied", portal, db, 5432, "UDP", false},
+		// S3 (NP-02 sidecar preserved; Portal/migrator denied)
+		{"db-s3", db, s3, 443, "TCP", true},
+		{"app-s3-denied", portal, s3, 443, "TCP", false},
+		{"migrator-s3-denied", migrator, s3, 443, "TCP", false},
+		// API tuples (NP-01): four allowed
+		{"cnpg-api-clusterip", db, apiClusterIP, 443, "TCP", true},
+		{"cnpg-api-101", db, api101, 6443, "TCP", true},
+		{"cnpg-api-102", db, api102, 6443, "TCP", true},
+		{"cnpg-api-103", db, api103, 6443, "TCP", true},
+		{"portal-api-clusterip", portal, apiClusterIP, 443, "TCP", true},
+		{"portal-api-101", portal, api101, 6443, "TCP", true},
+		// API cross-product / non-tuple denied (no cartesian product)
+		{"api-clusterip-6443-denied", db, apiClusterIP, 6443, "TCP", false},
+		{"api-101-443-denied", db, api101, 443, "TCP", false},
+		{"api-102-443-denied", db, api102, 443, "TCP", false},
+		{"api-vip-denied", db, apiVIP, 6443, "TCP", false},
+		{"api-104-denied", db, api104, 6443, "TCP", false},
+		{"api-udp-denied", db, apiClusterIP, 443, "UDP", false},
+		{"migrator-api-clusterip-denied", migrator, apiClusterIP, 443, "TCP", false},
+		{"migrator-api-101-denied", migrator, api101, 6443, "TCP", false},
+		// Barman controller -> DB5432 denied (NP-02)
+		{"barman-db-denied", barman, db, 5432, "TCP", false},
+		// dataplane 5-label identity (NP-03)
+		{"dataplane-wrong-owner-name", envoyWrongOwnerName, portal, 8080, "TCP", false},
+		{"dataplane-wrong-owner-ns", envoyWrongOwnerNS, portal, 8080, "TCP", false},
+		{"dataplane-missing-component", envoyNoComponent, portal, 8080, "TCP", false},
+		{"dataplane-wrong-ns", envoyWrongNS, portal, 8080, "TCP", false},
+		// DNS peer precision (namespace AND pod label)
+		{"dns-wrong-label-kubesystem", peer{"kube-system", map[string]string{"k8s-app": "other"}, "10.1.3.2"}, portal, 53, "UDP", false},
+		{"dns-correct-label-wrong-ns", peer{"other", map[string]string{"k8s-app": "kube-dns"}, "10.1.3.3"}, portal, 53, "UDP", false},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -176,6 +255,26 @@ func TestCandidatePolicyUnionBothSides(t *testing.T) {
 	}
 	if allowed(reduced, portal, db, 5432, "TCP") {
 		t.Fatal("egress alone incorrectly allowed DB ingress")
+	}
+	// Removal of existing-flows while baseline-default-deny (+allow-dns) remains must NOT
+	// restore S0: CNPG loses S3/API/peer egress; only the explicit DNS allowance survives.
+	denyOnly := []netv1.NetworkPolicy{}
+	for _, p := range policies {
+		if p.Name == "baseline-default-deny-all" || p.Name == "baseline-allow-dns-egress" {
+			denyOnly = append(denyOnly, p)
+		}
+	}
+	if allowed(denyOnly, db, dns, 53, "UDP") == false {
+		t.Fatal("baseline-allow-dns-egress must still allow DNS for CNPG")
+	}
+	if allowed(denyOnly, db, s3, 443, "TCP") {
+		t.Fatal("removing existing-flows while default-deny remains must not restore S0 S3 egress")
+	}
+	if allowed(denyOnly, db, apiClusterIP, 443, "TCP") {
+		t.Fatal("removing existing-flows while default-deny remains must not restore S0 API egress")
+	}
+	if allowed(denyOnly, db, db, 5432, "TCP") {
+		t.Fatal("removing existing-flows while default-deny remains must not allow peer replication")
 	}
 	deployments, e := os.ReadFile("../manifests/deployment.yaml")
 	if e != nil {

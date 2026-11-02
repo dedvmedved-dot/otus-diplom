@@ -1,0 +1,20 @@
+{
+  "task": "P8C-R1-CANDIDATE-AND-GATES-R1",
+  "accepted_design_sha": "3bbc818245e19f42b9ffb64a14bf510d424ee7e8",
+  "go": "go1.27.3 linux/amd64 (GOTOOLCHAIN=local)",
+  "files": [
+    {"path": "portal/manifests/networkpolicy.yaml", "blob": "6212a016c783419d2e81c9a2325fdaeef9279bc7", "sha256": "2c1a48764c098dfbca721d7a86a007eafa5b7cb32545fa2f0965111e0e58bb83", "role": "candidate policy (edited NP-01..04)"},
+    {"path": "portal/networkpolicy/flows_test.go", "blob": "496affc0c49eb1b8bc259e508de2f8a18d48db1e", "sha256": "e02703c6ed1523bc46fb8111e6252d5504b61ff9cbc307f162b0065908da8908", "role": "offline policy union test (extended)"},
+    {"path": "portal/tools/p8c-portal-release.yml.template", "blob": "0e713e47f7f7a9e940b3113a7481e393aa961f9e", "sha256": "7f28c5c9d8b919cdb22f1e94548820357018dbea20b7010e266b6f5089b9c98f", "role": "release template (UNCHANGED)"},
+    {"path": "docs/architecture/P8C_RELEASE_GATE_DRAFT_20261102.md", "blob": "f63a35cd9f30eb6978f96557023c2b4e420e7b05", "sha256": "b6e333db88032aa890fd90f5ea9d8a28b231ef0b0e029c3b7b845a090195d3b9", "role": "release gate draft"},
+    {"path": "docs/architecture/P8C_RUNTIME_READINESS_GATE_DRAFT_20261102.md", "blob": "c3b357dab9d3de0b648dd00040d6154f9aa88fe1", "sha256": "fc68b8d69f491f55ffc77ab71e580c7321ec72914d8f5f4d02d9df34f68c8790", "role": "runtime-readiness gate draft"},
+    {"path": "docs/architecture/P8C_DEPLOYMENT_GATE_DRAFT_20261102.md", "blob": "a0df795d24d1ba9c89e60f937aabcf30a2f634ef", "sha256": "fc2bbc16f1480eca530dc662e7b2e4cdffa7d616a5000b5d25c44c3f007709ea", "role": "deployment gate draft"}
+  ],
+  "accepted_not_reopened": [
+    "collector/source eed114e", "S1 identity gate", "inventory 9/9 c872eed",
+    "offline design 3bbc818 (ACCEPTED_WITH_RUNTIME_LIMITS)", "MI/LC/LR/A/B/C corrections"
+  ],
+  "not_executed": ["CI release", "workflow publication/dispatch", "Owner helpers",
+    "NetworkPolicy apply", "production migration/deployment", "live/SSH/DNS/registry reads",
+    "backup/restore/PITR/failover tests", "PR-3/4/5/6"]
+}
