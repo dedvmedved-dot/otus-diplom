@@ -1,0 +1,15 @@
+{
+  "task": "P8C-R1-CANDIDATE-AND-GATES-R2-RESIDUAL",
+  "reviewed_main_sha": "6bc54d1",
+  "go": "go1.27.3 linux/amd64 (GOTOOLCHAIN=local)",
+  "test": {"command": "go test -count=1 -v ./networkpolicy", "exit": 0, "functions": 3, "subtests": 91, "start_utc": "2026-11-03T03:05:19Z", "end_utc": "2026-11-03T03:05:20Z"},
+  "files": [
+    {"path": "portal/networkpolicy/flows_test.go", "blob": "41b91c8be4a6bdbab807f823ee816385f9d1eb64", "sha256": "1efc5afd1a6d9fb4e180ab4b5573ac47bf6fb8b8ce343df5c378f9857f046887", "role": "policy tests (R1)"},
+    {"path": "docs/architecture/P8C_RELEASE_GATE_DRAFT_20261102.md", "blob": "c320c1521a92631957b5aac237d320a1201ec0ca", "sha256": "81f6f56b223eec913b17fbb729c2e8e4ce71e019425bfa7419a2b65636c0922d", "role": "release gate draft (R3)"},
+    {"path": "docs/architecture/P8C_RUNTIME_READINESS_GATE_DRAFT_20261102.md", "blob": "215c305096340bd3124039065803bd84119b64ab", "sha256": "8cef96bb96fffe2330c483dd95a1172b8be4cba880020e4340bdacc18770590c", "role": "runtime-readiness gate draft (R2)"},
+    {"path": "docs/architecture/P8C_DEPLOYMENT_GATE_DRAFT_20261102.md", "blob": "e02ebc58a326cc9bef6e3a5cc477e34514290dab", "sha256": "481561eb85283628a3f8a11b145891209532c39a73f093954fba2436b6d5dfcb", "role": "deployment gate draft (R4)"}
+  ],
+  "secret_scan": {"scanner": "grep (GNU grep) 3.11", "command": "grep -rnE 'AKIA…|ghp_…|gho_…|BEGIN PRIVATE KEY|password:' <files>", "scope": "4 changed source/draft files + evidence dir", "exit": "grep exit=1 (no matches; wrapper treats 1 as clean, not error)", "hits": 0, "limits": "heuristic != proof of absence; values not printed"},
+  "accepted_not_reopened": ["collector/source eed114e", "S1 identity gate", "inventory 9/9 c872eed", "offline design 3bbc818", "candidate NP-01..04 (ACCEPTED_SOURCE_ONLY)", "P8B metrics endpoint", "PG17 integration"],
+  "not_executed": ["CI release", "workflow publication/dispatch", "Owner helpers", "NetworkPolicy apply", "production migration/deployment", "live/SSH/DNS/registry reads", "backup/restore/PITR/failover", "PR-3/4/5/6 + pg_stat_archiver reads"]
+}

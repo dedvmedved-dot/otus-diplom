@@ -1,81 +1,94 @@
 # P8C Deployment Gate — DRAFT (NOT_AUTHORIZED_FOR_EXECUTION)
 
-Дата: 2026-11-02. Исполнитель подготовки: PRIMARY HERMES. Status: DRAFT.
-Источники: portal/manifests/{networkpolicy,deployment,gateway}.yaml, P8_PORTAL_DB_CONTRACT.md,
-portal/cmd/portal/main.go, portal/internal/httpapi/server.go, принятый offline design.
+Дата: 2026-11-03. Исполнитель подготовки: PRIMARY HERMES. Status: DRAFT.
+Источники: portal/manifests/{networkpolicy,deployment,gateway,rbac}.yaml, P8_PORTAL_DB_CONTRACT.md,
+config.go, store.go, migrations.go, server.go, main.go.
 
 ```text
 DEPLOYMENT_GATE=NOT_AUTHORIZED_FOR_EXECUTION
 NETPOL_APPROVED_FOR_APPLY=NO · PRODUCTION_MIGRATION_DEPLOYMENT=NOT_AUTHORIZED
 ```
 
-## Уточнение endpoint (source-derived)
+## DEP-01 — полный объектный inventory (kind/name/ns/source blob/actor/new)
 
-- Management: `/livez`, `/readyz`, `/startupz` на MgmtAddr 8081 (main.go). **`/healthz` отсутствует**.
-- API: 11 защищённых Basic-Auth `GET/HEAD` маршрутов (server.go apiRoutes):
-  `/api/v1/health`, `/api/v1/summary`, `/api/v1/nodes`, `/api/v1/workloads`, `/api/v1/pods`,
-  `/api/v1/services`, `/api/v1/storage`, `/api/v1/backups`, `/api/v1/database`, `/api/v1/metrics`,
-  `/api/v1/events`. mgmt 8081 НЕ открывается через внешний Service.
-
-## DEP-01 — порядок и ownership (единый dependency-план)
-
-Prerequisites (до S1):
-1. accepted candidate SHA + current baseline/S3/WAL proof (PR-3/6 + HC-ARCH-STATE + RD-01 pg_stat_archiver).
-2. accepted CI run + verified source/image digest + private pull readiness (release gate).
-3. Owner-provisioned UI auth/pull credentials (безопасный локальный механизм; здесь не запускать).
-4. разрешённые RBAC/CA/Service/миграция/Deployment/Gateway объекты и их names/namespaces.
-
-Порядок (каждый шаг — HC-* до/после, UID-precondition):
-```text
-S0  baseline (условный): spec.instances=3, status.instances=3, status.readyInstances=3, Ready=True
-    (по accepted plan); operator Ready; kube-dns ready; PR-6 policy-set freshness.
-S1  apply p8c-cnpg-existing-flows → HC-DB/ARCH-STATE/OP/DNS.
-S2a apply baseline-default-deny-all; S2b apply baseline-allow-dns-egress.
-S3  apply p8c-portal-flows + p8c-migrator-flows (политики ДО workloads) → Deployment/Job;
-    migrator ДО application readiness; migration → application readiness.
-S4  apply p8c-portal-dataplane-flows → Gateway ПОСЛЕДНИМ. Граница экспозиции — из accepted design:
-    риск начинается с создания Gateway; Programmed/LB IP не гарантия отсутствия внешнего доступа;
-    cleanup generated Service/Pods (обе owning labels) проверяется ДО снятия dataplane egress.
-```
-
-DB contract: `portal-db-rw.portal.svc:5432`, database `portal`, role `portal_app`, schema `portal`,
-TLS verify-full, пароль только secretKeyRef. Primary Pod/Pod IP не искать; superuser не выдавать.
-Deployment и migration Job — pin ОДНОГО verified image digest; до CI digest = UNAVAILABLE (не fake hex).
-
-Rollback: только вновь созданные объекты по UID-precondition, no-overwrite; S4→S3→S2b→S2a→S1→S0;
-default-deny/allow-dns ДО existing-flows; migration без destructive down-SQL; CNPG не трогать;
-NetPol rollback НЕ удаляет existing workloads.
-
-## DEP-02 — конечные acceptance критерии (source-derived proposals)
-
-| Proof | Источник / команда | expected | error/STOP | artifact |
+| Kind | name / ns | Source blob | Actor | new/preexisting |
 |---|---|---|---|---|
-| migration success + версия/checksum + schema | `portal migrate` exit + migration ledger (version/checksum) + `VerifySchema` (main.go) | version=0001 + checksum0001 + schema verify | ≠/нет → STOP | migration ledger |
-| readiness (не DB TLS proof) | `GET /readyz` (mgmt 8081) | 200 = migration+collector OK | ≠200 → STOP | readyz result |
-| DB TLS (verify-full, отдельно от readiness) | pinned config/CA/SNI/no-fallback + observed app DB connection | CONNECTED с verify-full; `ssl=true` ≠ hostname verification | не CONNECTED/no-fallback → STOP | sanitized conn evidence |
-| API health | `GET /api/v1/health` (Basic Auth) | 200 | ≠200 → STOP | API capture |
-| 11 API responses | 11 маршрутов из server.go (список выше) | каждый 200/expected shape | ≠ → STOP | API matrix |
-| UI/assets | `/` + `/assets/*` | 200 + assets served | ≠200 → STOP | UI capture |
-| Service/Gateway/HTTPRoute/TLS hostname | Gateway Accepted+Programmed (observedGeneration), PR-5 Service LB IP, hostname portal.demo-pak.test | Accepted+Programmed + LB IP + cert hostname | неоднозначность → STOP | gateway status + PR-5 |
-| auth (missing/wrong vs success) | Basic Auth: неверный/отсутствующий credentials → 401; верный → 200 (secret-safe ввод без argv/log) | 401 vs 200 | утечка/неверный → STOP | auth result |
-| actual platform data | nodes 3, CNPG 3/3, workloads visible | наблюдаемые данные (не hardcoded) | stale/unknown видимы | platform summary |
-| bounded event persistence | event timeline store | bounded, persisted (без создания искусственных K8s событий) | overflow/loss → STOP | event ledger |
-| RBAC named ServiceAccount + allowed/denied | SA + verb/resource/scope matrix; authz-only mechanism (без destructive mutation; authorization-review API вызовы в scope явно) | allowed reads OK, denied verbs rejected | mutation прошла → STOP | authz result |
-| secret scan | scan затронутых manifests (scanner/version/scope/exit; значения не выводить) | нет secret-значений | hit → STOP | scan report |
-| platform postcheck | HC-* набор | PASS/INCONCLUSIVE по правилам | FAIL/INCONCLUSIVE → rollback/STOP | postcheck transcript |
+| ServiceAccount | portal-reader / portal | rbac.yaml | operator | NEW |
+| ServiceAccount | portal-migrator / portal | rbac.yaml | operator | NEW |
+| ClusterRole | portal-platform-reader | rbac.yaml | operator | NEW |
+| ClusterRoleBinding | portal-platform-reader | rbac.yaml | operator | NEW |
+| Role | portal-db-reader / portal | rbac.yaml | operator | NEW |
+| RoleBinding | portal-db-reader / portal | rbac.yaml | operator | NEW |
+| Role | portal-ingress-reader / portal | rbac.yaml | operator | NEW |
+| RoleBinding | portal-ingress-reader / portal | rbac.yaml | operator | NEW |
+| Role | portal-velero-reader / velero | rbac.yaml | operator | NEW |
+| RoleBinding | portal-velero-reader / velero | rbac.yaml | operator | NEW |
+| CA/Certificate | CNPG self-signed CA (portal-db); mount /etc/portal/db/ca.crt | P8_PORTAL_DB_CONTRACT.md | CNPG | PREEXISTING |
+| Secret ref | portal-db-app (password) + auth verifier (secretKeyRef, never in git) | config.go | CNPG | PREEXISTING |
+| Service | portal / portal (ClusterIP 80→8080) | deployment.yaml | operator | NEW |
+| Service | portal-db-metrics / portal (ClusterIP 9187, sel cnpg.io/cluster=portal-db) | deployment.yaml | operator | NEW |
+| Job | portal-migrate-0001 / portal | deployment.yaml | operator | NEW |
+| Deployment | portal / portal (replicas 1) | deployment.yaml | operator | NEW |
+| Gateway | portal-gateway / portal | gateway.yaml | operator | NEW |
+| HTTPRoute | portal / portal | gateway.yaml | operator | NEW |
+| NetworkPolicy ×6 | portal×5 + envoy-gateway-system×1 | networkpolicy.yaml | operator | NEW |
 
-```text
-PORTAL_UI=RUNNING
-PORTAL_API=RUNNING
-PORTAL_DB=CONNECTED (TLS verify-full доказан, отдельно от /readyz)
-PLATFORM_STATUS=VISIBLE
-PORTAL_URL=<фактически проверенный URL>
-```
-Будущие runtime-доказательства НЕ подменяются текущими source tests. failover/backup/restore/PITR не повторять.
+Generated Service/Pods (EnvoyProxy dataplane) — selectors/owner UID из §1 design; имена заранее не угадывать.
+
+## DEP-02 — RBAC matrix (subject system:serviceaccount:portal:portal-reader)
+
+Allowed (get/list; named reads):
+- core: nodes, persistentvolumes, pods, services, persistentvolumeclaims, events
+- storage.k8s.io: storageclasses; snapshot.storage.k8s.io: volumesnapshots; metrics.k8s.io: nodes, pods
+- apps: deployments, statefulsets, daemonsets, replicasets; batch: jobs, cronjobs
+- discovery.k8s.io: endpointslices
+- postgresql.cnpg.io: clusters (name portal-db), scheduledbackups (name portal-db-daily), backups (get/list)
+- barmancloud.cnpg.io: objectstores (name portal-db-backup)
+- gateway.networking.k8s.io: gateways (name portal-gateway), httproutes (name portal)
+- velero.io: backupstoragelocations, backups, restores
+
+Denied: secrets, configmaps, serviceaccounts/token, pods/exec, pods/proxy, create/update/patch/delete
+(все mutation verbs), любые resourceNames вне перечисленных, любые namespace вне portal+velero.
+
+Authz-механизм (operator, не actual mutation): `SubjectAccessReview` authorization.k8s.io/v1 от operator
+для portal-reader; конечное число reviews (≤ 20), по одному на allowed-verb/denied-verb случай; mutation
+НЕ выполняется, destructive объект не создаётся ради отказа.
+
+## DEP-03 — Migration + schema
+
+- version = 1, checksum = `53e37c762d9efd4f8985ad848d33a6a3604c4554e65accb39429d14d62dfdbe7`
+  (sha256 embedded SQL0001), source_revision `^[0-9a-f]{40}$`.
+- Proof: Job `portal migrate` exit 0 → ledger row (version=1, checksum exact) → `VerifySchema`
+  (main.go validateMigration) подтверждает таблицы/колонки/constraints. Read-only ledger query:
+  `SELECT version, checksum FROM portal.schema_migrations ORDER BY version DESC LIMIT 1` (store.go).
+  Ожидание — версия+checksum exact, не только exit 0.
+
+## DEP-04 — DB TLS (verify-full) — доказательство, не только readiness
+
+pinned config: DBHost=portal-db-rw.portal.svc:5432, sslmode=verify-full, sslrootcert=/etc/portal/db/ca.crt,
+ServerName(SNI)=portal-db-rw.portal.svc, sslsni=1, MinVersion=TLS1.2, InsecureSkipVerify=false, Fallbacks=0
+(poolConfig отклоняет ambient PG/no-fallback/insecure). Proof = успешное установление verify-full pool
+(миграция/VerifySchema через этот pool успешны ⇒ cert/hostname проверены; иначе connection fail).
+`/readyz` 200 = migration+collector OK, НЕ самостоятельное доказательство verify-full. `ssl=true` ≠ hostname
+verification. App DB signal = store.Ping (pool.Ping, 3s). Без superuser, Secret export, exec.
+
+## DEP-05 — UI/auth/11 API + events + bounds
+
+- 11 API (server.go): /api/v1/{health,summary,nodes,workloads,pods,services,storage,backups,database,metrics,events}
+  — Basic Auth (401 missing/wrong → 200 valid), GET/HEAD only, 405 иначе.
+- mgmt: /livez,/readyz,/startupz на 8081 (НЕ открывать через внешний Service). `/healthz` отсутствует.
+- UI: `/` + `/assets/*` (200). TLS trust/hostname: Gateway hostname portal.demo-pak.test, TLS Terminate.
+- Owner credential ввод: secret-safe (без argv/log/evidence), auth verifier hex SHA-256 из secretKeyRef.
+- Events persistence: timeline_events (dedup_key UNIQUE, TTL 7d, cap 50000, prune ≤1000/statement),
+  observation_batches (TTL 7d, cap 20000); readback ListEvents keyset (id DESC, afterID); EventRow fields
+  (ingestedAt, sourceTime, source, severity, objectKind/NS/Name, reasonCode, occurrences, message).
+  Без создания искусственных K8s событий/mutations.
+- Bounds: наследуются из accepted plan HC-* (request timeout min(15s, remaining W); W=60/30/120s;
+  Gateway 120s×12); конечное число проверок; expiry = завершение одного approved run.
 
 ## Статус
 ```text
 DEPLOYMENT_GATE_DRAFT=REVIEW_READY (DRAFT)
-IMAGE_DIGEST=UNAVAILABLE (до CI release; deployment.yaml не правится fake hex)
+IMAGE_DIGEST=UNAVAILABLE (до CI release; не fake hex)
 PRODUCTION_MIGRATION_DEPLOYMENT=NOT_EXECUTED · NETPOL_APPROVED_FOR_APPLY=NO · P8C=NOT_FINAL_ACCEPTED
 ```
