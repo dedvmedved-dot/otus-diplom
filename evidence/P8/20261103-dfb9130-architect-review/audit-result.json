@@ -1,0 +1,62 @@
+{
+  "reviewed_sha": "dfb9130a4c1b2ba9278d1feda234cd7e444f6611",
+  "connector_blob_checks": "PASS",
+  "author_transcript": {
+    "top_level_pass": 3,
+    "subtest_pass": 91,
+    "independently_executed": false
+  },
+  "secret_scan_actual": "ERROR_EXIT_2_NOT_CLEAN",
+  "static_guard_findings": [
+    "no ingress port validation",
+    "no target PodSelector validation"
+  ],
+  "limits": "Static source/evidence audit, not Go execution, not runtime CNI validation, not a new secret scan.",
+  "sources": [
+    {
+      "path": "portal/networkpolicy/flows_test.go",
+      "git_blob": "41b91c8be4a6bdbab807f823ee816385f9d1eb64",
+      "sha256": "1efc5afd1a6d9fb4e180ab4b5573ac47bf6fb8b8ce343df5c378f9857f046887"
+    },
+    {
+      "path": "portal/manifests/rbac.yaml",
+      "git_blob": "036e90b40a44701c04b145af4c987ae962648477",
+      "sha256": "a09ba6f322113403a7bd0bc2299b243b90cfd4589c91f5dd9f320c4f03565e9c"
+    },
+    {
+      "path": "portal/manifests/gateway.yaml",
+      "git_blob": "1e1f48a3c6d03c4558f4b4c3cca24bc12c22b763",
+      "sha256": "1070687e449bc096ce41846c06eb8863068ae0c854d052512ed66c4ff021f2b4"
+    },
+    {
+      "path": "docs/architecture/P8C_DEPLOYMENT_GATE_DRAFT_20261102.md",
+      "git_blob": "e02ebc58a326cc9bef6e3a5cc477e34514290dab",
+      "sha256": "481561eb85283628a3f8a11b145891209532c39a73f093954fba2436b6d5dfcb"
+    },
+    {
+      "path": "docs/architecture/P8C_RUNTIME_READINESS_GATE_DRAFT_20261102.md",
+      "git_blob": "215c305096340bd3124039065803bd84119b64ab",
+      "sha256": "8cef96bb96fffe2330c483dd95a1172b8be4cba880020e4340bdacc18770590c"
+    },
+    {
+      "path": "docs/architecture/P8C_RELEASE_GATE_DRAFT_20261102.md",
+      "git_blob": "c320c1521a92631957b5aac237d320a1201ec0ca",
+      "sha256": "81f6f56b223eec913b17fbb729c2e8e4ce71e019425bfa7419a2b65636c0922d"
+    },
+    {
+      "path": "evidence/P8/20261103T033000Z-p8c-candidate-and-gates-r2-residual/secret-scan.txt",
+      "git_blob": "f362d34c268121c393b277bd854cf25f434cb20c",
+      "sha256": "0bb23c61cf4f2ac90216eaf4fe664bd0af73e5008f0b20aba88c71add829adca"
+    },
+    {
+      "path": "evidence/P8/20261103T033000Z-p8c-candidate-and-gates-r2-residual/raw-transcript.txt",
+      "git_blob": "d28027ad91a962115cea7f06cc2b11ee502bf8e6",
+      "sha256": "7970b054c65b8b6b35f98c52b5a3c960b930b56a417ee7e44fddea71cd9c51eb"
+    },
+    {
+      "path": "evidence/P8/20261103T033000Z-p8c-candidate-and-gates-r2-residual/source-manifest.json",
+      "git_blob": "72a2afcb987b737e327e51fa6d6cfb0754958279",
+      "sha256": "c72fe52ad97574f646c700a505cce61d94bd49c5c5d0ee0ef3be508f0d251177"
+    }
+  ]
+}

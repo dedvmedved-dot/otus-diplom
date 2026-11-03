@@ -1,14 +1,14 @@
 # P8C NetworkPolicy plan (D1) — read-only preparation, not yet applied
 
-## Active source-only task — CANDIDATE-AND-GATES-R2-RESIDUAL
+## Active source-only task — CANDIDATE-AND-GATES-R3-CORRECTION
 
-Authority: docs/architecture/P8C_REVIEW_c86f39f_RESIDUAL_TASK_20261103.md.
-Primary Hermes only. Candidate NP-01…04 semantics and WAL metric source choice are accepted source-only.
-DNS direction, five-label cases, health route corrections and automatic GITHUB_TOKEN correction are closed.
-Remaining: exact policy guard/negative coverage; finite access/budget proposals; named deployment proof matrices.
-No candidate semantics/app/collector/release-code edits; only addressed tests, drafts and new evidence.
-No live/SSH/registry probes, workflow/CI, Owner helpers, policy apply or production action is authorized.
-The accepted offline design and 9/9 inventory below remain closed.
+Authority: docs/architecture/P8C_REVIEW_dfb9130_AND_R3_CORRECTION_20261103.md.
+Primary Hermes only. dfb9130 is PARTIAL: functional test additions accepted; structural guard,
+deployment draft consistency, bounded observation design and scan evidence require correction.
+Architect selects operator-only primary-bound exporter observation and separate private-seed bootstrap
+as SOURCE-ONLY designs, not live authorization. Preserve accepted YAML/app/collector and inventory 9/9.
+Only addressed tests, three gate drafts, this active reference and new evidence may change.
+No live/SSH/registry, workflow/CI, Owner helpers, policy apply or production action is authorized.
 
 ## Current Architect acceptance — 1b32e4d
 
