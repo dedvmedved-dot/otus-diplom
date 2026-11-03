@@ -1,0 +1,28 @@
+{
+  "reviewed_sha": "c96a9988ef68be5ecfd7e8e65f39e40b14193ba9",
+  "audit_utc": "2026-11-03T03:35:30.170320+00:00",
+  "connector_blob_checks": 12,
+  "source_manifest_and_frozen_hashes": "MATCH",
+  "author_go_transcript": {
+    "functions": 3,
+    "subtests": 97,
+    "independently_run": false
+  },
+  "independent_scan": {
+    "command_argv": [
+      "grep",
+      "-rnE",
+      "AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36}|gho_[A-Za-z0-9]{36}|-----BEGIN (RSA|OPENSSH|EC) PRIVATE KEY",
+      "/workspace/scratch/14185c8f871f/review_c96a998/frozen/portal/networkpolicy/flows_test.go",
+      "/workspace/scratch/14185c8f871f/review_c96a998/frozen/docs/architecture/P8C_RELEASE_GATE_DRAFT_20261102.md",
+      "/workspace/scratch/14185c8f871f/review_c96a998/frozen/docs/architecture/P8C_RUNTIME_READINESS_GATE_DRAFT_20261102.md",
+      "/workspace/scratch/14185c8f871f/review_c96a998/frozen/docs/architecture/P8C_DEPLOYMENT_GATE_DRAFT_20261102.md"
+    ],
+    "version": "grep (GNU grep) 3.11",
+    "exit": 1,
+    "stdout_bytes": 0,
+    "stderr_bytes": 0,
+    "limit": "Four listed files, exact supplied heuristic only; does not scan all evidence or prove absence of every secret."
+  },
+  "go_regression": "SUPPLIED_SOURCE_NOT_EXECUTED_GO_UNAVAILABLE"
+}

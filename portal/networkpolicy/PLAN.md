@@ -1,14 +1,14 @@
 # P8C NetworkPolicy plan (D1) — read-only preparation, not yet applied
 
-## Active source-only task — CANDIDATE-AND-GATES-R3-CORRECTION
+## Active source-only task — CANDIDATE-AND-GATES-R4-FINALIZATION
 
-Authority: docs/architecture/P8C_REVIEW_dfb9130_AND_R3_CORRECTION_20261103.md.
-Primary Hermes only. dfb9130 is PARTIAL: functional test additions accepted; structural guard,
-deployment draft consistency, bounded observation design and scan evidence require correction.
-Architect selects operator-only primary-bound exporter observation and separate private-seed bootstrap
-as SOURCE-ONLY designs, not live authorization. Preserve accepted YAML/app/collector and inventory 9/9.
-Only addressed tests, three gate drafts, this active reference and new evidence may change.
-No live/SSH/registry, workflow/CI, Owner helpers, policy apply or production action is authorized.
+Authority: docs/architecture/P8C_REVIEW_c96a998_AND_R4_FINALIZATION_20261103.md.
+Primary Hermes only. c96a998 scan closed within its four-file heuristic scope; deployment and
+release design restored. Remaining: finite exact candidate contract guard and synchronized WAL
+bracketing/budget per the explicit Architect proposal, plus listed editorial corrections.
+Use the supplied frozen accepted-policy-contract fixture; do not change candidate semantics.
+Preserve accepted app/collector, inventory 9/9, design, YAML and historical evidence.
+No live/SSH/registry/CI/workflow/Owner helper/policy apply/production action is authorized.
 
 ## Current Architect acceptance — 1b32e4d
 
