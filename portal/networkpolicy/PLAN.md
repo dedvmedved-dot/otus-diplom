@@ -1,14 +1,16 @@
 # P8C NetworkPolicy plan (D1) — read-only preparation, not yet applied
 
-## Active source-only task — CANDIDATE-AND-GATES-R4-FINALIZATION
+## Current Architect acceptance — R4 source preparation CLOSED
 
-Authority: docs/architecture/P8C_REVIEW_c96a998_AND_R4_FINALIZATION_20261103.md.
-Primary Hermes only. c96a998 scan closed within its four-file heuristic scope; deployment and
-release design restored. Remaining: finite exact candidate contract guard and synchronized WAL
-bracketing/budget per the explicit Architect proposal, plus listed editorial corrections.
-Use the supplied frozen accepted-policy-contract fixture; do not change candidate semantics.
-Preserve accepted app/collector, inventory 9/9, design, YAML and historical evidence.
-No live/SSH/registry/CI/workflow/Owner helper/policy apply/production action is authorized.
+Authority: docs/architecture/P8C_ACCEPTANCE_4a55a7e_CANDIDATE_AND_GATE_DESIGNS_20261104.md.
+Reviewed source: 4a55a7ec799243e0804b12c939dd2dd29c2366f0.
+F1/F3/editorial CLOSED; exact candidate contract and gate designs ACCEPTED_SOURCE/DESIGN_ONLY.
+Do not reopen this corrective package. The next separate work is executable release/readiness
+qualification, then separately authorized CI, Owner prerequisites and deployment gates.
+Accepted app/collector, inventory 9/9, candidate YAML, offline design and old evidence remain frozen.
+No live/SSH/registry/CI/workflow/Owner helper/policy apply/production action is authorized here.
+P8C remains NOT_FINAL_ACCEPTED.
+
 
 ## Current Architect acceptance — 1b32e4d
 

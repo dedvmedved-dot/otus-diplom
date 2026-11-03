@@ -1,0 +1,36 @@
+{
+  "reviewed_sha": "4a55a7ec799243e0804b12c939dd2dd29c2366f0",
+  "audit_utc": "2026-11-03T21:42:10.028712+00:00",
+  "connector_blob_checks": 16,
+  "source_manifest_hashes": "6/6 MATCH",
+  "fixture_byte_identical": true,
+  "reviewer_regression_byte_identical": true,
+  "candidate_contract_exact_objects": 6,
+  "dns_mutation_only_expected_fields": 5,
+  "author_go_transcript": {
+    "top_level_pass": 4,
+    "subtest_pass": 107,
+    "reviewer_cases": 10,
+    "independently_executed_go": false
+  },
+  "independent_scan": {
+    "command_argv": [
+      "grep",
+      "-rnE",
+      "AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36}|gho_[A-Za-z0-9]{36}|-----BEGIN (RSA|OPENSSH|EC) PRIVATE KEY",
+      "/workspace/scratch/14185c8f871f/review_4a55a7e/frozen/portal/networkpolicy/flows_test.go",
+      "/workspace/scratch/14185c8f871f/review_4a55a7e/frozen/portal/networkpolicy/reviewer_exact_rule_regression_test.go",
+      "/workspace/scratch/14185c8f871f/review_4a55a7e/frozen/portal/networkpolicy/testdata/accepted-policy-contract.json",
+      "/workspace/scratch/14185c8f871f/review_4a55a7e/frozen/docs/architecture/P8C_RUNTIME_READINESS_GATE_DRAFT_20261102.md",
+      "/workspace/scratch/14185c8f871f/review_4a55a7e/frozen/docs/architecture/P8C_DEPLOYMENT_GATE_DRAFT_20261102.md",
+      "/workspace/scratch/14185c8f871f/review_4a55a7e/frozen/docs/architecture/P8C_RELEASE_GATE_DRAFT_20261102.md"
+    ],
+    "scanner": "grep (GNU grep) 3.11",
+    "exit": 1,
+    "stdout_bytes": 0,
+    "stderr_bytes": 0,
+    "scope": "6 manifest-listed source/draft/fixture files",
+    "limits": "Same narrow heuristic only; not all evidence, not proof of absence of every secret form."
+  },
+  "limits": "Python source/artifact verification; not Go re-execution, not runtime CNI or WAL test."
+}
