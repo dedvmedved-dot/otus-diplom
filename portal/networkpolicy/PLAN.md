@@ -1,15 +1,14 @@
 # P8C NetworkPolicy plan (D1) — read-only preparation, not yet applied
 
-## Active source-only task — CANDIDATE-AND-GATES-R1
+## Active source-only task — CANDIDATE-AND-GATES-R2-RESIDUAL
 
-Authority: docs/architecture/P8C_CANDIDATE_AND_GATES_R1_TASK_20261102.md.
-Primary Hermes only; Hermes2 is not involved.
-Candidate NetworkPolicy YAML and targeted policy tests may now be edited within NP-01…04.
-Release helpers/template may receive minimal reproduced source fixes within G3; no workflow publication.
-Three gate drafts are required. This does not reopen the accepted offline design or 9/9 inventory.
-No live/SSH/registry probes, CI release, Owner helpers, policy apply or production execution is authorized.
-The acceptance below remains valid; candidate source edit authorization is distinct from apply approval.
-
+Authority: docs/architecture/P8C_REVIEW_c86f39f_RESIDUAL_TASK_20261103.md.
+Primary Hermes only. Candidate NP-01…04 semantics and WAL metric source choice are accepted source-only.
+DNS direction, five-label cases, health route corrections and automatic GITHUB_TOKEN correction are closed.
+Remaining: exact policy guard/negative coverage; finite access/budget proposals; named deployment proof matrices.
+No candidate semantics/app/collector/release-code edits; only addressed tests, drafts and new evidence.
+No live/SSH/registry probes, workflow/CI, Owner helpers, policy apply or production action is authorized.
+The accepted offline design and 9/9 inventory below remain closed.
 
 ## Current Architect acceptance — 1b32e4d
 

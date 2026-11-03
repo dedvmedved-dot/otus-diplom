@@ -1,0 +1,67 @@
+{
+  "reviewed_sha": "c86f39fe6f5eb6edf17b010fdf3a32e16f669469",
+  "audit_utc": "2026-11-03T02:48:05.150770+00:00",
+  "files": [
+    {
+      "path": "portal/manifests/networkpolicy.yaml",
+      "blob": "15f0b3245586bf5086e5a24ed02b0460121f7712",
+      "sha256": "159ddb8e44d49f2fde76d62e90b0bd069c6b1741edc12fb9d4b78a24b5882c4f",
+      "match": true
+    },
+    {
+      "path": "portal/networkpolicy/flows_test.go",
+      "blob": "2eb7bae74bd1190eee954db2624c134ab1d46781",
+      "sha256": "45f6793440d548ab8a0ab525147e72942aa3bbcff043dfce683586c497bd5463",
+      "match": true
+    },
+    {
+      "path": "portal/tools/p8c-portal-release.yml.template",
+      "blob": "0e713e47f7f7a9e940b3113a7481e393aa961f9e",
+      "sha256": "7f28c5c9d8b919cdb22f1e94548820357018dbea20b7010e266b6f5089b9c98f",
+      "match": true
+    },
+    {
+      "path": "portal/tools/install-verified-go.sh",
+      "blob": "2b6e0c9a0127ac0a641feef791f017d287719543",
+      "sha256": "3a34d349b33f032513a21fecd795eeb26129c511c21f3e02f8774b74e7f8d356",
+      "match": true
+    },
+    {
+      "path": "portal/tools/release-check.py",
+      "blob": "88598da050c07c6475ebcafb793876567c730e87",
+      "sha256": "48ba1486de53729f9c24ad0a97d40ecd1f9870c67e61315e56b038f631451ef6",
+      "match": true
+    },
+    {
+      "path": "portal/tools/test_release.py",
+      "blob": "cf31c99d9e9d152c8b267007744e19444f7debe9",
+      "sha256": "5ae16c313c3778879333a56db3f71639889d2646ded7b6df5909e0a69d6a4654",
+      "match": true
+    },
+    {
+      "path": "docs/architecture/P8C_RELEASE_GATE_DRAFT_20261102.md",
+      "blob": "afd8ba4f8fb923b60e41b044f4465bf5bbd0f0dd",
+      "sha256": "cba69336d365aab8561cdab2231b06e83197abadc58dfbedbc9a1199f4a72254",
+      "match": true
+    },
+    {
+      "path": "docs/architecture/P8C_RUNTIME_READINESS_GATE_DRAFT_20261102.md",
+      "blob": "557c3fd7e51481318b4a84f2beb8dd2432547328",
+      "sha256": "b2ad3651e8b582d8d33a0fc7dc60e645a5f8f189c795cfab64e50d5194214690",
+      "match": true
+    },
+    {
+      "path": "docs/architecture/P8C_DEPLOYMENT_GATE_DRAFT_20261102.md",
+      "blob": "e015751de3feccf6f5c508917435c3848dc4074a",
+      "sha256": "8e7047278c4414abf7e3501b5d1f6d09533138ea658826d344d059c04dc33d9b",
+      "match": true
+    }
+  ],
+  "reported_go_subtest_runs": 63,
+  "reported_go_subtest_passes": 63,
+  "go_functions": 2,
+  "go_independently_executed": false,
+  "unfilled_required_draft_fields_confirmed": true,
+  "structure_guard_missing_ports_protocol_peer_selector_checks": true,
+  "scope": "source/evidence verification; not runtime acceptance"
+}
