@@ -1,5 +1,18 @@
 # P8C NetworkPolicy plan (D1) — read-only preparation, not yet applied
 
+## Active source task — executable release and readiness R1
+
+Authority: docs/architecture/P8C_EXECUTABLE_RELEASE_AND_READINESS_R1_TASK_20261104.md.
+Executor: PRIMARY HERMES; Hermes2 is not involved.
+Baseline acceptance: 9c8a45f12f3c47993f58930c6c7d5693feaf5e54.
+Authorized: release/seed TEMPLATES and helpers, read-only readiness wrapper, bounded offline tests,
+public upstream pin verification within the task's explicit scope, new evidence and ff publication.
+Complete the independent source work without intermediate permission requests; final STOP for review.
+Accepted R4 candidate/design, application, collector, inventory 9/9 and historical evidence remain frozen.
+No cluster/SSH/private-registry probes, workflow publication/dispatch, CI/seed push, Owner helpers,
+NetworkPolicy apply or production actions. P8C remains NOT_FINAL_ACCEPTED.
+This active source task supersedes only the prior statement that the next source task is not assigned.
+
 ## Current Architect acceptance — R4 source preparation CLOSED
 
 Authority: docs/architecture/P8C_ACCEPTANCE_4a55a7e_CANDIDATE_AND_GATE_DESIGNS_20261104.md.
