@@ -76,20 +76,21 @@ Named (GET-only, не list): clusters[portal-db], scheduledbackups[portal-db-dai
 backups/restores get+list (namespace velero).
 
 Denied (не выдаётся): secrets, configmaps, serviceaccounts/token, pods/exec, pods/proxy, create/update/
-patch/delete, любые resourceNames вне named set.
+patch/delete; дополнительные resourceNames в named-GET Role-ресурсах (named Role scope = portal и velero).
+Generic ClusterRole get/list reads не имеют name-ограничения.
 
 **Representative SAR rows (operator, не actual mutation; ≤20 явных случаев):**
 
 | subject | group/resource/subresource | verb | ns/name | expected | timeout | artifact |
 |---|---|---|---|---|---|---|
-| SA portal-reader | "" / nodes | get | cluster | allow | 15s | sar-node.json |
-| SA portal-reader | "" / pods | list | cluster | allow | 15s | sar-pods.json |
-| SA portal-reader | postgresql.cnpg.io / clusters | get | portal/portal-db | allow | 15s | sar-cluster.json |
-| SA portal-reader | postgresql.cnpg.io / clusters | list | portal | deny | 15s | sar-cluster-list.json |
-| SA portal-reader | gateway.networking.k8s.io / gateways | get | portal/portal-gateway | allow | 15s | sar-gw.json |
-| SA portal-reader | "" / secrets | get | portal/portal-db-app | deny | 15s | sar-secret.json |
-| SA portal-reader | "" / pods/exec | create | portal | deny | 15s | sar-exec.json |
-| SA portal-reader | apps / deployments | create | portal | deny | 15s | sar-deploy-create.json |
+| system:serviceaccount:portal:portal-reader | "" / nodes | get | cluster | allow | 15s | sar-node.json |
+| system:serviceaccount:portal:portal-reader | "" / pods | list | cluster | allow | 15s | sar-pods.json |
+| system:serviceaccount:portal:portal-reader | postgresql.cnpg.io / clusters | get | portal/portal-db | allow | 15s | sar-cluster.json |
+| system:serviceaccount:portal:portal-reader | postgresql.cnpg.io / clusters | list | portal | deny | 15s | sar-cluster-list.json |
+| system:serviceaccount:portal:portal-reader | gateway.networking.k8s.io / gateways | get | portal/portal-gateway | allow | 15s | sar-gw.json |
+| system:serviceaccount:portal:portal-reader | "" / secrets | get | portal/portal-db-app | deny | 15s | sar-secret.json |
+| system:serviceaccount:portal:portal-reader | "" / pods/exec | create | portal | deny | 15s | sar-exec.json |
+| system:serviceaccount:portal:portal-reader | apps / deployments | create | portal | deny | 15s | sar-deploy-create.json |
 
 Это representative runtime checking; полное source-rule сравнение отдельно. SAR-POST — будущая
 bounded operator-активность, НЕ разрешение Portal создавать reviews и НЕ destructive mutation test.
@@ -97,8 +98,8 @@ bounded operator-активность, НЕ разрешение Portal созд
 ## DEP-04 — Migration, TLS, API, events (числа)
 
 - Migration: version=1, checksum=`53e37c762d9efd4f8985ad848d33a6a3604c4554e65accb39429d14d62dfdbe7`;
-  proof = Job exit 0 → ledger query `SELECT version, checksum ... ORDER BY version DESC LIMIT 1` →
-  VerifySchema (main.go). Не только exit 0.
+  proof = Job exit 0 → `SELECT version, checksum FROM portal.schema_migrations ORDER BY version DESC LIMIT 1;`
+  → VerifySchema (main.go). Не только exit 0.
 - DB TLS verify-full: config DBHost/port 5432, sslmode verify-full, sslrootcert /etc/portal/db/ca.crt,
   SNI portal-db-rw.portal.svc, MinVersion TLS1.2, InsecureSkipVerify=false, Fallbacks=0 (poolConfig).
   Proof = успешная миграция/VerifySchema через pool (иначе connect fail). `/readyz` 200 ≠ verify-full

@@ -1,0 +1,18 @@
+{
+  "task": "P8C-R1-CANDIDATE-AND-GATES-R4-FINALIZATION",
+  "reviewed_main_sha": "374e55d",
+  "go": "go1.27.3 linux/amd64 (GOTOOLCHAIN=local)",
+  "test": {"command": "go test -count=1 -v ./networkpolicy", "exit": 0, "functions": 4, "subtests": 107, "start_utc": "2026-11-03T09:38:40Z", "end_utc": "2026-11-03T09:38:41Z"},
+  "files": [
+    {"path": "portal/networkpolicy/flows_test.go", "blob": "1fd09c93f37734bf46e38901c526143f949f0ce6", "sha256": "9ff5f684ced116876486caa72d9968714444743177697b061443d57b452ad19f", "role": "policy tests (contract-based validateStructure)"},
+    {"path": "portal/networkpolicy/reviewer_exact_rule_regression_test.go", "blob": "e40304dc10b1644e992459d21e5707486e897ce0", "sha256": "7aaa22b71b8940b804880e126636b2a9ec811f7259aca2c0ecd11fb66443bf44", "role": "reviewer-supplied 10 regression cases (integrated)"},
+    {"path": "portal/networkpolicy/testdata/accepted-policy-contract.json", "blob": "91a4e571ea36395b3cafd8490f057a28e78cf4d6", "sha256": "ec756ce7f40fb31214cdbf6dd75ecf715ee43561fb309e5f33d1cb56cae33573", "role": "frozen accepted contract (copied unchanged)"},
+    {"path": "docs/architecture/P8C_RUNTIME_READINESS_GATE_DRAFT_20261102.md", "blob": "d95c2fef5117a839ad9017ffa4a7a6e395b55df1", "sha256": "f2ee5570c5f6609c4645512c9e8deaee549287cf20d07e9fb6db1b717cb36e09", "role": "runtime-readiness gate draft (F3 normative budget)"},
+    {"path": "docs/architecture/P8C_DEPLOYMENT_GATE_DRAFT_20261102.md", "blob": "b654565d7e14ead36f7d0c44c9b0cb98b077c42c", "sha256": "9ed616e16897dc3452b23ff801ca2e3464010c3640298591711ac8d3d6b1cf99", "role": "deployment gate draft (editorial: SAR subject, resourceNames scope, ledger query)"},
+    {"path": "docs/architecture/P8C_RELEASE_GATE_DRAFT_20261102.md", "blob": "033970548b06c4d28e26d72d021d8895650743ad", "sha256": "e01660b26b5f5e2a527be405dd3fbdf7bfeeed18efd7bd3a89c51335d63db279", "role": "release gate draft (launch expiry 24h)"}
+  ],
+  "secret_scan": {"scanner": "grep (GNU grep) 3.11", "exit": 1, "exit_meaning": "1=no-match (0=match, 2=error)", "matches": 0, "scope": "6 frozen files", "output": "outside input set (/tmp)", "limits": "heuristic != proof of absence"},
+  "contract": {"source_blob": "15f0b3245586bf5086e5a24ed02b0460121f7712", "fixture_blob": "91a4e571ea36395b3cafd8490f057a28e78cf4d6", "note": "copied unchanged from reviewer; NEVER regenerated from candidate under test"},
+  "accepted_not_reopened": ["collector/source eed114e", "inventory 9/9 c872eed", "offline design 3bbc818", "candidate NP-01..04 (blob 15f0b324)", "P8B metrics endpoint", "PG17 integration"],
+  "not_executed": ["CI release", "workflow publication/dispatch", "Owner helpers", "NetworkPolicy apply", "production migration/deployment", "live/SSH/DNS/registry reads", "PR-3/4/5/6 + pg_stat_archiver reads", "clock skew evidence"]
+}

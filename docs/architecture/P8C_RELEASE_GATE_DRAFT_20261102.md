@@ -83,9 +83,9 @@ https://docs.github.com/en/packages/learn-github-packages/configuring-a-packages
 
 ```text
 test job timeout: 20m (hard) · release job timeout: 30m (hard)
-launch expiry: single manual dispatch; допуск истекает при изменении source/byte или по завершении одного approved run
-max runs: 1 · retry: NO automatic retry · source-change invalidation: byte change → pin недействителен
-enforcement: числа ещё НЕ реализованы в unchanged template (будущий job-level timeout)
+launch expiry: 24 hours от FUTURE gate's explicit issued_at UTC; invalidation earlier при pinned source/bytes change или consumed run. Ни один gate этим документом НЕ issued.
+max runs: 1 (manual) · retry: NO automatic retry · source-change invalidation: byte change → pin недействителен
+enforcement: числа ещё НЕ реализованы в unchanged template (NOT_IMPLEMENTED_IN_TEMPLATE)
 ```
 
 ## 7. Статус

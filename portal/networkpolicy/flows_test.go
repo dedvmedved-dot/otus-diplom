@@ -1,6 +1,9 @@
 package networkpolicy
 
 import (
+	"encoding/json"
+	"fmt"
+	"reflect"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -11,7 +14,6 @@ import (
 	"net"
 	"os"
 	"sigs.k8s.io/yaml"
-	"strconv"
 	"strings"
 	"testing"
 )
@@ -442,204 +444,61 @@ func TestCandidatePolicyUnionBothSides(t *testing.T) {
 	}
 }
 
+// policyContract is the frozen reviewer-approved candidate contract. It is read once
+// from testdata and is NEVER regenerated from the candidate under test.
+type policyContract struct {
+	Objects []netv1.NetworkPolicy `json:"objects"`
+}
+
+func loadContract() ([]netv1.NetworkPolicy, error) {
+	data, err := os.ReadFile("testdata/accepted-policy-contract.json")
+	if err != nil {
+		return nil, err
+	}
+	var cf policyContract
+	if err := json.Unmarshal(data, &cf); err != nil {
+		return nil, err
+	}
+	return cf.Objects, nil
+}
+
 // validateStructure returns all structural/semantic violations of the candidate YAML
-// against the accepted semantics hardcoded here (NOT derived from the YAML under test).
+// against the frozen accepted contract (testdata/accepted-policy-contract.json).
+// The contract is the authoritative expected fixture, NOT derived from the YAML under test.
 func validateStructure(policies []netv1.NetworkPolicy) []string {
 	var errs []string
-	want := map[string]string{
-		"p8c-cnpg-existing-flows":    "portal",
-		"baseline-default-deny-all":  "portal",
-		"baseline-allow-dns-egress":  "portal",
-		"p8c-portal-flows":           "portal",
-		"p8c-migrator-flows":         "portal",
-		"p8c-portal-dataplane-flows": "envoy-gateway-system",
+	contract, err := loadContract()
+	if err != nil {
+		return []string{"contract load: " + err.Error()}
 	}
-	if len(policies) != 6 {
-		errs = append(errs, "want 6 objects")
+	if len(policies) != len(contract) {
+		errs = append(errs, fmt.Sprintf("object count: got %d want %d", len(policies), len(contract)))
 	}
-	seen := map[string]bool{}
-	// exact allowed ipBlock egress tuples (CIDR -> allowed ports+proto)
-	allowedIP := map[string]map[string]bool{
-		"10.96.0.1/32":      {"443/TCP": true},
-		"172.30.140.101/32": {"6443/TCP": true},
-		"172.30.140.102/32": {"6443/TCP": true},
-		"172.30.140.103/32": {"6443/TCP": true},
-		"172.30.143.10/32":  {"443/TCP": true},
-	}
-	// allowed selector-based egress ports
-	allowedSelectorPorts := map[string]bool{
-		"53/TCP": true, "53/UDP": true, "5432/TCP": true, "8000/TCP": true,
-		"9187/TCP": true, "18000/TCP": true, "8080/TCP": true,
-	}
-	dataplaneLabels := []string{
-		"app.kubernetes.io/component",
-		"app.kubernetes.io/managed-by",
-		"app.kubernetes.io/name",
-		"gateway.envoyproxy.io/owning-gateway-name",
-		"gateway.envoyproxy.io/owning-gateway-namespace",
-	}
-	expectedTarget := map[string]map[string]string{
-		"p8c-cnpg-existing-flows":    {"cnpg.io/cluster": "portal-db", "cnpg.io/podRole": "instance"},
-		"p8c-portal-flows":           {"app.kubernetes.io/name": "pak-portal"},
-		"p8c-migrator-flows":         {"app.kubernetes.io/name": "pak-portal-migrator"},
-		"p8c-portal-dataplane-flows": {"app.kubernetes.io/component": "proxy", "app.kubernetes.io/managed-by": "envoy-gateway", "app.kubernetes.io/name": "envoy", "gateway.envoyproxy.io/owning-gateway-name": "portal-gateway", "gateway.envoyproxy.io/owning-gateway-namespace": "portal"},
-	}
-	baseline := map[string]bool{"baseline-default-deny-all": true, "baseline-allow-dns-egress": true}
-	checkPorts := func(ruleName string, ports []netv1.NetworkPolicyPort) {
-		for _, port := range ports {
-			if port.EndPort != nil {
-				errs = append(errs, ruleName+": endPort unsupported")
+	for _, want := range contract {
+		var got *netv1.NetworkPolicy
+		for i := range policies {
+			if policies[i].Name == want.Name && policies[i].Namespace == want.Namespace {
+				got = &policies[i]
+				break
 			}
-			if port.Port == nil {
-				errs = append(errs, ruleName+": port=nil unsupported")
-			}
-			if port.Port != nil && port.Port.Type != 0 {
-				errs = append(errs, ruleName+": named port unsupported")
-			}
+		}
+		if got == nil {
+			errs = append(errs, "missing object "+want.Namespace+"/"+want.Name)
+			continue
+		}
+		if !reflect.DeepEqual(*got, want) {
+			errs = append(errs, "spec mismatch for "+want.Namespace+"/"+want.Name)
 		}
 	}
 	for _, p := range policies {
-		if p.APIVersion != "networking.k8s.io/v1" || p.Kind != "NetworkPolicy" {
-			errs = append(errs, p.Name+": apiVersion/kind mismatch")
-		}
-		ns, ok := want[p.Name]
-		if !ok {
-			errs = append(errs, "unexpected policy "+p.Name)
-			continue
-		}
-		if p.Namespace != ns {
-			errs = append(errs, p.Name+": namespace "+p.Namespace+" want "+ns)
-		}
-		seen[p.Name] = true
-		// exact type-set
-		wantTypes := map[string]map[netv1.PolicyType]bool{
-			"p8c-cnpg-existing-flows":    {netv1.PolicyTypeIngress: true, netv1.PolicyTypeEgress: true},
-			"baseline-default-deny-all":  {netv1.PolicyTypeIngress: true, netv1.PolicyTypeEgress: true},
-			"baseline-allow-dns-egress":  {netv1.PolicyTypeEgress: true},
-			"p8c-portal-flows":           {netv1.PolicyTypeIngress: true, netv1.PolicyTypeEgress: true},
-			"p8c-migrator-flows":         {netv1.PolicyTypeEgress: true},
-			"p8c-portal-dataplane-flows": {netv1.PolicyTypeEgress: true},
-		}
-		types := map[netv1.PolicyType]bool{}
-		for _, typ := range p.Spec.PolicyTypes {
-			if types[typ] {
-				errs = append(errs, p.Name+": duplicate policyType "+string(typ))
-			}
-			types[typ] = true
-		}
-		exp := wantTypes[p.Name]
-		if len(types) != len(exp) {
-			errs = append(errs, p.Name+": policyType set mismatch")
-		} else {
-			for typ := range exp {
-				if !types[typ] {
-					errs = append(errs, p.Name+": missing policyType "+string(typ))
-				}
+		found := false
+		for _, w := range contract {
+			if p.Name == w.Name && p.Namespace == w.Namespace {
+				found = true
 			}
 		}
-		// target selector: baseline may be empty; others must match exact expected labels
-		if baseline[p.Name] {
-			if len(p.Spec.PodSelector.MatchLabels) != 0 || len(p.Spec.PodSelector.MatchExpressions) != 0 {
-				errs = append(errs, p.Name+": baseline target must be empty")
-			}
-		} else {
-			et := expectedTarget[p.Name]
-			if len(p.Spec.PodSelector.MatchLabels) != len(et) {
-				errs = append(errs, p.Name+": target selector mismatch")
-			} else {
-				for k, v := range et {
-					if p.Spec.PodSelector.MatchLabels[k] != v {
-						errs = append(errs, p.Name+": target label "+k+" mismatch")
-					}
-				}
-			}
-		}
-		// ingress rules
-		for _, ing := range p.Spec.Ingress {
-			if len(ing.From) == 0 {
-				errs = append(errs, p.Name+": unrestricted ingress (empty from)")
-			}
-			if len(ing.Ports) == 0 {
-				errs = append(errs, p.Name+": ingress rule with empty ports")
-			}
-			checkPorts(p.Name+" ingress", ing.Ports)
-			for _, from := range ing.From {
-				if from.IPBlock == nil && from.PodSelector == nil && from.NamespaceSelector == nil {
-					errs = append(errs, p.Name+": empty ingress peer {}")
-				}
-			}
-		}
-		// egress rules
-		for _, egr := range p.Spec.Egress {
-			if len(egr.To) == 0 {
-				errs = append(errs, p.Name+": unrestricted egress (empty to)")
-			}
-			if len(egr.Ports) == 0 {
-				errs = append(errs, p.Name+": egress rule with empty ports")
-			}
-			checkPorts(p.Name+" egress", egr.Ports)
-			for _, to := range egr.To {
-				if to.IPBlock != nil {
-					cidr := to.IPBlock.CIDR
-					if cidr == "" || !strings.HasSuffix(cidr, "/32") {
-						errs = append(errs, p.Name+": broad IPBlock "+cidr)
-						continue
-					}
-					ports, ok := allowedIP[cidr]
-					if !ok {
-						errs = append(errs, p.Name+": unexpected IPBlock "+cidr)
-						continue
-					}
-					for _, port := range egr.Ports {
-						if port.Port == nil || port.Port.Type != 0 {
-							continue
-						}
-						proto := "TCP"
-						if port.Protocol != nil {
-							proto = string(*port.Protocol)
-						}
-						key := strconv.Itoa(int(port.Port.IntVal)) + "/" + proto
-						if !ports[key] {
-							errs = append(errs, p.Name+": unexpected tuple "+cidr+":"+key)
-						}
-					}
-				} else if to.PodSelector != nil || to.NamespaceSelector != nil {
-					// selector-based egress: validate port/protocol against allowed set
-					for _, port := range egr.Ports {
-						if port.Port == nil || port.Port.Type != 0 {
-							continue
-						}
-						proto := "TCP"
-						if port.Protocol != nil {
-							proto = string(*port.Protocol)
-						}
-						key := strconv.Itoa(int(port.Port.IntVal)) + "/" + proto
-						if !allowedSelectorPorts[key] {
-							errs = append(errs, p.Name+": unexpected selector egress port "+key)
-						}
-					}
-					// required peer labels
-					if to.NamespaceSelector != nil && to.NamespaceSelector.MatchLabels["kubernetes.io/metadata.name"] == "kube-system" {
-						if to.PodSelector == nil || to.PodSelector.MatchLabels["k8s-app"] != "kube-dns" {
-							errs = append(errs, p.Name+": kube-system peer missing k8s-app=kube-dns")
-						}
-					}
-					if to.PodSelector != nil && to.PodSelector.MatchLabels["gateway.envoyproxy.io/owning-gateway-name"] == "portal-gateway" {
-						for _, lk := range dataplaneLabels {
-							if to.PodSelector.MatchLabels[lk] == "" {
-								errs = append(errs, p.Name+": dataplane peer missing label "+lk)
-							}
-						}
-					}
-				} else {
-					errs = append(errs, p.Name+": empty peer {}")
-				}
-			}
-		}
-	}
-	for name := range want {
-		if !seen[name] {
-			errs = append(errs, "missing policy "+name)
+		if !found {
+			errs = append(errs, "extra object "+p.Namespace+"/"+p.Name)
 		}
 	}
 	return errs
