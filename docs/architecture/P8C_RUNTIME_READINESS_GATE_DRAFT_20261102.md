@@ -8,53 +8,57 @@ RUNTIME_READINESS_GATE=NOT_AUTHORIZED_FOR_EXECUTION
 PHASE2_NEW_RUN_APPROVED=NO · NETPOL_APPROVED_FOR_APPLY=NO
 ```
 
-## RD-01 — WAL observation (cnpg_pg_stat_archiver_*) — числа и verdict
+## RD-01 — WAL observation: DESIGN_SELECTED / EXECUTION_NOT_AUTHORIZED
 
-Series (CNPG v1.30.1 default-monitoring.yaml, blob 91fc65b07b0b69c218c6eb407df004b808b510f7):
-`cnpg_pg_stat_archiver_archived_count`, `_failed_count`, `_last_archived_time`, `_last_failed_time`, `_stats_reset_time`.
+```text
+DESIGN_CHOICE=OPERATOR_PRIMARY_BOUND_DIRECT_EXPORTER
+ACCESS_METHOD=DESIGN_SELECTED / EXECUTION_NOT_AUTHORIZED
+```
 
-| Аспект | Значение (проектное, source-only) |
+- actor: авторизованный operator на node-01 (НЕ Portal application), через принятый key-only path.
+- binding: named `portal/portal-db` Cluster `.status.currentPrimary` → named Pod в portal → валидация
+  cluster identity/UID/текущего Pod IP → фиксированный HTTP `9187/metrics`. Каждый metric-sample
+  обрамляется metadata GET (Cluster + Pod); role/UID/IP/restart/reset change инвалидирует сравнение.
+- transport: HTTP (source-backed, config.go MetricsServiceURL + P8B). TLS НЕ подразумевается; DB TLS
+  contract (Service:5432 verify-full) НЕ ослабляется. Без redirects/exec/port-forward/SQL/new
+  Service/new collector/Secret read. Connectivity failure = INCONCLUSIVE/STOP (без альтернативных путей).
+
+**Согласованный бюджет (одна таблица):**
+
+| Параметр | Значение |
 |---|---|
-| endpoint (source-backed) | `http://portal-db-metrics.portal.svc:9187/metrics` (config.go default `MetricsServiceURL`; P8B historical HTTP). TLS в текущей конфигурации НЕ доказан → CA/SNI не изобретать; future compatibility: если endpoint станет TLS, verify без opportunistic HTTP fallback / verify=false, несовпадение → STOP |
-| actor | основной Hermes через принятый key-only operator path (не Portal Pod-IP) |
-| per-request timeout | 5s (metrics.go) |
-| max body / total bytes | 1 MiB на ответ (metrics.go) / ≤ 5 MiB всего |
-| N (samples) | 2 на стадию: baseline (до) + post-step (после); максимум 3 при неоднозначности |
-| W (hard deadline) | 5s на запрос; общая стадия-срок = deployment stage, не отдельный wall-clock |
-| I (interval baseline→post) | max(300s, длительность стадии), верхняя граница 600s (archive_timeout=300s; без бесконечного ожидания) |
-| freshness | last_archived_time сравнивается с baseline-значением этапа (не с GET-time) |
-| verdict PASS | archived_count вырос И last_archived_time > baseline last_archived_time |
-| verdict FAIL | failed_count вырос ИЛИ last_failed_time продвинулся (не маскировать за ростом archived_count) |
-| parse error/NaN | INCONCLUSIVE (не PASS, не FAIL) |
-| HTTP/network timeout | INCONCLUSIVE (retry в пределах W, затем INCONCLUSIVE) |
-| counter reset (stats_reset_time изменился) | INCONCLUSIVE (series restarted) |
-| role/UID/restart change | INCONCLUSIVE (backend сменился, не сравнивать как одну series) |
-| idle (нет роста) | INCONCLUSIVE/STOP (не force WAL, не бесконечное ожидание) |
-| запрет | без искусственного WAL switch/write/backup |
+| stages | S0 (baseline) + S1, S2a, S2b, S3, S4 (post-step) = 6 |
+| samples | 1 metric sample/stage = 6 metric GET; 2 metadata GET (Cluster+Pod) на sample = 12 metadata GET |
+| total GET | 18 (12 metadata + 6 metrics) |
+| per-request timeout | 5s (metrics + metadata) |
+| per-stage hard deadline | 30s (от первого metadata GET до завершения metric GET) |
+| retry | НЕТ (каждый GET один attempt; timeout → INCONCLUSIVE/STOP стадии) |
+| max body | metadata GET ≤ 256 KiB (typed projection), metric GET ≤ 1 MiB |
+| total bytes | 6×1 MiB + 12×256 KiB = 9 MiB |
+| total wall-time | ≤ 6 × 30s = 180s (при последовательных стадиях) |
+| projected metadata | Cluster: name/uid/status.currentPrimary/conditions; Pod: name/uid/labels(role)/status.podIP/status.containerStatuses |
 
-Стабильный backend между samples обязателен. archive_command = ограниченный proxy результата
-архивирования, НЕ независимый S3 readback и НЕ DNS proof; DNS resolution и S3-operation — разные факты.
+**Verdict (серии cnpg_pg_stat_archiver_*):**
+- PASS: archived_count вырос И last_archived_time > baseline-значение этапа, И last_archived_time
+  свидетельствует о СВЕЖЕМ post-step архиве (GET-time ≠ archive-time; clock/freshness tolerance: last_archived_time
+  в пределах (baseline, now], иначе INCONCLUSIVE).
+- FAIL: failed_count вырос ИЛИ last_failed_time продвинулся (не маскировать за ростом archived_count).
+- INCONCLUSIVE/STOP: parse error/NaN; HTTP/network timeout; stats_reset_time изменился; role/UID/restart;
+  idle (нет роста — не force WAL, не бесконечное ожидание).
+- primary-only sampling — выбранная политика сравнения; pinned query также допускает archive_mode=always
+  (не утверждать «meaningful ТОЛЬКО на primary»). CNPG ARCH-STATE остаётся отдельным от свежего WAL progress.
+- archive_command = ограниченный proxy; НЕ независимый S3 readback, НЕ DNS proof.
 
-**ACCESS_METHOD=UNRESOLVED** (частично): endpoint и series определены, но привязка к стабильному
-primary backend не решена. Метрика pg_stat_archiver meaningful только на primary; Service
-`portal-db-metrics` (selector `cnpg.io/cluster=portal-db`, deployment.yaml, PLANNED) round-robins и
-НЕ дискриминирует primary. Точный вопрос для Architect/Owner: механизм primary-bound metrics read —
-(a) первичный-selector Service/EndpointSlice, либо (b) operator-side read primary Pod metrics —
-без Portal Pod-IP pinning (DB contract) и без нового collector. До этого выбора read остаётся NOT_AUTHORIZED;
-все bounds/verdict/series выше завершены независимо.
+## RD-02 — baseline (PR-3/5/6 + HC-*) — без изменений
 
-## RD-02 — baseline (PR-3/5/6 + HC-*), без изменений
-
-PR-3/5/6 и HC-DB/ARCH-STATE/WAL-PROGRESS/OP/DNS/PORTAL/GW — по accepted plan; численные bounds
-наследуются (request timeout min(15s, remaining W); W=60/30/120s; I=10/5/10s; N=6; Gateway 120s×12).
-Эти проверки остаются NEW_PROPOSAL / NOT_AUTHORIZED. Execution wrapper — отдельный prerequisite.
+PR-3/5/6 + HC-* по accepted plan; bounds наследуются (request timeout min(15s, remaining W); W=60/30/120s;
+I=10/5/10s; N≤6; Gateway W=120s/I=10s/N≤12 в одном окне). NOT_AUTHORIZED. Execution wrapper — отдельный prerequisite.
 
 ## Статус
 ```text
 RUNTIME_READINESS_GATE_DRAFT=REVIEW_READY (DRAFT)
 METRIC_SOURCE_CHOICE=ACCEPTED_SOURCE_ONLY
-S3_WAL_OBSERVATION_METHOD=SOURCE_BOUND_PROPOSAL (bounds/verdict заполнены)
-ACCESS_METHOD=UNRESOLVED (primary-bound metrics read path; точный вопрос выше)
-EXTERNAL_PREREQUISITES: primary-bound metrics binding; безопасный execution wrapper.
+ACCESS_METHOD=DESIGN_SELECTED (OPERATOR_PRIMARY_BOUND_DIRECT_EXPORTER) / EXECUTION_NOT_AUTHORIZED
+EXTERNAL_PREREQUISITES: безопасный execution wrapper (metadata+metric GET projection).
 PHASE2_NEW_RUN_APPROVED=NO · NETPOL_APPROVED_FOR_APPLY=NO · P8C=NOT_FINAL_ACCEPTED
 ```
