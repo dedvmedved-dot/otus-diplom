@@ -1,0 +1,45 @@
+{
+  "utc": "2026-11-04T09:52:05.202029+00:00",
+  "inputs": [
+    {
+      "path": "review.md",
+      "sha256": "500b1de3b60fad31cdf41c21a8f54df256c131db59f68eec21967571e2b45349",
+      "bytes": 24364
+    },
+    {
+      "path": "PLAN.md",
+      "sha256": "a4ccbda4379483e08c9e13a44130df4820b0d02e33dbe43af53c85e2d376f31c",
+      "bytes": 13085
+    },
+    {
+      "path": "regression_test.py",
+      "sha256": "e2dfac066d0315a243907db2f604fd66226056db0b8481bebe9c907d14a9be75",
+      "bytes": 9953
+    },
+    {
+      "path": "regression-result.json",
+      "sha256": "f7febc75847d1f9103ecf4cb99280508d7971a85ed41abc1a320c98b422cd072",
+      "bytes": 21144
+    },
+    {
+      "path": "author-reexecution.json",
+      "sha256": "299de6be49efe512d52486a0259e4d2910302b9bc7d6793e22d5d4652967e53f",
+      "bytes": 4644
+    },
+    {
+      "path": "source-audit.json",
+      "sha256": "7eb70443d402653c5af7e2864178a018c40fb24a5fdefecbf5a5d68344b03f88",
+      "bytes": 7115
+    }
+  ],
+  "patterns": {
+    "private_key": "-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----",
+    "github_pat": "gh[pousr]_[A-Za-z0-9]{30,}",
+    "aws_key": "AKIA[0-9A-Z]{16}",
+    "jwt_value": "eyJ[A-Za-z0-9_-]{10,}\\.[A-Za-z0-9_-]{10,}\\.[A-Za-z0-9_-]{10,}",
+    "signed_query_value": "[?&](?:sig|token|jwt)=[A-Za-z0-9%_+./=-]{25,}"
+  },
+  "matches": [],
+  "result": "NO_MATCH",
+  "scope": "Only six new reviewer source/evidence files; output excluded from input. Does not certify all secrets absent. Synthetic regression canaries are fixtures, not real credentials."
+}

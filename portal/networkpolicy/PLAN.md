@@ -1,5 +1,17 @@
 # P8C NetworkPolicy plan (D1) — read-only preparation, not yet applied
 
+## Active Architect review — executable package 713a745 REWORK_REQUIRED
+
+Authority: docs/architecture/P8C_REVIEW_713a745_EXECUTABLE_RELEASE_READINESS_20261104.md.
+Original task: docs/architecture/P8C_EXECUTABLE_RELEASE_AND_READINESS_R1_TASK_20261104.md.
+Reviewed source: 713a745bc83ff7b90453c001f4f8d32914f9028b.
+SOURCE_WORK=IN_PROGRESS/PARTIAL; release/seed/readiness SOURCE_QUALIFIED=NO.
+PRIMARY HERMES continues ER-01..08 plus the complete original task without another permission request.
+Author tests 14+3 PASS reproduced; independent desired-contract regression: 22 methods, 29 failures.
+The existing accepted R4 policy/design/collector/app scope is unchanged. No execution gate is opened.
+No live/SSH/private-registry/workflow/CI/push/Owner helper/policy apply/production actions.
+P8C=NOT_FINAL_ACCEPTED; P8D-P8G/P9=NOT_AUTHORIZED.
+
 ## Active source task — executable release and readiness R1
 
 Authority: docs/architecture/P8C_EXECUTABLE_RELEASE_AND_READINESS_R1_TASK_20261104.md.

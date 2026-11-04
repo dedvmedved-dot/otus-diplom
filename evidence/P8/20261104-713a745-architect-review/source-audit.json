@@ -1,0 +1,215 @@
+{
+  "reviewed_sha": "713a745bc83ff7b90453c001f4f8d32914f9028b",
+  "audit_utc": "2026-11-04T09:46:58.800358+00:00",
+  "connector_files": [
+    {
+      "path": "evidence/P8/20261104T085300Z-p8c-executable-release-readiness-r1/pin-verification.json",
+      "blob": "482dfd64e2672a7bc437b6f0a305f524fe0154ec",
+      "sha256": "b709c24dea533a00bd8b7ded12743994653695f14a9bb6d7c59fb9df8c7c8443",
+      "connector_match": true
+    },
+    {
+      "path": "evidence/P8/20261104T085300Z-p8c-executable-release-readiness-r1/raw-transcript.txt",
+      "blob": "2b99a594bd33707363cf3d50440c4db50ed34a40",
+      "sha256": "8032b8ac8a0e8985c37355f56dcd180e493d583386b886bdc0c26e769ede10fb",
+      "connector_match": true
+    },
+    {
+      "path": "evidence/P8/20261104T085300Z-p8c-executable-release-readiness-r1/result.md",
+      "blob": "88ec1fbe83fbb78cb0cd4d77eca674ee9b28282d",
+      "sha256": "ef353c23fc08413c9b3164f747fa1ef1f10c6a85695551ce7ef4251c3529bc32",
+      "connector_match": true
+    },
+    {
+      "path": "evidence/P8/20261104T085300Z-p8c-executable-release-readiness-r1/scan-input-hashes.txt",
+      "blob": "08824504c80e0c05b269a8137efe88b592f952c8",
+      "sha256": "99f3a3ca1310bd71a95ed5a503b25add885de6fa022c46feeea829eceb4c6765",
+      "connector_match": true
+    },
+    {
+      "path": "evidence/P8/20261104T085300Z-p8c-executable-release-readiness-r1/secret-scan.txt",
+      "blob": "4c37cad6cd724b44b5852c60e97ad9c76b5a79d6",
+      "sha256": "7846a29b4bacc6a9d126ba86a79a7a92568316552eb44abb49380eb7a6f597d9",
+      "connector_match": true
+    },
+    {
+      "path": "evidence/P8/20261104T085300Z-p8c-executable-release-readiness-r1/source-manifest.json",
+      "blob": "7b93c209426260c66dd12f7cbceb419c162f86f6",
+      "sha256": "294b258de2ca8d36723f335235fbc42f6eb341b1ac5326e3a59e82a92267dce3",
+      "connector_match": true
+    },
+    {
+      "path": "portal/tools/p8c-portal-release.yml.template",
+      "blob": "836abf0a7e3abd17c2bcd81b3020439a44923f4b",
+      "sha256": "93a7e32fbc84c8cbbfbb5bd97650005836d9278c702c05577b9ac736701a48ac",
+      "connector_match": true
+    },
+    {
+      "path": "portal/tools/p8c-portal-seed.yml.template",
+      "blob": "e0ced267d7aea1396f94a5928d770909aad153b2",
+      "sha256": "e89771ec5147a9cc9d280d3f69a9fd9aa018684eec63099fbbc64babde83b21d",
+      "connector_match": true
+    },
+    {
+      "path": "portal/tools/pins.lock.json",
+      "blob": "4fb6f3531247c016d1d4d414eb7729988967e254",
+      "sha256": "b4f60edaae78aef79d6cfb3a2b47211a37315a6b579c6d0b10fcd542e2f13989",
+      "connector_match": true
+    },
+    {
+      "path": "portal/tools/readiness/readset.json",
+      "blob": "a4110e8f6b4ae46434568349b0d4622a237bb00c",
+      "sha256": "869018ae0774ca458635a5918fb8af7cdb682683b955a70bb9e3205d8b7753f9",
+      "connector_match": true
+    },
+    {
+      "path": "portal/tools/readiness/test_readiness.py",
+      "blob": "587e6fa60f27d26c3433e014f93a71f6340db3bf",
+      "sha256": "bc8fe3d191267019756a54933c239c929b737961ebb526189add9287eaa43fb4",
+      "connector_match": true
+    },
+    {
+      "path": "portal/tools/readiness/wrapper.py",
+      "blob": "c9d594a2bf468ecd465325c7177f736991e21f76",
+      "sha256": "6d4de9acb7ecf43378aff304b098941c12d91ee34709bcf75c111f77d101f7f0",
+      "connector_match": true
+    },
+    {
+      "path": "portal/tools/release_qualification.py",
+      "blob": "0ea147f73e4ba584f152fe179a150f278225cbec",
+      "sha256": "7932c9ff0ef90c69b2cfa58c30fbdc1de6dd89b42f817185fb2f3879587c9cef",
+      "connector_match": true
+    },
+    {
+      "path": "portal/tools/test_release_qualification.py",
+      "blob": "7ee8c6c416529e2ab6d94bd0f5d302dd2eb99a99",
+      "sha256": "2f9a4b0bdbb984cd6e6b627a96381c0f708dfcda40b37dfe60450e17aba1663c",
+      "connector_match": true
+    },
+    {
+      "path": "portal/tools/verify-pins.py",
+      "blob": "ea98bdcda8260ec84456928ee889611ad7711a6a",
+      "sha256": "81eb93fe0b88e813e375f8b12bd9f07e6e903d37d88f1f7c832eef713a1b2c02",
+      "connector_match": true
+    },
+    {
+      "path": "docs/architecture/P8C_EXECUTABLE_RELEASE_AND_READINESS_R1_TASK_20261104.md",
+      "blob": "626a88d3f68de139d55b829407ff3a0cd239e0d7",
+      "sha256": "0ae60910843edb9f27f0c261b475c625edd769b4bce9c3622b2fbffba21dec31",
+      "connector_match": true
+    },
+    {
+      "path": "portal/tools/release-check.py",
+      "blob": "88598da050c07c6475ebcafb793876567c730e87",
+      "sha256": "48ba1486de53729f9c24ad0a97d40ecd1f9870c67e61315e56b038f631451ef6",
+      "connector_match": true
+    },
+    {
+      "path": "portal/tools/install-verified-go.sh",
+      "blob": "2b6e0c9a0127ac0a641feef791f017d287719543",
+      "sha256": "3a34d349b33f032513a21fecd795eeb26129c511c21f3e02f8774b74e7f8d356",
+      "connector_match": true
+    },
+    {
+      "path": "portal/tools/test_release.py",
+      "blob": "cf31c99d9e9d152c8b267007744e19444f7debe9",
+      "sha256": "5ae16c313c3778879333a56db3f71639889d2646ded7b6df5909e0a69d6a4654",
+      "connector_match": true
+    }
+  ],
+  "manifest_checks": [
+    {
+      "path": "portal/tools/pins.lock.json",
+      "blob_match": true,
+      "sha256_match": true
+    },
+    {
+      "path": "portal/tools/verify-pins.py",
+      "blob_match": true,
+      "sha256_match": true
+    },
+    {
+      "path": "portal/tools/release_qualification.py",
+      "blob_match": true,
+      "sha256_match": true
+    },
+    {
+      "path": "portal/tools/test_release_qualification.py",
+      "blob_match": true,
+      "sha256_match": true
+    },
+    {
+      "path": "portal/tools/p8c-portal-seed.yml.template",
+      "blob_match": true,
+      "sha256_match": true
+    },
+    {
+      "path": "portal/tools/p8c-portal-release.yml.template",
+      "blob_match": true,
+      "sha256_match": true
+    },
+    {
+      "path": "portal/tools/readiness/readset.json",
+      "blob_match": true,
+      "sha256_match": true
+    },
+    {
+      "path": "portal/tools/readiness/wrapper.py",
+      "blob_match": true,
+      "sha256_match": true
+    },
+    {
+      "path": "portal/tools/readiness/test_readiness.py",
+      "blob_match": true,
+      "sha256_match": true
+    }
+  ],
+  "public_pin_evidence": {
+    "reported_verified": 10,
+    "independently_downloaded": false,
+    "source_sha_placeholder": "RECORDED_AT_COMMIT",
+    "signed_query_ids": [
+      {
+        "id": "buildkit",
+        "query_keys": [
+          "jwt",
+          "sig"
+        ],
+        "values_suppressed": true
+      },
+      {
+        "id": "rootlesskit",
+        "query_keys": [
+          "jwt",
+          "sig"
+        ],
+        "values_suppressed": true
+      },
+      {
+        "id": "syft",
+        "query_keys": [
+          "jwt",
+          "sig"
+        ],
+        "values_suppressed": true
+      },
+      {
+        "id": "trivy",
+        "query_keys": [
+          "jwt",
+          "sig"
+        ],
+        "values_suppressed": true
+      },
+      {
+        "id": "cosign",
+        "query_keys": [
+          "jwt",
+          "sig"
+        ],
+        "values_suppressed": true
+      }
+    ]
+  },
+  "frozen_boundary": "Only tools and new evidence changed in Connector commit diff. No app/policy/collector changes."
+}
