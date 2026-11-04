@@ -1,0 +1,26 @@
+SOURCE_SHA=8ffd45792123e8e2ae1ccdd330ee5e1d013523f9
+=== readiness ===
+
+OK
+aggregate=INCONCLUSIVE
+=== qualification ===
+Ran 3 tests in 0.041s
+
+OK
+=== release ===
+Ran 4 tests in 0.002s
+
+OK
+=== release negative ===
+Ran 7 tests in 0.596s
+
+OK
+=== qualification check ===
+{"errors": [], "qualified": true}
+=== pin verify ===
+postgres       VERIFIED
+cache: /tmp/p8c-pin-cache
+exit=0
+=== syntax ===
+bash_OK
+py_OK
