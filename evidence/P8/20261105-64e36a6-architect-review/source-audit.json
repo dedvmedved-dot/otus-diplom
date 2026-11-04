@@ -1,0 +1,112 @@
+[
+  {
+    "path": "docs/architecture/P8C_EXECUTABLE_RELEASE_READINESS_RUNBOOK_20261104.md",
+    "blob": "f5c6019f5598ce5459dae5ca7ea6633a89b859cd",
+    "sha256": "bac6dca99df8d28dcb67b493352e536ce1ae2ad52974cbec8b7a6c66369bc024"
+  },
+  {
+    "path": "evidence/P8/20261105-f783e1e-architect-review/regression_test.py",
+    "blob": "679d4e2fd39e8921ba1090d79b67ec6339344dad",
+    "sha256": "95a0769fd9e02e0c5fa4bd1790c8ad487ac93c8a205e0e12fd02c1b38dd9f516"
+  },
+  {
+    "path": "evidence/P8/20261105T000000Z-p8c-executable-package-completion-r2/raw-transcript.txt",
+    "blob": "01cc12a20bc801233e051c6031ad9127b65d673b",
+    "sha256": "533bcd3a86bcc4d136bba9b095e67ba7980167ab45b181e7c191f2090b9c7e2e"
+  },
+  {
+    "path": "evidence/P8/20261105T000000Z-p8c-executable-package-completion-r2/result.md",
+    "blob": "480865503c8437e53e362a6a04ac8698b5b49c95",
+    "sha256": "19c7c18eee3a200873659499585cb17fddff038d994695a52879c61be3630f8a"
+  },
+  {
+    "path": "evidence/P8/20261105T000000Z-p8c-executable-package-completion-r2/secret-scan.txt",
+    "blob": "5dc9a12778e25c9f955883f918354140a27a795a",
+    "sha256": "c28371fc7317649fb6515b62fdcb4759d14c6ef462b47c02e9163736ae8901fb"
+  },
+  {
+    "path": "evidence/P8/20261105T000000Z-p8c-executable-package-completion-r2/source-manifest.txt",
+    "blob": "e79ab5da98ad8df9eecd90158baa8fe12e4e2a9a",
+    "sha256": "8f54612d12150d9191e9ecab6580bad831853f9285023c92227ccfb9ffb0f9cb"
+  },
+  {
+    "path": "portal/networkpolicy/PLAN.md",
+    "blob": "ae001cb90662a4a685007db394d68cb297d48fbe",
+    "sha256": "68f1a4b5eb926bdec0f37d9b3351223f6383bc045f095b103c0aed3be93ba0ea"
+  },
+  {
+    "path": "portal/tools/Seed.Containerfile",
+    "blob": "44277837983b847ca03280774b2ff124aafc0ca5",
+    "sha256": "a1d484391abac0c07c71633b6926acb8fc9a5f6d0c2dee6d0c97b6b575504437"
+  },
+  {
+    "path": "portal/tools/install-verified-go.sh",
+    "blob": "2b6e0c9a0127ac0a641feef791f017d287719543",
+    "sha256": "3a34d349b33f032513a21fecd795eeb26129c511c21f3e02f8774b74e7f8d356"
+  },
+  {
+    "path": "portal/tools/p8c-portal-release.yml.template",
+    "blob": "836abf0a7e3abd17c2bcd81b3020439a44923f4b",
+    "sha256": "93a7e32fbc84c8cbbfbb5bd97650005836d9278c702c05577b9ac736701a48ac"
+  },
+  {
+    "path": "portal/tools/p8c-portal-seed.yml.template",
+    "blob": "4fe75664a2e60608ddc25c72ca71ef23641f627d",
+    "sha256": "569bbfd834e3d600e7e285f3bbdbfed88be78d3ab3a188ae8e9b1018d0d5737a"
+  },
+  {
+    "path": "portal/tools/pins.lock.json",
+    "blob": "4fb6f3531247c016d1d4d414eb7729988967e254",
+    "sha256": "b4f60edaae78aef79d6cfb3a2b47211a37315a6b579c6d0b10fcd542e2f13989"
+  },
+  {
+    "path": "portal/tools/readiness/readset.json",
+    "blob": "a4110e8f6b4ae46434568349b0d4622a237bb00c",
+    "sha256": "869018ae0774ca458635a5918fb8af7cdb682683b955a70bb9e3205d8b7753f9"
+  },
+  {
+    "path": "portal/tools/readiness/test_readiness.py",
+    "blob": "d1058f0259bb2817b9e359f94a66855d64102838",
+    "sha256": "875f47429401ac39509b9c4be1ec6d6bbe77504b501c3cab963ca5ac5d5871cd"
+  },
+  {
+    "path": "portal/tools/readiness/wal.py",
+    "blob": "8b39e7a647559cc72052c36cce8165470ca84c7e",
+    "sha256": "5a47cd957e9c05778dbe5a817027188d7f7ec5104f7798bb59a341159d9e403c"
+  },
+  {
+    "path": "portal/tools/readiness/wrapper.py",
+    "blob": "b9410ac4f82668fa973a7390c6e7a76039f801d0",
+    "sha256": "1ba3ca3b4d9627544e58b9a8ae3188e4eef915b5b6518183bdcb8529d9099e6c"
+  },
+  {
+    "path": "portal/tools/release-check.py",
+    "blob": "64f74ffed2a6ea62194a35622cd8c0f4e7089341",
+    "sha256": "b99da7e66eef97d8682c5d523f4931d35c52289a308bc21c1e2b8c365a2673fe"
+  },
+  {
+    "path": "portal/tools/release_qualification.py",
+    "blob": "ae24a1157d1fad5eb17056e4de72a3c24a9da17c",
+    "sha256": "ca0ecfcef7f60cb4ee80cfd778624e36b8cb19888ea3ea3212937aa6b9778c2b"
+  },
+  {
+    "path": "portal/tools/test_release.py",
+    "blob": "cf31c99d9e9d152c8b267007744e19444f7debe9",
+    "sha256": "5ae16c313c3778879333a56db3f71639889d2646ded7b6df5909e0a69d6a4654"
+  },
+  {
+    "path": "portal/tools/test_release_negative.py",
+    "blob": "6b948a750363158e49f5fb2b990aa289827c6452",
+    "sha256": "e8fdd943b5fc86523e9e91036dfa3532add6349a0bcbf972e5b401f4392ce902"
+  },
+  {
+    "path": "portal/tools/test_release_qualification.py",
+    "blob": "7ee8c6c416529e2ab6d94bd0f5d302dd2eb99a99",
+    "sha256": "2f9a4b0bdbb984cd6e6b627a96381c0f708dfcda40b37dfe60450e17aba1663c"
+  },
+  {
+    "path": "portal/tools/verify-pins.py",
+    "blob": "d1d30b68f9ed693c60834d18a9d2620907265e70",
+    "sha256": "3c5fbdc2f53fcce524fa1ee39f8d8b60887d82460fb613daf8d2da1e0480d768"
+  }
+]

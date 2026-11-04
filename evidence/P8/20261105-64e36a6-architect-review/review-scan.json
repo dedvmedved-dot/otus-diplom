@@ -1,0 +1,44 @@
+{
+  "utc": "2026-11-04T23:30:44.658617+00:00",
+  "method": "Python regex, frozen input files; output outside input set",
+  "patterns": {
+    "private-key": "-----BEGIN (?:OPENSSH |RSA |EC |DSA )?PRIVATE KEY-----",
+    "github-token": "\\bgh[pousr]_[A-Za-z0-9]{20,}",
+    "aws-key": "\\bAKIA[A-Z0-9]{16}\\b"
+  },
+  "inputs": [
+    {
+      "path": "review.md",
+      "bytes": 21022,
+      "sha256": "57a22ea7cdd2c599803fe448329fc3d68629d58e786c481a318d903ba44e43b5"
+    },
+    {
+      "path": "residual_test.py",
+      "bytes": 10180,
+      "sha256": "c7530b99806cd2effd12728e647d8f6cbeeabbd0c2ae401479c6f9d24270f282"
+    },
+    {
+      "path": "accepted-baseline.json",
+      "bytes": 1920,
+      "sha256": "bff0b83fc5c662e585e3d82d93acf95aa698ca0916fa349df23007da4cc7f409"
+    },
+    {
+      "path": "reexecution.json",
+      "bytes": 11023,
+      "sha256": "16db270add6aa8d52af7d44ce878b2bb7561a17483bc5182ec14040a24c813cf"
+    },
+    {
+      "path": "residual-execution.json",
+      "bytes": 19524,
+      "sha256": "023541e32662b6c91106fb9287ba207dc699c3b3c66b3138d42fc541389c4ade"
+    },
+    {
+      "path": "source-audit.json",
+      "bytes": 4568,
+      "sha256": "81609e198e3a5108896cbb124d25d02dae7b0525b058a054187510ff00a86e20"
+    }
+  ],
+  "findings": [],
+  "exit": 1,
+  "limits": "Heuristic only, not proof of absence. Synthetic URL canaries and fabricated digests deliberately appear in tests and execution logs; these are not credentials. No live responses or actual credentials collected."
+}

@@ -1,5 +1,14 @@
 # P8C NetworkPolicy plan (D1) — read-only preparation, not yet applied
 
+## R2 executable-package review — 2026-11-05
+
+Reviewed source 235b41295521096e308d545045f1eec3d256bec3; evidence 64e36a6ce8558a46547ab58bed90acf57bc5fafd.
+Authority: docs/architecture/P8C_REVIEW_64e36a6_EXECUTABLE_PACKAGE_R2_20261105.md.
+Author 37 methods and previous reviewer 28 methods independently PASS. Full C-01..08 closure NOT confirmed.
+Preserve confirmed fixes; PRIMARY HERMES continues existing completion task (940c4e7) through full positive routes and residual R2-01..08.
+SOURCE_WORK=IN_PROGRESS/PARTIAL. Execution gate NOT issued; accepted app/policy/collector/design untouched.
+
+
 ## Independent executable-package review — 2026-11-05
 
 Reviewed source: 8ffd45792123e8e2ae1ccdd330ee5e1d013523f9; evidence head: f783e1ed6d34de9188b71ad1f6bedf9ccdf1ec51.
