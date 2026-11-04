@@ -24,6 +24,11 @@ jobs:
     outputs:
       result: ${{ steps.pre.outputs.result }}
     steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+
       - name: Typed private-package precheck
         id: pre
         env:
@@ -69,8 +74,41 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Install rootlesskit + BuildKit (pinned, verified)
+        if: needs.precheck.outputs.result == 'CREATE_ALLOWED'
+        run: |
+          set -euo pipefail
+          sudo apt-get update && sudo apt-get install -y uidmap slirp4netns
+          curl -sSfL "https://github.com/rootless-containers/rootlesskit/releases/download/v2.3.1/rootlesskit-x86_64.tar.gz" -o rootlesskit.tar.gz
+          echo "caafdce18e0959f078b4b478d4f352ebf3d556e373265fc7831f1a6d70219ee0  rootlesskit.tar.gz" | sha256sum -c
+          tar -xzf rootlesskit.tar.gz && sudo mv rootlesskit rootlessctl rootlesskit-docker-proxy /usr/local/bin/
+          curl -sSfL "https://github.com/moby/buildkit/releases/download/v0.34.0/buildkit-v0.34.0.linux-amd64.tar.gz" -o buildkit.tar.gz
+          echo "14813b1fb2a40082114e6d386c6fc5e7dd5298176ce7ee1a18bc33e73e109ac3  buildkit.tar.gz" | sha256sum -c
+          tar -xzf buildkit.tar.gz && sudo install -m 0755 bin/buildctl bin/buildkitd /usr/local/bin/
+
+      - name: Start rootless BuildKit (bounded readiness + cleanup)
+        if: needs.precheck.outputs.result == 'CREATE_ALLOWED'
+        env:
+          BUILDKIT_HOST: unix:///tmp/seed-buildkit.sock
+        run: |
+          set -euo pipefail
+          unshare -Ur true || { echo "STOP: user namespaces unavailable"; exit 1; }
+          rootlesskit --net=slirp4netns --copy-up=/etc --copy-up=/run \
+            buildkitd --oci-worker-no-process-sandbox --addr unix:///tmp/seed-buildkit.sock > /tmp/seed-buildkitd.log 2>&1 &
+          BK_PID=$!
+          trap 'kill $BK_PID 2>/dev/null || true' EXIT
+          READY=0
+          for i in $(seq 1 30); do
+            if buildctl --addr unix:///tmp/seed-buildkit.sock debug workers >/dev/null 2>&1; then READY=1; break; fi
+            sleep 1
+          done
+          if [ "$READY" != "1" ]; then echo "buildkitd not ready after 30s"; tail -20 /tmp/seed-buildkitd.log; exit 1; fi
+          echo "BUILDKIT_READY=1" >> "$GITHUB_ENV"
+
       - name: Build + push minimal seed (bootstrap-only, not deployable)
         if: needs.precheck.outputs.result == 'CREATE_ALLOWED'
+        env:
+          BUILDKIT_HOST: unix:///tmp/seed-buildkit.sock
         run: |
           set -euo pipefail
           printf 'bootstrap-only seed, not deployable\n' > seed.txt
