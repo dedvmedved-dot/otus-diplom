@@ -25,6 +25,7 @@ jobs:
   test:
     if: github.repository == 'dedvmedved-dot/otus-diplom' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     services:
       postgres:
         image: postgres:17.10-bookworm@sha256:9b18b78397054fce88a9552e9d5a3ad5bb7fd258c5b3cc1c5028e46373d6ea8f
@@ -93,6 +94,7 @@ jobs:
     if: github.repository == 'dedvmedved-dot/otus-diplom' && github.ref == 'refs/heads/main'
     needs: test
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     # Minimal, job-scoped elevation: only the release job may push packages and
     # request OIDC for keyless signing. The test job keeps the repo-wide
     # contents:read and nothing else.

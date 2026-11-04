@@ -1,0 +1,73 @@
+# P8C Portal private-seed bootstrap workflow — TEMPLATE (NOT published to .github/workflows).
+# Separate one-shot Owner-authorized bootstrap. Seed is NOT the Portal release, NOT deployable.
+# Exact target: ghcr.io/dedvmedved-dot/otus-diplom-portal (private container package).
+# Uses the automatically-issued GITHUB_TOKEN (packages:write on the release job only).
+# No PAT, no workflow-token, no public-package workaround, no cluster credentials.
+name: p8c-portal-seed
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE: ghcr.io/dedvmedved-dot/otus-diplom-portal
+  SEED_TAG: bootstrap-seed
+
+jobs:
+  seed:
+    if: github.repository == 'dedvmedved-dot/otus-diplom' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+
+      # Precondition: an existing exact private associated package is a confirmed no-op/reuse.
+      # A public/wrong-association/ambiguous 404 MUST stop here (separate Owner confirmation
+      # is required for first creation). This step only checks; it does not create silently.
+      - name: Seed precondition (existing private package or explicit first-creation basis)
+        run: |
+          set -euo pipefail
+          python3 portal/tools/release-check.py private > "$RUNNER_TEMP/private-before.json" \
+            || { echo "STOP: no confirmed private package or Owner first-creation basis"; exit 1; }
+
+      - name: Login to GHCR
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Minimal fixed seed artifact (NOT the Portal binary, no secrets, bootstrap-only).
+      - name: Build + push minimal seed (bootstrap-only, not deployable)
+        run: |
+          set -euo pipefail
+          printf 'bootstrap-only seed, not deployable\n' > seed.txt
+          # OCI image layout: FROM scratch, single file, labelled not-deployable.
+          buildctl build --frontend=dockerfile.v0 --opt filename=Seed.Containerfile \
+            --local context=. --local dockerfile=. \
+            --output type=image,name=${IMAGE}:${SEED_TAG},push=true \
+            --metadata-file "$RUNNER_TEMP/seed-metadata.json"
+          python3 portal/tools/release-check.py digest "$RUNNER_TEMP/seed-metadata.json" > "$RUNNER_TEMP/seed-digest.txt"
+          echo "SEED_DIGEST=$(cat "$RUNNER_TEMP/seed-digest.txt")" >> "$GITHUB_ENV"
+
+      - name: Record seed digest + visibility + association (evidence only)
+        run: |
+          set -euo pipefail
+          python3 portal/tools/release-check.py private > "$RUNNER_TEMP/private-after.json"
+          echo "SEED_DIGEST=${SEED_DIGEST}" >> "$RUNNER_TEMP/seed-evidence.json"
+          echo "SEED_NOT_DEPLOYABLE=true" >> "$RUNNER_TEMP/seed-evidence.json"
+
+      - name: Upload seed evidence
+        if: always()
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        with:
+          name: portal-seed-evidence
+          if-no-files-found: error
+          path: ${{ runner.temp }}/seed-*.json

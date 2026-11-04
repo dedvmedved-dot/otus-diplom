@@ -1,0 +1,79 @@
+{
+  "source_sha": "RECORDED_AT_COMMIT",
+  "results": [
+    {
+      "id": "go",
+      "status": "VERIFIED",
+      "declared": "65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40",
+      "actual": "65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40",
+      "bytes": 70588678,
+      "final_url": "https://dl.google.com/go/go1.27.3.linux-amd64.tar.gz"
+    },
+    {
+      "id": "buildkit",
+      "status": "VERIFIED",
+      "declared": "14813b1fb2a40082114e6d386c6fc5e7dd5298176ce7ee1a18bc33e73e109ac3",
+      "actual": "14813b1fb2a40082114e6d386c6fc5e7dd5298176ce7ee1a18bc33e73e109ac3",
+      "bytes": 92179945,
+      "final_url": "https://release-assets.githubusercontent.com/github-production-release-asset/92969352/c020259a-52f7-42c5-b099-fc29130b8a56?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-11-04T09%3A43%3A42Z&rscd=attachment%3B+filename%3Dbuildkit-v0.34.0.linux-amd64.tar.gz&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-11-04T08%3A42%3A43Z&ske=2026-11-04T09%3A43%3A42Z&sks=b&skv=2018-11-09&sig=N1ANDY%2BY2PT8LA783SJylqtns4Hl7eDwNseY9meSXiw%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc5Mzc4Mzc1NSwibmJmIjoxNzkzNzgxOTU1LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.R6HGFhfzVW5TJ-9pNQFyxybVn72sN0j8xX3585QR2p0&response-content-disposition=attachment%3B%20filename%3Dbuildkit-v0.34.0.linux-amd64.tar.gz&response-content-type=application%2Foctet-stream"
+    },
+    {
+      "id": "rootlesskit",
+      "status": "VERIFIED",
+      "declared": "caafdce18e0959f078b4b478d4f352ebf3d556e373265fc7831f1a6d70219ee0",
+      "actual": "caafdce18e0959f078b4b478d4f352ebf3d556e373265fc7831f1a6d70219ee0",
+      "bytes": 18285499,
+      "final_url": "https://release-assets.githubusercontent.com/github-production-release-asset/135564955/392e6d15-f835-40fd-b48a-cd98abe164c5?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-11-04T09%3A42%3A17Z&rscd=attachment%3B+filename%3Drootlesskit-x86_64.tar.gz&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-11-04T08%3A41%3A41Z&ske=2026-11-04T09%3A42%3A17Z&sks=b&skv=2018-11-09&sig=9%2BXESce9Uzr%2F%2FHZCf6m5N%2F%2BjwsT8CAeH3vyeiXMUT2I%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc5Mzc4Mzc1NSwibmJmIjoxNzkzNzgxOTU1LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.R6HGFhfzVW5TJ-9pNQFyxybVn72sN0j8xX3585QR2p0&response-content-disposition=attachment%3B%20filename%3Drootlesskit-x86_64.tar.gz&response-content-type=application%2Foctet-stream"
+    },
+    {
+      "id": "syft",
+      "status": "VERIFIED",
+      "declared": "bb65249542db5fedeeb4d3f9b018b75e7264dbfbbb10486f044581a92f90490d",
+      "actual": "bb65249542db5fedeeb4d3f9b018b75e7264dbfbbb10486f044581a92f90490d",
+      "bytes": 31198534,
+      "final_url": "https://release-assets.githubusercontent.com/github-production-release-asset/262126497/476e4bec-0f7d-46dd-8cfc-e77c3359f2b9?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-11-04T09%3A42%3A31Z&rscd=attachment%3B+filename%3Dsyft_1.55.0_linux_amd64.tar.gz&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-11-04T08%3A42%3A02Z&ske=2026-11-04T09%3A42%3A31Z&sks=b&skv=2018-11-09&sig=OkP1LS2jSnlrlb7OrYWKWsFmdVOBfaw2qualVTo5HN4%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc5Mzc4Mzc4OSwibmJmIjoxNzkzNzgxOTg5LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.DTRnCGz-9L-o70yTJDkV2kiNDR42AXEZ0txqCnut3as&response-content-disposition=attachment%3B%20filename%3Dsyft_1.55.0_linux_amd64.tar.gz&response-content-type=application%2Foctet-stream"
+    },
+    {
+      "id": "trivy",
+      "status": "VERIFIED",
+      "declared": "e24b1c51293c1b15e4ba8d45bbc7891ba053f90278ec2698f3562c993e145fe7",
+      "actual": "e24b1c51293c1b15e4ba8d45bbc7891ba053f90278ec2698f3562c993e145fe7",
+      "bytes": 52253735,
+      "final_url": "https://release-assets.githubusercontent.com/github-production-release-asset/180687624/79cd4c04-8d72-49c0-ae18-2989693bbbcb?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-11-04T09%3A41%3A45Z&rscd=attachment%3B+filename%3Dtrivy_0.76.0_Linux-64bit.tar.gz&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-11-04T08%3A41%3A21Z&ske=2026-11-04T09%3A41%3A45Z&sks=b&skv=2018-11-09&sig=b%2BBzocioeRA3OA30%2BRluCLyNzBei10u75keuS1P%2BhP0%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc5Mzc4Mzc1NSwibmJmIjoxNzkzNzgxOTU1LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.R6HGFhfzVW5TJ-9pNQFyxybVn72sN0j8xX3585QR2p0&response-content-disposition=attachment%3B%20filename%3Dtrivy_0.76.0_Linux-64bit.tar.gz&response-content-type=application%2Foctet-stream"
+    },
+    {
+      "id": "cosign",
+      "status": "VERIFIED",
+      "declared": "4629c757b7618056f8ddd7e2625ae9fdd94c0372a65049520bc7d9df9efc7f71",
+      "actual": "4629c757b7618056f8ddd7e2625ae9fdd94c0372a65049520bc7d9df9efc7f71",
+      "bytes": 141178250,
+      "final_url": "https://release-assets.githubusercontent.com/github-production-release-asset/335952417/ce533772-8c42-44e7-af00-a5115f4e27d7?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-11-04T09%3A41%3A32Z&rscd=attachment%3B+filename%3Dcosign-linux-amd64&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-11-04T08%3A41%3A03Z&ske=2026-11-04T09%3A41%3A32Z&sks=b&skv=2018-11-09&sig=q%2FccdLTZ2q4JvjoW5dzXVoARtxYqZsOQXHgObY79bvs%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc5Mzc4NTU1NiwibmJmIjoxNzkzNzgxOTU2LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.6NYtfeQyfRy_toSljX8wXQveZN-RjcFSvoC1Ux4joGM&response-content-disposition=attachment%3B%20filename%3Dcosign-linux-amd64&response-content-type=application%2Foctet-stream"
+    },
+    {
+      "id": "checkout",
+      "status": "VERIFIED",
+      "commit_sha": "11bd71901bbe5b1630ceea73d27597364c9af683",
+      "tag_annotation_not_authoritative": "v4.2.2"
+    },
+    {
+      "id": "upload-artifact",
+      "status": "VERIFIED",
+      "commit_sha": "65462800fd760344b1a7b4382951275a0abb4808",
+      "tag_annotation_not_authoritative": "v4.3.3"
+    },
+    {
+      "id": "login-action",
+      "status": "VERIFIED",
+      "commit_sha": "9780b0c442fbb1117ed29e0efdff1e18412f7567",
+      "tag_annotation_not_authoritative": "v3.3.0"
+    },
+    {
+      "id": "postgres",
+      "status": "VERIFIED",
+      "ref": "postgres:17.10-bookworm",
+      "declared": "sha256:9b18b78397054fce88a9552e9d5a3ad5bb7fd258c5b3cc1c5028e46373d6ea8f",
+      "manifest_sha256": "sha256:9b18b78397054fce88a9552e9d5a3ad5bb7fd258c5b3cc1c5028e46373d6ea8f",
+      "http": 200
+    }
+  ]
+}

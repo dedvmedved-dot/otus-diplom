@@ -1,0 +1,24 @@
+{
+  "task": "P8C-R1-EXECUTABLE-RELEASE-AND-READINESS-R1",
+  "recovery_main_sha": "5d71dfc345cfacfe98bff42381b7aa36984a7bed",
+  "python": "3.11.15",
+  "files": [
+    {"path": "portal/tools/pins.lock.json", "blob": "4fb6f3531247c016d1d4d414eb7729988967e254", "sha256": "b4f60edaae78aef79d6cfb3a2b47211a37315a6b579c6d0b10fcd542e2f13989", "role": "declared pins"},
+    {"path": "portal/tools/verify-pins.py", "blob": "ea98bdcda8260ec84456928ee889611ad7711a6a", "sha256": "81eb93fe0b88e813e375f8b12bd9f07e6e903d37d88f1f7c832eef713a1b2c02", "role": "public pin verification (G1)"},
+    {"path": "portal/tools/release_qualification.py", "blob": "0ea147f73e4ba584f152fe179a150f278225cbec", "sha256": "7932c9ff0ef90c69b2cfa58c30fbdc1de6dd89b42f817185fb2f3879587c9cef", "role": "release/seed template qualification (G2/G3)"},
+    {"path": "portal/tools/test_release_qualification.py", "blob": "7ee8c6c416529e2ab6d94bd0f5d302dd2eb99a99", "sha256": "2f9a4b0bdbb984cd6e6b627a96381c0f708dfcda40b37dfe60450e17aba1663c", "role": "qualification offline tests"},
+    {"path": "portal/tools/p8c-portal-seed.yml.template", "blob": "e0ced267d7aea1396f94a5928d770909aad153b2", "sha256": "e89771ec5147a9cc9d280d3f69a9fd9aa018684eec63099fbbc64babde83b21d", "role": "private seed workflow template (G3)"},
+    {"path": "portal/tools/p8c-portal-release.yml.template", "blob": "836abf0a7e3abd17c2bcd81b3020439a44923f4b", "sha256": "93a7e32fbc84c8cbbfbb5bd97650005836d9278c702c05577b9ac736701a48ac", "role": "release workflow template (G2, +timeout-minutes)"},
+    {"path": "portal/tools/readiness/readset.json", "blob": "a4110e8f6b4ae46434568349b0d4622a237bb00c", "sha256": "869018ae0774ca458635a5918fb8af7cdb682683b955a70bb9e3205d8b7753f9", "role": "declarative read-set (G4)"},
+    {"path": "portal/tools/readiness/wrapper.py", "blob": "c9d594a2bf468ecd465325c7177f736991e21f76", "sha256": "6d4de9acb7ecf43378aff304b098941c12d91ee34709bcf75c111f77d101f7f0", "role": "readiness wrapper (G4)"},
+    {"path": "portal/tools/readiness/test_readiness.py", "blob": "587e6fa60f27d26c3433e014f93a71f6340db3bf", "sha256": "bc8fe3d191267019756a54933c239c929b737961ebb526189add9287eaa43fb4", "role": "readiness offline tests (G5)"}
+  ],
+  "public_pins_verification": {
+    "go": "VERIFIED", "buildkit": "VERIFIED", "rootlesskit": "VERIFIED", "syft": "VERIFIED",
+    "trivy": "VERIFIED", "cosign": "VERIFIED", "checkout": "VERIFIED", "upload-artifact": "VERIFIED",
+    "login-action": "VERIFIED", "postgres": "VERIFIED"
+  },
+  "secret_scan": {"scanner": "grep (GNU grep) 3.11", "exit": 1, "exit_meaning": "1=no-match (0=match, 2=error)", "matches": 0, "scope": "9 frozen source files", "output": "outside input set (/tmp)", "limits": "heuristic != proof of absence"},
+  "not_executed": ["CI release", "workflow publication/dispatch", "seed push", "live readiness", "NetworkPolicy apply", "production migration/deployment", "Owner helpers", "private registry probes"],
+  "accepted_not_reopened": ["candidate NP-01..04", "accepted-policy-contract", "inventory 9/9", "offline design", "app/DB migrations", "PG17 integration", "failover/PITR"]
+}

@@ -1,0 +1,12 @@
+=== readiness offline tests ===
+
+OK
+aggregate=INCONCLUSIVE
+=== release/seed qualification ===
+Ran 3 tests in 0.032s
+
+OK
+=== qualification check ===
+{"errors": [], "qualified": true}
+=== shell syntax ===
+install-verified-go.sh OK

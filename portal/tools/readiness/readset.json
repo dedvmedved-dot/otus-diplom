@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "context": "kubernetes-admin@pak-portal",
+  "reads": {
+    "PR-3": {"method": "kubectl", "path": "/apis/discovery.k8s.io/v1/namespaces/default/endpointslices?labelSelector=kubernetes.io%2Fservice-name%3Dkubernetes&limit=200", "stages": ["S0"], "max_items": 200, "bytes": 1048576},
+    "PR-5": {"method": "kubectl", "path": "/api/v1/namespaces/envoy-gateway-system/services?labelSelector=gateway.envoyproxy.io%2Fowning-gateway-name%3Dportal-gateway%2Cgateway.envoyproxy.io%2Fowning-gateway-namespace%3Dportal&limit=2", "stages": ["S4"], "max_items": 1, "bytes": 1048576},
+    "PR-6": {"method": "kubectl", "paths": [
+      "/apis/networking.k8s.io/v1/networkpolicies?limit=200",
+      "/apis/crd.projectcalico.org/v1/networkpolicies?limit=200",
+      "/apis/crd.projectcalico.org/v1/globalnetworkpolicies?limit=200",
+      "/apis/crd.projectcalico.org/v1/hostendpoints?limit=200",
+      "/apis/policy.networking.k8s.io/v1alpha2/clusternetworkpolicies?limit=200",
+      "/apis/crd.projectcalico.org/v1/tiers?limit=200",
+      "/apis/crd.projectcalico.org/v1/felixconfigurations?limit=200",
+      "/api/v1/namespaces?limit=200",
+      "/api/v1/pods?limit=200"
+    ], "stages": ["S0"], "max_items": 200, "bytes": 1048576},
+    "HC-DB": {"method": "kubectl", "path": "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db", "stages": ["S0","S1","S2a","S2b","S3","S4"], "bytes": 1048576},
+    "HC-ARCH-STATE": {"method": "kubectl", "path": "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db", "stages": ["S0","S1","S2a","S2b","S3","S4"], "bytes": 1048576},
+    "HC-OP": {"method": "kubectl", "path": "/api/v1/namespaces/cnpg-system/pods?labelSelector=app.kubernetes.io%2Fname%3Dcloudnative-pg&limit=200", "stages": ["S0","S1","S2a","S2b","S3","S4"], "max_items": 200, "bytes": 1048576},
+    "HC-DNS": {"method": "kubectl", "path": "/apis/discovery.k8s.io/v1/namespaces/kube-system/endpointslices?labelSelector=kubernetes.io%2Fservice-name%3Dkube-dns&limit=200", "stages": ["S0","S1","S2a","S2b","S3","S4"], "max_items": 200, "bytes": 1048576},
+    "HC-PORTAL": {"method": "kubectl", "path": "/apis/apps/v1/namespaces/portal/deployments/portal", "stages": ["S3","S4"], "bytes": 1048576},
+    "HC-GW": {"method": "kubectl", "path": "/apis/gateway.networking.k8s.io/v1/namespaces/portal/gateways/portal-gateway", "stages": ["S4"], "bytes": 1048576},
+    "HC-WAL-PROGRESS": {"method": "wal", "stages": ["S0","S1","S2a","S2b","S3","S4"], "bytes": 2097152}
+  }
+}
