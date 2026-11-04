@@ -28,16 +28,26 @@ jobs:
           persist-credentials: false
           ref: ${{ github.sha }}
 
-      # Precondition: an existing exact private associated package is a confirmed no-op/reuse.
-      # A public/wrong-association/ambiguous 404 MUST stop here (separate Owner confirmation
-      # is required for first creation). This step only checks; it does not create silently.
-      - name: Seed precondition (existing private package or explicit first-creation basis)
+      # Precondition: existing exact private associated package => NOOP/REUSE (no push).
+      # Public/wrong-association/ambiguous 404 => STOP. A separate Owner-confirmed
+      # first-creation basis is required before any first push.
+      - name: Seed precondition (private package or explicit Owner first-creation basis)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          python3 portal/tools/release-check.py private > "$RUNNER_TEMP/private-before.json" \
-            || { echo "STOP: no confirmed private package or Owner first-creation basis"; exit 1; }
+          if python3 portal/tools/release-check.py private > "$RUNNER_TEMP/private-before.json" 2>/dev/null; then
+            echo "NOOP: existing private associated package; no seed push required"
+            echo "{\"seed\":\"REUSE_EXISTING_PRIVATE_PACKAGE\",\"not_deployable\":true}" > "$RUNNER_TEMP/seed-evidence.json"
+            exit 0
+          fi
+          if [ "${SEED_FIRST_CREATION_APPROVED:-}" != "true" ]; then
+            echo "STOP: no confirmed private package and no Owner first-creation basis"; exit 1
+          fi
+          echo "first-creation approved by separate Owner gate"
 
       - name: Login to GHCR
+        if: ${{ ! startsWith(github.event.repository.full_name, 'noop') }}
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
         with:
           registry: ghcr.io
@@ -46,10 +56,10 @@ jobs:
 
       # Minimal fixed seed artifact (NOT the Portal binary, no secrets, bootstrap-only).
       - name: Build + push minimal seed (bootstrap-only, not deployable)
+        if: ${{ ! startsWith(github.event.repository.full_name, 'noop') }}
         run: |
           set -euo pipefail
           printf 'bootstrap-only seed, not deployable\n' > seed.txt
-          # OCI image layout: FROM scratch, single file, labelled not-deployable.
           buildctl build --frontend=dockerfile.v0 --opt filename=Seed.Containerfile \
             --local context=. --local dockerfile=. \
             --output type=image,name=${IMAGE}:${SEED_TAG},push=true \
@@ -57,12 +67,14 @@ jobs:
           python3 portal/tools/release-check.py digest "$RUNNER_TEMP/seed-metadata.json" > "$RUNNER_TEMP/seed-digest.txt"
           echo "SEED_DIGEST=$(cat "$RUNNER_TEMP/seed-digest.txt")" >> "$GITHUB_ENV"
 
-      - name: Record seed digest + visibility + association (evidence only)
+      - name: Record seed digest + visibility + association (typed evidence)
+        if: ${{ ! startsWith(github.event.repository.full_name, 'noop') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           python3 portal/tools/release-check.py private > "$RUNNER_TEMP/private-after.json"
-          echo "SEED_DIGEST=${SEED_DIGEST}" >> "$RUNNER_TEMP/seed-evidence.json"
-          echo "SEED_NOT_DEPLOYABLE=true" >> "$RUNNER_TEMP/seed-evidence.json"
+          python3 -c "import json,sys,os; json.dump({'seed_digest': os.environ.get('SEED_DIGEST',''), 'not_deployable': True}, open(os.environ['RUNNER_TEMP']+'/seed-evidence.json','w'))"
 
       - name: Upload seed evidence
         if: always()

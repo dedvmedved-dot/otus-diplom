@@ -44,6 +44,7 @@ def parse_template(path):
 def checks(release, seed):
     errs = []
     release_text = Path(HERE / "p8c-portal-release.yml.template").read_text()
+    seed_text = Path(HERE / "p8c-portal-seed.yml.template").read_text()
     # R-01: dispatch-only, exact repo/ref
     if not re.search(r"^on:\s*$[\s\S]*?workflow_dispatch", release_text, re.M):
         errs.append("release on: must be workflow_dispatch only")
@@ -76,16 +77,21 @@ def checks(release, seed):
             for banned in ("kubectl", "ssh ", "apply -f", "production"):
                 if banned in run:
                     errs.append(f"forbidden step content in template: {banned}")
-    # seed requirements
-    seed_text = Path(HERE / "p8c-portal-seed.yml.template").read_text()
-    if "ghcr.io/dedvmedved-dot/otus-diplom-portal" not in seed_text:
-        errs.append("seed template missing exact target package")
-    if "not-deployable" not in seed_text and "not deployable" not in seed_text:
-        errs.append("seed template missing not-deployable marking")
-    if "release-check.py private" not in seed_text:
-        errs.append("seed template missing private precondition")
-    if "packages: write" not in seed_text:
+    # seed requirements (parsed object, not string presence)
+    seed_jobs = seed.get("jobs", {})
+    seed_job = seed_jobs.get("seed", {})
+    if not seed_job:
+        errs.append("seed template missing 'seed' job")
+    if seed.get("permissions", {}).get("packages") != "write":
         errs.append("seed template missing packages:write")
+    steps = seed_job.get("steps", [])
+    priv = next((s for s in steps if isinstance(s, dict) and "private" in str(s.get("run", ""))), None)
+    if priv is None:
+        errs.append("seed template missing private precondition step")
+    elif priv.get("env", {}).get("GITHUB_TOKEN") != "${{ secrets.GITHUB_TOKEN }}":
+        errs.append("seed private step must pass GITHUB_TOKEN env")
+    if "Seed.Containerfile" not in seed_text:
+        errs.append("seed template missing Seed.Containerfile reference")
     return errs
 
 

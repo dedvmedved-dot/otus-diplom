@@ -14,6 +14,7 @@ import hashlib
 import json
 import os
 import sys
+import time
 import urllib.request
 
 LOCK = os.path.join(os.path.dirname(__file__), "pins.lock.json")
@@ -54,6 +55,13 @@ def sha256(b):
     return hashlib.sha256(b).hexdigest()
 
 
+def sanitize_url(url):
+    # Strip query/fragment/userinfo; keep scheme+host+path only (no signed CDN params persisted).
+    import urllib.parse as up
+    p = up.urlsplit(url)
+    return up.urlunsplit((p.scheme, p.hostname or "", p.path, "", ""))
+
+
 def verify_binary(pin):
     os.makedirs(CACHE, exist_ok=True)
     dest = os.path.join(CACHE, pin["id"] + ".dl")
@@ -62,14 +70,11 @@ def verify_binary(pin):
         actual = sha256(body)
         open(dest, "wb").write(body)
         if status != 200:
-            return {"id": pin["id"], "status": "UNAVAILABLE", "http": status, "final_url": final}
-        if actual == pin["sha256"]:
-            verdict = "VERIFIED"
-        else:
-            verdict = "MISMATCH"
-        return {"id": pin["id"], "status": verdict, "declared": pin["sha256"], "actual": actual, "bytes": len(body), "final_url": final}
+            return {"id": pin["id"], "status": "UNAVAILABLE", "http": status, "final_url": sanitize_url(final), "utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
+        verdict = "VERIFIED" if actual == pin["sha256"] else "MISMATCH"
+        return {"id": pin["id"], "status": verdict, "declared": pin["sha256"], "actual": actual, "bytes": len(body), "final_url": sanitize_url(final), "utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
     except Exception as e:
-        return {"id": pin["id"], "status": "UNAVAILABLE", "error": type(e).__name__ + ": " + str(e)[:200]}
+        return {"id": pin["id"], "status": "UNAVAILABLE", "error": type(e).__name__ + ": " + str(e)[:200], "utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
 
 
 def verify_action(pin):
@@ -114,6 +119,8 @@ def main():
     for r in results:
         print(f"{r['id']:14} {r['status']}")
     print("cache:", CACHE)
+    # explicit aggregate failure: any non-VERIFIED => nonzero exit
+    return 0 if all(r["status"] == "VERIFIED" for r in results) else 1
 
 
 if __name__ == "__main__":
