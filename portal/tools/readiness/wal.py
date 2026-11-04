@@ -11,6 +11,8 @@ provide bypass flags.
 """
 import hashlib
 import json
+import math
+import re
 import time
 
 PASS = "PASS"
@@ -85,29 +87,56 @@ def fetch_metrics(pod_ip, http_get, budget):
     return body
 
 
-def validate_clock(skew_bound, now=None):
-    """Returns (ok, detail). A bounded exporter/observer skew is required for PASS."""
-    if skew_bound is None:
-        return False, "clock skew evidence missing"
+def validate_clock(evidence, gate_hash=None):
+    """Clock evidence contract: finite nonnegative numeric bound<=5, source/provenance,
+    node/backend identity, observed time + validity, and (optional) hash-binding to the gate.
+
+    A bare number or trusted=true flag is NOT clock evidence."""
+    if not isinstance(evidence, dict):
+        return False, "clock evidence missing"
+    if evidence.get("trusted") is True:
+        return False, "bare trusted flag is not provenance"
+    bound = evidence.get("bound")
+    if isinstance(bound, bool) or not isinstance(bound, (int, float)):
+        return False, "bound not numeric"
     try:
-        bound = float(skew_bound)
+        b = float(bound)
     except (TypeError, ValueError):
-        return False, "clock skew bound invalid"
-    if bound > CLOCK_SKEW_BOUND:
-        return False, "clock skew bound exceeds %ds" % CLOCK_SKEW_BOUND
-    return True, "clock skew bound <= %ds" % CLOCK_SKEW_BOUND
+        return False, "bound invalid"
+    if math.isnan(b) or math.isinf(b) or b < 0:
+        return False, "bound nonfinite/negative"
+    if b > CLOCK_SKEW_BOUND:
+        return False, "bound exceeds %ds" % CLOCK_SKEW_BOUND
+    if not isinstance(evidence.get("source"), str) or not evidence["source"]:
+        return False, "clock source missing"
+    if not re.fullmatch(r"[0-9a-f]{64}", str(evidence.get("provenance_sha256", ""))):
+        return False, "clock provenance hash missing"
+    if not isinstance(evidence.get("node"), str) or not evidence["node"]:
+        return False, "clock node identity missing"
+    if not isinstance(evidence.get("backend"), str) or not evidence["backend"]:
+        return False, "clock backend identity missing"
+    observed = evidence.get("observed_utc")
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", str(observed)):
+        return False, "clock observed_utc missing/invalid"
+    if not isinstance(evidence.get("validity_hours"), int) or evidence["validity_hours"] <= 0:
+        return False, "clock validity_hours invalid"
+    if gate_hash is not None and evidence.get("gate_sha256") != gate_hash:
+        return False, "clock evidence not bound to gate"
+    return True, "clock evidence valid"
 
 
-def wal_sample(cluster_doc, pod_doc, metrics_text, cluster_after, pod_after, clock_skew, baseline=None, op_end_utc=None):
+def wal_sample(cluster_doc, pod_doc, metrics_text, cluster_after, pod_after, clock_evidence, baseline=None, op_end_utc=None):
     """One 5-request sample; returns (disposition, metrics, detail)."""
-    ok, detail = validate_clock(clock_skew)
+    ok, detail = validate_clock(clock_evidence)
     if not ok:
         return INCONCLUSIVE, None, detail
-    # identity bracket: same Cluster/Pod UID before and after
-    if cluster_doc.get("metadata", {}).get("uid") != cluster_after.get("metadata", {}).get("uid"):
-        return INCONCLUSIVE, None, "cluster UID changed"
-    if pod_doc.get("metadata", {}).get("uid") != pod_after.get("metadata", {}).get("uid"):
-        return INCONCLUSIVE, None, "pod UID changed"
+    # identity bracket: same Cluster/Pod UID before and after; None is never equal to None.
+    cu_before, cu_after = cluster_doc.get("metadata", {}).get("uid"), cluster_after.get("metadata", {}).get("uid")
+    pu_before, pu_after = pod_doc.get("metadata", {}).get("uid"), pod_after.get("metadata", {}).get("uid")
+    if cu_before is None or cu_after is None or cu_before != cu_after:
+        return INCONCLUSIVE, None, "cluster UID missing/changed"
+    if pu_before is None or pu_after is None or pu_before != pu_after:
+        return INCONCLUSIVE, None, "pod UID missing/changed"
     if cluster_doc.get("status", {}).get("currentPrimary") != pod_doc.get("metadata", {}).get("name"):
         return INCONCLUSIVE, None, "pod is not currentPrimary"
     if not pod_doc.get("status", {}).get("podIP"):

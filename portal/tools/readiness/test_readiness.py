@@ -123,16 +123,33 @@ class TestWAL(unittest.TestCase):
         pod = {"metadata": {"name": "portal-db-1", "uid": "p-uid"}, "status": {"podIP": "10.244.1.2"}}
         return cluster, pod
 
+    def _clock(self):
+        return {"bound": 5, "source": "ntp", "provenance_sha256": "a" * 64, "node": "node-01",
+                "backend": "exporter", "observed_utc": "2026-11-04T00:00:00Z", "validity_hours": 24}
+
     def test_clock_missing(self):
         c, p = self._docs()
         disp, m, d = wrapper.wal.wal_sample(c, p, "", c, p, None)
         self.assertEqual(disp, wrapper.INCONCLUSIVE)
         self.assertIn("clock", d)
 
+    def test_clock_bare_number_rejected(self):
+        ok, _ = wrapper.wal.validate_clock(5)
+        self.assertFalse(ok)
+
+    def test_clock_trusted_flag_rejected(self):
+        ok, _ = wrapper.wal.validate_clock({"trusted": True, "bound": 5})
+        self.assertFalse(ok)
+
+    def test_clock_nan_rejected(self):
+        ev = self._clock(); ev["bound"] = float("nan")
+        ok, _ = wrapper.wal.validate_clock(ev)
+        self.assertFalse(ok)
+
     def test_identity_swap(self):
         c, p = self._docs()
         p2 = {"metadata": {"name": "portal-db-1", "uid": "other"}, "status": {"podIP": "10.244.1.2"}}
-        disp, _, _ = wrapper.wal.wal_sample(c, p, "", c, p2, 5)
+        disp, _, _ = wrapper.wal.wal_sample(c, p, "", c, p2, self._clock())
         self.assertEqual(disp, wrapper.INCONCLUSIVE)
 
     def test_failure_growth_wins(self):
@@ -141,12 +158,12 @@ class TestWAL(unittest.TestCase):
         baseline = {"cnpg_pg_stat_archiver_failed_count": 0, "cnpg_pg_stat_archiver_archived_count": 5,
                     "cnpg_pg_stat_archiver_last_archived_time": 50, "cnpg_pg_stat_archiver_last_failed_time": 0,
                     "cnpg_pg_stat_archiver_stats_reset_time": 1}
-        disp, _, _ = wrapper.wal.wal_sample(c, p, metrics, c, p, 5, baseline=baseline, op_end_utc=60)
+        disp, _, _ = wrapper.wal.wal_sample(c, p, metrics, c, p, self._clock(), baseline=baseline, op_end_utc=60)
         self.assertEqual(disp, wrapper.FAIL)
 
     def test_missing_series(self):
         c, p = self._docs()
-        disp, _, _ = wrapper.wal.wal_sample(c, p, "", c, p, 5)
+        disp, _, _ = wrapper.wal.wal_sample(c, p, "", c, p, self._clock())
         self.assertEqual(disp, wrapper.INCONCLUSIVE)
 
 

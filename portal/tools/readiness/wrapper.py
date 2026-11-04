@@ -415,7 +415,7 @@ def main(argv):
         start = time.monotonic()
         try:
             if spec.get("method") == "wal":
-                disp, detail = run_wal_sample(args.kubectl, default_http_get, gate.get("clock_skew_bound"), gate)
+                disp, detail = run_wal_sample(args.kubectl, default_http_get, gate.get("clock_evidence"), gate)
                 journal["reads"][read_id] = {"disposition": disp, "detail": detail,
                                              "attempt": 1, "duration_ms": int((time.monotonic() - start) * 1000)}
                 continue
