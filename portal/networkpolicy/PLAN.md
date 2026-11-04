@@ -1,5 +1,15 @@
 # P8C NetworkPolicy plan (D1) — read-only preparation, not yet applied
 
+## Independent executable-package review — 2026-11-05
+
+Reviewed source: 8ffd45792123e8e2ae1ccdd330ee5e1d013523f9; evidence head: f783e1ed6d34de9188b71ad1f6bedf9ccdf1ec51.
+Review: docs/architecture/P8C_REVIEW_f783e1e_EXECUTABLE_PACKAGE_20261105.md.
+REWORK_REQUIRED: source package not accepted; continue existing completion task (940c4e7), C-01..08 mapped to ER-01..08.
+Author 37 tests reproduced PASS; independent desired-contract suite 28 methods / 36 failed assertions/subtests.
+PRIMARY HERMES only. No new scope, no reopening accepted app/policy/collector/design; no execution gate.
+CI/live/SSH/private-registry/apply/production remain NOT_AUTHORIZED.
+
+
 ## Active completion instruction — one executable source package
 
 Authority: docs/architecture/P8C_EXECUTABLE_PACKAGE_COMPLETION_TASK_20261104.md.
