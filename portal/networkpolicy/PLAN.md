@@ -1,5 +1,15 @@
 # P8C NetworkPolicy plan (D1) — read-only preparation, not yet applied
 
+## Active completion instruction — one executable source package
+
+Authority: docs/architecture/P8C_EXECUTABLE_PACKAGE_COMPLETION_TASK_20261104.md.
+Checkpoint: fb1935883d723c6f85a45d0b0856c9d7f36ee2c5 (not accepted as complete).
+PRIMARY HERMES finishes the existing task and all ER-01..08, with one end-to-end offline suite.
+Intermediate checkpoints do not require a new permission or separate acceptance cycle.
+Final STOP only at complete source package or a concrete external blocker after independent work.
+No new technical scope or execution authorization. SOURCE_WORK=IN_PROGRESS/PARTIAL until complete.
+All accepted app/policy/collector/design boundaries and live/CI/push/apply/production prohibitions remain.
+
 ## Active Architect review — executable package 713a745 REWORK_REQUIRED
 
 Authority: docs/architecture/P8C_REVIEW_713a745_EXECUTABLE_RELEASE_READINESS_20261104.md.
