@@ -1,0 +1,19 @@
+=== readiness offline tests ===
+Ran 16 tests in 0.277s
+
+OK
+aggregate=INCONCLUSIVE
+=== release/seed qualification tests ===
+----------------------------------------------------------------------
+Ran 3 tests in 0.040s
+
+OK
+=== qualification check ===
+{"errors": [], "qualified": true}
+=== pin verification (cached re-hash, no re-download) ===
+login-action   VERIFIED
+postgres       VERIFIED
+cache: /tmp/p8c-pin-cache
+pin exit=0
+=== shell syntax ===
+install-verified-go.sh OK
