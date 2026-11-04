@@ -117,11 +117,36 @@ def main():
         directory, expected, source = Path(sys.argv[2]), digest(sys.argv[3]), sys.argv[4]
         required = ['sbom.spdx.json', 'provenance.json', 'build-metadata.json', 'scan-binary.json', 'scan-image.json', 'signature.json', 'attestation-sbom.jsonl', 'attestation-provenance.jsonl', 'private-before.json', 'private-after.json', 'registry.json', 'sign.txt', 'attest-sbom.txt', 'attest-provenance.txt', 'go-version.txt', 'go-binary.sha256']
         for name in required:
-            if not (directory / name).is_file() or (directory / name).stat().st_size == 0:
+            p = directory / name
+            if not p.is_file() or p.stat().st_size == 0:
                 raise ValueError('missing release artifact: ' + name)
+        # parse/bind the JSON artifacts (not just size>0): schema/identity/source/digest
+        try:
+            build = json.loads((directory / 'build-metadata.json').read_text())
+        except Exception:
+            raise ValueError('build-metadata.json not valid JSON')
+        if build.get('containerimage.digest') != expected:
+            raise ValueError('build-metadata digest does not bind expected image')
+        for name in ('scan-binary.json', 'scan-image.json', 'registry.json', 'private-before.json', 'private-after.json'):
+            try:
+                json.loads((directory / name).read_text())
+            except Exception:
+                raise ValueError(name + ' not valid JSON')
+        try:
+            sbom = json.loads((directory / 'sbom.spdx.json').read_text())
+        except Exception:
+            raise ValueError('sbom.spdx.json not valid JSON')
+        if not isinstance(sbom, dict) or not sbom.get('spdxVersion'):
+            raise ValueError('sbom.spdx.json missing spdxVersion')
+        try:
+            prov = json.loads((directory / 'provenance.json').read_text())
+        except Exception:
+            raise ValueError('provenance.json not valid JSON')
+        if prov.get('builder', {}).get('id') != IDENTITY or prov.get('invocation', {}).get('configSource', {}).get('digest', {}).get('sha1') != source:
+            raise ValueError('provenance does not bind workflow/source')
         check_signature((directory / 'signature.json').read_text(), expected, source)
         check_attestations((directory / 'attestation-provenance.jsonl').read_text(), expected, source, SLSA)
-        check_attestations((directory / 'attestation-sbom.jsonl').read_text(), expected, source, SPDX, json.loads((directory / 'sbom.spdx.json').read_text()))
+        check_attestations((directory / 'attestation-sbom.jsonl').read_text(), expected, source, SPDX, sbom)
         print(json.dumps({'image': IMAGE, 'digest': expected, 'source': source, 'payloadBinding': 'PASS'}))
     else:
         raise ValueError('unknown check')

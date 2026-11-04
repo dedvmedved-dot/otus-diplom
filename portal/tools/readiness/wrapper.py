@@ -21,6 +21,8 @@ import sys
 import time
 from pathlib import Path
 
+import wal  # noqa: E402  (same-directory WAL observation module)
+
 READSET = Path(__file__).with_name("readset.json")
 CONTEXT = "kubernetes-admin@pak-portal"
 FAIL, INCONCLUSIVE, PASS, NOT_APPLICABLE = "FAIL", "INCONCLUSIVE", "PASS", "NOT_APPLICABLE"
@@ -328,6 +330,58 @@ def wal_sample(cluster_doc, pod_doc, metrics_text, cluster_after, pod_after):
 
 # ---- main ----
 
+# ---- WAL executor (ER-04) ----
+
+def default_http_get(url, timeout, cap):
+    # No redirects, no env proxy; used only when the operator runs in an authorized session.
+    import urllib.request
+    class NoRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, *a, **k):
+            raise ReadError("redirect forbidden")
+    opener = urllib.request.build_opener(NoRedirect)
+    req = urllib.request.Request(url)
+    try:
+        with opener.open(req, timeout=timeout) as resp:
+            body = resp.read(cap + 1)
+            if len(body) > cap:
+                raise ReadError("metrics response exceeds cap")
+            return body
+    except ReadError:
+        raise
+    except Exception as e:
+        raise ReadError("metrics fetch failed: %s" % type(e).__name__)
+
+
+def run_wal_sample(kubectl, http_get, clock_skew, gate):
+    """5-request sample: Cluster -> Pod -> metrics -> same Pod -> same Cluster."""
+    def raw(path):
+        body, _ = run_kubectl_raw(kubectl, path, 15, 1048576)
+        return validate_envelope(body, False)
+
+    cluster_path = "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+    cluster = raw(cluster_path)
+    primary = cluster.get("status", {}).get("currentPrimary")
+    if not primary:
+        return INCONCLUSIVE, "no currentPrimary"
+    if not re.fullmatch(r"[a-z0-9]([-a-z0-9]*[a-z0-9])?", str(primary)):
+        return INCONCLUSIVE, "invalid primary name"
+    pod_path = "/api/v1/namespaces/portal/pods/" + str(primary)
+    pod = raw(pod_path)
+    pod_ip = pod.get("status", {}).get("podIP")
+    if not pod_ip:
+        return INCONCLUSIVE, "pod IP missing"
+    try:
+        metrics_text = http_get("http://%s:9187/metrics" % pod_ip, wal.REQ_TIMEOUT, wal.METRIC_CAP).decode()
+    except ReadError as e:
+        return INCONCLUSIVE, str(e)
+    pod_after = raw(pod_path)
+    cluster_after = raw(cluster_path)
+    disp, m, detail = wal.wal_sample(cluster, pod, metrics_text, cluster_after, pod_after,
+                                     clock_skew, baseline=gate.get("wal_baseline"),
+                                     op_end_utc=gate.get("operation_end_utc"))
+    return disp, detail
+
+
 def main(argv):
     import argparse
     ap = argparse.ArgumentParser()
@@ -361,7 +415,9 @@ def main(argv):
         start = time.monotonic()
         try:
             if spec.get("method") == "wal":
-                journal["reads"][read_id] = {"disposition": INCONCLUSIVE, "detail": "wal requires live transport (not authorized)"}
+                disp, detail = run_wal_sample(args.kubectl, default_http_get, gate.get("clock_skew_bound"), gate)
+                journal["reads"][read_id] = {"disposition": disp, "detail": detail,
+                                             "attempt": 1, "duration_ms": int((time.monotonic() - start) * 1000)}
                 continue
             expect_list, pred = PREDICATES[read_id]
             doc = run_read(readset, read_id, args.kubectl)
