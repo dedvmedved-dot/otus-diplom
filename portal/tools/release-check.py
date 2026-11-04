@@ -129,9 +129,26 @@ def main():
             raise ValueError('build-metadata digest does not bind expected image')
         for name in ('scan-binary.json', 'scan-image.json', 'registry.json', 'private-before.json', 'private-after.json'):
             try:
-                json.loads((directory / name).read_text())
+                obj = json.loads((directory / name).read_text())
             except Exception:
                 raise ValueError(name + ' not valid JSON')
+            if name in ('private-before.json', 'private-after.json'):
+                if obj.get('visibility') != 'private':
+                    raise ValueError(name + ' not private')
+                if obj.get('repository') != REPO:
+                    raise ValueError(name + ' wrong repository')
+            elif name == 'registry.json':
+                if obj.get('digest') != expected:
+                    raise ValueError('registry digest mismatch')
+                if obj.get('manifestVerified') is not True:
+                    raise ValueError('registry manifestVerified false')
+            else:  # scan-binary/image
+                if not isinstance(obj, dict) or not isinstance(obj.get('Results'), list):
+                    raise ValueError(name + ' invalid scan shape')
+                for res in obj['Results']:
+                    for vuln in (res or {}).get('Vulnerabilities', []) or []:
+                        if (vuln or {}).get('Severity') in ('CRITICAL', 'HIGH'):
+                            raise ValueError(name + ' has HIGH/CRITICAL vulnerability')
         try:
             sbom = json.loads((directory / 'sbom.spdx.json').read_text())
         except Exception:

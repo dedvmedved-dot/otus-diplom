@@ -74,7 +74,8 @@ def verify_binary(pin):
         verdict = "VERIFIED" if actual == pin["sha256"] else "MISMATCH"
         return {"id": pin["id"], "status": verdict, "declared": pin["sha256"], "actual": actual, "bytes": len(body), "final_url": sanitize_url(final), "utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
     except Exception as e:
-        return {"id": pin["id"], "status": "UNAVAILABLE", "error": type(e).__name__ + ": " + str(e)[:200], "utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
+        return {"id": pin["id"], "status": "UNAVAILABLE", "error": type(e).__name__,
+                "utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
 
 
 def verify_action(pin):

@@ -16,6 +16,7 @@ import hashlib
 import json
 import os
 import re
+import select
 import subprocess
 import sys
 import time
@@ -38,7 +39,7 @@ def sha256_hex(b):
 
 
 def package_hash():
-    return sha256_hex(READSET.read_bytes() + Path(__file__).read_bytes())
+    return sha256_hex(READSET.read_bytes() + Path(__file__).read_bytes() + Path(__file__).with_name("wal.py").read_bytes())
 
 
 def parse_utc(iso):
@@ -95,30 +96,38 @@ def run_kubectl_raw(kubectl, path, timeout, cap):
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     except OSError as e:
         raise ReadError("kubectl spawn failed: %s" % type(e).__name__)
+    hard_deadline = time.monotonic() + timeout + 5
+    chunks = []
+    total = 0
+    fd = proc.stdout.fileno()
     try:
-        chunks = []
-        total = 0
-        deadline = time.monotonic() + timeout + 5
         while True:
-            remain = deadline - time.monotonic()
+            remain = hard_deadline - time.monotonic()
             if remain <= 0:
-                proc.kill()
-                proc.wait()
                 raise ReadError("kubectl deadline exceeded")
-            buf = proc.stdout.read(min(65536, cap - total + 1))
+            r, _, _ = select.select([fd], [], [], max(0.0, remain))
+            if fd not in r:
+                if proc.poll() is not None:
+                    break
+                continue
+            buf = os.read(fd, min(65536, cap - total + 1))
             if not buf:
                 break
             total += len(buf)
             if total > cap:
-                proc.kill()
-                proc.wait()
                 raise ReadError("response exceeds %d bytes" % cap)
             chunks.append(buf)
-        proc.wait(timeout=5)
-        stderr = proc.stderr.read(4096)
-    except subprocess.TimeoutExpired:
-        proc.kill()
-        raise ReadError("kubectl wait timeout")
+    finally:
+        try:
+            if proc.poll() is None:
+                proc.kill()
+                proc.wait(timeout=5)
+        except Exception:
+            pass
+        try:
+            proc.stderr.close()
+        except Exception:
+            pass
     if proc.returncode != 0:
         raise ReadError("kubectl exit %d" % proc.returncode)
     return b"".join(chunks), proc.returncode
@@ -129,15 +138,26 @@ def validate_envelope(body, expect_list):
         doc = json.loads(body)
     except Exception:
         raise ReadError("malformed JSON")
-    if not isinstance(doc, dict) or not isinstance(doc.get("apiVersion"), str):
-        raise ReadError("envelope missing apiVersion")
+    if not isinstance(doc, dict):
+        raise ReadError("envelope not object")
+    api = doc.get("apiVersion", "")
+    kind = doc.get("kind", "")
+    allowed_api_prefix = ("v1", "apps/v1", "networking.k8s.io/v1", "discovery.k8s.io/v1",
+                          "projectcalico.org/v3", "crd.projectcalico.org/v1",
+                          "postgresql.cnpg.io/v1", "gateway.networking.k8s.io/v1")
+    if not isinstance(api, str) or not api.startswith(allowed_api_prefix):
+        raise ReadError("unexpected apiVersion")
+    if isinstance(kind, str) and ("Secret" in kind or "ConfigMap" in kind):
+        raise ReadError("forbidden list kind")
     if expect_list:
-        if doc.get("kind", "").endswith("List") and isinstance(doc.get("items"), list):
-            meta = doc.get("metadata", {})
-            if isinstance(meta, dict) and meta.get("continue"):
-                raise ReadError("nonempty continue rejected")
-            return doc
-        raise ReadError("expected List envelope")
+        if not isinstance(kind, str) or not kind.endswith("List"):
+            raise ReadError("expected List envelope")
+        meta = doc.get("metadata")
+        if not isinstance(meta, dict) or meta.get("continue") is not None:
+            raise ReadError("invalid/absent metadata.continue")
+        if not isinstance(doc.get("items"), list):
+            raise ReadError("items not list")
+        return doc
     return doc
 
 
@@ -187,16 +207,20 @@ def _ready_eps(doc):
 def pred_pr3(doc):
     addrs = set()
     for it in doc.get("items", []):
+        for port in it.get("ports", []):
+            if port.get("port") != 6443 or port.get("protocol") != "TCP":
+                return FAIL, "unexpected API port/protocol"
         for ep in it.get("endpoints", []):
+            if ep.get("conditions", {}).get("ready") is not True:
+                return FAIL, "unready API endpoint"
             for a in ep.get("addresses", []):
                 addrs.add(a)
-            for p in ep.get("ports", []):
-                if p.get("port") != 6443:
-                    return FAIL, "unexpected API port"
     want = {"172.30.140.101", "172.30.140.102", "172.30.140.103"}
-    if want <= addrs:
-        return PASS, "exact API tuples present"
-    return INCONCLUSIVE, "missing API tuples"
+    if addrs == want:
+        return PASS, "exact ready API tuples"
+    if want < addrs:
+        return FAIL, "extra API addresses"
+    return INCONCLUSIVE, "missing/partial API tuples"
 
 
 def pred_pr5(doc):
@@ -217,29 +241,45 @@ def pred_pr5(doc):
 
 
 def pred_pr6(docs):
-    # nine responses; policy lists must be empty, Tier/Felix must match accepted baseline projection.
-    knp, np, gnp, hep, cnp, tier, felix, ns, pods = docs
-    for name, d in (("KNP", knp), ("NP", np), ("GNP", gnp), ("HEP", hep), ("CNP", cnp)):
-        if d.get("items"):
-            return FAIL, "%s nonempty" % name
-    # Tier/Felix/NS/Pods presence check is a baseline freshness comparison, not effective-union proof.
-    return PASS, "policy set empty baseline"
+    # nine responses; policy lists AND Tier/Felix must be empty (baseline). ns/pods presence checked only.
+    if not isinstance(docs, list) or len(docs) != 9:
+        return FAIL, "expected 9 responses"
+    for name, idx in (("KNP", 0), ("NP", 1), ("GNP", 2), ("HEP", 3), ("CNP", 4), ("Tier", 5), ("Felix", 6)):
+        if docs[idx].get("items"):
+            return FAIL, "%s nonempty (baseline drift)" % name
+    return PASS, "policy/tier/felix baseline empty"
 
 
 def pred_hc_op(doc):
     pods = doc.get("items", [])
     if not pods:
         return INCONCLUSIVE, "operator pods empty"
-    if all(p.get("status", {}).get("phase") == "Running" for p in pods):
-        return PASS, "operator pods present"
-    return INCONCLUSIVE, "operator not running"
+    for p in pods:
+        if p.get("metadata", {}).get("deletionTimestamp"):
+            return FAIL, "operator pod terminating"
+        conds = {c.get("type"): c for c in p.get("status", {}).get("conditions", []) if isinstance(c, dict)}
+        if conds.get("Ready", {}).get("status") != "True":
+            return FAIL, "operator pod not Ready"
+    return PASS, "operator ready"
 
 
 def pred_hc_dns(doc):
-    ready, items = _ready_eps(doc)
+    ready = False
+    for it in doc.get("items", []):
+        for ep in it.get("endpoints", []):
+            if ep.get("conditions", {}).get("ready") is True:
+                if not ep.get("addresses"):
+                    return FAIL, "DNS ready endpoint without address"
+                ready = True
     if not ready:
         return INCONCLUSIVE, "no ready DNS endpoints"
-    return PASS, "DNS ready"
+    ports = set()
+    for it in doc.get("items", []):
+        for port in it.get("ports", []):
+            ports.add((port.get("port"), port.get("protocol")))
+    if (53, "TCP") in ports and (53, "UDP") in ports:
+        return PASS, "DNS ready with 53/TCP+UDP"
+    return INCONCLUSIVE, "DNS ports incomplete"
 
 
 def pred_hc_portal(doc):
@@ -333,12 +373,12 @@ def wal_sample(cluster_doc, pod_doc, metrics_text, cluster_after, pod_after):
 # ---- WAL executor (ER-04) ----
 
 def default_http_get(url, timeout, cap):
-    # No redirects, no env proxy; used only when the operator runs in an authorized session.
+    # No redirects, NO environment proxy; used only in an authorized live session.
     import urllib.request
     class NoRedirect(urllib.request.HTTPRedirectHandler):
         def redirect_request(self, *a, **k):
             raise ReadError("redirect forbidden")
-    opener = urllib.request.build_opener(NoRedirect)
+    opener = urllib.request.build_opener(NoRedirect, urllib.request.ProxyHandler({}))
     req = urllib.request.Request(url)
     try:
         with opener.open(req, timeout=timeout) as resp:
@@ -352,10 +392,10 @@ def default_http_get(url, timeout, cap):
         raise ReadError("metrics fetch failed: %s" % type(e).__name__)
 
 
-def run_wal_sample(kubectl, http_get, clock_skew, gate):
+def run_wal_sample(kubectl, http_get, clock_evidence, gate):
     """5-request sample: Cluster -> Pod -> metrics -> same Pod -> same Cluster."""
     def raw(path):
-        body, _ = run_kubectl_raw(kubectl, path, 15, 1048576)
+        body, _ = run_kubectl_raw(kubectl, path, 5, 256 * 1024)
         return validate_envelope(body, False)
 
     cluster_path = "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
@@ -377,9 +417,21 @@ def run_wal_sample(kubectl, http_get, clock_skew, gate):
     pod_after = raw(pod_path)
     cluster_after = raw(cluster_path)
     disp, m, detail = wal.wal_sample(cluster, pod, metrics_text, cluster_after, pod_after,
-                                     clock_skew, baseline=gate.get("wal_baseline"),
+                                     clock_evidence, baseline=gate.get("wal_baseline"),
                                      op_end_utc=gate.get("operation_end_utc"))
     return disp, detail
+
+
+STAGE_ORDER = ["S0", "S1", "S2a", "S2b", "S3", "S4"]
+
+
+def next_stage(last):
+    if last is None or last == "":
+        return "S0"
+    if last not in STAGE_ORDER:
+        return None
+    idx = STAGE_ORDER.index(last)
+    return STAGE_ORDER[idx + 1] if idx + 1 < len(STAGE_ORDER) else None
 
 
 def main(argv):
@@ -390,20 +442,36 @@ def main(argv):
     ap.add_argument("--state-dir", required=True)
     ap.add_argument("--kubectl", default="kubectl")
     ap.add_argument("--stage", required=True)
-    ap.add_argument("--now", type=int, default=int(time.time()))
+    ap.add_argument("--now", type=int, default=None, help="ignored (test-only clock injection uses time.time patch)")
     args = ap.parse_args(argv)
 
+    now = int(time.time())  # expiry always uses the real/patched clock; --now never bypasses it
+    _ = args.now
     gate = json.loads(Path(args.gate).read_text())
-    ok, err = validate_gate(gate, args.now)
+    ok, err = validate_gate(gate, now)
     if not ok:
         print("STOP: gate rejected: %s" % err, file=sys.stderr)
         return 2
     if args.stage not in STAGES:
         print("STOP: unknown stage", file=sys.stderr)
         return 2
-    reserved = atomic_reserve(os.path.join(args.state_dir, "run.reserved"))
-    if reserved is None:
-        print("STOP: run already reserved (re-run/unknown outcome blocked)", file=sys.stderr)
+    os.makedirs(args.state_dir, exist_ok=True)
+    # stage ordering: only the successor of the last completed stage may run
+    receipt_path = os.path.join(args.state_dir, "stage.receipt")
+    last = open(receipt_path).read().strip() if os.path.exists(receipt_path) else None
+    if args.stage != next_stage(last):
+        print("STOP: stage out of order (expected %s)" % next_stage(last), file=sys.stderr)
+        return 2
+    # run reservation keyed by package identity + stage, at a location stable across --state-dir
+    base = os.path.dirname(os.path.abspath(args.state_dir))
+    reserve_path = os.path.join(base, "p8c-%s-%s.reserved" % (gate.get("package_sha256", "")[:16], args.stage))
+    if atomic_reserve(reserve_path) is None:
+        print("STOP: run/stage already reserved (replay blocked)", file=sys.stderr)
+        return 2
+    # output no-overwrite: pre-existing evidence is preserved
+    out = Path(args.out)
+    if out.exists():
+        print("STOP: output already exists", file=sys.stderr)
         return 2
 
     readset = json.loads(READSET.read_text())
@@ -430,11 +498,12 @@ def main(argv):
     disp = [v.get("disposition") for v in journal["reads"].values()]
     agg = FAIL if FAIL in disp else (INCONCLUSIVE if INCONCLUSIVE in disp else (PASS if all(d in (PASS, NOT_APPLICABLE) for d in disp) else INCONCLUSIVE))
     journal["aggregate"] = agg
-    out = Path(args.out)
     tmp = out.with_suffix(out.suffix + ".tmp")
     tmp.write_text(json.dumps(journal, sort_keys=True, indent=2))
     os.chmod(tmp, 0o600)
-    os.replace(tmp, out)
+    os.replace(tmp, out)  # out does not exist (checked above); atomic publish
+    with open(receipt_path, "w") as f:
+        f.write(args.stage)
     print("aggregate=%s" % agg)
     return 0 if agg == PASS else 1
 

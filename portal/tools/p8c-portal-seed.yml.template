@@ -38,12 +38,14 @@ jobs:
           if python3 portal/tools/release-check.py private > "$RUNNER_TEMP/private.json" 2>/dev/null; then
             echo "result=REUSE" >> "$GITHUB_OUTPUT"
             echo "REUSE: existing private associated package"
-          elif [ "${SEED_FIRST_CREATION_GATE:-}" = "approved-by-separate-owner-gate" ]; then
+          elif [ -f "$RUNNER_TEMP/first-creation-gate.json" ] && \
+               python3 portal/tools/release-check.py first-creation "$RUNNER_TEMP/first-creation-gate.json" >/dev/null 2>&1; then
             echo "result=CREATE_ALLOWED" >> "$GITHUB_OUTPUT"
-            echo "CREATE_ALLOWED: separate Owner first-creation gate confirmed"
+            echo "CREATE_ALLOWED: typed first-creation gate verified"
           else
             echo "result=STOP" >> "$GITHUB_OUTPUT"
-            echo "STOP: no private package and no Owner first-creation gate"
+            echo "STOP: no private package and no typed first-creation gate" >&2
+            exit 1
           fi
 
   seed:
@@ -96,7 +98,8 @@ jobs:
           rootlesskit --net=slirp4netns --copy-up=/etc --copy-up=/run \
             buildkitd --oci-worker-no-process-sandbox --addr unix:///tmp/seed-buildkit.sock > /tmp/seed-buildkitd.log 2>&1 &
           BK_PID=$!
-          trap 'kill $BK_PID 2>/dev/null || true' EXIT
+          echo "$BK_PID" > /tmp/seed-buildkitd.pid
+          # NOTE: no EXIT trap here — the daemon must survive into the Build step.
           READY=0
           for i in $(seq 1 30); do
             if buildctl --addr unix:///tmp/seed-buildkit.sock debug workers >/dev/null 2>&1; then READY=1; break; fi
@@ -107,6 +110,7 @@ jobs:
 
       - name: Build + push minimal seed (bootstrap-only, not deployable)
         if: needs.precheck.outputs.result == 'CREATE_ALLOWED'
+        working-directory: portal/tools
         env:
           BUILDKIT_HOST: unix:///tmp/seed-buildkit.sock
         run: |
@@ -116,8 +120,10 @@ jobs:
             --local context=. --local dockerfile=. \
             --output type=image,name=${IMAGE}:${SEED_TAG},push=true \
             --metadata-file "$RUNNER_TEMP/seed-metadata.json"
-          python3 portal/tools/release-check.py digest "$RUNNER_TEMP/seed-metadata.json" > "$RUNNER_TEMP/seed-digest.txt"
+          python3 release-check.py digest "$RUNNER_TEMP/seed-metadata.json" > "$RUNNER_TEMP/seed-digest.txt"
           echo "SEED_DIGEST=$(cat "$RUNNER_TEMP/seed-digest.txt")" >> "$GITHUB_ENV"
+          # cleanup: stop the daemon only after the build
+          kill "$(cat /tmp/seed-buildkitd.pid)" 2>/dev/null || true
 
       - name: Record seed digest + visibility + association (typed evidence)
         if: needs.precheck.outputs.result == 'CREATE_ALLOWED'

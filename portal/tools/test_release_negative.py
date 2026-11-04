@@ -30,9 +30,23 @@ def run_verified(directory, digest="sha256:" + "a" * 64, source="a" * 40):
 
 
 def make_dir():
+    """Valid baseline artifact set so a single-file override reaches its named check."""
     d = Path(tempfile.mkdtemp())
+    repo = "dedvmedved-dot/otus-diplom"
+    identity = "https://github.com/" + repo + "/.github/workflows/p8c-portal-release.yml@refs/heads/main"
+    baseline = {
+        "build-metadata.json": {"containerimage.digest": "sha256:" + "a" * 64},
+        "sbom.spdx.json": {"spdxVersion": "SPDX-2.3"},
+        "provenance.json": {"builder": {"id": identity},
+                            "invocation": {"configSource": {"digest": {"sha1": "a" * 40}}}},
+        "scan-binary.json": {"Results": []},
+        "scan-image.json": {"Results": []},
+        "registry.json": {"digest": "sha256:" + "a" * 64, "manifestVerified": True},
+        "private-before.json": {"visibility": "private", "repository": repo},
+        "private-after.json": {"visibility": "private", "repository": repo},
+    }
     for name in REQUIRED:
-        (d / name).write_text("{}")
+        (d / name).write_text(json.dumps(baseline.get(name, {})))
     return d
 
 

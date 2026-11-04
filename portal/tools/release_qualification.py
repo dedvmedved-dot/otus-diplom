@@ -43,43 +43,45 @@ def parse_template(path):
 
 def checks(release, seed):
     errs = []
-    release_text = Path(HERE / "p8c-portal-release.yml.template").read_text()
-    seed_text = Path(HERE / "p8c-portal-seed.yml.template").read_text()
-    # R-01: dispatch-only, exact repo/ref
-    if not re.search(r"^on:\s*$[\s\S]*?workflow_dispatch", release_text, re.M):
-        errs.append("release on: must be workflow_dispatch only")
-    if "dedvmedved-dot/otus-diplom" not in release_text or "refs/heads/main" not in release_text:
-        errs.append("release must pin repository + refs/heads/main")
-    # R-03: permissions
+    # R-01: dispatch-only trigger (parsed object, not disk text)
+    on = release.get("on")
+    if not isinstance(on, dict) or set(on.keys()) != {"workflow_dispatch"}:
+        errs.append("on must be workflow_dispatch only")
     jobs = release.get("jobs", {})
+    if "dedvmedved-dot/otus-diplom" not in str(jobs) or "refs/heads/main" not in str(jobs):
+        errs.append("release must pin repository + refs/heads/main")
+    # R-03: permissions (exact, no extras)
     if jobs.get("test", {}).get("permissions", {"contents": "read"}) != {"contents": "read"}:
         errs.append("test permissions must be contents:read")
     rp = jobs.get("release", {}).get("permissions", {})
-    if rp.get("contents") != "read" or rp.get("packages") != "write" or rp.get("id-token") != "write":
-        errs.append("release permissions must be contents:read + packages:write + id-token:write")
+    if set(rp.keys()) != {"contents", "packages", "id-token"} or rp.get("contents") != "read" \
+            or rp.get("packages") != "write" or rp.get("id-token") != "write":
+        errs.append("release permissions must be exactly contents:read+packages:write+id-token:write")
     # R-02: timeouts
     if jobs.get("test", {}).get("timeout-minutes") != 20:
         errs.append("test timeout-minutes must be 20")
     if jobs.get("release", {}).get("timeout-minutes") != 30:
         errs.append("release timeout-minutes must be 30")
-    # R-01: immutable checkout + persist-credentials:false
-    checkout = None
+    # R-01: immutable checkout (SHA, not mutable ref) + persist-credentials:false
     for j in jobs.values():
         for s in j.get("steps", []):
             if isinstance(s, dict) and s.get("uses", "").startswith("actions/checkout@"):
-                checkout = s
-    if checkout is None or checkout.get("with", {}).get("persist-credentials") is not False:
-        errs.append("checkout must use immutable SHA + persist-credentials:false")
+                sha = s["uses"].split("@", 1)[1]
+                if not re.fullmatch(r"[0-9a-f]{40}", sha):
+                    errs.append("checkout must pin immutable SHA")
+                if s.get("with", {}).get("persist-credentials") is not False:
+                    errs.append("checkout must set persist-credentials:false")
+                if s.get("with", {}).get("ref") not in (None, "${{ github.sha }}"):
+                    errs.append("checkout ref must be immutable github.sha")
     # R-03: no deploy/SSH/kubectl/production mutation steps
     for j in jobs.values():
         for s in j.get("steps", []):
             run = s.get("run", "") if isinstance(s, dict) else ""
             for banned in ("kubectl", "ssh ", "apply -f", "production"):
                 if banned in run:
-                    errs.append(f"forbidden step content in template: {banned}")
-    # seed requirements (parsed object, not string presence)
-    seed_jobs = seed.get("jobs", {})
-    seed_job = seed_jobs.get("seed", {})
+                    errs.append("forbidden step content in template: " + banned)
+    # seed requirements (parsed object)
+    seed_job = seed.get("jobs", {}).get("seed", {})
     if not seed_job:
         errs.append("seed template missing 'seed' job")
     if seed.get("permissions", {}).get("packages") != "write":
@@ -90,7 +92,9 @@ def checks(release, seed):
         errs.append("seed template missing private precondition step")
     elif priv.get("env", {}).get("GITHUB_TOKEN") != "${{ secrets.GITHUB_TOKEN }}":
         errs.append("seed private step must pass GITHUB_TOKEN env")
-    if "Seed.Containerfile" not in seed_text:
+    if not any(isinstance(s, dict) and "buildctl build" in str(s.get("run", "")) for s in steps):
+        errs.append("seed template missing buildctl build route")
+    if not any(isinstance(s, dict) and "Seed.Containerfile" in str(s.get("run", "")) for s in steps):
         errs.append("seed template missing Seed.Containerfile reference")
     return errs
 

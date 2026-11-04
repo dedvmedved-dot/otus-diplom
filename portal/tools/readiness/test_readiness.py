@@ -10,8 +10,10 @@ import os
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE))
@@ -120,12 +122,14 @@ class TestReservation(unittest.TestCase):
 class TestWAL(unittest.TestCase):
     def _docs(self):
         cluster = {"metadata": {"name": "portal-db", "uid": "c-uid"}, "status": {"currentPrimary": "portal-db-1"}}
-        pod = {"metadata": {"name": "portal-db-1", "uid": "p-uid"}, "status": {"podIP": "10.244.1.2"}}
+        pod = {"metadata": {"name": "portal-db-1", "uid": "p-uid"}, "spec": {"nodeName": "node-01"},
+               "status": {"podIP": "10.244.1.2", "containerStatuses": [{"name": "postgres", "restartCount": 0}]}}
         return cluster, pod
 
     def _clock(self):
         return {"bound": 5, "source": "ntp", "provenance_sha256": "a" * 64, "node": "node-01",
-                "backend": "exporter", "observed_utc": "2026-11-04T00:00:00Z", "validity_hours": 24}
+                "backend": "exporter", "observed_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                "validity_hours": 24}
 
     def test_clock_missing(self):
         c, p = self._docs()
@@ -172,9 +176,10 @@ class TestMain(unittest.TestCase):
         d = tempfile.mkdtemp()
         g = os.path.join(d, "gate.json")
         json.dump(gate(**(gate_override or {})), open(g, "w"))
-        rc = wrapper.main(["--gate", g, "--out", os.path.join(d, "out.json"),
-                           "--state-dir", d, "--stage", stage,
-                           "--kubectl", fake_kubectl(fixtures), "--now", str(epoc() + 60)])
+        with patch.object(wrapper.time, "time", return_value=epoc() + 60):
+            rc = wrapper.main(["--gate", g, "--out", os.path.join(d, "out.json"),
+                               "--state-dir", os.path.join(d, "state"), "--stage", stage,
+                               "--kubectl", fake_kubectl(fixtures), "--now", str(epoc() + 60)])
         out = os.path.join(d, "out.json")
         j = json.load(open(out)) if os.path.exists(out) else None
         return rc, j
