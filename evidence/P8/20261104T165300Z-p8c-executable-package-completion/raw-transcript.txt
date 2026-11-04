@@ -1,0 +1,21 @@
+=== A. readiness (real entry points + mock transport) ===
+Ran 23 tests in 0.419s
+
+OK
+aggregate=INCONCLUSIVE
+=== B/C. release + seed qualification ===
+Ran 3 tests in 0.039s
+
+OK
+Ran 4 tests in 0.002s
+
+OK
+=== qualification check ===
+{"errors": [], "qualified": true}
+=== pin verify (cached) ===
+postgres       VERIFIED
+cache: /tmp/p8c-pin-cache
+exit=0
+=== shell syntax ===
+OK
+py_compile OK
