@@ -92,7 +92,58 @@ RESERVATION_BASE = os.path.join(tempfile.gettempdir(), "p8c-readiness")
 
 def reservation_path(gate, stage):
     """Stable one-run authority location: keyed by package identity, NOT state/output path."""
-    return os.path.join(RESERVATION_BASE, str(gate.get("package_sha256", ""))[:32], stage + ".reserved")
+    return os.path.join(RESERVATION_BASE, str(gate.get("package_sha256", ""))[:32], stage + ".window.json")
+
+
+def read_window_state(path):
+    if not os.path.exists(path):
+        return None
+    try:
+        return json.loads(open(path).read())
+    except Exception:
+        return None
+
+
+def write_window_state(path, st):
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(st, f, sort_keys=True)
+    os.chmod(tmp, 0o600)
+    os.replace(tmp, path)
+
+
+def open_window(gate, stage):
+    """Acquire or retry a stage window. Returns ('first'|'retry', state) or ('blocked', reason)."""
+    path = reservation_path(gate, stage)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    st = read_window_state(path)
+    if st is not None:
+        if not isinstance(st, dict) or st.get("source_sha") != gate.get("source_sha"):
+            return "blocked", "window state unbound/corrupt"
+        if st.get("completed"):
+            return "blocked", "stage already completed (no replay)"
+        if st.get("attempts", 0) >= 3:
+            return "blocked", "stage slots exhausted (no retry)"
+        st["attempts"] = st.get("attempts", 0) + 1
+        write_window_state(path, st)
+        return "retry", st
+    # first attempt: exclusive create
+    st = {"stage": stage, "source_sha": gate.get("source_sha"),
+          "package_sha256": gate.get("package_sha256"), "attempts": 1, "completed": False}
+    try:
+        fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        os.close(fd)
+    except FileExistsError:
+        return "blocked", "window already opened (race)"
+    write_window_state(path, st)
+    return "first", st
+
+
+def complete_window(gate, stage):
+    path = reservation_path(gate, stage)
+    st = read_window_state(path) or {}
+    st["completed"] = True
+    write_window_state(path, st)
 
 
 def read_receipt(receipt_path, gate):
@@ -120,6 +171,83 @@ def write_receipt(receipt_path, gate, stage):
         json.dump(receipt, f, sort_keys=True)
     os.chmod(tmp, 0o600)
     os.replace(tmp, receipt_path)
+
+
+def write_failure_state(state_dir, gate, stage, agg):
+    """Persist a bound non-PASS outcome (NOT a PASS receipt). Allowance stays consumed."""
+    marker = {"source_sha": gate.get("source_sha"), "package_sha256": gate.get("package_sha256"),
+              "issued_at_utc": gate.get("issued_at_utc"), "stage": stage, "aggregate": agg}
+    p = os.path.join(state_dir, stage + ".failed.json")
+    tmp = p + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(marker, f, sort_keys=True)
+    os.chmod(tmp, 0o600)
+    os.replace(tmp, p)
+
+
+def read_budget(state_dir):
+    p = os.path.join(state_dir, "budget.json")
+    if not os.path.exists(p):
+        return {"requests": 0, "bytes": 0, "seconds": 0.0}
+    try:
+        return json.loads(open(p).read())
+    except Exception:
+        return {"requests": 0, "bytes": 0, "seconds": 0.0}
+
+
+def write_budget(state_dir, budget):
+    p = os.path.join(state_dir, "budget.json")
+    tmp = p + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(budget, f, sort_keys=True)
+    os.chmod(tmp, 0o600)
+    os.replace(tmp, p)
+
+
+def persist_wal_baseline(state_dir, gate, metrics):
+    """Persist the latest WAL archive metrics as the baseline for the next stage's sample."""
+    p = os.path.join(state_dir, "wal-baseline.json")
+    rec = {"source_sha": gate.get("source_sha"), "package_sha256": gate.get("package_sha256"),
+           "issued_at_utc": gate.get("issued_at_utc"), "metrics": metrics}
+    tmp = p + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(rec, f, sort_keys=True)
+    os.chmod(tmp, 0o600)
+    os.replace(tmp, p)
+
+
+def read_wal_baseline(state_dir, gate):
+    p = os.path.join(state_dir, "wal-baseline.json")
+    if not os.path.exists(p):
+        return None
+    try:
+        rec = json.loads(open(p).read())
+    except Exception:
+        return None
+    if rec.get("source_sha") == gate.get("source_sha") and rec.get("package_sha256") == gate.get("package_sha256"):
+        return rec.get("metrics")
+    return None
+
+
+def read_slot_count(state_dir, stage):
+    p = os.path.join(state_dir, stage + ".slots.json")
+    if not os.path.exists(p):
+        return 0
+    try:
+        return int(json.loads(open(p).read()).get("attempted", 0))
+    except Exception:
+        return 0
+
+
+def increment_slot(state_dir, stage):
+    n = read_slot_count(state_dir, stage) + 1
+    p = os.path.join(state_dir, stage + ".slots.json")
+    tmp = p + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump({"attempted": n}, f)
+    os.chmod(tmp, 0o600)
+    os.replace(tmp, p)
+    return n
 
 
 def run_kubectl_raw(kubectl, path, timeout, cap):
@@ -483,6 +611,8 @@ def run_wal_sample(kubectl, http_get, clock_evidence, gate):
     start = time.monotonic()
 
     def raw(path):
+        if time.monotonic() - start > wal.SAMPLE_DEADLINE:
+            raise ReadError("sample deadline exceeded")
         body, _ = run_kubectl_raw(kubectl, path, 5, 256 * 1024)
         return validate_envelope(body, False)
 
@@ -490,27 +620,29 @@ def run_wal_sample(kubectl, http_get, clock_evidence, gate):
     cluster = raw(cluster_path)
     primary = cluster.get("status", {}).get("currentPrimary")
     if not primary:
-        return INCONCLUSIVE, "no currentPrimary"
+        return INCONCLUSIVE, "no currentPrimary", None
     if not re.fullmatch(r"[a-z0-9]([-a-z0-9]*[a-z0-9])?", str(primary)):
-        return INCONCLUSIVE, "invalid primary name"
+        return INCONCLUSIVE, "invalid primary name", None
     pod_path = "/api/v1/namespaces/portal/pods/" + str(primary)
     pod = raw(pod_path)
     pod_ip = pod.get("status", {}).get("podIP")
     if not pod_ip:
-        return INCONCLUSIVE, "pod IP missing"
+        return INCONCLUSIVE, "pod IP missing", None
+    if time.monotonic() - start > wal.SAMPLE_DEADLINE:
+        return INCONCLUSIVE, "sample deadline exceeded", None
     try:
         metrics_text = http_get("http://%s:9187/metrics" % pod_ip, wal.REQ_TIMEOUT, wal.METRIC_CAP).decode()
     except ReadError as e:
-        return INCONCLUSIVE, str(e)
+        return INCONCLUSIVE, str(e), None
+    if time.monotonic() - start > wal.SAMPLE_DEADLINE:
+        return INCONCLUSIVE, "sample deadline exceeded", None
     pod_after = raw(pod_path)
     cluster_after = raw(cluster_path)
-    if time.monotonic() - start > wal.SAMPLE_DEADLINE:
-        return INCONCLUSIVE, "sample deadline exceeded"
     disp, m, detail = wal.wal_sample(cluster, pod, metrics_text, cluster_after, pod_after,
                                      clock_evidence, baseline=gate.get("wal_baseline"),
                                      op_end_utc=gate.get("operation_end_utc"),
                                      gate_hash=gate.get("package_sha256"))
-    return disp, detail
+    return disp, detail, m
 
 
 STAGE_ORDER = ["S0", "S1", "S2a", "S2b", "S3", "S4"]
@@ -553,21 +685,20 @@ def main(argv):
     if args.stage != next_stage(last):
         print("STOP: stage out of order (expected %s)" % next_stage(last), file=sys.stderr)
         return 2
-    # run reservation keyed by stable one-run authority (package identity), NOT by state-dir
-    reserve_path = reservation_path(gate, args.stage)
-    os.makedirs(os.path.dirname(reserve_path), exist_ok=True)
-    if atomic_reserve(reserve_path) is None:
-        print("STOP: run/stage already reserved (replay blocked)", file=sys.stderr)
+    # run/window authority keyed by stable package identity; retry within window allowed (<=3 slots)
+    status, wst = open_window(gate, args.stage)
+    if status == "blocked":
+        print("STOP: " + str(wst), file=sys.stderr)
         return 2
     # output no-overwrite: pre-existing evidence is preserved
     out = Path(args.out)
     if out.exists():
-        os.remove(reserve_path)
         print("STOP: output already exists", file=sys.stderr)
         return 2
 
     readset = json.loads(READSET.read_text())
     journal = {"stage": args.stage, "context": CONTEXT, "reads": {}}
+    budget = read_budget(args.state_dir)
     for read_id, spec in readset["reads"].items():
         if args.stage not in spec["stages"]:
             journal["reads"][read_id] = {"disposition": NOT_APPLICABLE}
@@ -575,9 +706,19 @@ def main(argv):
         start = time.monotonic()
         try:
             if spec.get("method") == "wal":
-                disp, detail = run_wal_sample(args.kubectl, default_http_get, gate.get("clock_evidence"), gate)
+                baseline = gate.get("wal_baseline") or read_wal_baseline(args.state_dir, gate)
+                wgate = dict(gate)
+                if baseline is not None:
+                    wgate["wal_baseline"] = baseline
+                res = run_wal_sample(args.kubectl, default_http_get, gate.get("clock_evidence"), wgate)
+                if isinstance(res, tuple) and len(res) == 3:
+                    disp, detail, metrics = res
+                else:
+                    disp, detail, metrics = res[0], res[1], None
                 journal["reads"][read_id] = {"disposition": disp, "detail": detail,
                                              "attempt": 1, "duration_ms": int((time.monotonic() - start) * 1000)}
+                if disp == PASS and metrics is not None:
+                    persist_wal_baseline(args.state_dir, gate, metrics)
                 continue
             expect_list, pred = PREDICATES[read_id]
             doc = run_read(readset, read_id, args.kubectl)
@@ -586,6 +727,12 @@ def main(argv):
                                          "attempt": 1, "duration_ms": int((time.monotonic() - start) * 1000)}
         except ReadError as e:
             journal["reads"][read_id] = {"disposition": INCONCLUSIVE, "error": str(e), "attempt": 1}
+
+    executed = [v for v in journal["reads"].values() if v.get("disposition") != NOT_APPLICABLE]
+    budget["requests"] = budget.get("requests", 0) + len(executed)
+    budget["seconds"] = budget.get("seconds", 0.0) + sum(v.get("duration_ms", 0) for v in executed) / 1000.0
+    write_budget(args.state_dir, budget)
+    journal["budget"] = budget
 
     disp = [v.get("disposition") for v in journal["reads"].values()]
     agg = FAIL if FAIL in disp else (INCONCLUSIVE if INCONCLUSIVE in disp else (PASS if all(d in (PASS, NOT_APPLICABLE) for d in disp) else INCONCLUSIVE))
@@ -596,13 +743,10 @@ def main(argv):
     os.replace(tmp, out)  # out does not exist (checked above); atomic publish
     if agg == PASS:
         write_receipt(receipt_path, gate, args.stage)
-        # keep the reservation: a completed stage is never replayable
+        complete_window(gate, args.stage)  # completed: never replayable
     else:
-        # clean non-PASS: release the reservation so the stage can be re-attempted
-        try:
-            os.remove(reserve_path)
-        except OSError:
-            pass
+        # non-PASS: attempts already counted by open_window; budget persists; no completion.
+        write_failure_state(args.state_dir, gate, args.stage, agg)
         print("aggregate=%s" % agg)
         return 1
     print("aggregate=%s" % agg)

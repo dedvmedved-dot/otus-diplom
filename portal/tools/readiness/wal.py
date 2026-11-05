@@ -47,6 +47,48 @@ class BudgetExceeded(Exception):
     pass
 
 
+class Scheduler:
+    """WAL observation scheduler: 6 windows (S0 baseline + S1..S4), <=3 slots per window
+    at offsets 0/300/600s, cumulative request/byte/time budgets. Virtual-clock testable
+    (no wall sleep): advance the clock explicitly between slot calls."""
+
+    def __init__(self):
+        self.windows = 0
+        self.slot = 0
+        self.baseline = None
+        self.budget = {"requests": 0, "bytes": 0, "seconds": 0.0}
+        self.total_requests = 0
+        self.total_bytes = 0
+        self.total_seconds = 0.0
+
+    def next_slot_offset(self):
+        return [0, 300, 600][self.slot]
+
+    def can_sample(self):
+        return self.slot < WINDOW_SLOTS
+
+    def advance_slot(self):
+        if self.slot + 1 < WINDOW_SLOTS:
+            self.slot += 1
+            return True
+        return False
+
+    def record_sample(self, disposition, metrics, requests, bytes_, seconds):
+        self.budget["requests"] += requests
+        self.budget["bytes"] += bytes_
+        self.budget["seconds"] += seconds
+        self.total_requests += requests
+        self.total_bytes += bytes_
+        self.total_seconds += seconds
+        if disposition == PASS and metrics is not None:
+            self.baseline = metrics
+
+    def budget_exceeded(self):
+        return (self.budget["requests"] > WINDOW_REQ_CAP or self.budget["bytes"] > WINDOW_BODY_CAP
+                or self.total_requests > 90 or self.total_bytes > 36 * 1024 * 1024
+                or self.total_seconds > 3960)
+
+
 class Budget:
     def __init__(self, window_req=WINDOW_REQ_CAP, window_bytes=WINDOW_BODY_CAP):
         self.requests = 0
