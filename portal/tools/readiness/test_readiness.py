@@ -122,7 +122,9 @@ class TestReservation(unittest.TestCase):
 class TestWAL(unittest.TestCase):
     def _docs(self):
         cluster = {"metadata": {"name": "portal-db", "uid": "c-uid"}, "status": {"currentPrimary": "portal-db-1"}}
-        pod = {"metadata": {"name": "portal-db-1", "uid": "p-uid"}, "spec": {"nodeName": "node-01"},
+        pod = {"metadata": {"name": "portal-db-1", "uid": "p-uid",
+                            "ownerReferences": [{"uid": "c-uid", "kind": "Cluster", "name": "portal-db"}]},
+               "spec": {"nodeName": "node-01"},
                "status": {"podIP": "10.244.1.2", "containerStatuses": [{"name": "postgres", "restartCount": 0}]}}
         return cluster, pod
 

@@ -31,7 +31,7 @@
 ## Runbook (future operator, после отдельного gate)
 
 1. Node-01 operator: `python3 portal/tools/readiness/wrapper.py --gate <issued-gate.json> --out <journal> --state-dir <state> --stage S0 --kubectl kubectl`
-2. Gate manifest: mode=LIVE, context kubernetes-admin@pak-portal, source_sha, package_sha256 (=sha256(readset+wrapper+wal)), issued_at_utc, expiry_hours≤24, clock_skew_bound, wal_baseline, operation_end_utc.
+2. Gate manifest: mode=LIVE, context kubernetes-admin@pak-portal, source_sha, package_sha256 (=sha256(readset+wrapper+wal)), issued_at_utc, expiry_hours≤24, clock_evidence (typed dict: bound≤5, source, provenance_sha256, node, backend, observed_utc, validity_hours, gate_sha256=package_sha256), wal_baseline, operation_end_utc. Reservation keyed by package_sha256 at a stable authority location (not state/output path). Receipts are verified JSON bound to source+package; only PASS advances the stage; non-PASS releases the reservation for retry.
 3. Aggregates: PASS (exit 0) / FAIL, INCONCLUSIVE (exit 1) / gate-reject (exit 2). No-overwrite + atomic reservation block re-run.
 4. CI release: publish template → manual dispatch (separate future authorization). Seed: separate one-shot bootstrap (Owner first-creation basis).
 

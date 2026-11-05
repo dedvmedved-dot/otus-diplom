@@ -88,7 +88,7 @@ def verify_action(pin):
             return {"id": pin["id"], "status": verdict, "commit_sha": c.get("sha"), "tag_annotation_not_authoritative": pin["tag_annotation"]}
         return {"id": pin["id"], "status": "UNAVAILABLE", "http": status}
     except Exception as e:
-        return {"id": pin["id"], "status": "UNAVAILABLE", "error": type(e).__name__ + ": " + str(e)[:200]}
+        return {"id": pin["id"], "status": "UNAVAILABLE", "error": type(e).__name__}
 
 
 def verify_image(pin):
@@ -103,7 +103,7 @@ def verify_image(pin):
         verdict = "VERIFIED" if (actual == pin["digest"] and mstatus == 200) else ("MISMATCH" if mstatus == 200 else "UNAVAILABLE")
         return {"id": pin["id"], "status": verdict, "ref": ref, "declared": pin["digest"], "manifest_sha256": actual, "http": mstatus}
     except Exception as e:
-        return {"id": pin["id"], "status": "UNAVAILABLE", "error": type(e).__name__ + ": " + str(e)[:200]}
+        return {"id": pin["id"], "status": "UNAVAILABLE", "error": type(e).__name__}
 
 
 def main():

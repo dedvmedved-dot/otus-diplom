@@ -128,6 +128,8 @@ def validate_clock(evidence, gate_hash=None, now=None):
         return False, "clock observed_utc unparsable"
     if now is None:
         now = time.time()
+    if obs_epoch > now + CLOCK_SKEW_BOUND:
+        return False, "clock observed_utc in the future"
     if obs_epoch + evidence["validity_hours"] * 3600 < now:
         return False, "clock evidence expired"
     if gate_hash is not None and evidence.get("gate_sha256") != gate_hash:
@@ -136,9 +138,9 @@ def validate_clock(evidence, gate_hash=None, now=None):
 
 
 def wal_sample(cluster_doc, pod_doc, metrics_text, cluster_after, pod_after, clock_evidence,
-               baseline=None, op_end_utc=None, now=None):
+               baseline=None, op_end_utc=None, now=None, gate_hash=None):
     """One 5-request sample; returns (disposition, metrics, detail)."""
-    ok, detail = validate_clock(clock_evidence, now=now)
+    ok, detail = validate_clock(clock_evidence, gate_hash=gate_hash, now=now)
     if not ok:
         return INCONCLUSIVE, None, detail
     if now is None:
@@ -155,14 +157,19 @@ def wal_sample(cluster_doc, pod_doc, metrics_text, cluster_after, pod_after, clo
         return INCONCLUSIVE, None, "currentPrimary changed after sample"
     if cluster_doc.get("status", {}).get("currentPrimary") != pod_doc.get("metadata", {}).get("name"):
         return INCONCLUSIVE, None, "pod is not currentPrimary"
-    # pod IP / restart / owner binding must be stable
+    # pod IP / restart / owner binding must be stable AND bound to the Cluster
     if pod_after.get("status", {}).get("podIP") != pod_doc.get("status", {}).get("podIP"):
         return INCONCLUSIVE, None, "pod IP changed after sample"
     def owner_uid(p):
         refs = p.get("metadata", {}).get("ownerReferences", []) or []
         return refs[0].get("uid") if refs else None
-    if owner_uid(pod_after) != owner_uid(pod_doc):
+    ou_before, ou_after = owner_uid(pod_doc), owner_uid(pod_after)
+    if ou_before is None or ou_after is None:
+        return INCONCLUSIVE, None, "pod owner reference missing"
+    if ou_before != ou_after:
         return INCONCLUSIVE, None, "pod owner changed"
+    if ou_before != cluster_doc.get("metadata", {}).get("uid"):
+        return INCONCLUSIVE, None, "pod owner not bound to cluster"
     def restart(p):
         cs = p.get("status", {}).get("containerStatuses", []) or []
         return cs[0].get("restartCount", 0) if cs else 0

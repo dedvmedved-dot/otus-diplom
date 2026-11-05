@@ -19,6 +19,7 @@ import re
 import select
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -86,6 +87,41 @@ def atomic_reserve(path):
     return path
 
 
+RESERVATION_BASE = os.path.join(tempfile.gettempdir(), "p8c-readiness")
+
+
+def reservation_path(gate, stage):
+    """Stable one-run authority location: keyed by package identity, NOT state/output path."""
+    return os.path.join(RESERVATION_BASE, str(gate.get("package_sha256", ""))[:32], stage + ".reserved")
+
+
+def read_receipt(receipt_path, gate):
+    """Read the last VERIFIED completed stage; unbound/plain-text/invalid receipts are not authority."""
+    if not os.path.exists(receipt_path):
+        return None
+    try:
+        r = json.loads(open(receipt_path).read())
+    except Exception:
+        return None
+    if not isinstance(r, dict):
+        return None
+    if r.get("source_sha") != gate.get("source_sha") or r.get("package_sha256") != gate.get("package_sha256"):
+        return None
+    if r.get("aggregate") != "PASS" or r.get("stage") not in STAGE_ORDER:
+        return None
+    return r["stage"]
+
+
+def write_receipt(receipt_path, gate, stage):
+    receipt = {"source_sha": gate.get("source_sha"), "package_sha256": gate.get("package_sha256"),
+               "issued_at_utc": gate.get("issued_at_utc"), "stage": stage, "aggregate": "PASS"}
+    tmp = receipt_path + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(receipt, f, sort_keys=True)
+    os.chmod(tmp, 0o600)
+    os.replace(tmp, receipt_path)
+
+
 def run_kubectl_raw(kubectl, path, timeout, cap):
     if not re.fullmatch(r"/[A-Za-z0-9./_\-?=&%]+", path):
         raise ReadError("invalid raw path")
@@ -100,6 +136,7 @@ def run_kubectl_raw(kubectl, path, timeout, cap):
     chunks = []
     total = 0
     fd = proc.stdout.fileno()
+    eof = False
     try:
         while True:
             remain = hard_deadline - time.monotonic()
@@ -112,11 +149,20 @@ def run_kubectl_raw(kubectl, path, timeout, cap):
                 continue
             buf = os.read(fd, min(65536, cap - total + 1))
             if not buf:
-                break
+                eof = True
+                break  # stdout EOF is NOT child failure; wait for the child to exit
             total += len(buf)
             if total > cap:
                 raise ReadError("response exceeds %d bytes" % cap)
             chunks.append(buf)
+        # after EOF (or process exit), wait for the child to finish within the remaining deadline
+        if eof:
+            try:
+                proc.wait(timeout=max(0.1, hard_deadline - time.monotonic()))
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait()
+                raise ReadError("kubectl did not exit after stdout EOF")
     finally:
         try:
             if proc.poll() is None:
@@ -133,6 +179,12 @@ def run_kubectl_raw(kubectl, path, timeout, cap):
     return b"".join(chunks), proc.returncode
 
 
+ALLOWED_API = ("v1", "apps/v1", "networking.k8s.io/v1", "discovery.k8s.io/v1",
+               "projectcalico.org/v3", "crd.projectcalico.org/v1",
+               "postgresql.cnpg.io/v1", "gateway.networking.k8s.io/v1",
+               "policy.networking.k8s.io/v1alpha2")
+
+
 def validate_envelope(body, expect_list):
     try:
         doc = json.loads(body)
@@ -142,10 +194,7 @@ def validate_envelope(body, expect_list):
         raise ReadError("envelope not object")
     api = doc.get("apiVersion", "")
     kind = doc.get("kind", "")
-    allowed_api_prefix = ("v1", "apps/v1", "networking.k8s.io/v1", "discovery.k8s.io/v1",
-                          "projectcalico.org/v3", "crd.projectcalico.org/v1",
-                          "postgresql.cnpg.io/v1", "gateway.networking.k8s.io/v1")
-    if not isinstance(api, str) or not api.startswith(allowed_api_prefix):
+    if not isinstance(api, str) or api not in ALLOWED_API:
         raise ReadError("unexpected apiVersion")
     if isinstance(kind, str) and ("Secret" in kind or "ConfigMap" in kind):
         raise ReadError("forbidden list kind")
@@ -153,8 +202,14 @@ def validate_envelope(body, expect_list):
         if not isinstance(kind, str) or not kind.endswith("List"):
             raise ReadError("expected List envelope")
         meta = doc.get("metadata")
-        if not isinstance(meta, dict) or meta.get("continue") is not None:
-            raise ReadError("invalid/absent metadata.continue")
+        if not isinstance(meta, dict):
+            raise ReadError("metadata missing")
+        if "continue" in meta:
+            cont = meta["continue"]
+            if cont is None:
+                raise ReadError("null continue rejected")
+            if not isinstance(cont, str) or cont != "":
+                raise ReadError("nonempty continue rejected")
         if not isinstance(doc.get("items"), list):
             raise ReadError("items not list")
         return doc
@@ -206,15 +261,24 @@ def _ready_eps(doc):
 
 def pred_pr3(doc):
     addrs = set()
+    saw_port = False
+    saw_endpoint = False
     for it in doc.get("items", []):
         for port in it.get("ports", []):
-            if port.get("port") != 6443 or port.get("protocol") != "TCP":
+            if port.get("port") == 6443 and port.get("protocol") == "TCP":
+                saw_port = True
+            else:
                 return FAIL, "unexpected API port/protocol"
         for ep in it.get("endpoints", []):
             if ep.get("conditions", {}).get("ready") is not True:
                 return FAIL, "unready API endpoint"
+            saw_endpoint = True
             for a in ep.get("addresses", []):
                 addrs.add(a)
+    if not saw_endpoint:
+        return INCONCLUSIVE, "no API endpoints"
+    if not saw_port:
+        return FAIL, "API port tuple missing"
     want = {"172.30.140.101", "172.30.140.102", "172.30.140.103"}
     if addrs == want:
         return PASS, "exact ready API tuples"
@@ -241,13 +305,30 @@ def pred_pr5(doc):
 
 
 def pred_pr6(docs):
-    # nine responses; policy lists AND Tier/Felix must be empty (baseline). ns/pods presence checked only.
+    # nine responses: policy lists empty; Tier/Felix compared to accepted safe baseline projection.
     if not isinstance(docs, list) or len(docs) != 9:
         return FAIL, "expected 9 responses"
-    for name, idx in (("KNP", 0), ("NP", 1), ("GNP", 2), ("HEP", 3), ("CNP", 4), ("Tier", 5), ("Felix", 6)):
+    for name, idx in (("KNP", 0), ("NP", 1), ("GNP", 2), ("HEP", 3), ("CNP", 4)):
         if docs[idx].get("items"):
-            return FAIL, "%s nonempty (baseline drift)" % name
-    return PASS, "policy/tier/felix baseline empty"
+            return FAIL, "%s nonempty" % name
+    # Tier baseline (accepted inventory): exactly default/Deny, kube-admin/Pass, kube-baseline/Pass
+    tiers = docs[5].get("items", [])
+    tier_sig = set()
+    for t in tiers:
+        m = t.get("metadata", {}) if isinstance(t, dict) else {}
+        s = t.get("spec", {}) if isinstance(t, dict) else {}
+        tier_sig.add((m.get("name"), s.get("order"), s.get("defaultAction")))
+    expected_tier = {("default", 1000000, "Deny"), ("kube-admin", 1000, "Pass"), ("kube-baseline", 10000000, "Pass")}
+    if tier_sig != expected_tier:
+        return FAIL, "tier baseline drift"
+    # Felix baseline (accepted): default with nftablesMode=Auto
+    felix = docs[6].get("items", [])
+    if len(felix) != 1 or not isinstance(felix[0], dict):
+        return FAIL, "felix baseline missing"
+    f = felix[0]
+    if f.get("metadata", {}).get("name") != "default" or f.get("spec", {}).get("nftablesMode") != "Auto":
+        return FAIL, "felix baseline drift"
+    return PASS, "policy empty + tier/felix match accepted baseline"
 
 
 def pred_hc_op(doc):
@@ -283,10 +364,15 @@ def pred_hc_dns(doc):
 
 
 def pred_hc_portal(doc):
-    st = doc.get("status", {})
-    if st.get("observedGeneration") != doc.get("metadata", {}).get("generation"):
+    meta_gen = doc.get("metadata", {}).get("generation")
+    obs_gen = doc.get("status", {}).get("observedGeneration")
+    if not isinstance(meta_gen, int) or not isinstance(obs_gen, int):
+        return INCONCLUSIVE, "generation missing"
+    if obs_gen != meta_gen:
         return INCONCLUSIVE, "generation mismatch"
-    if st.get("readyReplicas") == 1 and st.get("updatedReplicas") == 1 and st.get("availableReplicas") == 1:
+    spec_replicas = doc.get("spec", {}).get("replicas")
+    st = doc.get("status", {})
+    if spec_replicas == 1 and st.get("readyReplicas") == 1 and st.get("updatedReplicas") == 1 and st.get("availableReplicas") == 1:
         return PASS, "portal ready"
     return FAIL, "portal replicas not converged"
 
@@ -393,7 +479,9 @@ def default_http_get(url, timeout, cap):
 
 
 def run_wal_sample(kubectl, http_get, clock_evidence, gate):
-    """5-request sample: Cluster -> Pod -> metrics -> same Pod -> same Cluster."""
+    """5-request sample: Cluster -> Pod -> metrics -> same Pod -> same Cluster (30s hard deadline)."""
+    start = time.monotonic()
+
     def raw(path):
         body, _ = run_kubectl_raw(kubectl, path, 5, 256 * 1024)
         return validate_envelope(body, False)
@@ -416,9 +504,12 @@ def run_wal_sample(kubectl, http_get, clock_evidence, gate):
         return INCONCLUSIVE, str(e)
     pod_after = raw(pod_path)
     cluster_after = raw(cluster_path)
+    if time.monotonic() - start > wal.SAMPLE_DEADLINE:
+        return INCONCLUSIVE, "sample deadline exceeded"
     disp, m, detail = wal.wal_sample(cluster, pod, metrics_text, cluster_after, pod_after,
                                      clock_evidence, baseline=gate.get("wal_baseline"),
-                                     op_end_utc=gate.get("operation_end_utc"))
+                                     op_end_utc=gate.get("operation_end_utc"),
+                                     gate_hash=gate.get("package_sha256"))
     return disp, detail
 
 
@@ -456,21 +547,22 @@ def main(argv):
         print("STOP: unknown stage", file=sys.stderr)
         return 2
     os.makedirs(args.state_dir, exist_ok=True)
-    # stage ordering: only the successor of the last completed stage may run
+    # stage ordering: only the successor of the last VERIFIED completed stage may run
     receipt_path = os.path.join(args.state_dir, "stage.receipt")
-    last = open(receipt_path).read().strip() if os.path.exists(receipt_path) else None
+    last = read_receipt(receipt_path, gate)
     if args.stage != next_stage(last):
         print("STOP: stage out of order (expected %s)" % next_stage(last), file=sys.stderr)
         return 2
-    # run reservation keyed by package identity + stage, at a location stable across --state-dir
-    base = os.path.dirname(os.path.abspath(args.state_dir))
-    reserve_path = os.path.join(base, "p8c-%s-%s.reserved" % (gate.get("package_sha256", "")[:16], args.stage))
+    # run reservation keyed by stable one-run authority (package identity), NOT by state-dir
+    reserve_path = reservation_path(gate, args.stage)
+    os.makedirs(os.path.dirname(reserve_path), exist_ok=True)
     if atomic_reserve(reserve_path) is None:
         print("STOP: run/stage already reserved (replay blocked)", file=sys.stderr)
         return 2
     # output no-overwrite: pre-existing evidence is preserved
     out = Path(args.out)
     if out.exists():
+        os.remove(reserve_path)
         print("STOP: output already exists", file=sys.stderr)
         return 2
 
@@ -502,10 +594,19 @@ def main(argv):
     tmp.write_text(json.dumps(journal, sort_keys=True, indent=2))
     os.chmod(tmp, 0o600)
     os.replace(tmp, out)  # out does not exist (checked above); atomic publish
-    with open(receipt_path, "w") as f:
-        f.write(args.stage)
+    if agg == PASS:
+        write_receipt(receipt_path, gate, args.stage)
+        # keep the reservation: a completed stage is never replayable
+    else:
+        # clean non-PASS: release the reservation so the stage can be re-attempted
+        try:
+            os.remove(reserve_path)
+        except OSError:
+            pass
+        print("aggregate=%s" % agg)
+        return 1
     print("aggregate=%s" % agg)
-    return 0 if agg == PASS else 1
+    return 0
 
 
 if __name__ == "__main__":

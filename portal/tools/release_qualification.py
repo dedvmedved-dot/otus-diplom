@@ -62,10 +62,12 @@ def checks(release, seed):
         errs.append("test timeout-minutes must be 20")
     if jobs.get("release", {}).get("timeout-minutes") != 30:
         errs.append("release timeout-minutes must be 30")
-    # R-01: immutable checkout (SHA, not mutable ref) + persist-credentials:false
+    # R-01: immutable checkout (SHA, not mutable ref) + persist-credentials:false; at least one checkout
+    saw_checkout = False
     for j in jobs.values():
         for s in j.get("steps", []):
             if isinstance(s, dict) and s.get("uses", "").startswith("actions/checkout@"):
+                saw_checkout = True
                 sha = s["uses"].split("@", 1)[1]
                 if not re.fullmatch(r"[0-9a-f]{40}", sha):
                     errs.append("checkout must pin immutable SHA")
@@ -73,6 +75,12 @@ def checks(release, seed):
                     errs.append("checkout must set persist-credentials:false")
                 if s.get("with", {}).get("ref") not in (None, "${{ github.sha }}"):
                     errs.append("checkout ref must be immutable github.sha")
+    if not saw_checkout:
+        errs.append("release template missing checkout step")
+    # top-level permissions must not be write-all (jobs must not inherit elevated scope)
+    top_perm = release.get("permissions")
+    if top_perm not in (None, {"contents": "read"}):
+        errs.append("top-level permissions must be contents:read (no inherited write-all)")
     # R-03: no deploy/SSH/kubectl/production mutation steps
     for j in jobs.values():
         for s in j.get("steps", []):
@@ -81,6 +89,9 @@ def checks(release, seed):
                 if banned in run:
                     errs.append("forbidden step content in template: " + banned)
     # seed requirements (parsed object)
+    seed_on = seed.get("on")
+    if not isinstance(seed_on, dict) or set(seed_on.keys()) != {"workflow_dispatch"}:
+        errs.append("seed on must be workflow_dispatch only")
     seed_job = seed.get("jobs", {}).get("seed", {})
     if not seed_job:
         errs.append("seed template missing 'seed' job")

@@ -31,17 +31,38 @@ def run_verified(directory, digest="sha256:" + "a" * 64, source="a" * 40):
 
 def make_dir():
     """Valid baseline artifact set so a single-file override reaches its named check."""
+    import base64
     d = Path(tempfile.mkdtemp())
     repo = "dedvmedved-dot/otus-diplom"
     identity = "https://github.com/" + repo + "/.github/workflows/p8c-portal-release.yml@refs/heads/main"
+    image = "ghcr.io/" + repo + "-portal"
+    digest = "sha256:" + "a" * 64
+    source = "a" * 40
+    slsa = "https://slsa.dev/provenance/v0.2"
+    spdx = "https://spdx.dev/Document"
+    sbom = {"spdxVersion": "SPDX-2.3", "SPDXID": "SPDXRef-DOCUMENT"}
+    prov = {"builder": {"id": identity},
+            "buildType": "https://github.com/Attestations/GitHubActionsWorkflow@v1",
+            "invocation": {"configSource": {"uri": "git+https://github.com/" + repo + "@refs/heads/main",
+                                            "digest": {"sha1": source}}}}
+
+    def att(pred, typ):
+        st = {"_type": "https://in-toto.io/Statement/v1", "predicateType": typ,
+              "subject": [{"name": image, "digest": {"sha256": digest[7:]}}], "predicate": pred}
+        return {"payload": base64.b64encode(json.dumps(st).encode()).decode()}
+
     baseline = {
-        "build-metadata.json": {"containerimage.digest": "sha256:" + "a" * 64},
-        "sbom.spdx.json": {"spdxVersion": "SPDX-2.3"},
-        "provenance.json": {"builder": {"id": identity},
-                            "invocation": {"configSource": {"digest": {"sha1": "a" * 40}}}},
+        "build-metadata.json": {"containerimage.digest": digest},
+        "sbom.spdx.json": sbom,
+        "provenance.json": prov,
+        "signature.json": [{"critical": {"image": {"docker-manifest-digest": digest},
+                                          "identity": {"docker-reference": image}},
+                            "optional": {"ref": source}}],
+        "attestation-sbom.jsonl": att(sbom, spdx),
+        "attestation-provenance.jsonl": att(prov, slsa),
         "scan-binary.json": {"Results": []},
         "scan-image.json": {"Results": []},
-        "registry.json": {"digest": "sha256:" + "a" * 64, "manifestVerified": True},
+        "registry.json": {"image": image, "digest": digest, "manifestVerified": True},
         "private-before.json": {"visibility": "private", "repository": repo},
         "private-after.json": {"visibility": "private", "repository": repo},
     }

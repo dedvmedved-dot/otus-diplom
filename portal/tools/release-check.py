@@ -100,6 +100,18 @@ def main():
         print(digest(json.loads(Path(sys.argv[2]).read_text())['containerimage.digest']))
     elif mode == 'predicate':
         print(json.dumps(predicate(sys.argv[2]), sort_keys=True))
+    elif mode == 'first-creation':
+        # Typed first-creation gate validation (source-bound; NOT issued now).
+        gate_path = Path(sys.argv[2])
+        try:
+            g = json.loads(gate_path.read_text())
+        except Exception as e:
+            raise ValueError('first-creation gate unreadable: ' + type(e).__name__)
+        if not isinstance(g, dict) or not re.fullmatch('[0-9a-f]{40}', str(g.get('source_sha', ''))) \
+                or not re.fullmatch(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z', str(g.get('issued_at_utc', ''))) \
+                or not isinstance(g.get('expiry_hours'), int) or not (0 < g['expiry_hours'] <= 24):
+            raise ValueError('first-creation gate incomplete/invalid')
+        print(json.dumps({'first_creation': 'VERIFIED', 'source_sha': g['source_sha']}))
     elif mode == 'private':
         token = os.environ['GITHUB_TOKEN']
         data, _ = request('https://api.github.com/users/dedvmedved-dot/packages/container/otus-diplom-portal', {'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28'})
@@ -138,6 +150,8 @@ def main():
                 if obj.get('repository') != REPO:
                     raise ValueError(name + ' wrong repository')
             elif name == 'registry.json':
+                if obj.get('image') != IMAGE:
+                    raise ValueError('registry image binding mismatch')
                 if obj.get('digest') != expected:
                     raise ValueError('registry digest mismatch')
                 if obj.get('manifestVerified') is not True:
@@ -146,8 +160,12 @@ def main():
                 if not isinstance(obj, dict) or not isinstance(obj.get('Results'), list):
                     raise ValueError(name + ' invalid scan shape')
                 for res in obj['Results']:
-                    for vuln in (res or {}).get('Vulnerabilities', []) or []:
-                        if (vuln or {}).get('Severity') in ('CRITICAL', 'HIGH'):
+                    if not isinstance(res, dict):
+                        raise ValueError(name + ' invalid scan result')
+                    for vuln in res.get('Vulnerabilities', []):
+                        if not isinstance(vuln, dict):
+                            raise ValueError(name + ' malformed vulnerability leaf')
+                        if vuln.get('Severity') in ('CRITICAL', 'HIGH'):
                             raise ValueError(name + ' has HIGH/CRITICAL vulnerability')
         try:
             sbom = json.loads((directory / 'sbom.spdx.json').read_text())
