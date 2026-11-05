@@ -1,0 +1,32 @@
+SOURCE_SHA=
+cwd=/root/otus-diplom python=Python 3.11.15
+=== A readiness (23) ===
+
+OK
+aggregate=INCONCLUSIVE
+=== B release/seed (3+4+7) ===
+Ran 3 tests in 0.037s
+
+OK
+Ran 4 tests in 0.001s
+
+OK
+Ran 7 tests in 0.530s
+
+OK
+{"errors": [], "qualified": true}
+=== C prev regression (28) ===
+Ran 28 tests in 7.233s
+
+OK
+=== D residual (25) ===
+Ran 25 tests in 0.570s
+
+OK
+=== E pin verify (cached) ===
+postgres       VERIFIED
+cache: /tmp/p8c-pin-cache
+exit=0
+=== syntax ===
+bash_OK
+py_OK
