@@ -1,5 +1,17 @@
 # P8C NetworkPolicy plan (D1) — read-only preparation, not yet applied
 
+## R5 executable-package review — 2026-11-05
+
+Reviewed source 783502a7eff2662d6f7612ccc56c4a9251e16ace; evidence c8007f51614ca31df7d532a191327e4eac2ba737.
+Authority: docs/architecture/P8C_REVIEW_c8007f5_EXECUTABLE_PACKAGE_R5_20261105.md.
+Previous 104 test methods independently PASS; synthetic main S0→S4 happy-path control PASS.
+Full contract remains PARTIAL: 15 methods / 16 failed assertions-subtests / 0 errors.
+Non-PASS restarts a whole window, failed-request budgets/freshness/boundaries remain incomplete; release/seed/runbook unchanged.
+Continue existing R4-01..05 and completion task; no new scope and no repeated permission stop.
+SOURCE_PACKAGE=REWORK_REQUIRED. No live/CI/workflow/Owner/NetPol/production authorization.
+PRIMARY HERMES only; accepted app/policy/collector/design preserved.
+
+
 ## R4 executable-package review — 2026-11-05
 
 Reviewed source 317ebc7ab1839f7dac5a22690b24aabafcc98283; evidence 974e069f6bb7c418c7d9683d75cfd80bfa3fba87.
@@ -225,4 +237,5 @@ Record preexisting names/UIDs before rollout. If any name already exists STOP;
 never delete a preexisting policy. Each phase requires CNPG Ready3/3, archiving,
 BSL, DNS/API/operator/monitoring status reads; degradation stops the rollout and
 rolls back only UIDs created by that rollout. Rollback execution remains gated.
+
 

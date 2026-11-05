@@ -1,0 +1,103 @@
+{
+  "source": "783502a7eff2662d6f7612ccc56c4a9251e16ace",
+  "review_head": "c8007f51614ca31df7d532a191327e4eac2ba737",
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "runs": [
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "portal/tools/readiness/test_readiness.py"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_c800",
+      "start_utc": "2026-11-05T18:07:12.264200+00:00",
+      "end_utc": "2026-11-05T18:07:12.853605+00:00",
+      "exit": 0,
+      "stdout": "aggregate=INCONCLUSIVE\n",
+      "stderr": "test_bad_mode (__main__.TestGate.test_bad_mode) ... ok\ntest_expired (__main__.TestGate.test_expired) ... ok\ntest_expiry_over_24 (__main__.TestGate.test_expiry_over_24) ... ok\ntest_future (__main__.TestGate.test_future) ... ok\ntest_hash_mismatch (__main__.TestGate.test_hash_mismatch) ... ok\ntest_valid (__main__.TestGate.test_valid) ... ok\ntest_s0_fail_closed_without_wal (__main__.TestMain.test_s0_fail_closed_without_wal) ... /workspace/scratch/14185c8f871f/review_c800/portal/tools/readiness/test_readiness.py:180: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/r4-suite-v6vuwcdp/tmpx1uvjbvf/gate.json' mode='w' encoding='UTF-8'>\n  json.dump(gate(**(gate_override or {})), open(g, \"w\"))\nResourceWarning: Enable tracemalloc to get the object allocation traceback\n/workspace/scratch/14185c8f871f/review_c800/portal/tools/readiness/wrapper.py:595: ResourceWarning: unclosed file <_io.BufferedReader name=3>\n  body, _ = run_kubectl_raw(kubectl, p, timeout, cap)\nResourceWarning: Enable tracemalloc to get the object allocation traceback\n/workspace/scratch/14185c8f871f/review_c800/portal/tools/readiness/wrapper.py:811: ResourceWarning: unclosed file <_io.BufferedReader name=3>\n  journal[\"reads\"][read_id] = {\"disposition\": INCONCLUSIVE, \"error\": str(e), \"attempt\": 1}\nResourceWarning: Enable tracemalloc to get the object allocation traceback\n/workspace/scratch/14185c8f871f/review_c800/portal/tools/readiness/wrapper.py:669: ResourceWarning: unclosed file <_io.BufferedReader name=3>\n  body, _ = run_kubectl_raw(kubectl, path, 5, 256 * 1024)\nResourceWarning: Enable tracemalloc to get the object allocation traceback\n/workspace/scratch/14185c8f871f/review_c800/portal/tools/readiness/wrapper.py:125: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/r4-suite-v6vuwcdp/p8c-readiness/bf1b41e52591a710ecea1899de82c9e6/S0.window.json' mode='r' encoding='UTF-8'>\n  return json.loads(open(path).read())\nResourceWarning: Enable tracemalloc to get the object allocation traceback\n/workspace/scratch/14185c8f871f/review_c800/portal/tools/readiness/test_readiness.py:188: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/r4-suite-v6vuwcdp/tmpx1uvjbvf/out.json' mode='r' encoding='UTF-8'>\n  j = json.load(open(out)) if os.path.exists(out) else None\nResourceWarning: Enable tracemalloc to get the object allocation traceback\nok\ntest_unknown_stage_nonzero (__main__.TestMain.test_unknown_stage_nonzero) ... /workspace/scratch/14185c8f871f/review_c800/portal/tools/readiness/test_readiness.py:180: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/r4-suite-v6vuwcdp/tmpot3ouerm/gate.json' mode='w' encoding='UTF-8'>\n  json.dump(gate(**(gate_override or {})), open(g, \"w\"))\nResourceWarning: Enable tracemalloc to get the object allocation traceback\nSTOP: unknown stage\nok\ntest_hc_db_fail (__main__.TestPredicates.test_hc_db_fail) ... ok\ntest_hc_db_missing (__main__.TestPredicates.test_hc_db_missing) ... ok\ntest_hc_db_ready (__main__.TestPredicates.test_hc_db_ready) ... ok\ntest_hc_gw_false (__main__.TestPredicates.test_hc_gw_false) ... ok\ntest_hc_gw_programmed (__main__.TestPredicates.test_hc_gw_programmed) ... ok\ntest_pr3_empty_inconclusive (__main__.TestPredicates.test_pr3_empty_inconclusive) ... ok\ntest_pr5_two_items_fail (__main__.TestPredicates.test_pr5_two_items_fail) ... ok\ntest_rerun_blocked (__main__.TestReservation.test_rerun_blocked) ... ok\ntest_clock_bare_number_rejected (__main__.TestWAL.test_clock_bare_number_rejected) ... ok\ntest_clock_missing (__main__.TestWAL.test_clock_missing) ... ok\ntest_clock_nan_rejected (__main__.TestWAL.test_clock_nan_rejected) ... ok\ntest_clock_trusted_flag_rejected (__main__.TestWAL.test_clock_trusted_flag_rejected) ... ok\ntest_failure_growth_wins (__main__.TestWAL.test_failure_growth_wins) ... ok\ntest_identity_swap (__main__.TestWAL.test_identity_swap) ... ok\ntest_missing_series (__main__.TestWAL.test_missing_series) ... ok\n\n----------------------------------------------------------------------\nRan 23 tests in 0.403s\n\nOK\n"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "portal/tools/test_release_qualification.py"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_c800",
+      "start_utc": "2026-11-05T18:07:12.854200+00:00",
+      "end_utc": "2026-11-05T18:07:12.964391+00:00",
+      "exit": 0,
+      "stdout": "",
+      "stderr": "test_on_not_coerced_to_bool (__main__.TestQualification.test_on_not_coerced_to_bool) ... ok\ntest_seed_not_release (__main__.TestQualification.test_seed_not_release) ... ok\ntest_templates_parse_and_qualify (__main__.TestQualification.test_templates_parse_and_qualify) ... ok\n\n----------------------------------------------------------------------\nRan 3 tests in 0.023s\n\nOK\n"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "portal/tools/test_release.py"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_c800",
+      "start_utc": "2026-11-05T18:07:12.964685+00:00",
+      "end_utc": "2026-11-05T18:07:13.079024+00:00",
+      "exit": 0,
+      "stdout": "",
+      "stderr": "....\n----------------------------------------------------------------------\nRan 4 tests in 0.001s\n\nOK\n"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "portal/tools/test_release_negative.py"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_c800",
+      "start_utc": "2026-11-05T18:07:13.079327+00:00",
+      "end_utc": "2026-11-05T18:07:13.558585+00:00",
+      "exit": 0,
+      "stdout": "",
+      "stderr": "test_digest_mode_accepts_valid (__main__.TestDigestPredicate.test_digest_mode_accepts_valid) ... ok\ntest_bad_provenance_fails (__main__.TestVerifiedBindings.test_bad_provenance_fails) ... ok\ntest_invalid_provenance_json_fails (__main__.TestVerifiedBindings.test_invalid_provenance_json_fails) ... ok\ntest_invalid_scan_json_fails (__main__.TestVerifiedBindings.test_invalid_scan_json_fails) ... ok\ntest_missing_artifact_fails (__main__.TestVerifiedBindings.test_missing_artifact_fails) ... ok\ntest_sbom_missing_spdx_fails (__main__.TestVerifiedBindings.test_sbom_missing_spdx_fails) ... ok\ntest_wrong_build_digest_fails (__main__.TestVerifiedBindings.test_wrong_build_digest_fails) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.400s\n\nOK\n"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "portal/tools/release_qualification.py"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_c800",
+      "start_utc": "2026-11-05T18:07:13.561465+00:00",
+      "end_utc": "2026-11-05T18:07:13.619741+00:00",
+      "exit": 0,
+      "stdout": "{\"errors\": [], \"qualified\": true}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "evidence/P8/20261105-f783e1e-architect-review/regression_test.py"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_c800",
+      "start_utc": "2026-11-05T18:07:13.620004+00:00",
+      "end_utc": "2026-11-05T18:07:20.891871+00:00",
+      "exit": 0,
+      "stdout": "",
+      "stderr": "test_existing_output_preserved (__main__.GateState.test_existing_output_preserved) ... ok\ntest_expired_gate_cannot_use_cli_now (__main__.GateState.test_expired_gate_cannot_use_cli_now) ... ok\ntest_s4_before_s0_no_requests (__main__.GateState.test_s4_before_s0_no_requests) ... ok\ntest_same_gate_new_state_directory_no_replay (__main__.GateState.test_same_gate_new_state_directory_no_replay) ... ok\ntest_wal_bytes_participate_in_package_hash (__main__.GateState.test_wal_bytes_participate_in_package_hash) ... ok\ntest_exception_diagnostic_cannot_echo_signed_query (__main__.PinDiagnostics.test_exception_diagnostic_cannot_echo_signed_query) ... ok\ntest_dns_ready_without_ports_rejected (__main__.Predicates.test_dns_ready_without_ports_rejected) ... ok\ntest_operator_running_not_ready_rejected (__main__.Predicates.test_operator_running_not_ready_rejected) ... ok\ntest_pr3_wrong_slice_ports_and_unready_rejected (__main__.Predicates.test_pr3_wrong_slice_ports_and_unready_rejected) ... ok\ntest_pr6_changed_felix_tier_baseline_rejected (__main__.Predicates.test_pr6_changed_felix_tier_baseline_rejected) ... ok\ntest_wrong_list_kind_and_explicit_null_continue_rejected (__main__.Predicates.test_wrong_list_kind_and_explicit_null_continue_rejected) ... ok\ntest_invalid_templates_rejected (__main__.Qualification.test_invalid_templates_rejected) ... ok\ntest_author_negative_fixtures_reach_named_check (__main__.Release.test_author_negative_fixtures_reach_named_check) ... ok\ntest_invalid_semantics_rejected_from_valid_baseline (__main__.Release.test_invalid_semantics_rejected_from_valid_baseline) ... ok\ntest_positive_payload_binding_control (__main__.Release.test_positive_payload_binding_control) ... ok\ntest_daemon_survives_until_build_step (__main__.Seed.test_daemon_survives_until_build_step) ... ok\ntest_failed_precheck_cannot_create_from_magic_env (__main__.Seed.test_failed_precheck_cannot_create_from_magic_env) ... ok\ntest_recipe_resolves_at_actual_working_directory (__main__.Seed.test_recipe_resolves_at_actual_working_directory) ... ok\ntest_stop_is_non_success (__main__.Seed.test_stop_is_non_success) ... ok\ntest_blocking_body_obeys_hard_deadline (__main__.Transport.test_blocking_body_obeys_hard_deadline) ... /workspace/scratch/14185c8f871f/review_c800/evidence/P8/20261105-f783e1e-architect-review/regression_test.py:172: ResourceWarning: unclosed file <_io.BufferedReader name=3>\n  except w.ReadError:pass\nResourceWarning: Enable tracemalloc to get the object allocation traceback\nok\ntest_clock_expired_wrong_node_not_valid (__main__.WALContract.test_clock_expired_wrong_node_not_valid) ... ok\ntest_default_http_has_no_environment_proxy (__main__.WALContract.test_default_http_has_no_environment_proxy) ... ok\ntest_duplicate_series_rejected (__main__.WALContract.test_duplicate_series_rejected) ... ok\ntest_first_baseline_not_progress_pass (__main__.WALContract.test_first_baseline_not_progress_pass) ... ok\ntest_future_metric_timestamp_rejected (__main__.WALContract.test_future_metric_timestamp_rejected) ... ok\ntest_pod_ip_restart_owner_change_rejected (__main__.WALContract.test_pod_ip_restart_owner_change_rejected) ... ok\ntest_primary_swap_after_sample_rejected (__main__.WALContract.test_primary_swap_after_sample_rejected) ... ok\ntest_sample_metadata_budget_5s_256k (__main__.WALContract.test_sample_metadata_budget_5s_256k) ... ok\n\n----------------------------------------------------------------------\nRan 28 tests in 7.027s\n\nOK\n"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "evidence/P8/20261105-64e36a6-architect-review/residual_test.py"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_c800",
+      "start_utc": "2026-11-05T18:07:20.899558+00:00",
+      "end_utc": "2026-11-05T18:07:22.661881+00:00",
+      "exit": 0,
+      "stdout": "",
+      "stderr": "test_api_tuple_requires_port (__main__.ListsAndBaseline.test_api_tuple_requires_port) ... ok\ntest_archived_nonempty_tier_felix_baseline_is_not_drift (__main__.ListsAndBaseline.test_archived_nonempty_tier_felix_baseline_is_not_drift) ... ok\ntest_complete_list_absent_continue_positive (__main__.ListsAndBaseline.test_complete_list_absent_continue_positive) ... ok\ntest_complete_list_empty_continue_positive (__main__.ListsAndBaseline.test_complete_list_empty_continue_positive) ... ok\ntest_explicit_null_continue_negative (__main__.ListsAndBaseline.test_explicit_null_continue_negative) ... ok\ntest_missing_expected_tiers_felix_not_pass (__main__.ListsAndBaseline.test_missing_expected_tiers_felix_not_pass) ... ok\ntest_pinned_cnp_api_positive (__main__.ListsAndBaseline.test_pinned_cnp_api_positive) ... ok\ntest_portal_required_generation_not_none_equals_none (__main__.ListsAndBaseline.test_portal_required_generation_not_none_equals_none) ... ok\ntest_unrecognized_api_suffix_negative (__main__.ListsAndBaseline.test_unrecognized_api_suffix_negative) ... ok\ntest_action_pin_error_diagnostic_no_signed_url (__main__.SeedAndRelease.test_action_pin_error_diagnostic_no_signed_url) ... ok\ntest_author_valid_baseline_really_passes_verified (__main__.SeedAndRelease.test_author_valid_baseline_really_passes_verified) ... ok\ntest_first_creation_mode_exists (__main__.SeedAndRelease.test_first_creation_mode_exists) ... ok\ntest_independent_valid_artifact_control (__main__.SeedAndRelease.test_independent_valid_artifact_control) ... ok\ntest_malformed_scan_leaf_rejected (__main__.SeedAndRelease.test_malformed_scan_leaf_rejected) ... ok\ntest_qualifier_missing_checkout_and_inherited_write_all (__main__.SeedAndRelease.test_qualifier_missing_checkout_and_inherited_write_all) ... ok\ntest_wrong_registry_image_binding_rejected (__main__.SeedAndRelease.test_wrong_registry_image_binding_rejected) ... ok\ntest_child_stdout_eof_is_not_child_failure (__main__.StateAndExecution.test_child_stdout_eof_is_not_child_failure) ... /workspace/scratch/14185c8f871f/review_c800/evidence/P8/20261105-64e36a6-architect-review/residual_test.py:97: ResourceWarning: unclosed file <_io.BufferedReader name=3>\n  body,status=w.run_kubectl_raw(str(f),'/api/v1/pods',1,1024)\nResourceWarning: Enable tracemalloc to get the object allocation traceback\nok\ntest_failed_stage_cannot_authorize_next (__main__.StateAndExecution.test_failed_stage_cannot_authorize_next) ... ok\ntest_replay_new_parent_directory_rejected (__main__.StateAndExecution.test_replay_new_parent_directory_rejected) ... ok\ntest_unbound_plain_text_receipt_not_authority (__main__.StateAndExecution.test_unbound_plain_text_receipt_not_authority) ... ok\ntest_absent_owner_not_identity_proof (__main__.WALRoutes.test_absent_owner_not_identity_proof) ... ok\ntest_clock_gate_binding_checked_on_actual_sample_route (__main__.WALRoutes.test_clock_gate_binding_checked_on_actual_sample_route) ... ok\ntest_future_clock_not_accepted (__main__.WALRoutes.test_future_clock_not_accepted) ... ok\ntest_main_sample_deadline_enforced (__main__.WALRoutes.test_main_sample_deadline_enforced) ... ok\ntest_positive_fresh_progress_control (__main__.WALRoutes.test_positive_fresh_progress_control) ... ok\n\n----------------------------------------------------------------------\nRan 25 tests in 1.586s\n\nOK\n"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "scheduler_regression_test.py"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_c800",
+      "start_utc": "2026-11-05T18:07:22.665283+00:00",
+      "end_utc": "2026-11-05T18:07:23.589637+00:00",
+      "exit": 0,
+      "stdout": "",
+      "stderr": "test_dns_ports_on_empty_slice_not_proof_for_ready_endpoint (__main__.ExistingReadContract.test_dns_ports_on_empty_slice_not_proof_for_ready_endpoint) ... ok\ntest_gateway_missing_generation_not_none_equals_none (__main__.ExistingReadContract.test_gateway_missing_generation_not_none_equals_none) ... ok\ntest_pr3_port_belongs_to_same_slice_as_addresses (__main__.ExistingReadContract.test_pr3_port_belongs_to_same_slice_as_addresses) ... ok\ntest_pr6_changed_bpf_field_not_silently_ignored (__main__.ExistingReadContract.test_pr6_changed_bpf_field_not_silently_ignored) ... ok\ntest_budget_counts_requests_and_bytes_not_logical_checks (__main__.MainContract.test_budget_counts_requests_and_bytes_not_logical_checks) ... ok\ntest_corrupt_budget_cannot_reset_to_zero (__main__.MainContract.test_corrupt_budget_cannot_reset_to_zero) ... ok\ntest_crash_inflight_marker_does_not_authorize_second_process (__main__.MainContract.test_crash_inflight_marker_does_not_authorize_second_process) ... ok\ntest_exhausted_budget_blocks_before_any_request (__main__.MainContract.test_exhausted_budget_blocks_before_any_request) ... ok\ntest_first_valid_baseline_is_preserved_without_claiming_progress (__main__.MainContract.test_first_valid_baseline_is_preserved_without_claiming_progress) ... ok\ntest_last_response_cannot_cross_sample_deadline_and_pass (__main__.MainContract.test_last_response_cannot_cross_sample_deadline_and_pass) ... ok\ntest_new_state_directory_does_not_reset_budget (__main__.MainContract.test_new_state_directory_does_not_reset_budget) ... ok\ntest_positive_prebound_sample_control (__main__.MainContract.test_positive_prebound_sample_control) ... ok\ntest_s0_collects_own_baseline_then_progress_in_one_window (__main__.MainContract.test_s0_collects_own_baseline_then_progress_in_one_window) ... ok\ntest_same_clock_new_invocation_is_not_second_slot (__main__.MainContract.test_same_clock_new_invocation_is_not_second_slot) ... ok\n\n----------------------------------------------------------------------\nRan 14 tests in 0.168s\n\nOK\n"
+    }
+  ]
+}

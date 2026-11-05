@@ -1,0 +1,40 @@
+{
+  "utc": "2026-11-05T18:15:21.132099+00:00",
+  "method": "Python finite-pattern scan on frozen exact publication inputs; output not in input set",
+  "patterns": {
+    "private_key": "-----BEGIN (?:OPENSSH|RSA|EC|DSA|PRIVATE).*?KEY-----",
+    "github_token": "\\b(?:ghp_|github_pat_)[A-Za-z0-9_]{20,}",
+    "aws_access_key": "\\bAKIA[0-9A-Z]{16}\\b",
+    "url_userinfo": "https?://[^\\s/\"\\']+:[^\\s/\"\\']+@",
+    "signed_query_value": "[?&](?:X-Amz-Signature|X-Goog-Signature|sig)=[A-Za-z0-9%+/=_-]{20,}"
+  },
+  "frozen": [
+    {
+      "file": "r5-review.md",
+      "sha256": "eda10f56187b3cadba189b2116e29628394e22cb5c1caaebf9c02cbb371f001c"
+    },
+    {
+      "file": "r5-plan-update.md",
+      "sha256": "836a6f793bf9de0eee770e0501424bf071716263ec9f70ba68eaadaded7bc87a"
+    },
+    {
+      "file": "r5_contract_test.py",
+      "sha256": "d063de3812278232e4eb10ddcc2d96b934c2d17d4a53c08594c3f15357c52437"
+    },
+    {
+      "file": "r5-contract-execution.json",
+      "sha256": "81fc388417dd5204aefe340a41bb3d178f7bbfaacbae759c475f48ce25f753d3"
+    },
+    {
+      "file": "r5-reexecution.json",
+      "sha256": "54b0f35c7c9ebbb60ffc5dcc0ef02d5a5af7ba0754de9e238133b76bc1b2b25b"
+    },
+    {
+      "file": "r5-source-audit.json",
+      "sha256": "96c7d227e9aedc0a693595a996f0c23a3266abbdd515af8269fb84c40f767744"
+    }
+  ],
+  "findings": [],
+  "result": "NO_MATCH",
+  "limits": "Heuristic only, not proof of absence of every credential; fixtures are synthetic."
+}
