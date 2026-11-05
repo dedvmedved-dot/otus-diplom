@@ -1,0 +1,29 @@
+SOURCE_SHA=efc69293ed0745777a1cb218599fe7124ced5f9a
+python=Python 3.11.15 cwd=/root/otus-diplom
+
+OK
+aggregate=INCONCLUSIVE
+Ran 3 tests in 0.041s
+
+OK
+Ran 4 tests in 0.002s
+
+OK
+Ran 7 tests in 0.649s
+
+OK
+{"errors": [], "qualified": true}
+Ran 28 tests in 7.231s
+
+OK
+Ran 25 tests in 0.700s
+
+OK
+Ran 14 tests in 0.061s
+
+OK
+postgres       VERIFIED
+cache: /tmp/p8c-pin-cache
+pin_exit=0
+bash_OK
+py_OK
