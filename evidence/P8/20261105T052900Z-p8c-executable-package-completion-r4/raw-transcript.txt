@@ -1,0 +1,34 @@
+SOURCE_SHA=9a0501453017258830a96eab9e04d6fa1ab81e32
+=== A readiness (23) ===
+
+OK
+aggregate=INCONCLUSIVE
+=== B qualification (3) ===
+Ran 3 tests in 0.037s
+
+OK
+=== C release (4) ===
+Ran 4 tests in 0.001s
+
+OK
+=== D release negative (7) ===
+Ran 7 tests in 0.578s
+
+OK
+=== E qual check ===
+{"errors": [], "qualified": true}
+=== F prev regression (28) ===
+Ran 28 tests in 7.217s
+
+OK
+=== G residual (25) ===
+Ran 25 tests in 0.564s
+
+FAILED (failures=1)
+=== H pin verify (cached) ===
+postgres       VERIFIED
+cache: /tmp/p8c-pin-cache
+exit=0
+=== syntax ===
+bash_OK
+py_OK
