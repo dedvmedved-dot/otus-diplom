@@ -180,7 +180,7 @@ def validate_clock(evidence, gate_hash=None, now=None):
 
 
 def wal_sample(cluster_doc, pod_doc, metrics_text, cluster_after, pod_after, clock_evidence,
-               baseline=None, op_end_utc=None, now=None, gate_hash=None):
+               baseline=None, op_end_utc=None, now=None, gate_hash=None, baseline_observed_at=None):
     """One 5-request sample; returns (disposition, metrics, detail)."""
     ok, detail = validate_clock(clock_evidence, gate_hash=gate_hash, now=now)
     if not ok:
@@ -244,7 +244,8 @@ def wal_sample(cluster_doc, pod_doc, metrics_text, cluster_after, pod_after, clo
     if m["cnpg_pg_stat_archiver_stats_reset_time"] != baseline.get("cnpg_pg_stat_archiver_stats_reset_time", None):
         return INCONCLUSIVE, m, "stats reset"
     grown = m["cnpg_pg_stat_archiver_archived_count"] > baseline.get("cnpg_pg_stat_archiver_archived_count", 0)
-    fresh = m["cnpg_pg_stat_archiver_last_archived_time"] > baseline.get("cnpg_pg_stat_archiver_last_archived_time", 0)
+    fresh_bound = baseline_observed_at if baseline_observed_at is not None else baseline.get("cnpg_pg_stat_archiver_last_archived_time", 0)
+    fresh = m["cnpg_pg_stat_archiver_last_archived_time"] > fresh_bound
     if grown and fresh:
         if op_end_utc is not None:
             if m["cnpg_pg_stat_archiver_last_archived_time"] > op_end_utc + CLOCK_SKEW_BOUND:

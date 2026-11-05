@@ -107,7 +107,7 @@ class TestPredicates(unittest.TestCase):
         self.assertEqual(wrapper.pred_pr5(d)[0], wrapper.FAIL)
 
     def test_pr3_empty_inconclusive(self):
-        d = {"items": []}
+        d = {"kind": "EndpointSliceList", "apiVersion": "discovery.k8s.io/v1", "items": []}
         self.assertEqual(wrapper.pred_pr3(d)[0], wrapper.INCONCLUSIVE)
 
 

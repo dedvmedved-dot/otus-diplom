@@ -90,6 +90,7 @@ def atomic_reserve(path):
 RESERVATION_BASE = os.path.join(tempfile.gettempdir(), "p8c-readiness")
 
 _TRANSPORT = {"requests": 0, "bytes": 0}
+_READ_CACHE = {}
 
 
 def _reset_transport():
@@ -97,10 +98,24 @@ def _reset_transport():
     _TRANSPORT = {"requests": 0, "bytes": 0}
 
 
-def _count_transport(nbytes):
+def _reset_read_cache():
+    global _READ_CACHE
+    _READ_CACHE = {}
+
+
+def _count_request():
     global _TRANSPORT
     _TRANSPORT["requests"] += 1
-    _TRANSPORT["bytes"] += int(nbytes)
+
+
+def _count_bytes(n):
+    global _TRANSPORT
+    _TRANSPORT["bytes"] += int(n)
+
+
+def _count_transport(nbytes):
+    _count_request()
+    _count_bytes(nbytes)
 
 
 def budget_path(gate):
@@ -149,14 +164,9 @@ def open_window(gate, stage):
             return "blocked", "stage already completed (no replay)"
         if status == "inflight":
             return "blocked", "window inflight (crash/UNKNOWN_OUTCOME; no retry)"
-        if status != "clean_failed":
-            return "blocked", "window state invalid"
-        if st.get("attempts", 0) >= 3:
-            return "blocked", "stage slots exhausted (no retry)"
-        st["attempts"] = st.get("attempts", 0) + 1
-        st["status"] = "inflight"
-        write_window_state(path, st)
-        return "retry", st
+        if status == "failed":
+            return "blocked", "window exhausted (no retry)"
+        return "blocked", "window state invalid"
     # first attempt: exclusive create
     st = {"stage": stage, "source_sha": gate.get("source_sha"),
           "package_sha256": gate.get("package_sha256"), "attempts": 1,
@@ -173,7 +183,7 @@ def open_window(gate, stage):
 def fail_window(gate, stage):
     path = reservation_path(gate, stage)
     st = read_window_state(path) or {}
-    st["status"] = "clean_failed"
+    st["status"] = "failed"
     write_window_state(path, st)
 
 
@@ -427,6 +437,8 @@ def _ready_eps(doc):
 
 
 def pred_pr3(doc):
+    if not isinstance(doc, dict) or doc.get("kind") != "EndpointSliceList":
+        return FAIL, "PR-3 wrong resource kind"
     addrs = set()
     saw_ready = False
     for it in doc.get("items", []):
@@ -471,8 +483,9 @@ def pred_pr5(doc):
     ok = any(p.get("port") == 443 and p.get("targetPort") in (10443, "10443") and p.get("protocol") == "TCP" for p in ports)
     if not ok:
         return FAIL, "443->10443 tuple missing"
-    if not svc.get("status", {}).get("loadBalancer", {}).get("ingress"):
-        return INCONCLUSIVE, "no LB IP"
+    ingress = svc.get("status", {}).get("loadBalancer", {}).get("ingress", []) or []
+    if not ingress or not any(i.get("ip") or i.get("hostname") for i in ingress if isinstance(i, dict)):
+        return INCONCLUSIVE, "no LB IP/hostname identity"
     return PASS, "exact dataplane Service"
 
 
@@ -501,11 +514,12 @@ def pred_pr6(docs):
     if f.get("metadata", {}).get("name") != "default":
         return FAIL, "felix name drift"
     fspec = f.get("spec", {}) if isinstance(f.get("spec"), dict) else {}
+    if fspec.get("nftablesMode") != "Auto":
+        return FAIL, "felix nftablesMode missing/drift"
     for k, v in fspec.items():
         if k == "nftablesMode":
-            if v != "Auto":
-                return FAIL, "felix nftablesMode drift"
-        elif v is not None:
+            continue
+        if v is not None:
             return FAIL, "felix field drift: " + k
     return PASS, "policy empty + tier/felix match accepted baseline"
 
@@ -592,8 +606,13 @@ def run_read(readset, read_id, kubectl, timeout=15, cap=1048576):
     paths = [spec["path"]] if "path" in spec else spec.get("paths", [])
     out = []
     for p in paths:
-        body, _ = run_kubectl_raw(kubectl, p, timeout, cap)
-        _count_transport(len(body))
+        if p in _READ_CACHE:
+            body = _READ_CACHE[p]
+        else:
+            _count_request()
+            body, _ = run_kubectl_raw(kubectl, p, timeout, cap)
+            _count_bytes(len(body))
+            _READ_CACHE[p] = body
         out.append(validate_envelope(body, expect_list or read_id == "PR-6"))
     return out if read_id == "PR-6" else out[0]
 
@@ -666,10 +685,11 @@ def run_wal_sample(kubectl, http_get, clock_evidence, gate):
     def raw(path):
         if time.monotonic() - start > wal.SAMPLE_DEADLINE:
             raise ReadError("sample deadline exceeded")
+        _count_request()
         body, _ = run_kubectl_raw(kubectl, path, 5, 256 * 1024)
         if time.monotonic() - start > wal.SAMPLE_DEADLINE:
             raise ReadError("sample deadline exceeded")
-        _count_transport(len(body))
+        _count_bytes(len(body))
         return validate_envelope(body, False)
 
     try:
@@ -688,8 +708,9 @@ def run_wal_sample(kubectl, http_get, clock_evidence, gate):
         if time.monotonic() - start > wal.SAMPLE_DEADLINE:
             return INCONCLUSIVE, "sample deadline exceeded", None
         try:
+            _count_request()
             metrics_text = http_get("http://%s:9187/metrics" % pod_ip, wal.REQ_TIMEOUT, wal.METRIC_CAP).decode()
-            _count_transport(len(metrics_text.encode()))
+            _count_bytes(len(metrics_text.encode()))
         except ReadError as e:
             return INCONCLUSIVE, str(e), None
         if time.monotonic() - start > wal.SAMPLE_DEADLINE:
@@ -699,29 +720,39 @@ def run_wal_sample(kubectl, http_get, clock_evidence, gate):
         disp, m, detail = wal.wal_sample(cluster, pod, metrics_text, cluster_after, pod_after,
                                          clock_evidence, baseline=gate.get("wal_baseline"),
                                          op_end_utc=gate.get("operation_end_utc"),
-                                         gate_hash=gate.get("package_sha256"))
+                                         gate_hash=gate.get("package_sha256"),
+                                         baseline_observed_at=gate.get("baseline_observed_at"))
         return disp, detail, m
     except ReadError as e:
         return INCONCLUSIVE, str(e), None
 
 
-def run_wal_window(kubectl, http_get, gate, state_dir, clock_evidence):
-    """WAL observation window: <=3 samples at offsets 0/300/600s; baseline persists across slots."""
+def run_wal_window(kubectl, http_get, gate, state_dir, clock_evidence, stage="S0"):
+    """WAL observation window: <=3 samples at absolute offsets 0/300/600s (sample elapsed time accounted)."""
+    if stage != "S0" and not gate.get("operation_end_utc"):
+        return INCONCLUSIVE, "no operation boundary for post-operation stage"
     baseline = gate.get("wal_baseline") or read_wal_baseline(state_dir, gate)
+    baseline_observed_at = None
+    slot_start = time.monotonic()
     for slot in range(wal.WINDOW_SLOTS):
         if slot > 0:
-            time.sleep(300)
+            elapsed = time.monotonic() - slot_start
+            time.sleep(max(0.0, 300.0 - elapsed))
+            slot_start = time.monotonic()
         wgate = dict(gate)
         if baseline is not None:
             wgate["wal_baseline"] = baseline
+        if baseline_observed_at is not None:
+            wgate["baseline_observed_at"] = baseline_observed_at
         res = run_wal_sample(kubectl, http_get, clock_evidence, wgate)
         if isinstance(res, tuple) and len(res) == 3:
             disp, detail, m = res
         else:
             disp, detail, m = res[0], res[1], None
-        if m is not None:
+        if m is not None and disp != FAIL:
             persist_wal_baseline(state_dir, gate, m)
             baseline = m
+            baseline_observed_at = time.time()
         if disp == PASS:
             return PASS, detail
         if disp == FAIL:
@@ -790,15 +821,23 @@ def main(argv):
     if budget_exhausted(budget):
         print("STOP: budget exhausted", file=sys.stderr)
         return 2
+    if any(v < 0 for v in (budget.get("requests", 0), budget.get("bytes", 0), budget.get("seconds", 0.0))):
+        print("STOP: budget state negative (corrupt)", file=sys.stderr)
+        return 2
     _reset_transport()
-    for read_id, spec in readset["reads"].items():
+    _reset_read_cache()
+    read_ids = list(readset["reads"].keys())
+    wal_id = "HC-WAL-PROGRESS" if "HC-WAL-PROGRESS" in readset["reads"] else None
+    ordered = ([wal_id] + [r for r in read_ids if r != wal_id]) if wal_id else read_ids
+    for read_id in ordered:
+        spec = readset["reads"][read_id]
         if args.stage not in spec["stages"]:
             journal["reads"][read_id] = {"disposition": NOT_APPLICABLE}
             continue
         start = time.monotonic()
         try:
             if spec.get("method") == "wal":
-                disp, detail = run_wal_window(args.kubectl, default_http_get, gate, args.state_dir, gate.get("clock_evidence"))
+                disp, detail = run_wal_window(args.kubectl, default_http_get, gate, args.state_dir, gate.get("clock_evidence"), args.stage)
                 journal["reads"][read_id] = {"disposition": disp, "detail": detail,
                                              "attempt": 1, "duration_ms": int((time.monotonic() - start) * 1000)}
                 continue

@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import re
 import sys
+import time
 import urllib.request
 
 REPO = 'dedvmedved-dot/otus-diplom'
@@ -111,6 +112,18 @@ def main():
                 or not re.fullmatch(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z', str(g.get('issued_at_utc', ''))) \
                 or not isinstance(g.get('expiry_hours'), int) or not (0 < g['expiry_hours'] <= 24):
             raise ValueError('first-creation gate incomplete/invalid')
+        if g.get('mode') != 'LIVE':
+            raise ValueError('first-creation requires mode=LIVE (not TEST_ONLY)')
+        import calendar
+        try:
+            issued = calendar.timegm(time.strptime(g['issued_at_utc'], '%Y-%m-%dT%H:%M:%SZ'))
+        except Exception:
+            raise ValueError('first-creation issued_at unparseable')
+        now = time.time()
+        if issued > now + 300:
+            raise ValueError('first-creation issued_at in the future')
+        if issued + g['expiry_hours'] * 3600 < now:
+            raise ValueError('first-creation gate expired')
         print(json.dumps({'first_creation': 'VERIFIED', 'source_sha': g['source_sha']}))
     elif mode == 'private':
         token = os.environ['GITHUB_TOKEN']
