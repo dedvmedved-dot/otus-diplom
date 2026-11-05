@@ -1,5 +1,17 @@
 # P8C NetworkPolicy plan (D1) — read-only preparation, not yet applied
 
+## R4 executable-package review — 2026-11-05
+
+Reviewed source 317ebc7ab1839f7dac5a22690b24aabafcc98283; evidence 974e069f6bb7c418c7d9683d75cfd80bfa3fba87.
+Authority: docs/architecture/P8C_REVIEW_974e069_EXECUTABLE_PACKAGE_R4_20261105.md.
+Previous 90 test methods independently PASS. New production-route controls: 14 methods / 13 failures / 0 errors.
+Scheduler is not wired into main; baseline, real request/byte budgets, one-run authority and hard deadlines remain source work.
+Historical R4 raw transcript has previous checkpoint SHA and FAILED (failures=1); correct through new evidence, not overwrite.
+PRIMARY HERMES continues existing completion task through full offline S0→S4 and release/seed routes, no new permission stop.
+SOURCE_WORK=IN_PROGRESS/PARTIAL; SOURCE_PACKAGE=REWORK_REQUIRED; no execution gate.
+Accepted app/policy/collector/design untouched. CI/live/SSH/private-registry/apply/production remain NOT_AUTHORIZED.
+
+
 ## R2 executable-package review — 2026-11-05
 
 Reviewed source 235b41295521096e308d545045f1eec3d256bec3; evidence 64e36a6ce8558a46547ab58bed90acf57bc5fafd.
@@ -213,3 +225,4 @@ Record preexisting names/UIDs before rollout. If any name already exists STOP;
 never delete a preexisting policy. Each phase requires CNPG Ready3/3, archiving,
 BSL, DNS/API/operator/monitoring status reads; degradation stops the rollout and
 rolls back only UIDs created by that rollout. Rollback execution remains gated.
+

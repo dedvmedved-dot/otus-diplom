@@ -1,0 +1,40 @@
+{
+  "utc": "2026-11-05T09:43:46.131677+00:00",
+  "method": "Python finite secret-pattern heuristic on frozen exact publication inputs; output outside input set",
+  "patterns": {
+    "private_key": "-----BEGIN (?:OPENSSH|RSA|EC|DSA|PRIVATE).*?KEY-----",
+    "github_token": "\\b(?:ghp_|github_pat_)[A-Za-z0-9_]{20,}",
+    "aws_access_key": "\\bAKIA[0-9A-Z]{16}\\b",
+    "url_userinfo": "https?://[^\\s/\"\\']+:[^\\s/\"\\']+@",
+    "signed_query_value": "[?&](?:X-Amz-Signature|X-Goog-Signature|sig)=[A-Za-z0-9%+/=_-]{20,}"
+  },
+  "frozen": [
+    {
+      "file": "r4-review.md",
+      "sha256": "c8591c4cd741a7ccf43c739ed8897d7714a95c94e3619ae8b13b0b79928e8a1f"
+    },
+    {
+      "file": "plan-update.md",
+      "sha256": "85194e2765ca76705f04ce1c8a58bf665f8d04e9ca683215d3fa861d4278e3b7"
+    },
+    {
+      "file": "scheduler_regression_test.py",
+      "sha256": "fee4a8fd3514da50d947ff71f2a0e05cffaf022a16a3d97c9439115d25e20189"
+    },
+    {
+      "file": "r4-scheduler-execution.json",
+      "sha256": "9bffe75147c510c58e538b5c742eec29fb6a35f8f9165635ae95a36e3d53e94d"
+    },
+    {
+      "file": "r4-reexecution.json",
+      "sha256": "3d5bb99ba40b9c507519ae94fa13aad6d4455b03d249a1774204b4448b8a302a"
+    },
+    {
+      "file": "r4-source-audit.json",
+      "sha256": "cdb664420c56394962f6d92d9b868835484fb5cddf386ff353dc611ac011bbf9"
+    }
+  ],
+  "findings": [],
+  "result": "NO_MATCH",
+  "limits": "Heuristic only; synthetic fixtures have no live secrets. Does not prove absence of every possible credential."
+}
