@@ -178,7 +178,9 @@ class TestMain(unittest.TestCase):
         d = tempfile.mkdtemp()
         g = os.path.join(d, "gate.json")
         json.dump(gate(**(gate_override or {})), open(g, "w"))
-        with patch.object(wrapper.time, "time", return_value=epoc() + 60):
+        with patch.object(wrapper.time, "time", return_value=epoc() + 60), \
+             patch.object(wrapper.time, "sleep", return_value=None), \
+             patch.object(wrapper.time, "monotonic", return_value=1.0):
             rc = wrapper.main(["--gate", g, "--out", os.path.join(d, "out.json"),
                                "--state-dir", os.path.join(d, "state"), "--stage", stage,
                                "--kubectl", fake_kubectl(fixtures), "--now", str(epoc() + 60)])

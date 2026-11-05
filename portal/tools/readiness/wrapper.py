@@ -89,6 +89,29 @@ def atomic_reserve(path):
 
 RESERVATION_BASE = os.path.join(tempfile.gettempdir(), "p8c-readiness")
 
+_TRANSPORT = {"requests": 0, "bytes": 0}
+
+
+def _reset_transport():
+    global _TRANSPORT
+    _TRANSPORT = {"requests": 0, "bytes": 0}
+
+
+def _count_transport(nbytes):
+    global _TRANSPORT
+    _TRANSPORT["requests"] += 1
+    _TRANSPORT["bytes"] += int(nbytes)
+
+
+def budget_path(gate):
+    """Budget is keyed by stable package identity (not state/output path)."""
+    return os.path.join(RESERVATION_BASE, str(gate.get("package_sha256", ""))[:32], "budget.json")
+
+
+def budget_exhausted(budget):
+    return (budget.get("requests", 0) >= 90 or budget.get("bytes", 0) >= 36 * 1024 * 1024
+            or budget.get("seconds", 0.0) >= 3960)
+
 
 def reservation_path(gate, stage):
     """Stable one-run authority location: keyed by package identity, NOT state/output path."""
@@ -113,23 +136,31 @@ def write_window_state(path, st):
 
 
 def open_window(gate, stage):
-    """Acquire or retry a stage window. Returns ('first'|'retry', state) or ('blocked', reason)."""
+    """Acquire or retry a stage window. A clean non-PASS allows retry (<=3 slots);
+    an inflight (crashed) or completed window is blocked (no retry/replay)."""
     path = reservation_path(gate, stage)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     st = read_window_state(path)
     if st is not None:
         if not isinstance(st, dict) or st.get("source_sha") != gate.get("source_sha"):
             return "blocked", "window state unbound/corrupt"
-        if st.get("completed"):
+        status = st.get("status", "inflight")
+        if status == "completed":
             return "blocked", "stage already completed (no replay)"
+        if status == "inflight":
+            return "blocked", "window inflight (crash/UNKNOWN_OUTCOME; no retry)"
+        if status != "clean_failed":
+            return "blocked", "window state invalid"
         if st.get("attempts", 0) >= 3:
             return "blocked", "stage slots exhausted (no retry)"
         st["attempts"] = st.get("attempts", 0) + 1
+        st["status"] = "inflight"
         write_window_state(path, st)
         return "retry", st
     # first attempt: exclusive create
     st = {"stage": stage, "source_sha": gate.get("source_sha"),
-          "package_sha256": gate.get("package_sha256"), "attempts": 1, "completed": False}
+          "package_sha256": gate.get("package_sha256"), "attempts": 1,
+          "status": "inflight", "completed": False}
     try:
         fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
         os.close(fd)
@@ -139,9 +170,17 @@ def open_window(gate, stage):
     return "first", st
 
 
+def fail_window(gate, stage):
+    path = reservation_path(gate, stage)
+    st = read_window_state(path) or {}
+    st["status"] = "clean_failed"
+    write_window_state(path, st)
+
+
 def complete_window(gate, stage):
     path = reservation_path(gate, stage)
     st = read_window_state(path) or {}
+    st["status"] = "completed"
     st["completed"] = True
     write_window_state(path, st)
 
@@ -192,7 +231,7 @@ def read_budget(state_dir):
     try:
         return json.loads(open(p).read())
     except Exception:
-        return {"requests": 0, "bytes": 0, "seconds": 0.0}
+        raise ReadError("budget state corrupt")
 
 
 def write_budget(state_dir, budget):
@@ -389,24 +428,29 @@ def _ready_eps(doc):
 
 def pred_pr3(doc):
     addrs = set()
-    saw_port = False
-    saw_endpoint = False
+    saw_ready = False
     for it in doc.get("items", []):
+        item_addrs = set()
+        item_has_port = False
         for port in it.get("ports", []):
             if port.get("port") == 6443 and port.get("protocol") == "TCP":
-                saw_port = True
+                item_has_port = True
             else:
                 return FAIL, "unexpected API port/protocol"
         for ep in it.get("endpoints", []):
             if ep.get("conditions", {}).get("ready") is not True:
                 return FAIL, "unready API endpoint"
-            saw_endpoint = True
             for a in ep.get("addresses", []):
-                addrs.add(a)
-    if not saw_endpoint:
+                item_addrs.add(a)
+        if item_addrs and not item_has_port:
+            return FAIL, "API addresses without port in same slice"
+        if item_has_port and not item_addrs:
+            return FAIL, "API port without addresses in same slice"
+        addrs |= item_addrs
+        if item_addrs:
+            saw_ready = True
+    if not saw_ready:
         return INCONCLUSIVE, "no API endpoints"
-    if not saw_port:
-        return FAIL, "API port tuple missing"
     want = {"172.30.140.101", "172.30.140.102", "172.30.140.103"}
     if addrs == want:
         return PASS, "exact ready API tuples"
@@ -449,13 +493,20 @@ def pred_pr6(docs):
     expected_tier = {("default", 1000000, "Deny"), ("kube-admin", 1000, "Pass"), ("kube-baseline", 10000000, "Pass")}
     if tier_sig != expected_tier:
         return FAIL, "tier baseline drift"
-    # Felix baseline (accepted): default with nftablesMode=Auto
+    # Felix baseline (accepted): default with nftablesMode=Auto, all other fields null/absent
     felix = docs[6].get("items", [])
     if len(felix) != 1 or not isinstance(felix[0], dict):
         return FAIL, "felix baseline missing"
     f = felix[0]
-    if f.get("metadata", {}).get("name") != "default" or f.get("spec", {}).get("nftablesMode") != "Auto":
-        return FAIL, "felix baseline drift"
+    if f.get("metadata", {}).get("name") != "default":
+        return FAIL, "felix name drift"
+    fspec = f.get("spec", {}) if isinstance(f.get("spec"), dict) else {}
+    for k, v in fspec.items():
+        if k == "nftablesMode":
+            if v != "Auto":
+                return FAIL, "felix nftablesMode drift"
+        elif v is not None:
+            return FAIL, "felix field drift: " + k
     return PASS, "policy empty + tier/felix match accepted baseline"
 
 
@@ -473,22 +524,20 @@ def pred_hc_op(doc):
 
 
 def pred_hc_dns(doc):
-    ready = False
     for it in doc.get("items", []):
+        ports = {(p.get("port"), p.get("protocol")) for p in it.get("ports", [])}
+        has_53 = (53, "TCP") in ports and (53, "UDP") in ports
+        ready = False
         for ep in it.get("endpoints", []):
             if ep.get("conditions", {}).get("ready") is True:
                 if not ep.get("addresses"):
                     return FAIL, "DNS ready endpoint without address"
                 ready = True
-    if not ready:
-        return INCONCLUSIVE, "no ready DNS endpoints"
-    ports = set()
-    for it in doc.get("items", []):
-        for port in it.get("ports", []):
-            ports.add((port.get("port"), port.get("protocol")))
-    if (53, "TCP") in ports and (53, "UDP") in ports:
-        return PASS, "DNS ready with 53/TCP+UDP"
-    return INCONCLUSIVE, "DNS ports incomplete"
+        if ready and not has_53:
+            return FAIL, "DNS ready endpoints without 53/TCP+UDP in same slice"
+        if has_53 and ready:
+            return PASS, "DNS ready with 53/TCP+UDP in same slice"
+    return INCONCLUSIVE, "no ready DNS slice with 53/TCP+UDP"
 
 
 def pred_hc_portal(doc):
@@ -506,11 +555,14 @@ def pred_hc_portal(doc):
 
 
 def pred_hc_gw(doc):
+    meta_gen = doc.get("metadata", {}).get("generation")
+    if not isinstance(meta_gen, int):
+        return INCONCLUSIVE, "gateway generation missing"
     st = doc.get("status", {})
     conds = {c.get("type"): c for c in st.get("conditions", []) if isinstance(c, dict)}
     acc, prog = conds.get("Accepted"), conds.get("Programmed")
     if acc and prog and acc.get("status") == "True" and prog.get("status") == "True":
-        if acc.get("observedGeneration") == doc.get("metadata", {}).get("generation") and prog.get("observedGeneration") == doc.get("metadata", {}).get("generation"):
+        if acc.get("observedGeneration") == meta_gen and prog.get("observedGeneration") == meta_gen:
             return PASS, "Gateway programmed"
     if acc and acc.get("status") == "False" or prog and prog.get("status") == "False":
         return FAIL, "Gateway not programmed"
@@ -541,6 +593,7 @@ def run_read(readset, read_id, kubectl, timeout=15, cap=1048576):
     out = []
     for p in paths:
         body, _ = run_kubectl_raw(kubectl, p, timeout, cap)
+        _count_transport(len(body))
         out.append(validate_envelope(body, expect_list or read_id == "PR-6"))
     return out if read_id == "PR-6" else out[0]
 
@@ -614,35 +667,66 @@ def run_wal_sample(kubectl, http_get, clock_evidence, gate):
         if time.monotonic() - start > wal.SAMPLE_DEADLINE:
             raise ReadError("sample deadline exceeded")
         body, _ = run_kubectl_raw(kubectl, path, 5, 256 * 1024)
+        if time.monotonic() - start > wal.SAMPLE_DEADLINE:
+            raise ReadError("sample deadline exceeded")
+        _count_transport(len(body))
         return validate_envelope(body, False)
 
-    cluster_path = "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
-    cluster = raw(cluster_path)
-    primary = cluster.get("status", {}).get("currentPrimary")
-    if not primary:
-        return INCONCLUSIVE, "no currentPrimary", None
-    if not re.fullmatch(r"[a-z0-9]([-a-z0-9]*[a-z0-9])?", str(primary)):
-        return INCONCLUSIVE, "invalid primary name", None
-    pod_path = "/api/v1/namespaces/portal/pods/" + str(primary)
-    pod = raw(pod_path)
-    pod_ip = pod.get("status", {}).get("podIP")
-    if not pod_ip:
-        return INCONCLUSIVE, "pod IP missing", None
-    if time.monotonic() - start > wal.SAMPLE_DEADLINE:
-        return INCONCLUSIVE, "sample deadline exceeded", None
     try:
-        metrics_text = http_get("http://%s:9187/metrics" % pod_ip, wal.REQ_TIMEOUT, wal.METRIC_CAP).decode()
+        cluster_path = "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db"
+        cluster = raw(cluster_path)
+        primary = cluster.get("status", {}).get("currentPrimary")
+        if not primary:
+            return INCONCLUSIVE, "no currentPrimary", None
+        if not re.fullmatch(r"[a-z0-9]([-a-z0-9]*[a-z0-9])?", str(primary)):
+            return INCONCLUSIVE, "invalid primary name", None
+        pod_path = "/api/v1/namespaces/portal/pods/" + str(primary)
+        pod = raw(pod_path)
+        pod_ip = pod.get("status", {}).get("podIP")
+        if not pod_ip:
+            return INCONCLUSIVE, "pod IP missing", None
+        if time.monotonic() - start > wal.SAMPLE_DEADLINE:
+            return INCONCLUSIVE, "sample deadline exceeded", None
+        try:
+            metrics_text = http_get("http://%s:9187/metrics" % pod_ip, wal.REQ_TIMEOUT, wal.METRIC_CAP).decode()
+            _count_transport(len(metrics_text.encode()))
+        except ReadError as e:
+            return INCONCLUSIVE, str(e), None
+        if time.monotonic() - start > wal.SAMPLE_DEADLINE:
+            return INCONCLUSIVE, "sample deadline exceeded", None
+        pod_after = raw(pod_path)
+        cluster_after = raw(cluster_path)
+        disp, m, detail = wal.wal_sample(cluster, pod, metrics_text, cluster_after, pod_after,
+                                         clock_evidence, baseline=gate.get("wal_baseline"),
+                                         op_end_utc=gate.get("operation_end_utc"),
+                                         gate_hash=gate.get("package_sha256"))
+        return disp, detail, m
     except ReadError as e:
         return INCONCLUSIVE, str(e), None
-    if time.monotonic() - start > wal.SAMPLE_DEADLINE:
-        return INCONCLUSIVE, "sample deadline exceeded", None
-    pod_after = raw(pod_path)
-    cluster_after = raw(cluster_path)
-    disp, m, detail = wal.wal_sample(cluster, pod, metrics_text, cluster_after, pod_after,
-                                     clock_evidence, baseline=gate.get("wal_baseline"),
-                                     op_end_utc=gate.get("operation_end_utc"),
-                                     gate_hash=gate.get("package_sha256"))
-    return disp, detail, m
+
+
+def run_wal_window(kubectl, http_get, gate, state_dir, clock_evidence):
+    """WAL observation window: <=3 samples at offsets 0/300/600s; baseline persists across slots."""
+    baseline = gate.get("wal_baseline") or read_wal_baseline(state_dir, gate)
+    for slot in range(wal.WINDOW_SLOTS):
+        if slot > 0:
+            time.sleep(300)
+        wgate = dict(gate)
+        if baseline is not None:
+            wgate["wal_baseline"] = baseline
+        res = run_wal_sample(kubectl, http_get, clock_evidence, wgate)
+        if isinstance(res, tuple) and len(res) == 3:
+            disp, detail, m = res
+        else:
+            disp, detail, m = res[0], res[1], None
+        if m is not None:
+            persist_wal_baseline(state_dir, gate, m)
+            baseline = m
+        if disp == PASS:
+            return PASS, detail
+        if disp == FAIL:
+            return FAIL, detail
+    return INCONCLUSIVE, "slots exhausted without fresh WAL progress"
 
 
 STAGE_ORDER = ["S0", "S1", "S2a", "S2b", "S3", "S4"]
@@ -698,7 +782,15 @@ def main(argv):
 
     readset = json.loads(READSET.read_text())
     journal = {"stage": args.stage, "context": CONTEXT, "reads": {}}
-    budget = read_budget(args.state_dir)
+    try:
+        budget = read_budget(args.state_dir)
+    except ReadError as e:
+        print("STOP: " + str(e), file=sys.stderr)
+        return 2
+    if budget_exhausted(budget):
+        print("STOP: budget exhausted", file=sys.stderr)
+        return 2
+    _reset_transport()
     for read_id, spec in readset["reads"].items():
         if args.stage not in spec["stages"]:
             journal["reads"][read_id] = {"disposition": NOT_APPLICABLE}
@@ -706,19 +798,9 @@ def main(argv):
         start = time.monotonic()
         try:
             if spec.get("method") == "wal":
-                baseline = gate.get("wal_baseline") or read_wal_baseline(args.state_dir, gate)
-                wgate = dict(gate)
-                if baseline is not None:
-                    wgate["wal_baseline"] = baseline
-                res = run_wal_sample(args.kubectl, default_http_get, gate.get("clock_evidence"), wgate)
-                if isinstance(res, tuple) and len(res) == 3:
-                    disp, detail, metrics = res
-                else:
-                    disp, detail, metrics = res[0], res[1], None
+                disp, detail = run_wal_window(args.kubectl, default_http_get, gate, args.state_dir, gate.get("clock_evidence"))
                 journal["reads"][read_id] = {"disposition": disp, "detail": detail,
                                              "attempt": 1, "duration_ms": int((time.monotonic() - start) * 1000)}
-                if disp == PASS and metrics is not None:
-                    persist_wal_baseline(args.state_dir, gate, metrics)
                 continue
             expect_list, pred = PREDICATES[read_id]
             doc = run_read(readset, read_id, args.kubectl)
@@ -729,7 +811,8 @@ def main(argv):
             journal["reads"][read_id] = {"disposition": INCONCLUSIVE, "error": str(e), "attempt": 1}
 
     executed = [v for v in journal["reads"].values() if v.get("disposition") != NOT_APPLICABLE]
-    budget["requests"] = budget.get("requests", 0) + len(executed)
+    budget["requests"] = budget.get("requests", 0) + _TRANSPORT["requests"]
+    budget["bytes"] = budget.get("bytes", 0) + _TRANSPORT["bytes"]
     budget["seconds"] = budget.get("seconds", 0.0) + sum(v.get("duration_ms", 0) for v in executed) / 1000.0
     write_budget(args.state_dir, budget)
     journal["budget"] = budget
@@ -747,6 +830,7 @@ def main(argv):
     else:
         # non-PASS: attempts already counted by open_window; budget persists; no completion.
         write_failure_state(args.state_dir, gate, args.stage, agg)
+        fail_window(gate, args.stage)
         print("aggregate=%s" % agg)
         return 1
     print("aggregate=%s" % agg)

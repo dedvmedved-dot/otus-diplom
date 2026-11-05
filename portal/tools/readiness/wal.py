@@ -245,8 +245,10 @@ def wal_sample(cluster_doc, pod_doc, metrics_text, cluster_after, pod_after, clo
         return INCONCLUSIVE, m, "stats reset"
     grown = m["cnpg_pg_stat_archiver_archived_count"] > baseline.get("cnpg_pg_stat_archiver_archived_count", 0)
     fresh = m["cnpg_pg_stat_archiver_last_archived_time"] > baseline.get("cnpg_pg_stat_archiver_last_archived_time", 0)
-    if grown and fresh and op_end_utc is not None:
-        if m["cnpg_pg_stat_archiver_last_archived_time"] > op_end_utc + CLOCK_SKEW_BOUND:
-            return PASS, m, "fresh post-operation archive"
-        return INCONCLUSIVE, m, "archive not after operation boundary"
+    if grown and fresh:
+        if op_end_utc is not None:
+            if m["cnpg_pg_stat_archiver_last_archived_time"] > op_end_utc + CLOCK_SKEW_BOUND:
+                return PASS, m, "fresh post-operation archive"
+            return INCONCLUSIVE, m, "archive not after operation boundary"
+        return PASS, m, "fresh archive progress"
     return INCONCLUSIVE, m, "no fresh archive progress"
