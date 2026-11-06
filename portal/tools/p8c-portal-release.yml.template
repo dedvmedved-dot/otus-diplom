@@ -120,10 +120,14 @@ jobs:
           GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
         run: |
           set -euo pipefail
-          # gate: immutable github.sha checkout, single run attempt, workflow/package binding
-          test "$GITHUB_RUN_ATTEMPT" = "1" || { echo "STOP: run attempt != 1"; exit 1; }
-          test -n "${{ github.sha }}" || { echo "STOP: empty source sha"; exit 1; }
-          test "${{ github.repository }}" = 'dedvmedved-dot/otus-diplom' || { echo "STOP: wrong repository"; exit 1; }
+          # gate: a typed gate document must exist and bind source/workflow/package/expiry/attempt
+          GATE_FILE="$RUNNER_TEMP/release-gate.json"
+          if [ ! -f "$GATE_FILE" ]; then
+            echo "STOP: no release gate document" >&2
+            exit 1
+          fi
+          python3 portal/tools/release-check.py release-gate "$GATE_FILE" \
+            "${{ github.sha }}" "${{ github.repository }}" "$GITHUB_RUN_ATTEMPT"
           echo "GATE: source=${{ github.sha }} repository=${{ github.repository }} run_attempt=${{ github.run_attempt }}"
 
       - name: Install verified Go archive

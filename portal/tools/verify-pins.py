@@ -106,7 +106,34 @@ def verify_image(pin):
         return {"id": pin["id"], "status": "UNAVAILABLE", "error": type(e).__name__}
 
 
+def verify_offline():
+    """Offline integrity check: cached bytes + prior verified evidence; no network."""
+    lock = json.load(open(LOCK))
+    results = []
+    for p in lock["binaries"]:
+        dest = os.path.join(CACHE, p["id"] + ".dl")
+        if not os.path.exists(dest):
+            results.append({"id": p["id"], "status": "UNAVAILABLE", "error": "no cached bytes"})
+            continue
+        actual = sha256(open(dest, "rb").read())
+        results.append({"id": p["id"], "status": "VERIFIED" if actual == p["sha256"] else "MISMATCH",
+                        "declared": p["sha256"], "actual": actual, "bytes": os.path.getsize(dest)})
+    cached = os.path.join(CACHE, "pin-verification.json")
+    prev = json.load(open(cached)) if os.path.exists(cached) else {"results": []}
+    by_id = {r["id"]: r for r in prev["results"]}
+    for p in lock["actions"] + lock["images"]:
+        r = by_id.get(p["id"], {})
+        results.append({"id": p["id"], "status": r.get("status", "UNAVAILABLE"), "offline": True})
+    out = {"mode": "offline", "results": results}
+    json.dump(out, open(os.path.join(CACHE, "pin-verification-offline.json"), "w"), indent=2)
+    for r in results:
+        print(f"{r['id']:14} {r['status']}")
+    return 0 if all(r["status"] == "VERIFIED" for r in results) else 1
+
+
 def main():
+    if "--offline" in sys.argv:
+        return verify_offline()
     lock = json.load(open(LOCK))
     results = []
     for p in lock["binaries"]:

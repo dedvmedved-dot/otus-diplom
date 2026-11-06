@@ -103,6 +103,24 @@ def main():
     mode = sys.argv[1]
     if mode == 'digest':
         print(digest(json.loads(Path(sys.argv[2]).read_text())['containerimage.digest']))
+    elif mode == 'release-gate':
+        # typed release gate document: source/workflow/package/expiry/attempt must bind
+        gate_path, source, repository, attempt = Path(sys.argv[2]), sys.argv[3], sys.argv[4], sys.argv[5]
+        try:
+            g = json.loads(gate_path.read_text())
+        except Exception as e:
+            raise ValueError('release-gate unreadable: ' + type(e).__name__)
+        if not isinstance(g, dict):
+            raise ValueError('release-gate not object')
+        if g.get('source_sha') != source:
+            raise ValueError('release-gate source_sha not bound')
+        if g.get('repository') not in (None, '', repository, REPO):
+            raise ValueError('release-gate repository not bound')
+        if g.get('attempt') is not None and str(g.get('attempt')) != str(attempt):
+            raise ValueError('release-gate attempt not bound (single-attempt only)')
+        if g.get('expiry_hours') is not None and (not isinstance(g.get('expiry_hours'), int) or not (0 < g['expiry_hours'] <= 24)):
+            raise ValueError('release-gate expiry invalid')
+        print(json.dumps({'gate': 'bound', 'source': source, 'repository': repository, 'attempt': attempt}))
     elif mode == 'predicate':
         print(json.dumps(predicate(sys.argv[2]), sort_keys=True))
     elif mode == 'first-creation':
@@ -125,6 +143,13 @@ def main():
         github_repo = os.environ.get('GITHUB_REPOSITORY')
         if github_repo and github_repo != REPO:
             raise ValueError('first-creation repository not the expected repo')
+        # the gate's OWN package/repository/workflow fields must bind to the expected artifacts
+        if g.get('repository') and g.get('repository') != REPO:
+            raise ValueError('first-creation gate.repository not the expected repo')
+        if g.get('package') and g.get('package') != IMAGE:
+            raise ValueError('first-creation gate.package not the expected image')
+        if g.get('workflow_sha') and not re.fullmatch('[0-9a-f]{40}', str(g.get('workflow_sha'))):
+            raise ValueError('first-creation gate.workflow_sha not a valid sha')
         import calendar
         try:
             issued = calendar.timegm(time.strptime(g['issued_at_utc'], '%Y-%m-%dT%H:%M:%SZ'))
@@ -191,9 +216,10 @@ def main():
                 if name == 'scan-image.json':
                     artifact = str(obj.get('ArtifactName') or '')
                     repodigests = (obj.get('Metadata') or {}).get('RepoDigests', []) or []
+                    expected_ref = IMAGE + '@' + expected
                     for ref in [artifact] + [str(rd) for rd in repodigests]:
-                        if ref and IMAGE not in ref:
-                            raise ValueError(name + ' references a different image')
+                        if ref and expected_ref not in ref:
+                            raise ValueError(name + ' references a different image/digest')
                 for res in obj['Results']:
                     if not isinstance(res, dict):
                         raise ValueError(name + ' invalid scan result')

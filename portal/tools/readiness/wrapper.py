@@ -203,6 +203,20 @@ def _count_wal(nbytes, seconds):
     _WAL_TRANSPORT["seconds"] += float(seconds)
 
 
+def _remaining_body():
+    return OVERALL_BODY_CAP - (_BUDGET_BASE["bytes"] + _TRANSPORT["bytes"])
+
+
+def _remaining_seconds():
+    return OVERALL_SEC_CAP - (_BUDGET_BASE["seconds"] + _TRANSPORT["seconds"])
+
+
+def _count_seconds(n):
+    global _TRANSPORT
+    _TRANSPORT["seconds"] += float(n)
+    _persist_budget_now()
+
+
 def _count_transport(nbytes):
     _count_request()
     _count_bytes(nbytes)
@@ -386,11 +400,12 @@ def write_budget(gate, budget):
     os.replace(tmp, p)
 
 
-def persist_wal_baseline(state_dir, gate, metrics):
+def persist_wal_baseline(state_dir, gate, metrics, pod_uid=None, observed_at=None):
     """Persist the latest WAL archive metrics as the baseline for the next stage's sample."""
     p = os.path.join(state_dir, "wal-baseline.json")
     rec = {"source_sha": gate.get("source_sha"), "package_sha256": gate.get("package_sha256"),
-           "issued_at_utc": gate.get("issued_at_utc"), "metrics": metrics}
+           "issued_at_utc": gate.get("issued_at_utc"), "metrics": metrics,
+           "pod_uid": pod_uid, "observed_at": observed_at}
     tmp = p + ".tmp"
     with open(tmp, "w") as f:
         json.dump(rec, f, sort_keys=True)
@@ -408,6 +423,19 @@ def read_wal_baseline(state_dir, gate):
         return None
     if rec.get("source_sha") == gate.get("source_sha") and rec.get("package_sha256") == gate.get("package_sha256"):
         return rec.get("metrics")
+    return None
+
+
+def read_wal_baseline_record(state_dir, gate):
+    p = os.path.join(state_dir, "wal-baseline.json")
+    if not os.path.exists(p):
+        return None
+    try:
+        rec = json.loads(Path(p).read_text())
+    except Exception:
+        return None
+    if rec.get("source_sha") == gate.get("source_sha") and rec.get("package_sha256") == gate.get("package_sha256"):
+        return rec
     return None
 
 
@@ -446,33 +474,49 @@ def run_kubectl_raw(kubectl, path, timeout, cap):
     chunks = []
     total = 0
     fd = proc.stdout.fileno()
-    eof = False
+    timed_out = False
     try:
-        while True:
+        while total < cap:
             remain = hard_deadline - time.monotonic()
             if remain <= 0:
-                raise ReadError("kubectl deadline exceeded")
+                timed_out = True
+                break
             r, _, _ = select.select([fd], [], [], max(0.0, remain))
             if fd not in r:
                 if proc.poll() is not None:
                     break
                 continue
-            buf = os.read(fd, min(65536, cap - total + 1))
+            buf = os.read(fd, min(65536, cap - total))
             if not buf:
-                eof = True
-                break  # stdout EOF is NOT child failure; wait for the child to exit
+                break  # stdout EOF: not child failure; wait below
             total += len(buf)
-            if total > cap:
-                raise ReadError("response exceeds %d bytes" % cap)
             chunks.append(buf)
-        # after EOF (or process exit), wait for the child to finish within the remaining deadline
-        if eof:
+        if timed_out:
+            # grab any bytes already buffered at the deadline (partial body accounting)
+            import fcntl
+            fl = fcntl.fcntl(fd, fcntl.F_GETFL)
+            fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
             try:
-                proc.wait(timeout=max(0.1, hard_deadline - time.monotonic()))
-            except subprocess.TimeoutExpired:
-                proc.kill()
-                proc.wait()
-                raise ReadError("kubectl did not exit after stdout EOF")
+                select.select([fd], [], [], 0.08)  # short real grace for late-arriving bytes
+                while total < cap:
+                    try:
+                        buf = os.read(fd, min(65536, cap - total))
+                    except (BlockingIOError, OSError):
+                        break
+                    if not buf:
+                        break
+                    total += len(buf)
+                    chunks.append(buf)
+            finally:
+                fcntl.fcntl(fd, fcntl.F_SETFL, fl)
+            _count_bytes(total)  # preserve partial bytes on timeout
+            raise ReadError("kubectl deadline exceeded")
+        # EOF or cap reached: wait for the child to exit within the remaining deadline
+        try:
+            proc.wait(timeout=max(0.1, hard_deadline - time.monotonic()))
+        except subprocess.TimeoutExpired:
+            _count_bytes(total)
+            raise ReadError("kubectl did not exit after stdout EOF")
     finally:
         try:
             if proc.poll() is None:
@@ -484,8 +528,7 @@ def run_kubectl_raw(kubectl, path, timeout, cap):
             proc.stderr.close()
         except Exception:
             pass
-    body = b"".join(chunks)
-    return body, proc.returncode
+    return b"".join(chunks), proc.returncode
 
 
 ALLOWED_API = ("v1", "apps/v1", "networking.k8s.io/v1", "discovery.k8s.io/v1",
@@ -619,6 +662,8 @@ def pred_pr5(doc):
     meta = svc.get("metadata", {})
     if not isinstance(meta, dict) or not meta.get("uid") or not meta.get("namespace"):
         return FAIL, "service identity missing"
+    if meta.get("namespace") != "envoy-gateway-system":
+        return FAIL, "service namespace not envoy-gateway-system"
     labels = meta.get("labels", {}) or {}
     if labels.get("gateway.envoyproxy.io/owning-gateway-name") != "portal-gateway" \
             or labels.get("gateway.envoyproxy.io/owning-gateway-namespace") != "portal":
@@ -674,6 +719,28 @@ def pred_pr6(docs):
             continue
         if v is not None:
             return FAIL, "felix field drift: " + k
+    # namespace list: typed items with full identity (no null/malformed)
+    ns_items = docs[7].get("items", [])
+    if not isinstance(ns_items, list):
+        return FAIL, "namespace items not list"
+    for n in ns_items:
+        if not isinstance(n, dict):
+            return FAIL, "namespace item malformed"
+        nm = n.get("metadata", {})
+        if not isinstance(nm, dict) or not nm.get("name") or not nm.get("namespace") or not nm.get("uid"):
+            return FAIL, "namespace item identity missing"
+    # pod list: typed items + max_items (from readset, 200)
+    pod_items = docs[8].get("items", [])
+    if not isinstance(pod_items, list):
+        return FAIL, "pod items not list"
+    if len(pod_items) > 200:
+        return FAIL, "pod list exceeds max_items"
+    for p in pod_items:
+        if not isinstance(p, dict):
+            return FAIL, "pod item malformed"
+        pm = p.get("metadata", {})
+        if not isinstance(pm, dict) or not pm.get("name") or not pm.get("namespace") or not pm.get("uid"):
+            return FAIL, "pod item identity missing"
     return PASS, "policy empty + tier/felix match accepted baseline"
 
 
@@ -692,7 +759,10 @@ def pred_hc_op(doc):
             return FAIL, "operator pod malformed"
         if p.get("metadata", {}).get("deletionTimestamp"):
             return FAIL, "operator pod terminating"
-        conds = {c.get("type"): c for c in p.get("status", {}).get("conditions", []) if isinstance(c, dict)}
+        status = p.get("status")
+        if not isinstance(status, dict):
+            return FAIL, "operator pod status malformed"
+        conds = {c.get("type"): c for c in status.get("conditions", []) if isinstance(c, dict)}
         if conds.get("Ready", {}).get("status") != "True":
             return FAIL, "operator pod not Ready"
     return PASS, "operator ready"
@@ -771,7 +841,12 @@ def run_read(readset, read_id, kubectl, timeout=15, cap=1048576):
             body = _READ_CACHE[p]
         else:
             _count_request()
-            body, code = run_kubectl_raw(kubectl, p, timeout, cap)
+            remaining = _remaining_body()
+            if remaining <= 0:
+                raise ReadError("overall body budget exhausted")
+            body, code = run_kubectl_raw(kubectl, p, timeout, min(cap, remaining))
+            if len(body) > remaining:
+                raise ReadError("overall body budget exceeded")
             _count_bytes(len(body))
             if code != 0:
                 raise ReadError("kubectl exit %d" % code)
@@ -839,6 +914,9 @@ def default_http_get(url, timeout, cap):
                 if remain <= 0:
                     raise ReadError("metrics deadline exceeded")
                 buf = resp.read(min(65536, cap + 1 - total))
+                # absolute deadline bounds the blocking read's completion, not just its start
+                if time.monotonic() > deadline:
+                    raise ReadError("metrics deadline exceeded")
                 if not buf:
                     break
                 total += len(buf)
@@ -858,19 +936,24 @@ def run_wal_sample(kubectl, http_get, clock_evidence, gate):
     start = time.monotonic()
     body_total = [0]
     if _wal_exhausted():
-        return INCONCLUSIVE, "WAL budget exhausted", None
+        return INCONCLUSIVE, "WAL budget exhausted", None, None
 
     def raw(path):
         if time.monotonic() - start > wal.SAMPLE_DEADLINE:
             raise ReadError("sample deadline exceeded")
         _count_request()
         _count_wal_request()
-        body, code = run_kubectl_raw(kubectl, path, 5, 256 * 1024)
+        remaining = _remaining_body()
+        if remaining <= 0:
+            raise ReadError("overall body budget exhausted")
+        body, code = run_kubectl_raw(kubectl, path, 5, min(256 * 1024, remaining))
         if time.monotonic() - start > wal.SAMPLE_DEADLINE:
             raise ReadError("sample deadline exceeded")
         body_total[0] += len(body)
         if body_total[0] > wal.SAMPLE_BODY_CAP:
             raise ReadError("sample body cap exceeded")
+        if len(body) > remaining:
+            raise ReadError("overall body budget exceeded")
         _count_bytes(len(body))
         _count_wal_bytes(len(body))
         if code != 0:
@@ -882,29 +965,29 @@ def run_wal_sample(kubectl, http_get, clock_evidence, gate):
         cluster = raw(cluster_path)
         primary = cluster.get("status", {}).get("currentPrimary")
         if not primary:
-            return INCONCLUSIVE, "no currentPrimary", None
+            return INCONCLUSIVE, "no currentPrimary", None, None
         if not re.fullmatch(r"[a-z0-9]([-a-z0-9]*[a-z0-9])?", str(primary)):
-            return INCONCLUSIVE, "invalid primary name", None
+            return INCONCLUSIVE, "invalid primary name", None, None
         pod_path = "/api/v1/namespaces/portal/pods/" + str(primary)
         pod = raw(pod_path)
         pod_ip = pod.get("status", {}).get("podIP")
         if not pod_ip:
-            return INCONCLUSIVE, "pod IP missing", None
+            return INCONCLUSIVE, "pod IP missing", None, None
         if time.monotonic() - start > wal.SAMPLE_DEADLINE:
-            return INCONCLUSIVE, "sample deadline exceeded", None
+            return INCONCLUSIVE, "sample deadline exceeded", None, None
         try:
             _count_request()
             _count_wal_request()
             metrics_text = http_get("http://%s:9187/metrics" % pod_ip, wal.REQ_TIMEOUT, wal.METRIC_CAP).decode()
         except ReadError as e:
-            return INCONCLUSIVE, str(e), None
+            return INCONCLUSIVE, str(e), None, None
         body_total[0] += len(metrics_text.encode())
         if body_total[0] > wal.SAMPLE_BODY_CAP:
-            return INCONCLUSIVE, "sample body cap exceeded", None
+            return INCONCLUSIVE, "sample body cap exceeded", None, None
         _count_bytes(len(metrics_text.encode()))
         _count_wal_bytes(len(metrics_text.encode()))
         if time.monotonic() - start > wal.SAMPLE_DEADLINE:
-            return INCONCLUSIVE, "sample deadline exceeded", None
+            return INCONCLUSIVE, "sample deadline exceeded", None, None
         pod_after = raw(pod_path)
         cluster_after = raw(cluster_path)
         disp, m, detail = wal.wal_sample(cluster, pod, metrics_text, cluster_after, pod_after,
@@ -912,9 +995,9 @@ def run_wal_sample(kubectl, http_get, clock_evidence, gate):
                                          op_end_utc=gate.get("operation_end_utc"),
                                          gate_hash=gate.get("package_sha256"),
                                          baseline_observed_at=gate.get("baseline_observed_at"))
-        return disp, detail, m
+        return disp, detail, m, pod.get("metadata", {}).get("uid")
     except ReadError as e:
-        return INCONCLUSIVE, str(e), None
+        return INCONCLUSIVE, str(e), None, None
     finally:
         _WAL_TRANSPORT["seconds"] += (time.monotonic() - start)
 
@@ -929,8 +1012,18 @@ def run_wal_window(kubectl, http_get, gate, state_dir, clock_evidence, stage="S0
         issued_epoch = parse_utc(gate.get("issued_at_utc", "")) if gate.get("issued_at_utc") else None
         if issued_epoch is not None and op_end < issued_epoch:
             return INCONCLUSIVE, "operation boundary not bound to gate (before issued_at)"
-    baseline = gate.get("wal_baseline") or read_wal_baseline(state_dir, gate)
-    baseline_observed_at = None
+        # operation boundary must be bound to a verified action receipt (confirmed operation),
+        # not an arbitrary number >= issued_at.
+        receipt = gate.get("action_receipt")
+        if not isinstance(receipt, dict) \
+                or receipt.get("source_sha") != gate.get("source_sha") \
+                or receipt.get("package_sha256") != gate.get("package_sha256") \
+                or receipt.get("operation_end_utc") != op_end:
+            return INCONCLUSIVE, "operation boundary not bound to an action receipt"
+    baseline_rec = read_wal_baseline_record(state_dir, gate)
+    baseline = gate.get("wal_baseline") or (baseline_rec.get("metrics") if baseline_rec else None)
+    baseline_pod_uid = baseline_rec.get("pod_uid") if baseline_rec else None
+    baseline_observed_at = baseline_rec.get("observed_at") if baseline_rec else None
     window_start = time.monotonic()
     wal_bytes_start = _WAL_TRANSPORT["bytes"]
     slot_start = window_start
@@ -940,24 +1033,37 @@ def run_wal_window(kubectl, http_get, gate, state_dir, clock_evidence, stage="S0
         if slot > 0:
             elapsed = time.monotonic() - slot_start
             sleep_time = max(0.0, 300.0 - elapsed)
+            remaining = _remaining_seconds()
+            if remaining <= 0:
+                return INCONCLUSIVE, "overall time budget exhausted"
+            if sleep_time > remaining:
+                sleep_time = remaining
             time.sleep(sleep_time)
             _WAL_TRANSPORT["seconds"] += sleep_time  # WAL elapsed includes slot waits
+            _count_seconds(sleep_time)  # overall elapsed tracked during execution
             slot_start = time.monotonic()
         wgate = dict(gate)
         if baseline is not None:
             wgate["wal_baseline"] = baseline
         if baseline_observed_at is not None:
             wgate["baseline_observed_at"] = baseline_observed_at
+        if baseline_pod_uid is not None:
+            wgate["baseline_pod_uid"] = baseline_pod_uid
         res = run_wal_sample(kubectl, http_get, clock_evidence, wgate)
-        if isinstance(res, tuple) and len(res) == 3:
-            disp, detail, m = res
+        if isinstance(res, tuple) and len(res) >= 3:
+            disp, detail, m = res[0], res[1], res[2]
+            pod_uid = res[3] if len(res) > 3 else None
         else:
-            disp, detail, m = res[0], res[1], None
+            disp, detail, m, pod_uid = res[0], res[1], None, None
         if _WAL_TRANSPORT["bytes"] - wal_bytes_start > wal.WINDOW_BODY_CAP:
             return INCONCLUSIVE, "window body cap exceeded"
+        # baseline observation identity: the pod UID must be stable across samples
+        if baseline_pod_uid is not None and pod_uid is not None and pod_uid != baseline_pod_uid:
+            return INCONCLUSIVE, "baseline observation identity changed (pod UID)"
         if m is not None and disp != FAIL:
-            persist_wal_baseline(state_dir, gate, m)
+            persist_wal_baseline(state_dir, gate, m, pod_uid=pod_uid, observed_at=time.time())
             baseline = m
+            baseline_pod_uid = pod_uid
             baseline_observed_at = time.time()
         if disp == PASS:
             return PASS, detail
@@ -1057,20 +1163,38 @@ def main(argv):
         except ReadError as e:
             journal["reads"][read_id] = {"disposition": INCONCLUSIVE, "error": str(e), "attempt": 1}
 
-    # bounded health window + freshness re-check at verdict: re-read health reads fresh (reverse
-    # order so the shared DB/ARCH observation is the freshest), resolving transient INCONCLUSIVE.
+    # bounded health windows + freshness re-check at verdict.
     _reset_read_cache()
     health_ids = [r for r in ordered
                   if r != wal_id and r.startswith("HC-") and args.stage in readset["reads"][r]["stages"]]
-    for read_id in reversed(health_ids):
+    HEALTH_MAX_AGE = 30.0
+    HEALTH_RETRY_INTERVAL = 10.0
+    for read_id in health_ids:
+        first = journal["reads"].get(read_id, {}).get("disposition")
+        if first == FAIL:
+            continue  # failure precedence: a FAIL is never erased by a later sweep
+        if first == INCONCLUSIVE:
+            # bounded retry interval (transient), limited by the remaining overall time budget
+            sleep_time = min(HEALTH_RETRY_INTERVAL, max(0.0, _remaining_seconds()))
+            if sleep_time > 0:
+                time.sleep(sleep_time)
+                _count_seconds(sleep_time)
         try:
             expect_list, pred = PREDICATES[read_id]
             doc = run_read(readset, read_id, args.kubectl)
             disp, detail = pred(doc)
             journal["reads"][read_id] = {"disposition": disp, "detail": detail,
-                                         "attempt": 2, "duration_ms": 0}
+                                         "attempt": 2, "observed_mono": time.monotonic()}
         except ReadError as e:
-            journal["reads"][read_id] = {"disposition": INCONCLUSIVE, "error": str(e), "attempt": 2}
+            journal["reads"][read_id] = {"disposition": INCONCLUSIVE, "error": str(e),
+                                         "attempt": 2, "observed_mono": time.monotonic()}
+    # freshness gate: any stale mandatory observation -> FAIL (no PASS with stale health)
+    now_mono = time.monotonic()
+    for read_id in health_ids:
+        ent = journal["reads"].get(read_id, {})
+        obs = ent.get("observed_mono")
+        if obs is not None and now_mono - obs > HEALTH_MAX_AGE:
+            journal["reads"][read_id] = {"disposition": FAIL, "detail": "health observation stale at verdict"}
 
     executed = [v for v in journal["reads"].values() if v.get("disposition") != NOT_APPLICABLE]
     budget["requests"] = budget.get("requests", 0) + _TRANSPORT["requests"]

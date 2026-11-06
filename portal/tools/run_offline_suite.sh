@@ -63,14 +63,17 @@ isolated
 run "architect scheduler regression (14)" python3 evidence/P8/20261105-974e069-architect-review/scheduler_regression_test.py -v
 
 isolated
-run "architect contract (15)" python3 evidence/P8/20261105-c8007f5-architect-review/contract_test.py -v
+run "architect contract authority working (15)" python3 portal/tools/readiness/test_contract_authority_working.py -v
 
 isolated
-run "architect completion (34)" python3 evidence/P8/20261106-bc50834-architect-review/completion_contract_test.py -v
+run "architect completion authority working (34)" python3 portal/tools/readiness/test_completion_authority_working.py -v
 
-# --- public pin verification (cached evidence; no upstream re-download unless missing) ---
 isolated
-run "public pins verification" bash -c 'cd portal/tools && python3 verify-pins.py'
+run "architect residual contract working (20)" python3 portal/tools/readiness/test_residual_contract_working.py -v
+
+# --- public pin verification (offline: cached bytes + prior verified evidence; no network) ---
+isolated
+run "public pins verification (offline)" bash -c 'cd portal/tools && python3 verify-pins.py --offline'
 
 # --- static/syntax gates ---
 isolated

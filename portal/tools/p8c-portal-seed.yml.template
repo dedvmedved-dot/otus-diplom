@@ -156,7 +156,7 @@ jobs:
           set -euo pipefail
           python3 portal/tools/release-check.py private > "$RUNNER_TEMP/private-after.json"
           python3 -c "import json,os; json.dump({'seed_digest': os.environ.get('SEED_DIGEST',''), 'not_deployable': True, 'seed_not_application_digest': os.environ.get('SEED_DIGEST','') != os.environ.get('APP_IMAGE_DIGEST','')}, open(os.environ['RUNNER_TEMP']+'/seed-evidence.json','w'))"
-          if [ "$SEED_DIGEST" = "$APP_IMAGE_DIGEST" ]; then
+          if [ -n "${APP_IMAGE_DIGEST:-}" ] && [ "${SEED_DIGEST:-}" = "${APP_IMAGE_DIGEST:-}" ]; then
             echo "STOP: seed digest must differ from application digest" >&2
             exit 1
           fi

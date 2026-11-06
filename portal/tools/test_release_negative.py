@@ -112,11 +112,17 @@ class TestVerifiedBindings(unittest.TestCase):
 
 class TestDigestPredicate(unittest.TestCase):
     def test_digest_mode_accepts_valid(self):
-        r = subprocess.run([sys.executable, str(RC), "digest"],
-                           input='{"containerimage.digest":"sha256:"+"a"*64}',
-                           capture_output=True, text=True)
-        # digest mode reads from a file path, not stdin; this just checks CLI wiring
-        self.assertIn(r.returncode, (0, 1, 2))
+        with tempfile.TemporaryDirectory() as t:
+            d = Path(t) / 'metadata.json'
+            d.write_text(json.dumps({'containerimage.digest': 'sha256:' + 'a' * 64}))
+            r = subprocess.run([sys.executable, str(RC), 'digest', str(d)], capture_output=True, text=True)
+            self.assertEqual(r.returncode, 0, r.stderr)
+            self.assertIn('sha256:' + 'a' * 64, r.stdout)
+        with tempfile.TemporaryDirectory() as t:
+            d = Path(t) / 'metadata.json'
+            d.write_text('not json')
+            r = subprocess.run([sys.executable, str(RC), 'digest', str(d)], capture_output=True, text=True)
+            self.assertNotEqual(r.returncode, 0)
 
 
 if __name__ == "__main__":

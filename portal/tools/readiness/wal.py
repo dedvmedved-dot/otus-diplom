@@ -199,9 +199,11 @@ def wal_sample(cluster_doc, pod_doc, metrics_text, cluster_after, pod_after, clo
         return INCONCLUSIVE, None, "currentPrimary changed after sample"
     if cluster_doc.get("status", {}).get("currentPrimary") != pod_doc.get("metadata", {}).get("name"):
         return INCONCLUSIVE, None, "pod is not currentPrimary"
-    # primary role must be explicitly bound
+    # primary role must be explicitly bound (both bracket sides)
     if pod_doc.get("metadata", {}).get("labels", {}).get("cnpg.io/instanceRole") != "primary":
         return INCONCLUSIVE, None, "pod is not primary instanceRole"
+    if pod_after.get("metadata", {}).get("labels", {}).get("cnpg.io/instanceRole") != "primary":
+        return INCONCLUSIVE, None, "pod role changed to non-primary after sample"
     # pod IP / restart / owner binding must be stable AND bound to the Cluster
     if pod_after.get("status", {}).get("podIP") != pod_doc.get("status", {}).get("podIP"):
         return INCONCLUSIVE, None, "pod IP changed after sample"
