@@ -1,5 +1,17 @@
 # P8C NetworkPolicy plan (D1) — read-only preparation, not yet applied
 
+## Active instruction — complete source package in one pass (2026-11-06)
+
+Authority: docs/architecture/P8C_SOURCE_CLOSURE_SINGLE_PASS_20261106.md.
+Baseline: R6 source 2e4e8cc92f12cd6fcb420bd02d84c9b43ed0d380, evidence f33c80a8faa628f6c8ef8978c4d38c81a52c331e.
+R6 is author-submitted, not independently accepted by this instruction.
+PRIMARY HERMES finishes the existing fixed scope: complete readiness S0→S4, release/seed routes,
+test isolation, final SHA-bound suite and one review package. Intermediate commits require no new permission.
+This instruction controls the work process; earlier reviews remain requirement/evidence references, not separate new gates.
+No application/policy/collector/design reopening. No new live/SSH/CI/private-registry/Owner/apply/production authorization.
+SOURCE_WORK=IN_PROGRESS/PARTIAL until the complete source package; P8C=NOT_FINAL_ACCEPTED.
+
+
 ## R5 executable-package review — 2026-11-05
 
 Reviewed source 783502a7eff2662d6f7612ccc56c4a9251e16ace; evidence c8007f51614ca31df7d532a191327e4eac2ba737.
