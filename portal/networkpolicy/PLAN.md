@@ -1,3 +1,15 @@
+## Current Architect review — single-pass source remains PARTIAL (2026-11-06)
+
+Authority: docs/architecture/P8C_REVIEW_bc50834_SOURCE_CLOSURE_20261106.md.
+Reviewed source d2e8598a8720cb2dc5935ac33d218498cf846c45; evidence bc50834eb9a9757ba44643c0084226133d07880b.
+119/119 existing test methods independently PASS; additional contract 34 methods / 32 failures / 0 errors.
+C test isolation and source→tests→evidence order are accepted. A readiness and B release/seed remain PARTIAL.
+PRIMARY HERMES continues the existing task P8C-SOURCE-CLOSURE-SINGLE-PASS-20261106
+without intermediate permission requests; finish all source routes before the next final STOP.
+SOURCE_PACKAGE=REWORK_REQUIRED. No new features, no reopening accepted application/PG17/policies/inventory.
+Execution gates remain CLOSED: no live/SSH/CI/workflow publication/private registry/build/push/NetPol apply/production.
+P8C=NOT_FINAL_ACCEPTED; P8D–P8G/P9=NOT_AUTHORIZED.
+
 # P8C NetworkPolicy plan (D1) — read-only preparation, not yet applied
 
 ## Active instruction — complete source package in one pass (2026-11-06)

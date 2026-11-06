@@ -1,0 +1,340 @@
+test_budget_cannot_reset_with_new_state_directory_and_same_receipt (__main__.ReadinessCompletion.test_budget_cannot_reset_with_new_state_directory_and_same_receipt) ... FAIL
+test_hc_db_wrong_kind_cannot_pass_actual_read_path (__main__.ReadinessCompletion.test_hc_db_wrong_kind_cannot_pass_actual_read_path) ... FAIL
+test_health_freshness_rechecked_at_final_pass (__main__.ReadinessCompletion.test_health_freshness_rechecked_at_final_pass) ... FAIL
+test_health_transient_missing_then_ready_is_polled (__main__.ReadinessCompletion.test_health_transient_missing_then_ready_is_polled) ... FAIL
+test_incomplete_metrics_do_not_overwrite_valid_baseline (__main__.ReadinessCompletion.test_incomplete_metrics_do_not_overwrite_valid_baseline) ... FAIL
+test_inflight_attempt_persisted_before_crash (__main__.ReadinessCompletion.test_inflight_attempt_persisted_before_crash) ... FAIL
+test_journal_does_not_echo_malformed_condition_value (__main__.ReadinessCompletion.test_journal_does_not_echo_malformed_condition_value) ... FAIL
+test_list_item_cap_enforced (__main__.ReadinessCompletion.test_list_item_cap_enforced) ... FAIL
+test_malformed_health_returns_journal_not_uncaught_exception (__main__.ReadinessCompletion.test_malformed_health_returns_journal_not_uncaught_exception) ... FAIL
+test_nan_budget_blocks_before_io (__main__.ReadinessCompletion.test_nan_budget_blocks_before_io) ... FAIL
+test_overall_remaining_one_request_stops_before_second_io (__main__.ReadinessCompletion.test_overall_remaining_one_request_stops_before_second_io) ... FAIL
+test_partial_error_body_bytes_are_charged (__main__.ReadinessCompletion.test_partial_error_body_bytes_are_charged) ... FAIL
+test_positive_existing_six_stage_route (__main__.ReadinessCompletion.test_positive_existing_six_stage_route) ... ok
+test_post_operation_boundary_requires_bound_action_receipt (__main__.ReadinessCompletion.test_post_operation_boundary_requires_bound_action_receipt) ... FAIL
+test_postgres_restart_is_checked_by_container_name (__main__.ReadinessCompletion.test_postgres_restart_is_checked_by_container_name) ... FAIL
+test_pr5_without_uid_namespace_ownership_cannot_pass (__main__.ReadinessCompletion.test_pr5_without_uid_namespace_ownership_cannot_pass) ... FAIL
+test_pr6_wrong_resource_list_cannot_pass (__main__.ReadinessCompletion.test_pr6_wrong_resource_list_cannot_pass) ... FAIL
+test_receipt_from_different_gate_not_authority (__main__.ReadinessCompletion.test_receipt_from_different_gate_not_authority) ... FAIL
+test_secondary_role_cannot_pass_primary_sample (__main__.ReadinessCompletion.test_secondary_role_cannot_pass_primary_sample) ... FAIL
+test_wal_elapsed_includes_slot_waits (__main__.ReadinessCompletion.test_wal_elapsed_includes_slot_waits) ... FAIL
+test_wal_remaining_one_request_stops_before_second_wal_io (__main__.ReadinessCompletion.test_wal_remaining_one_request_stops_before_second_wal_io) ... FAIL
+test_qualifier_rejects_missing_seed_precheck_job (__main__.ReleaseCompletion.test_qualifier_rejects_missing_seed_precheck_job) ... FAIL
+test_release_has_execution_gate_before_protected_steps (__main__.ReleaseCompletion.test_release_has_execution_gate_before_protected_steps) ... FAIL
+test_scan_other_image_cannot_bind_release (__main__.ReleaseCompletion.test_scan_other_image_cannot_bind_release) ... FAIL
+test_seed_equal_application_digest_is_nonzero (__main__.ReleaseCompletion.test_seed_equal_application_digest_is_nonzero) ... FAIL
+test_seed_gate_requires_actual_source_repository_package_binding (__main__.ReleaseCompletion.test_seed_gate_requires_actual_source_repository_package_binding) ... FAIL
+test_seed_has_failure_cleanup_route (__main__.ReleaseCompletion.test_seed_has_failure_cleanup_route) ... FAIL
+test_seed_has_registry_byte_proof_before_acceptance (__main__.ReleaseCompletion.test_seed_has_registry_byte_proof_before_acceptance) ... FAIL
+test_seed_private_probe_error_plus_gate_does_not_create (__main__.ReleaseCompletion.test_seed_private_probe_error_plus_gate_does_not_create) ... FAIL
+test_seed_reuse_control_no_gate_evaluation (__main__.ReleaseCompletion.test_seed_reuse_control_no_gate_evaluation) ... ok
+test_seed_tag_is_source_bound (__main__.ReleaseCompletion.test_seed_tag_is_source_bound) ... FAIL
+test_seed_untrusted_input_is_data_not_shell (__main__.ReleaseCompletion.test_seed_untrusted_input_is_data_not_shell) ... FAIL
+test_http_read_receives_absolute_deadline_not_only_socket_timeout (__main__.TransportCompletion.test_http_read_receives_absolute_deadline_not_only_socket_timeout) ... FAIL
+test_kubectl_hard_timeout_not_plus_five_seconds (__main__.TransportCompletion.test_kubectl_hard_timeout_not_plus_five_seconds) ... /workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py:147: ResourceWarning: unclosed file <_io.BufferedReader name=3>
+  try:w.run_kubectl_raw(str(f),'/api/v1/pods',1,1024)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+FAIL
+
+======================================================================
+FAIL: test_budget_cannot_reset_with_new_state_directory_and_same_receipt (__main__.ReadinessCompletion.test_budget_cannot_reset_with_new_state_directory_and_same_receipt)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 45, in test_budget_cannot_reset_with_new_state_directory_and_same_receipt
+    self.assertEqual(self.calls,[],'Copying a valid receipt must not reset consumed budget')
+AssertionError: Lists differ: [('kubectl', '/apis/postgresql.cnpg.io/v1/[944 chars]00')] != []
+
+First list contains 13 additional elements.
+First extra element 0:
+('kubectl', '/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db')
+
+Diff is 1063 characters long. Set self.maxDiff to None to see it. : Copying a valid receipt must not reset consumed budget
+
+======================================================================
+FAIL: test_hc_db_wrong_kind_cannot_pass_actual_read_path (__main__.ReadinessCompletion.test_hc_db_wrong_kind_cannot_pass_actual_read_path)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 96, in test_hc_db_wrong_kind_cannot_pass_actual_read_path
+    code,j=self.invoke();self.assertNotEqual(code,0,j)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {'aggregate': 'PASS', 'budget': {'bytes': 6104, 'requests': 23, 'seconds': 300.0, 'wal_bytes': 3412, 'wal_requests': 10, 'wal_seconds': 0.0}, 'context': 'kubernetes-admin@pak-portal', 'reads': {'HC-ARCH-STATE': {'attempt': 1, 'detail': 'ContinuousArchiving True', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-DB': {'attempt': 1, 'detail': '3/3/3 Ready', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-DNS': {'attempt': 1, 'detail': 'DNS ready with 53/TCP+UDP in same slice', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-GW': {'disposition': 'NOT_APPLICABLE'}, 'HC-OP': {'attempt': 1, 'detail': 'operator ready', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-PORTAL': {'disposition': 'NOT_APPLICABLE'}, 'HC-WAL-PROGRESS': {'attempt': 1, 'detail': 'fresh archive progress', 'disposition': 'PASS', 'duration_ms': 300000}, 'PR-3': {'attempt': 1, 'detail': 'exact ready API tuples', 'disposition': 'PASS', 'duration_ms': 0}, 'PR-5': {'disposition': 'NOT_APPLICABLE'}, 'PR-6': {'attempt': 1, 'detail': 'policy empty + tier/felix match accepted baseline', 'disposition': 'PASS', 'duration_ms': 0}}, 'stage': 'S0'}
+
+======================================================================
+FAIL: test_health_freshness_rechecked_at_final_pass (__main__.ReadinessCompletion.test_health_freshness_rechecked_at_final_pass)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 93, in test_health_freshness_rechecked_at_final_pass
+    self.assertTrue(code!=0 or self.mono[0]-observations[-1]<=30,(code,self.mono[0]-observations[-1],j))
+AssertionError: False is not true : (0, 56.0, {'aggregate': 'PASS', 'budget': {'bytes': 29255, 'requests': 92, 'seconds': 1884.0, 'wal_bytes': 20571, 'wal_requests': 60, 'wal_seconds': 0.0}, 'context': 'kubernetes-admin@pak-portal', 'reads': {'HC-ARCH-STATE': {'attempt': 1, 'detail': 'ContinuousArchiving True', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-DB': {'attempt': 1, 'detail': '3/3/3 Ready', 'disposition': 'PASS', 'duration_ms': 14000}, 'HC-DNS': {'attempt': 1, 'detail': 'DNS ready with 53/TCP+UDP in same slice', 'disposition': 'PASS', 'duration_ms': 14000}, 'HC-GW': {'attempt': 1, 'detail': 'Gateway programmed', 'disposition': 'PASS', 'duration_ms': 14000}, 'HC-OP': {'attempt': 1, 'detail': 'operator ready', 'disposition': 'PASS', 'duration_ms': 14000}, 'HC-PORTAL': {'attempt': 1, 'detail': 'portal ready', 'disposition': 'PASS', 'duration_ms': 14000}, 'HC-WAL-PROGRESS': {'attempt': 1, 'detail': 'fresh post-operation archive', 'disposition': 'PASS', 'duration_ms': 300000}, 'PR-3': {'disposition': 'NOT_APPLICABLE'}, 'PR-5': {'attempt': 1, 'detail': 'exact dataplane Service', 'disposition': 'PASS', 'duration_ms': 14000}, 'PR-6': {'disposition': 'NOT_APPLICABLE'}}, 'stage': 'S4'})
+
+======================================================================
+FAIL: test_health_transient_missing_then_ready_is_polled (__main__.ReadinessCompletion.test_health_transient_missing_then_ready_is_polled)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 80, in test_health_transient_missing_then_ready_is_polled
+    self.assertGreaterEqual(count[0],2,j)
+AssertionError: 1 not greater than or equal to 2 : {'aggregate': 'INCONCLUSIVE', 'budget': {'bytes': 6087, 'requests': 23, 'seconds': 300.0, 'wal_bytes': 3428, 'wal_requests': 10, 'wal_seconds': 0.0}, 'context': 'kubernetes-admin@pak-portal', 'reads': {'HC-ARCH-STATE': {'attempt': 1, 'detail': 'ContinuousArchiving True', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-DB': {'attempt': 1, 'detail': 'Ready=None', 'disposition': 'INCONCLUSIVE', 'duration_ms': 0}, 'HC-DNS': {'attempt': 1, 'detail': 'DNS ready with 53/TCP+UDP in same slice', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-GW': {'disposition': 'NOT_APPLICABLE'}, 'HC-OP': {'attempt': 1, 'detail': 'operator ready', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-PORTAL': {'disposition': 'NOT_APPLICABLE'}, 'HC-WAL-PROGRESS': {'attempt': 1, 'detail': 'fresh archive progress', 'disposition': 'PASS', 'duration_ms': 300000}, 'PR-3': {'attempt': 1, 'detail': 'exact ready API tuples', 'disposition': 'PASS', 'duration_ms': 0}, 'PR-5': {'disposition': 'NOT_APPLICABLE'}, 'PR-6': {'attempt': 1, 'detail': 'policy empty + tier/felix match accepted baseline', 'disposition': 'PASS', 'duration_ms': 0}}, 'stage': 'S0'}
+
+======================================================================
+FAIL: test_incomplete_metrics_do_not_overwrite_valid_baseline (__main__.ReadinessCompletion.test_incomplete_metrics_do_not_overwrite_valid_baseline)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 69, in test_incomplete_metrics_do_not_overwrite_valid_baseline
+    self.assertEqual(w.read_wal_baseline(self.state,self.g),baseline)
+AssertionError: {'cnp[31 chars]nt': 1.0, 'cnpg_pg_stat_archiver_last_archived[110 chars] 1.0} != {'cnp[31 chars]nt': 0, 'cnpg_pg_stat_archiver_failed_count': [143 chars]': 1}
+Diff is 718 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_inflight_attempt_persisted_before_crash (__main__.ReadinessCompletion.test_inflight_attempt_persisted_before_crash)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 55, in test_inflight_attempt_persisted_before_crash
+    self.assertTrue(any(r.get('requests',0)>=1 for r in records),records)
+AssertionError: False is not true : []
+
+======================================================================
+FAIL: test_journal_does_not_echo_malformed_condition_value (__main__.ReadinessCompletion.test_journal_does_not_echo_malformed_condition_value)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 125, in test_journal_does_not_echo_malformed_condition_value
+    code,j=self.invoke();self.assertNotIn('CANARY_PRIVATE_VALUE',json.dumps(j))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'CANARY_PRIVATE_VALUE' unexpectedly found in '{"aggregate": "INCONCLUSIVE", "budget": {"bytes": 6204, "requests": 23, "seconds": 300.0, "wal_bytes": 3492, "wal_requests": 10, "wal_seconds": 0.0}, "context": "kubernetes-admin@pak-portal", "reads": {"HC-ARCH-STATE": {"attempt": 1, "detail": "ContinuousArchiving True", "disposition": "PASS", "duration_ms": 0}, "HC-DB": {"attempt": 1, "detail": "Ready=CANARY_PRIVATE_VALUE", "disposition": "INCONCLUSIVE", "duration_ms": 0}, "HC-DNS": {"attempt": 1, "detail": "DNS ready with 53/TCP+UDP in same slice", "disposition": "PASS", "duration_ms": 0}, "HC-GW": {"disposition": "NOT_APPLICABLE"}, "HC-OP": {"attempt": 1, "detail": "operator ready", "disposition": "PASS", "duration_ms": 0}, "HC-PORTAL": {"disposition": "NOT_APPLICABLE"}, "HC-WAL-PROGRESS": {"attempt": 1, "detail": "fresh archive progress", "disposition": "PASS", "duration_ms": 300000}, "PR-3": {"attempt": 1, "detail": "exact ready API tuples", "disposition": "PASS", "duration_ms": 0}, "PR-5": {"disposition": "NOT_APPLICABLE"}, "PR-6": {"attempt": 1, "detail": "policy empty + tier/felix match accepted baseline", "disposition": "PASS", "duration_ms": 0}}, "stage": "S0"}'
+
+======================================================================
+FAIL: test_list_item_cap_enforced (__main__.ReadinessCompletion.test_list_item_cap_enforced)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 104, in test_list_item_cap_enforced
+    code,j=self.invoke();self.assertNotEqual(code,0,j)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {'aggregate': 'PASS', 'budget': {'bytes': 31412, 'requests': 23, 'seconds': 300.0, 'wal_bytes': 3428, 'wal_requests': 10, 'wal_seconds': 0.0}, 'context': 'kubernetes-admin@pak-portal', 'reads': {'HC-ARCH-STATE': {'attempt': 1, 'detail': 'ContinuousArchiving True', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-DB': {'attempt': 1, 'detail': '3/3/3 Ready', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-DNS': {'attempt': 1, 'detail': 'DNS ready with 53/TCP+UDP in same slice', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-GW': {'disposition': 'NOT_APPLICABLE'}, 'HC-OP': {'attempt': 1, 'detail': 'operator ready', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-PORTAL': {'disposition': 'NOT_APPLICABLE'}, 'HC-WAL-PROGRESS': {'attempt': 1, 'detail': 'fresh archive progress', 'disposition': 'PASS', 'duration_ms': 300000}, 'PR-3': {'attempt': 1, 'detail': 'exact ready API tuples', 'disposition': 'PASS', 'duration_ms': 0}, 'PR-5': {'disposition': 'NOT_APPLICABLE'}, 'PR-6': {'attempt': 1, 'detail': 'policy empty + tier/felix match accepted baseline', 'disposition': 'PASS', 'duration_ms': 0}}, 'stage': 'S0'}
+
+======================================================================
+FAIL: test_malformed_health_returns_journal_not_uncaught_exception (__main__.ReadinessCompletion.test_malformed_health_returns_journal_not_uncaught_exception)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 138, in test_malformed_health_returns_journal_not_uncaught_exception
+    try:code,j=self.invoke()
+               ^^^^^^^^^^^^^
+  File "/workspace/scratch/14185c8f871f/review_bc508/evidence/P8/20261105-c8007f5-architect-review/contract_test.py", line 43, in invoke
+    code=w.main(['--gate',str(gp),'--out',str(out),'--state-dir',str(state),'--stage',stage,'--kubectl','FAKE'])
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/14185c8f871f/review_bc508/portal/tools/readiness/wrapper.py", line 922, in main
+    disp, detail = pred(doc)
+                   ^^^^^^^^^
+  File "/workspace/scratch/14185c8f871f/review_bc508/portal/tools/readiness/wrapper.py", line 583, in pred_hc_op
+    if p.get("metadata", {}).get("deletionTimestamp"):
+       ^^^^^
+AttributeError: 'NoneType' object has no attribute 'get'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 139, in test_malformed_health_returns_journal_not_uncaught_exception
+    except Exception as e:self.fail('uncaught '+type(e).__name__)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: uncaught AttributeError
+
+======================================================================
+FAIL: test_nan_budget_blocks_before_io (__main__.ReadinessCompletion.test_nan_budget_blocks_before_io)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 38, in test_nan_budget_blocks_before_io
+    self.assertEqual(self.calls,[],(code,j))
+AssertionError: Lists differ: [('kubectl', '/apis/postgresql.cnpg.io/v1/[1691 chars]00')] != []
+
+First list contains 23 additional elements.
+First extra element 0:
+('kubectl', '/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db')
+
+Diff is 1848 characters long. Set self.maxDiff to None to see it. : (0, {'aggregate': 'PASS', 'budget': {'bytes': 6124, 'requests': nan, 'seconds': 300.0, 'wal_bytes': 3428, 'wal_requests': 10, 'wal_seconds': 0.0}, 'context': 'kubernetes-admin@pak-portal', 'reads': {'HC-ARCH-STATE': {'attempt': 1, 'detail': 'ContinuousArchiving True', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-DB': {'attempt': 1, 'detail': '3/3/3 Ready', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-DNS': {'attempt': 1, 'detail': 'DNS ready with 53/TCP+UDP in same slice', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-GW': {'disposition': 'NOT_APPLICABLE'}, 'HC-OP': {'attempt': 1, 'detail': 'operator ready', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-PORTAL': {'disposition': 'NOT_APPLICABLE'}, 'HC-WAL-PROGRESS': {'attempt': 1, 'detail': 'fresh archive progress', 'disposition': 'PASS', 'duration_ms': 300000}, 'PR-3': {'attempt': 1, 'detail': 'exact ready API tuples', 'disposition': 'PASS', 'duration_ms': 0}, 'PR-5': {'disposition': 'NOT_APPLICABLE'}, 'PR-6': {'attempt': 1, 'detail': 'policy empty + tier/felix match accepted baseline', 'disposition': 'PASS', 'duration_ms': 0}}, 'stage': 'S0'})
+
+======================================================================
+FAIL: test_overall_remaining_one_request_stops_before_second_io (__main__.ReadinessCompletion.test_overall_remaining_one_request_stops_before_second_io)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 30, in test_overall_remaining_one_request_stops_before_second_io
+    self.assertLessEqual(len(self.calls),1,(code,len(self.calls),j['budget']))
+AssertionError: 23 not less than or equal to 1 : (0, 23, {'bytes': 6124, 'requests': 255, 'seconds': 300.0, 'wal_bytes': 3428, 'wal_requests': 10, 'wal_seconds': 0.0})
+
+======================================================================
+FAIL: test_partial_error_body_bytes_are_charged (__main__.ReadinessCompletion.test_partial_error_body_bytes_are_charged)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 62, in test_partial_error_body_bytes_are_charged
+    self.assertGreaterEqual(j['budget']['bytes'],64*len(self.calls),j['budget'])
+AssertionError: 0 not greater than or equal to 576 : {'bytes': 0, 'requests': 9, 'seconds': 600.0, 'wal_bytes': 0, 'wal_requests': 3, 'wal_seconds': 0.0}
+
+======================================================================
+FAIL: test_post_operation_boundary_requires_bound_action_receipt (__main__.ReadinessCompletion.test_post_operation_boundary_requires_bound_action_receipt)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 118, in test_post_operation_boundary_requires_bound_action_receipt
+    code,j=self.invoke('S1');self.assertNotEqual(code,0,j)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {'aggregate': 'PASS', 'budget': {'bytes': 10485, 'requests': 36, 'seconds': 600.0, 'wal_bytes': 6856, 'wal_requests': 20, 'wal_seconds': 0.0}, 'context': 'kubernetes-admin@pak-portal', 'reads': {'HC-ARCH-STATE': {'attempt': 1, 'detail': 'ContinuousArchiving True', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-DB': {'attempt': 1, 'detail': '3/3/3 Ready', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-DNS': {'attempt': 1, 'detail': 'DNS ready with 53/TCP+UDP in same slice', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-GW': {'disposition': 'NOT_APPLICABLE'}, 'HC-OP': {'attempt': 1, 'detail': 'operator ready', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-PORTAL': {'disposition': 'NOT_APPLICABLE'}, 'HC-WAL-PROGRESS': {'attempt': 1, 'detail': 'fresh post-operation archive', 'disposition': 'PASS', 'duration_ms': 300000}, 'PR-3': {'disposition': 'NOT_APPLICABLE'}, 'PR-5': {'disposition': 'NOT_APPLICABLE'}, 'PR-6': {'disposition': 'NOT_APPLICABLE'}}, 'stage': 'S1'}
+
+======================================================================
+FAIL: test_postgres_restart_is_checked_by_container_name (__main__.ReadinessCompletion.test_postgres_restart_is_checked_by_container_name)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 135, in test_postgres_restart_is_checked_by_container_name
+    self.raw=restarted;code,j=self.invoke();self.assertNotEqual(code,0,j)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {'aggregate': 'PASS', 'budget': {'bytes': 6284, 'requests': 23, 'seconds': 300.0, 'wal_bytes': 3588, 'wal_requests': 10, 'wal_seconds': 0.0}, 'context': 'kubernetes-admin@pak-portal', 'reads': {'HC-ARCH-STATE': {'attempt': 1, 'detail': 'ContinuousArchiving True', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-DB': {'attempt': 1, 'detail': '3/3/3 Ready', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-DNS': {'attempt': 1, 'detail': 'DNS ready with 53/TCP+UDP in same slice', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-GW': {'disposition': 'NOT_APPLICABLE'}, 'HC-OP': {'attempt': 1, 'detail': 'operator ready', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-PORTAL': {'disposition': 'NOT_APPLICABLE'}, 'HC-WAL-PROGRESS': {'attempt': 1, 'detail': 'fresh archive progress', 'disposition': 'PASS', 'duration_ms': 300000}, 'PR-3': {'attempt': 1, 'detail': 'exact ready API tuples', 'disposition': 'PASS', 'duration_ms': 0}, 'PR-5': {'disposition': 'NOT_APPLICABLE'}, 'PR-6': {'attempt': 1, 'detail': 'policy empty + tier/felix match accepted baseline', 'disposition': 'PASS', 'duration_ms': 0}}, 'stage': 'S0'}
+
+======================================================================
+FAIL: test_pr5_without_uid_namespace_ownership_cannot_pass (__main__.ReadinessCompletion.test_pr5_without_uid_namespace_ownership_cannot_pass)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 114, in test_pr5_without_uid_namespace_ownership_cannot_pass
+    code,j=self.invoke('S4');self.assertNotEqual(code,0,j)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {'aggregate': 'PASS', 'budget': {'bytes': 29028, 'requests': 92, 'seconds': 1800.0, 'wal_bytes': 20571, 'wal_requests': 60, 'wal_seconds': 0.0}, 'context': 'kubernetes-admin@pak-portal', 'reads': {'HC-ARCH-STATE': {'attempt': 1, 'detail': 'ContinuousArchiving True', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-DB': {'attempt': 1, 'detail': '3/3/3 Ready', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-DNS': {'attempt': 1, 'detail': 'DNS ready with 53/TCP+UDP in same slice', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-GW': {'attempt': 1, 'detail': 'Gateway programmed', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-OP': {'attempt': 1, 'detail': 'operator ready', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-PORTAL': {'attempt': 1, 'detail': 'portal ready', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-WAL-PROGRESS': {'attempt': 1, 'detail': 'fresh post-operation archive', 'disposition': 'PASS', 'duration_ms': 300000}, 'PR-3': {'disposition': 'NOT_APPLICABLE'}, 'PR-5': {'attempt': 1, 'detail': 'exact dataplane Service', 'disposition': 'PASS', 'duration_ms': 0}, 'PR-6': {'disposition': 'NOT_APPLICABLE'}}, 'stage': 'S4'}
+
+======================================================================
+FAIL: test_pr6_wrong_resource_list_cannot_pass (__main__.ReadinessCompletion.test_pr6_wrong_resource_list_cannot_pass)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 100, in test_pr6_wrong_resource_list_cannot_pass
+    code,j=self.invoke();self.assertNotEqual(code,0,j)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {'aggregate': 'PASS', 'budget': {'bytes': 6096, 'requests': 23, 'seconds': 300.0, 'wal_bytes': 3428, 'wal_requests': 10, 'wal_seconds': 0.0}, 'context': 'kubernetes-admin@pak-portal', 'reads': {'HC-ARCH-STATE': {'attempt': 1, 'detail': 'ContinuousArchiving True', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-DB': {'attempt': 1, 'detail': '3/3/3 Ready', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-DNS': {'attempt': 1, 'detail': 'DNS ready with 53/TCP+UDP in same slice', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-GW': {'disposition': 'NOT_APPLICABLE'}, 'HC-OP': {'attempt': 1, 'detail': 'operator ready', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-PORTAL': {'disposition': 'NOT_APPLICABLE'}, 'HC-WAL-PROGRESS': {'attempt': 1, 'detail': 'fresh archive progress', 'disposition': 'PASS', 'duration_ms': 300000}, 'PR-3': {'attempt': 1, 'detail': 'exact ready API tuples', 'disposition': 'PASS', 'duration_ms': 0}, 'PR-5': {'disposition': 'NOT_APPLICABLE'}, 'PR-6': {'attempt': 1, 'detail': 'policy empty + tier/felix match accepted baseline', 'disposition': 'PASS', 'duration_ms': 0}}, 'stage': 'S0'}
+
+======================================================================
+FAIL: test_receipt_from_different_gate_not_authority (__main__.ReadinessCompletion.test_receipt_from_different_gate_not_authority)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 122, in test_receipt_from_different_gate_not_authority
+    self.assertIsNone(w.read_receipt(str(self.state/'stage.receipt'),other))
+AssertionError: 'S0' is not None
+
+======================================================================
+FAIL: test_secondary_role_cannot_pass_primary_sample (__main__.ReadinessCompletion.test_secondary_role_cannot_pass_primary_sample)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 107, in test_secondary_role_cannot_pass_primary_sample
+    code,j=self.invoke();self.assertNotEqual(code,0,j)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {'aggregate': 'PASS', 'budget': {'bytes': 6124, 'requests': 23, 'seconds': 300.0, 'wal_bytes': 3428, 'wal_requests': 10, 'wal_seconds': 0.0}, 'context': 'kubernetes-admin@pak-portal', 'reads': {'HC-ARCH-STATE': {'attempt': 1, 'detail': 'ContinuousArchiving True', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-DB': {'attempt': 1, 'detail': '3/3/3 Ready', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-DNS': {'attempt': 1, 'detail': 'DNS ready with 53/TCP+UDP in same slice', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-GW': {'disposition': 'NOT_APPLICABLE'}, 'HC-OP': {'attempt': 1, 'detail': 'operator ready', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-PORTAL': {'disposition': 'NOT_APPLICABLE'}, 'HC-WAL-PROGRESS': {'attempt': 1, 'detail': 'fresh archive progress', 'disposition': 'PASS', 'duration_ms': 300000}, 'PR-3': {'attempt': 1, 'detail': 'exact ready API tuples', 'disposition': 'PASS', 'duration_ms': 0}, 'PR-5': {'disposition': 'NOT_APPLICABLE'}, 'PR-6': {'attempt': 1, 'detail': 'policy empty + tier/felix match accepted baseline', 'disposition': 'PASS', 'duration_ms': 0}}, 'stage': 'S0'}
+
+======================================================================
+FAIL: test_wal_elapsed_includes_slot_waits (__main__.ReadinessCompletion.test_wal_elapsed_includes_slot_waits)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 48, in test_wal_elapsed_includes_slot_waits
+    self.assertGreaterEqual(j['budget']['wal_seconds'],300,j['budget'])
+AssertionError: 0.0 not greater than or equal to 300 : {'bytes': 6124, 'requests': 23, 'seconds': 300.0, 'wal_bytes': 3428, 'wal_requests': 10, 'wal_seconds': 0.0}
+
+======================================================================
+FAIL: test_wal_remaining_one_request_stops_before_second_wal_io (__main__.ReadinessCompletion.test_wal_remaining_one_request_stops_before_second_wal_io)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 34, in test_wal_remaining_one_request_stops_before_second_wal_io
+    self.assertLessEqual(j['budget']['wal_requests'],90,j['budget'])
+AssertionError: 94 not less than or equal to 90 : {'bytes': 4410, 'requests': 18, 'seconds': 600.0, 'wal_bytes': 1714, 'wal_requests': 94, 'wal_seconds': 0.0}
+
+======================================================================
+FAIL: test_qualifier_rejects_missing_seed_precheck_job (__main__.ReleaseCompletion.test_qualifier_rejects_missing_seed_precheck_job)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 221, in test_qualifier_rejects_missing_seed_precheck_job
+    self.assertTrue(qual.checks(self.release,seed),'qualifier accepts seed without precheck')
+AssertionError: [] is not true : qualifier accepts seed without precheck
+
+======================================================================
+FAIL: test_release_has_execution_gate_before_protected_steps (__main__.ReleaseCompletion.test_release_has_execution_gate_before_protected_steps)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 218, in test_release_has_execution_gate_before_protected_steps
+    self.assertTrue('gate' in runs and 'run_attempt' in str(self.release),'No runtime gate binding/expiry/one-attempt enforcement')
+AssertionError: False is not true : No runtime gate binding/expiry/one-attempt enforcement
+
+======================================================================
+FAIL: test_scan_other_image_cannot_bind_release (__main__.ReleaseCompletion.test_scan_other_image_cannot_bind_release)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 205, in test_scan_other_image_cannot_bind_release
+    r=negative.run_verified(d);self.assertNotEqual(r.returncode,0,r.stdout)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {"image": "ghcr.io/dedvmedved-dot/otus-diplom-portal", "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "source": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "payloadBinding": "PASS"}
+
+
+======================================================================
+FAIL: test_seed_equal_application_digest_is_nonzero (__main__.ReleaseCompletion.test_seed_equal_application_digest_is_nonzero)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 200, in test_seed_equal_application_digest_is_nonzero
+    self.assertNotEqual(r.returncode,0,(self.root/'seed-evidence.json').read_text())
+AssertionError: 0 == 0 : {"seed_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "not_deployable": true, "seed_not_application_digest": false}
+
+======================================================================
+FAIL: test_seed_gate_requires_actual_source_repository_package_binding (__main__.ReleaseCompletion.test_seed_gate_requires_actual_source_repository_package_binding)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 174, in test_seed_gate_requires_actual_source_repository_package_binding
+    self.assertNotEqual(r.returncode,0,r.stdout)
+AssertionError: 0 == 0 : {"first_creation": "VERIFIED", "source_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}
+
+
+======================================================================
+FAIL: test_seed_has_failure_cleanup_route (__main__.ReleaseCompletion.test_seed_has_failure_cleanup_route)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 210, in test_seed_has_failure_cleanup_route
+    self.assertTrue(always_cleanup or trapped_cleanup,'kill only after successful build, no failure/cancel cleanup')
+AssertionError: False is not true : kill only after successful build, no failure/cancel cleanup
+
+======================================================================
+FAIL: test_seed_has_registry_byte_proof_before_acceptance (__main__.ReleaseCompletion.test_seed_has_registry_byte_proof_before_acceptance)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 215, in test_seed_has_registry_byte_proof_before_acceptance
+    self.assertIn('release-check.py registry',runs)
+AssertionError: 'release-check.py registry' not found in '\npython3 -c "import json,os; json.dump({\'seed\': \'${{ needs.precheck.outputs.result }}\', \'build_push_count\': 0, \'not_deployable\': True}, open(os.environ[\'RUNNER_TEMP\']+\'/seed-evidence.json\',\'w\'))"\n\n\nset -euo pipefail\nsudo apt-get update && sudo apt-get install -y uidmap slirp4netns\ncurl -sSfL "https://github.com/rootless-containers/rootlesskit/releases/download/v2.3.1/rootlesskit-x86_64.tar.gz" -o rootlesskit.tar.gz\necho "caafdce18e0959f078b4b478d4f352ebf3d556e373265fc7831f1a6d70219ee0  rootlesskit.tar.gz" | sha256sum -c\ntar -xzf rootlesskit.tar.gz && sudo mv rootlesskit rootlessctl rootlesskit-docker-proxy /usr/local/bin/\ncurl -sSfL "https://github.com/moby/buildkit/releases/download/v0.34.0/buildkit-v0.34.0.linux-amd64.tar.gz" -o buildkit.tar.gz\necho "14813b1fb2a40082114e6d386c6fc5e7dd5298176ce7ee1a18bc33e73e109ac3  buildkit.tar.gz" | sha256sum -c\ntar -xzf buildkit.tar.gz && sudo install -m 0755 bin/buildctl bin/buildkitd /usr/local/bin/\n\nset -euo pipefail\nunshare -Ur true || { echo "STOP: user namespaces unavailable"; exit 1; }\nrootlesskit --net=slirp4netns --copy-up=/etc --copy-up=/run \\\n  buildkitd --oci-worker-no-process-sandbox --addr unix:///tmp/seed-buildkit.sock > /tmp/seed-buildkitd.log 2>&1 &\nBK_PID=$!\necho "$BK_PID" > /tmp/seed-buildkitd.pid\n# NOTE: no EXIT trap here — the daemon must survive into the Build step.\nREADY=0\nfor i in $(seq 1 30); do\n  if buildctl --addr unix:///tmp/seed-buildkit.sock debug workers >/dev/null 2>&1; then READY=1; break; fi\n  sleep 1\ndone\nif [ "$READY" != "1" ]; then echo "buildkitd not ready after 30s"; tail -20 /tmp/seed-buildkitd.log; exit 1; fi\necho "BUILDKIT_READY=1" >> "$GITHUB_ENV"\n\nset -euo pipefail\nprintf \'bootstrap-only seed, not deployable\\n\' > seed.txt\nbuildctl build --frontend=dockerfile.v0 --opt filename=Seed.Containerfile \\\n  --local context=. --local dockerfile=. \\\n  --output type=image,name=${IMAGE}:${SEED_TAG},push=true \\\n  --metadata-file "$RUNNER_TEMP/seed-metadata.json"\npython3 release-check.py digest "$RUNNER_TEMP/seed-metadata.json" > "$RUNNER_TEMP/seed-digest.txt"\necho "SEED_DIGEST=$(cat "$RUNNER_TEMP/seed-digest.txt")" >> "$GITHUB_ENV"\n# cleanup: stop the daemon only after the build\nkill "$(cat /tmp/seed-buildkitd.pid)" 2>/dev/null || true\n\nset -euo pipefail\npython3 portal/tools/release-check.py private > "$RUNNER_TEMP/private-after.json"\npython3 -c "import json,os; json.dump({\'seed_digest\': os.environ.get(\'SEED_DIGEST\',\'\'), \'not_deployable\': True, \'seed_not_application_digest\': os.environ.get(\'SEED_DIGEST\',\'\') != os.environ.get(\'APP_IMAGE_DIGEST\',\'\')}, open(os.environ[\'RUNNER_TEMP\']+\'/seed-evidence.json\',\'w\'))"\n\n'
+
+======================================================================
+FAIL: test_seed_private_probe_error_plus_gate_does_not_create (__main__.ReleaseCompletion.test_seed_private_probe_error_plus_gate_does_not_create)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 189, in test_seed_private_probe_error_plus_gate_does_not_create
+    self.assertNotIn('CREATE_ALLOWED',output,(r.returncode,output))
+AssertionError: 'CREATE_ALLOWED' unexpectedly found in 'result=CREATE_ALLOWED\n' : (0, 'result=CREATE_ALLOWED\n')
+
+======================================================================
+FAIL: test_seed_tag_is_source_bound (__main__.ReleaseCompletion.test_seed_tag_is_source_bound)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 212, in test_seed_tag_is_source_bound
+    self.assertNotEqual(self.seed['env'].get('SEED_TAG'),'bootstrap-seed')
+AssertionError: 'bootstrap-seed' == 'bootstrap-seed'
+
+======================================================================
+FAIL: test_seed_untrusted_input_is_data_not_shell (__main__.ReleaseCompletion.test_seed_untrusted_input_is_data_not_shell)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 180, in test_seed_untrusted_input_is_data_not_shell
+    self.assertFalse((self.root/'INJECTED').exists(),'Workflow input executed shell syntax (benign local sentinel)')
+AssertionError: True is not false : Workflow input executed shell syntax (benign local sentinel)
+
+======================================================================
+FAIL: test_http_read_receives_absolute_deadline_not_only_socket_timeout (__main__.TransportCompletion.test_http_read_receives_absolute_deadline_not_only_socket_timeout)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 162, in test_http_read_receives_absolute_deadline_not_only_socket_timeout
+    self.assertIsNotNone(error,('response after deadline accepted',time.monotonic()-start))
+AssertionError: unexpectedly None : ('response after deadline accepted', 0.12041627100006735)
+
+======================================================================
+FAIL: test_kubectl_hard_timeout_not_plus_five_seconds (__main__.TransportCompletion.test_kubectl_hard_timeout_not_plus_five_seconds)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_bc508/independent/completion_contract_test.py", line 150, in test_kubectl_hard_timeout_not_plus_five_seconds
+    self.assertIsNotNone(error,('response after 1s accepted',elapsed))
+AssertionError: unexpectedly None : ('response after 1s accepted', 1.6145922800005792)
+
+----------------------------------------------------------------------
+Ran 34 tests in 2.525s
+
+FAILED (failures=32)

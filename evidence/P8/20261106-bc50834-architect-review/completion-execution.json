@@ -1,0 +1,18 @@
+{
+  "source_sha": "d2e8598a8720cb2dc5935ac33d218498cf846c45",
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "independent/completion_contract_test.py",
+    "-v"
+  ],
+  "cwd": "/workspace/scratch/14185c8f871f/review_bc508",
+  "start": "2026-11-06T02:22:22.464668+00:00",
+  "end": "2026-11-06T02:22:25.248145+00:00",
+  "exit": 1,
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "methods": 34,
+  "passes": 2,
+  "failures": 32,
+  "errors": 0,
+  "scope": "OFFLINE ONLY; production entrypoints with synthetic clocks/transports; template shell fragments use fake executables and local benign sentinel; no cluster/SSH/CI/registry"
+}

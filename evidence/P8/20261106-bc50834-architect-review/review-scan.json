@@ -1,0 +1,59 @@
+{
+  "utc": "2026-11-06T02:27:21.190305+00:00",
+  "scope": [
+    {
+      "file": "review.md",
+      "sha256": "30f00e18c6525d6f6eaec17c28a2ad3a9e4548b3b66be2b0bc48bdeab1828226",
+      "bytes": 21372
+    },
+    {
+      "file": "completion_contract_test.py",
+      "sha256": "d635ece3ce1e1200ffc20821c3f3566e0f28658282bd01b45882f651f461fd62",
+      "bytes": 15356
+    },
+    {
+      "file": "completion-execution.json",
+      "sha256": "f7168ee4de75f1faed625b0873734e0db9ab9cc7f58726a3e481dfe5deddf3b1",
+      "bytes": 697
+    },
+    {
+      "file": "completion-execution.txt",
+      "sha256": "76e6fbd605c57dbeee9b430a00cd6f12f08615f035700a533d7c6dc6e6a0639d",
+      "bytes": 42401
+    },
+    {
+      "file": "reexecution.json",
+      "sha256": "1858c39f8c9399d3f40f0d1ba90432be31724fcf271c484c75c1faf19487f66e",
+      "bytes": 6179
+    },
+    {
+      "file": "reexecution-raw.txt",
+      "sha256": "d99abe252d823300bb6a3be8fe77050f8f4853996f6ca872ef22dbee231595d7",
+      "bytes": 20614
+    },
+    {
+      "file": "isolation-reordered.txt",
+      "sha256": "bc6bd2e1bf5a82dd300065dcc4d92101ed30ad3ff799cb55aabd0a9cab6325c1",
+      "bytes": 576
+    },
+    {
+      "file": "isolation-diff.txt",
+      "sha256": "0af90048ecc6ee78221b507d99a870fc1a4c003989d059f12b6b68d3ff787cde",
+      "bytes": 3962
+    },
+    {
+      "file": "source-audit.json",
+      "sha256": "dcccddcc20cf749133c09c891b6b7ff5ec63cce7ab26dac15a09fefe8667b0eb",
+      "bytes": 8332
+    }
+  ],
+  "patterns": {
+    "private_key": "-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----",
+    "github_token": "(?<![A-Za-z0-9])(?:ghp|gho|ghs|ghu)_[A-Za-z0-9]{20,}",
+    "aws_access": "AKIA[0-9A-Z]{16}",
+    "signed_query": "(?:X-Amz-Signature|X-Goog-Signature|se=20[0-9][0-9].*sig=)"
+  },
+  "matches": [],
+  "result": "NO_MATCH",
+  "limits": "Heuristic review of frozen review inputs only; not proof of absence. Synthetic CANARY, gate hashes, fake artifact digests and secret-ref names are intentional; no credentials collected. Output excluded from input set."
+}

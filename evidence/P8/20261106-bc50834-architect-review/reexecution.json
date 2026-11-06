@@ -1,0 +1,170 @@
+{
+  "source_sha": "d2e8598a8720cb2dc5935ac33d218498cf846c45",
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "commands": [
+    {
+      "name": "readiness",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-m",
+        "unittest",
+        "-v",
+        "test_readiness"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_bc508/portal/tools/readiness",
+      "start": "2026-11-06T02:17:36.321923+00:00",
+      "end": "2026-11-06T02:17:36.761797+00:00",
+      "exit": 0
+    },
+    {
+      "name": "residual-working",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-m",
+        "unittest",
+        "-v",
+        "portal/tools/readiness/test_architect_residual.py"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_bc508",
+      "start": "2026-11-06T02:18:48.319815+00:00",
+      "end": "2026-11-06T02:18:49.068684+00:00",
+      "exit": 0
+    },
+    {
+      "name": "qualification",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-m",
+        "unittest",
+        "-v",
+        "test_release_qualification"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_bc508/portal/tools",
+      "start": "2026-11-06T02:17:37.468037+00:00",
+      "end": "2026-11-06T02:17:37.586241+00:00",
+      "exit": 0
+    },
+    {
+      "name": "release",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-m",
+        "unittest",
+        "-v",
+        "test_release"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_bc508/portal/tools",
+      "start": "2026-11-06T02:17:37.586790+00:00",
+      "end": "2026-11-06T02:17:37.684172+00:00",
+      "exit": 0
+    },
+    {
+      "name": "release-negative",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-m",
+        "unittest",
+        "-v",
+        "test_release_negative"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_bc508/portal/tools",
+      "start": "2026-11-06T02:17:37.684671+00:00",
+      "end": "2026-11-06T02:17:38.174309+00:00",
+      "exit": 0
+    },
+    {
+      "name": "qualification-cli",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "release_qualification.py"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_bc508/portal/tools",
+      "start": "2026-11-06T02:17:38.175691+00:00",
+      "end": "2026-11-06T02:17:38.230374+00:00",
+      "exit": 0
+    },
+    {
+      "name": "regression",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "evidence/P8/20261105-f783e1e-architect-review/regression_test.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_bc508",
+      "start": "2026-11-06T02:17:38.230928+00:00",
+      "end": "2026-11-06T02:17:45.316374+00:00",
+      "exit": 0
+    },
+    {
+      "name": "scheduler",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "evidence/P8/20261105-974e069-architect-review/scheduler_regression_test.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_bc508",
+      "start": "2026-11-06T02:17:45.317331+00:00",
+      "end": "2026-11-06T02:17:45.511281+00:00",
+      "exit": 0
+    },
+    {
+      "name": "contract",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "evidence/P8/20261105-c8007f5-architect-review/contract_test.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_bc508",
+      "start": "2026-11-06T02:17:45.511745+00:00",
+      "end": "2026-11-06T02:17:45.965759+00:00",
+      "exit": 0
+    }
+  ],
+  "pin_verification": "NOT_RERUN: accepted cache unavailable; no network download",
+  "reviewer_setup_correction": "Fetched missing accepted-baseline.json before residual reexecution; prior FileNotFoundError was local snapshot omission, not product defect.",
+  "methods": 119,
+  "methods_pass": 119,
+  "syntax": [
+    {
+      "name": "bash-syntax",
+      "argv": [
+        "bash",
+        "-n",
+        "portal/tools/install-verified-go.sh"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "launcher-syntax",
+      "argv": [
+        "bash",
+        "-n",
+        "portal/tools/run_offline_suite.sh"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "python-syntax",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-m",
+        "py_compile",
+        "/workspace/scratch/14185c8f871f/review_bc508/portal/tools/provision-registry-pull.py",
+        "/workspace/scratch/14185c8f871f/review_bc508/portal/tools/provision-ui-auth.py",
+        "/workspace/scratch/14185c8f871f/review_bc508/portal/tools/release-check.py",
+        "/workspace/scratch/14185c8f871f/review_bc508/portal/tools/release_qualification.py",
+        "/workspace/scratch/14185c8f871f/review_bc508/portal/tools/test_helpers.py",
+        "/workspace/scratch/14185c8f871f/review_bc508/portal/tools/test_release.py",
+        "/workspace/scratch/14185c8f871f/review_bc508/portal/tools/test_release_negative.py",
+        "/workspace/scratch/14185c8f871f/review_bc508/portal/tools/test_release_qualification.py",
+        "/workspace/scratch/14185c8f871f/review_bc508/portal/tools/verify-pins.py",
+        "/workspace/scratch/14185c8f871f/review_bc508/portal/tools/readiness/test_architect_residual.py",
+        "/workspace/scratch/14185c8f871f/review_bc508/portal/tools/readiness/test_readiness.py",
+        "/workspace/scratch/14185c8f871f/review_bc508/portal/tools/readiness/wal.py",
+        "/workspace/scratch/14185c8f871f/review_bc508/portal/tools/readiness/wrapper.py"
+      ],
+      "exit": 0
+    }
+  ],
+  "full_shell_launcher": "NOT_EXECUTED by reviewer: deletes global /tmp/p8c-readiness and unconditionally downloads public pins. Executed all 119 test methods and qualifier separately with isolated TMPDIR; pins not rerun."
+}

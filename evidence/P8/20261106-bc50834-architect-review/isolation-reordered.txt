@@ -1,0 +1,9 @@
+test_unbound_plain_text_receipt_not_authority (active.StateAndExecution.test_unbound_plain_text_receipt_not_authority) ... ok
+test_replay_new_parent_directory_rejected (active.StateAndExecution.test_replay_new_parent_directory_rejected) ... ok
+test_failed_stage_cannot_authorize_next (active.StateAndExecution.test_failed_stage_cannot_authorize_next) ... ok
+test_child_stdout_eof_is_not_child_failure (active.StateAndExecution.test_child_stdout_eof_is_not_child_failure) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.137s
+
+OK

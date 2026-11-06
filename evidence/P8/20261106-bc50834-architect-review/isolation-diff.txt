@@ -1,0 +1,55 @@
+--- historical residual_test.py
++++ active test_architect_residual.py
+@@ -1,7 +1,18 @@
+-"""Offline positive/negative contract controls for source 235b412.
+-Run from repository root: P8C_REVIEW_ROOT=$PWD python3 <this-file>.
+-Only mock transports and synthetic artifacts; no cluster/CI/network execution.
+-The accepted-baseline.json next to this file contains an extraction of archived evidence.
++"""Active working copy of the Architect residual contract (evidence/P8/.../residual_test.py).
++
++ORIGINAL: evidence/P8/20261105-64e36a6-architect-review/residual_test.py (frozen, not edited).
++
++CHANGE FROM ORIGINAL (test-harness isolation only, assertions unchanged):
++  - The original StateAndExecution.invoke did NOT patch RESERVATION_BASE, so all three
++    StateAndExecution tests shared one window-authority keyed by the fixed gate. Under the
++    corrected "failed/completed -> no replay" window semantics, test_failed_stage_cannot_authorize_next
++    (S0 -> failed) then polluted test_replay_new_parent_directory_rejected (S0 -> blocked at rc=2
++    instead of a fresh success). This is a cross-test artifact, not a production defect.
++  - Fix: each StateAndExecution test now gets a private temporary authority directory
++    (RESERVATION_BASE) so a failed/completed window in one test cannot leak into another.
++    Explicit shared state remains ONLY inside the replay scenario (same test, same authority).
++  - Production protections (failed/completed/UNKNOWN_OUTCOME = no new budget; state-dir change
++    cannot bypass authority) are preserved verbatim; no assertion is weakened, skipped or xfail'ed.
+ """
+ import copy,importlib.util,io,json,os,subprocess,sys,tempfile,time,unittest
+ from pathlib import Path
+@@ -46,7 +57,7 @@
+         with self.assertRaises(w.ReadError):w.validate_envelope(json.dumps(listing(api='v1-unapproved')),True)
+ 
+     def test_archived_nonempty_tier_felix_baseline_is_not_drift(self):
+-        a=json.loads(Path(__file__).with_name('accepted-baseline.json').read_text())
++        a=json.loads((ROOT/'evidence/P8/20261105-64e36a6-architect-review/accepted-baseline.json').read_text())
+         records={r['id']:json.loads(r['output']) for r in a['records']}
+         ds=[listing() for _ in range(9)]
+         ds[5]['items']=records['F-TIER'];ds[6]['items']=[records['F-FELIX']]
+@@ -64,13 +75,19 @@
+         self.assertNotEqual(w.pred_hc_portal(d)[0],w.PASS)
+ 
+ class StateAndExecution(unittest.TestCase):
++    def setUp(self):
++        # ISOLATION FIX (see module docstring): per-test private authority directory.
++        self._authority_tmp=tempfile.TemporaryDirectory()
++        self.addCleanup(self._authority_tmp.cleanup)
++        self.authority=str(Path(self._authority_tmp.name)/'authority')
++
+     def invoke(self,root,stage,reads_fail=False):
+         root.mkdir(parents=True,exist_ok=True);gp=root/'gate.json';gp.write_text(json.dumps(gate()))
+         def transport(rs,rid,*args):
+             if reads_fail:raise w.ReadError('synthetic transport failure')
+             return {}
+         predicates={k:(v[0],lambda d:(w.PASS,'synthetic healthy')) for k,v in w.PREDICATES.items()}
+-        with patch.object(w.time,'time',return_value=NOW+10),patch.object(w,'run_read',side_effect=transport) as tr,patch.object(w,'PREDICATES',predicates),patch.object(w,'run_wal_sample',return_value=(w.PASS,'synthetic progress')),patch('sys.stdout',new=io.StringIO()),patch('sys.stderr',new=io.StringIO()):
++        with patch.object(w,'RESERVATION_BASE',self.authority),patch.object(w.time,'time',return_value=NOW+10),patch.object(w,'run_read',side_effect=transport) as tr,patch.object(w,'PREDICATES',predicates),patch.object(w,'run_wal_sample',return_value=(w.PASS,'synthetic progress')),patch('sys.stdout',new=io.StringIO()),patch('sys.stderr',new=io.StringIO()):
+             code=w.main(['--gate',str(gp),'--state-dir',str(root/'state'),'--out',str(root/(stage+'.json')),'--stage',stage])
+         return code,tr.call_count
+ 
