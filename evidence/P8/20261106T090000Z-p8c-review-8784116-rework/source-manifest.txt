@@ -1,0 +1,28 @@
+# Source manifest — review 8784116 rework (a443b5c)
+
+Base: 87841166145e18254860c1c5e7ca200d24f10e34
+Final: a443b5caa56d7de18dd78a2ea407b5e76763f36d
+Fast-forward: yes. No force/rebase/amend.
+
+Changed files (source diff):
+  portal/tools/readiness/wrapper.py        — budget authority, per-I/O remaining check, NaN gate,
+                                             atomic crash-safe charge, health windows + freshness
+                                             re-check, predicate kind/identity/max_items/value-free,
+                                             transport deadlines, op-boundary >= issued_at
+  portal/tools/readiness/wal.py            — primary instanceRole, restart by container name,
+                                             incomplete metrics never overwrite baseline
+  portal/tools/readiness/test_readiness.py — fixtures updated for new exact-kind predicates
+  portal/tools/readiness/test_architect_residual.py — per-read correct PR-6 kinds (isolation)
+  portal/tools/release-check.py            — first-creation GITHUB_SHA/repo binding, private 404
+                                             (exit 2) vs error, scan-image image binding
+  portal/tools/p8c-portal-seed.yml.template — env-not-shell gate, private error -> STOP, source-bound
+                                             SEED_TAG, always() cleanup, registry proof, seed!=app
+  portal/tools/p8c-portal-release.yml.template — future-execution gate (run_attempt/source/repo)
+  portal/tools/release_qualification.py    — requires seed precheck job
+  portal/tools/run_offline_suite.sh        — per-suite mktemp authority (no global rm), completion
+  docs/architecture/P8C_EXECUTABLE_RELEASE_READINESS_RUNBOOK_20261104.md — updated matrix/runbook
+
+Evidence (this package):
+  raw-transcript.txt  — full launcher output on a443b5c (152/153 PASS)
+  secret-scan.txt     — no credential/token matches in source diff
+  result.md           — verdict + the single documented ambiguity
