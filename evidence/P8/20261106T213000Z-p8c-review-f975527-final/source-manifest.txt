@@ -1,0 +1,34 @@
+# Source manifest — review f975527 final package (9a4ed77)
+
+Base: 6a0ad93d88b94452d713626ceb5392960925fad2 (evidence of 94877dc)
+Final: 9a4ed77d3131d0b2078b6917e1a7d4419ec02b65
+Fast-forward: yes. No force/rebase/amend.
+
+Source changed in this final pass (diff 6a0ad93..9a4ed77):
+  portal/tools/readiness/wrapper.py        — write_budget: fcntl.flock RMW + MAX merge +
+                                             fsync file/dir (concurrency + crash durability);
+                                             exact GVR binding in every predicate (kind AND
+                                             apiVersion); value-free felix drift diagnostic
+  portal/tools/readiness/test_readiness.py — exact GVR envelopes in predicate fixtures
+  portal/tools/readiness/test_architect_residual.py — PR-6 (kind,apiVersion) pairs
+  docs/architecture/P8C_EXECUTABLE_RELEASE_READINESS_RUNBOOK_20261104.md — synced budget/GVR
+
+Prior rework already on main (94877dc, evidence 6a0ad93):
+  gate_identity_sha256 (clock binding); release cleanup + bounded readiness; seed proof
+  package; fake-tool route E2E; action_receipt binding; health scheduler.
+
+Runtime/test dependency closure (imported by the active suite):
+  - wrapper.py -> wal.py, readset.json (frozen), stdlib (fcntl/hashlib/json/os/select/subprocess/...)
+  - active working copies -> evidence fixtures:
+      evidence/P8/20261105-974e069-architect-review/scheduler_regression_test.py (MainContract)
+      evidence/P8/20261105-c8007f5-architect-review/contract_test.py (WindowRoutes)
+      evidence/P8/20261105-f783e1e-architect-review/regression_test.py
+      evidence/P8/20261105-64e36a6-architect-review/accepted-baseline.json (PR-6 Tier/Felix baseline)
+  - release-check.py, release_qualification.py, verify-pins.py (+ pins.lock.json)
+  - template parse: p8c-portal-release.yml.template, p8c-portal-seed.yml.template (PyYAML)
+  - pinned public inputs: pins.lock.json (6 binaries + 3 actions + 1 image, 10/10 offline VERIFIED)
+
+Evidence (this package):
+  raw-transcript.txt  — UTC start/end, cwd, toolchain versions, launcher output, exit 0
+  secret-scan.txt     — no credential/token matches in source diff
+  result.md           — full closure matrix + verdict
