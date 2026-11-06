@@ -1,0 +1,7 @@
+{
+  "repository": "kubernetes/kubernetes",
+  "ref": "v1.36.2",
+  "path": "pkg/registry/core/namespace/strategy.go",
+  "git_blob": "9c5a7347ac7037199e05c13e79b0fc4f58673e51",
+  "excerpt": "// NamespaceScoped is false for namespaces.\nfunc (namespaceStrategy) NamespaceScoped() bool {\n\treturn false\n}\n\n// GetRes"
+}

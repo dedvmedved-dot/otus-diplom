@@ -1,0 +1,22 @@
+[
+  {
+    "test": "test_create_allowed_full_route_build_postproof_cleanup",
+    "result": "PASS",
+    "actually_executed_template_steps": [
+      "Typed private-package precheck",
+      "Start rootless BuildKit (bounded readiness + cleanup)",
+      "Build + push minimal seed (bootstrap-only, not deployable)"
+    ]
+  },
+  {
+    "test": "test_release_full_route_build_scan_sign_attest_artifacts",
+    "result": "PASS",
+    "actually_executed_template_steps": [
+      "Future execution gate (source/workflow/package/expiry/run-attempt)"
+    ]
+  },
+  {
+    "release_dispatch": {},
+    "gate_consumer_without_producer": true
+  }
+]

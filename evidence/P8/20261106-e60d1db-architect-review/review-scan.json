@@ -1,0 +1,68 @@
+{
+  "utc": "2026-11-06T22:33:22.231307+00:00",
+  "scope": "exact new review/evidence/PLAN payload, excluding scan output",
+  "limitations": "heuristic; synthetic fixtures and non-secret hash references are expected",
+  "files": [
+    {
+      "path": "evidence/P8/20261106-e60d1db-architect-review/reexecution.json",
+      "sha256": "7988a37676826dd29a99e1371d689c21080bd8031975db041915a5e42af5cbb4"
+    },
+    {
+      "path": "evidence/P8/20261106-e60d1db-architect-review/reexecution-raw.txt",
+      "sha256": "1c9b20cd3a3040d62cef8c27f0565f274fc7448169ce6f5e73ee32317994d256"
+    },
+    {
+      "path": "evidence/P8/20261106-e60d1db-architect-review/remaining_contract_test.py",
+      "sha256": "e7dc2471a85fa86484cd16e818369a86a9cf7e62b537b842ab82262749d7f813"
+    },
+    {
+      "path": "evidence/P8/20261106-e60d1db-architect-review/remaining-contract.txt",
+      "sha256": "3d0eaf31430e7c7c16ce80eb901cf0ca2d4039b09bb7cfc2bd7eb5fbc2744549"
+    },
+    {
+      "path": "evidence/P8/20261106-e60d1db-architect-review/additional-execution.json",
+      "sha256": "43a379c86602486f59ecc93d30c935946edb093d757ee5086f78b42b4620586e"
+    },
+    {
+      "path": "evidence/P8/20261106-e60d1db-architect-review/route-audit.json",
+      "sha256": "6d343ba64711c8ebfaad67257c91e27a3732fc3e511ffda637b97847360ff8be"
+    },
+    {
+      "path": "evidence/P8/20261106-e60d1db-architect-review/source-manifest.json",
+      "sha256": "1ac12c053b8d1646856efcb9cd5f39cf1f393ac69b411f51c211b8496a0bf5fc"
+    },
+    {
+      "path": "evidence/P8/20261106-e60d1db-architect-review/syntax-execution.json",
+      "sha256": "5bab20eb4d06cbf9765e11086ce9765d02a22545ae06946d56bf30791403a29f"
+    },
+    {
+      "path": "evidence/P8/20261106-e60d1db-architect-review/run_review.py",
+      "sha256": "2f6e2f5a7bef3bc5f1b1193528503d36c67156e520ea2582e48fde987c3fe929"
+    },
+    {
+      "path": "evidence/P8/20261106-e60d1db-architect-review/run_remaining.py",
+      "sha256": "d21d93e9b706030dd4a3ef008ab4b70cf3d4e0012ad04e4ca34c9ed6fd93bda4"
+    },
+    {
+      "path": "evidence/P8/20261106-e60d1db-architect-review/audit_routes.py",
+      "sha256": "622544046cb3942fde3e2c78eca1eef3a75841833036e7c4cfb841376c4bff5f"
+    },
+    {
+      "path": "evidence/P8/20261106-e60d1db-architect-review/network-guard/sitecustomize.py",
+      "sha256": "40694c896c7b45c4334430cb36dff4f488390cc14501e24bdd946a4fc6a30362"
+    },
+    {
+      "path": "evidence/P8/20261106-e60d1db-architect-review/network-attempts.jsonl",
+      "sha256": "98a57969fba7f57c1417d2ff26456bdfb41ca46c7ad04ea46d7e7cad212fa8d8"
+    },
+    {
+      "path": "docs/architecture/P8C_REVIEW_e60d1db_SOURCE_CONTRACT_20261106.md",
+      "sha256": "b2ab247fbca1805445c45fa92571e6eee3a88d2f602cb73b2a91c007d3f1bfc4"
+    },
+    {
+      "path": "portal/networkpolicy/PLAN.md",
+      "sha256": "963d5f2893315936be6179ed2a1277605ed9c401df5ca272809dcbbfe29df38b"
+    }
+  ],
+  "matches": []
+}

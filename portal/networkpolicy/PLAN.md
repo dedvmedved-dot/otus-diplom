@@ -1,15 +1,14 @@
-## Current Architect review — 52e2e38 source contract (2026-11-06)
+## Current Architect review — e60d1db source contract (2026-11-06)
 
-Authority: docs/architecture/P8C_REVIEW_52e2e38_SOURCE_CONTRACT_20261106.md.
-Reviewed source a443b5caa56d7de18dd78a2ea407b5e76763f36d; evidence 52e2e38673671eb7a19dfbf0eeafd4209c4d72cb.
-Existing frozen suite independently 152/153 PASS. Remaining budget fixture is stale: corrected
-active authority fixture passes, giving 153/153 existing methods PASS. Historical evidence unchanged.
-Additional existing-contract controls: 20 methods / 2 PASS / 18 failures / 0 errors.
-C isolation and source→tests→evidence order remain CLOSED; confirmed A/B fixes are preserved.
-A readiness and B release/seed remain PARTIAL; SOURCE_PACKAGE=REWORK_REQUIRED.
-PRIMARY HERMES continues the existing single-pass task without another permission request,
-finishes all source routes and one complete verification package; Hermes2 is not involved.
-No new app/policy/collector/design scope. No live/SSH/CI/workflow/private registry/build/push/Owner/apply/production authorization.
+Authority: docs/architecture/P8C_REVIEW_e60d1db_SOURCE_CONTRACT_20261106.md.
+Reviewed source 9a4ed77d3131d0b2078b6917e1a7d4419ec02b65; evidence e60d1db38fdb19997acc4bbc3177f65e49cb8514.
+Existing active methods independently 177/177 PASS under an offline network guard.
+Additional existing-contract controls: 17 methods / 3 PASS / 14 failures / 0 errors.
+A accounting/transport/health/receipt and B full release/seed routes remain PARTIAL;
+SOURCE_PACKAGE=REWORK_REQUIRED. Full E2E claims are not supported by the four route tests.
+Confirmed fixes and C isolation remain accepted. PRIMARY HERMES continues the same
+single-pass source task; no Hermes2, no new permission required for source correction.
+No live/SSH/cluster/CI/workflow/private registry/real build/push/Owner/apply/production authorization.
 P8C=NOT_FINAL_ACCEPTED; P8D–P8G/P9=NOT_AUTHORIZED.
 
 # P8C NetworkPolicy plan (D1) — read-only preparation, not yet applied

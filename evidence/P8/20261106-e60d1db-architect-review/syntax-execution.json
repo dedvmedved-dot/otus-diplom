@@ -1,0 +1,42 @@
+[
+  {
+    "path": "independent/remaining_contract_test.py",
+    "python_ast_parse": "PASS"
+  },
+  {
+    "path": "independent/run_remaining.py",
+    "python_ast_parse": "PASS"
+  },
+  {
+    "path": "independent/audit_routes.py",
+    "python_ast_parse": "PASS"
+  },
+  {
+    "path": "independent/run_review.py",
+    "python_ast_parse": "PASS"
+  },
+  {
+    "argv": [
+      "bash",
+      "-n",
+      "portal/tools/install-verified-go.sh"
+    ],
+    "exit": 0
+  },
+  {
+    "argv": [
+      "bash",
+      "-n",
+      "portal/tools/run_offline_suite.sh"
+    ],
+    "exit": 0
+  },
+  {
+    "argv": [
+      "bash",
+      "-n",
+      "portal/tools/test-dataflow.sh"
+    ],
+    "exit": 0
+  }
+]

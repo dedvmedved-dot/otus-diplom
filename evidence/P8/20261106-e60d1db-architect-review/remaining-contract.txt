@@ -1,0 +1,171 @@
+test_elapsed_seconds_persist_before_next_io (__main__.BudgetTransport.test_elapsed_seconds_persist_before_next_io) ... FAIL
+test_exact_cap_control (__main__.BudgetTransport.test_exact_cap_control) ... /workspace/scratch/14185c8f871f/review_e60d/independent/remaining_contract_test.py:46: ResourceWarning: unclosed file <_io.BufferedReader name=3>
+  body,code=w.run_kubectl_raw(self.fake(b'{}'),'/api/v1/pods',2,2);self.assertEqual((body,code),(b'{}',0))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_independent_concurrent_charges_are_additive (__main__.BudgetTransport.test_independent_concurrent_charges_are_additive) ... FAIL
+test_last_request_slot_cannot_be_spent_twice (__main__.BudgetTransport.test_last_request_slot_cannot_be_spent_twice) ... FAIL
+test_valid_prefix_cannot_hide_over_cap_suffix (__main__.BudgetTransport.test_valid_prefix_cannot_hide_over_cap_suffix) ... /workspace/scratch/14185c8f871f/review_e60d/independent/remaining_contract_test.py:48: ResourceWarning: unclosed file <_io.BufferedReader name=5>
+  with self.assertRaises(w.ReadError):w.run_kubectl_raw(self.fake(b'{}UNVALIDATED_SUFFIX'),'/api/v1/pods',2,2)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+FAIL
+test_realistic_cluster_scoped_namespace_list_control (__main__.MainRoutes.test_realistic_cluster_scoped_namespace_list_control) ... FAIL
+test_s0_positive_control (__main__.MainRoutes.test_s0_positive_control) ... ok
+test_transient_operator_has_full_accepted_health_window (__main__.MainRoutes.test_transient_operator_has_full_accepted_health_window) ... FAIL
+test_wal_metrics_cap_uses_remaining_overall_body (__main__.MainRoutes.test_wal_metrics_cap_uses_remaining_overall_body) ... FAIL
+test_wrong_stage_gate_failed_action_receipt_blocks (__main__.MainRoutes.test_wrong_stage_gate_failed_action_receipt_blocks) ... FAIL
+test_cached_verified_status_does_not_verify_another_pin (__main__.ReleaseBindings.test_cached_verified_status_does_not_verify_another_pin) ... /workspace/scratch/14185c8f871f/review_e60d/portal/tools/verify-pins.py:111: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpir5k0xzq/tmp5v3tder_/lock.json' mode='r' encoding='UTF-8'>
+  lock = json.load(open(LOCK))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/scratch/14185c8f871f/review_e60d/portal/tools/verify-pins.py:122: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpir5k0xzq/tmp5v3tder_/pin-verification.json' mode='r' encoding='UTF-8'>
+  prev = json.load(open(cached)) if os.path.exists(cached) else {"results": []}
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/scratch/14185c8f871f/review_e60d/portal/tools/verify-pins.py:128: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpir5k0xzq/tmp5v3tder_/pin-verification-offline.json' mode='w' encoding='UTF-8'>
+  json.dump(out, open(os.path.join(CACHE, "pin-verification-offline.json"), "w"), indent=2)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+FAIL
+test_release_attempt_two_rejected (__main__.ReleaseBindings.test_release_attempt_two_rejected) ... FAIL
+test_release_expired_test_only_rejected (__main__.ReleaseBindings.test_release_expired_test_only_rejected) ... FAIL
+test_release_missing_fields_rejected (__main__.ReleaseBindings.test_release_missing_fields_rejected) ... FAIL
+test_seed_missing_package_repository_workflow_rejected (__main__.ReleaseBindings.test_seed_missing_package_repository_workflow_rejected) ... FAIL
+test_seed_positive_bound_control (__main__.ReleaseBindings.test_seed_positive_bound_control) ... ok
+test_seed_unbound_workflow_rejected (__main__.ReleaseBindings.test_seed_unbound_workflow_rejected) ... FAIL
+
+======================================================================
+FAIL: test_elapsed_seconds_persist_before_next_io (__main__.BudgetTransport.test_elapsed_seconds_persist_before_next_io)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_e60d/independent/remaining_contract_test.py", line 42, in test_elapsed_seconds_persist_before_next_io
+    self.assertEqual(json.loads(Path(w.budget_path(self.g)).read_text())['seconds'],10)
+AssertionError: 0 != 10
+
+======================================================================
+FAIL: test_independent_concurrent_charges_are_additive (__main__.BudgetTransport.test_independent_concurrent_charges_are_additive)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_e60d/independent/remaining_contract_test.py", line 37, in test_independent_concurrent_charges_are_additive
+    results,b=self.concurrent({'requests':0});self.assertEqual(results.count('charged'),2);self.assertEqual(b['requests'],2,b)
+                                                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 2 : {'bytes': 0, 'requests': 1, 'wal_bytes': 0, 'wal_requests': 0, 'wal_seconds': 0.0}
+
+======================================================================
+FAIL: test_last_request_slot_cannot_be_spent_twice (__main__.BudgetTransport.test_last_request_slot_cannot_be_spent_twice)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_e60d/independent/remaining_contract_test.py", line 39, in test_last_request_slot_cannot_be_spent_twice
+    results,b=self.concurrent({'requests':232});self.assertEqual(results.count('charged'),1,(results,b))
+                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 1 : (['charged', 'charged'], {'bytes': 0, 'requests': 233, 'wal_bytes': 0, 'wal_requests': 0, 'wal_seconds': 0.0})
+
+======================================================================
+FAIL: test_valid_prefix_cannot_hide_over_cap_suffix (__main__.BudgetTransport.test_valid_prefix_cannot_hide_over_cap_suffix)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_e60d/independent/remaining_contract_test.py", line 48, in test_valid_prefix_cannot_hide_over_cap_suffix
+    with self.assertRaises(w.ReadError):w.run_kubectl_raw(self.fake(b'{}UNVALIDATED_SUFFIX'),'/api/v1/pods',2,2)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ReadError not raised
+
+======================================================================
+FAIL: test_realistic_cluster_scoped_namespace_list_control (__main__.MainRoutes.test_realistic_cluster_scoped_namespace_list_control)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_e60d/independent/remaining_contract_test.py", line 58, in test_realistic_cluster_scoped_namespace_list_control
+    code,j=self.invoke();self.assertEqual(code,0,j['reads']['PR-6'])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 0 : {'attempt': 1, 'detail': 'namespace item identity missing', 'disposition': 'FAIL', 'duration_ms': 0}
+
+======================================================================
+FAIL: test_transient_operator_has_full_accepted_health_window (__main__.MainRoutes.test_transient_operator_has_full_accepted_health_window)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_e60d/independent/remaining_contract_test.py", line 69, in test_transient_operator_has_full_accepted_health_window
+    self.assertEqual(code,0,{'operator_reads_at':seen,'operator':j['reads']['HC-OP']})
+AssertionError: 1 != 0 : {'operator_reads_at': [300.0, 310.0], 'operator': {'attempt': 2, 'detail': 'operator pods empty', 'disposition': 'INCONCLUSIVE', 'observed_mono': 310.0}}
+
+======================================================================
+FAIL: test_wal_metrics_cap_uses_remaining_overall_body (__main__.MainRoutes.test_wal_metrics_cap_uses_remaining_overall_body)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_e60d/independent/remaining_contract_test.py", line 83, in test_wal_metrics_cap_uses_remaining_overall_body
+    self.assertEqual(caps,[1],caps)
+AssertionError: Lists differ: [1048576] != [1]
+
+First differing element 0:
+1048576
+1
+
+- [1048576]
++ [1] : [1048576]
+
+======================================================================
+FAIL: test_wrong_stage_gate_failed_action_receipt_blocks (__main__.MainRoutes.test_wrong_stage_gate_failed_action_receipt_blocks)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_e60d/independent/remaining_contract_test.py", line 74, in test_wrong_stage_gate_failed_action_receipt_blocks
+    code,j=self.invoke('S1');self.assertNotEqual(code,0,j['aggregate'])
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : PASS
+
+======================================================================
+FAIL: test_cached_verified_status_does_not_verify_another_pin (__main__.ReleaseBindings.test_cached_verified_status_does_not_verify_another_pin)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_e60d/independent/remaining_contract_test.py", line 114, in test_cached_verified_status_does_not_verify_another_pin
+    self.assertNotEqual(code,0)
+AssertionError: 0 == 0
+
+======================================================================
+FAIL: test_release_attempt_two_rejected (__main__.ReleaseBindings.test_release_attempt_two_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_e60d/independent/remaining_contract_test.py", line 98, in test_release_attempt_two_rejected
+    r=self.check('release-gate',{'source_sha':SOURCE,'attempt':2},'2');self.assertNotEqual(r.returncode,0,r.stdout)
+                                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {"gate": "bound", "source": "9a4ed77d3131d0b2078b6917e1a7d4419ec02b65", "repository": "dedvmedved-dot/otus-diplom", "attempt": "2"}
+
+
+======================================================================
+FAIL: test_release_expired_test_only_rejected (__main__.ReleaseBindings.test_release_expired_test_only_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_e60d/independent/remaining_contract_test.py", line 96, in test_release_expired_test_only_rejected
+    r=self.check('release-gate',{'source_sha':SOURCE,'repository':REPO,'attempt':1,'expiry_hours':24,'issued_at_utc':'2000-01-01T00:00:00Z','mode':'TEST_ONLY'});self.assertNotEqual(r.returncode,0,r.stdout)
+                                                                                                                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {"gate": "bound", "source": "9a4ed77d3131d0b2078b6917e1a7d4419ec02b65", "repository": "dedvmedved-dot/otus-diplom", "attempt": "1"}
+
+
+======================================================================
+FAIL: test_release_missing_fields_rejected (__main__.ReleaseBindings.test_release_missing_fields_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_e60d/independent/remaining_contract_test.py", line 94, in test_release_missing_fields_rejected
+    r=self.check('release-gate',{'source_sha':SOURCE});self.assertNotEqual(r.returncode,0,r.stdout)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {"gate": "bound", "source": "9a4ed77d3131d0b2078b6917e1a7d4419ec02b65", "repository": "dedvmedved-dot/otus-diplom", "attempt": "1"}
+
+
+======================================================================
+FAIL: test_seed_missing_package_repository_workflow_rejected (__main__.ReleaseBindings.test_seed_missing_package_repository_workflow_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_e60d/independent/remaining_contract_test.py", line 101, in test_seed_missing_package_repository_workflow_rejected
+    r=self.check('first-creation',self.seed());self.assertNotEqual(r.returncode,0,r.stdout)
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {"first_creation": "VERIFIED", "source_sha": "9a4ed77d3131d0b2078b6917e1a7d4419ec02b65"}
+
+
+======================================================================
+FAIL: test_seed_unbound_workflow_rejected (__main__.ReleaseBindings.test_seed_unbound_workflow_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_e60d/independent/remaining_contract_test.py", line 104, in test_seed_unbound_workflow_rejected
+    r=self.check('first-creation',g);self.assertNotEqual(r.returncode,0,r.stdout)
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {"first_creation": "VERIFIED", "source_sha": "9a4ed77d3131d0b2078b6917e1a7d4419ec02b65"}
+
+
+----------------------------------------------------------------------
+Ran 17 tests in 0.549s
+
+FAILED (failures=14)
