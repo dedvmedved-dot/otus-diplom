@@ -1,0 +1,12 @@
+--- evidence/P8/20261106-bc50834-architect-review/completion_contract_test.py
++++ completion_authority_working_test.py
+@@ -38,7 +38,8 @@
+         self.assertEqual(self.calls,[],(code,j))
+     def test_budget_cannot_reset_with_new_state_directory_and_same_receipt(self):
+         self.assertEqual(self.invoke()[0],0)
+-        (self.state/'budget.json').write_text(json.dumps({'requests':233,'bytes':0,'seconds':0}))
++        with patch.object(w,'RESERVATION_BASE',str(self.root/'authority')):
++            w.write_budget(self.g,{'requests':233,'bytes':0,'seconds':0})
+         other=self.root/'other';other.mkdir();shutil.copyfile(self.state/'stage.receipt',other/'stage.receipt')
+         self.calls=[];self.g['operation_end_utc']=self.now[0]
+         self.invoke('S1',state=other)

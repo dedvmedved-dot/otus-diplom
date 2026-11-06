@@ -1,0 +1,74 @@
+{
+  "utc": "2026-11-06T17:35:36.295987+00:00",
+  "scope": "Exact proposed review/evidence/PLAN entries; scan output excluded from input.",
+  "method": "Python regex heuristics + manual generated payload review; references/synthetic fixture values are not secrets; not a comprehensive secret-free proof.",
+  "files": [
+    {
+      "path": "docs/architecture/P8C_REVIEW_52e2e38_SOURCE_CONTRACT_20261106.md",
+      "sha256": "51b76d508bfeeea9f57e3908d3ddf2d9a9f37e5886eba9287f73cf68355ffd18",
+      "bytes": 21021
+    },
+    {
+      "path": "evidence/P8/20261106-52e2e38-architect-review/reexecution.json",
+      "sha256": "b896cb0e12e1cc46ad21bc808d4da3324b8b773dd3a7c37d37631d0bae776e8f",
+      "bytes": 4404
+    },
+    {
+      "path": "evidence/P8/20261106-52e2e38-architect-review/reexecution-raw.txt",
+      "sha256": "8012d12950709dd72c2cd57148ad194b52772c592cee9d329ec4ee162d14f575",
+      "bytes": 26393
+    },
+    {
+      "path": "evidence/P8/20261106-52e2e38-architect-review/completion_authority_working_test.py",
+      "sha256": "e042e582b90c8b65055180e45debe50705c12f8ecc9e5bee3f503b0107ae2ce1",
+      "bytes": 15408
+    },
+    {
+      "path": "evidence/P8/20261106-52e2e38-architect-review/completion-authority-fixture.diff",
+      "sha256": "3d8840284aa04522df94c3cc11cff9702390b62739bcc841110fa32d5b9a84c6",
+      "bytes": 782
+    },
+    {
+      "path": "evidence/P8/20261106-52e2e38-architect-review/completion-authority-working.txt",
+      "sha256": "aa0a9b73de0a9b617f99597f989d818f6234a2fd6f8f8742fac19669c189e370",
+      "bytes": 4679
+    },
+    {
+      "path": "evidence/P8/20261106-52e2e38-architect-review/residual_contract_test.py",
+      "sha256": "3ce61d7ec6dfcd87bb3a5d49d1736b1378e4191e006147db900b298541896276",
+      "bytes": 9579
+    },
+    {
+      "path": "evidence/P8/20261106-52e2e38-architect-review/residual-contract.txt",
+      "sha256": "578a872daaa8b6cb56e64e9f182eb743e6fdb245aa3233d970b8f53185165093",
+      "bytes": 17083
+    },
+    {
+      "path": "evidence/P8/20261106-52e2e38-architect-review/additional-execution.json",
+      "sha256": "95e754432e05f53eb57a28338540311a921689d0114803d5d29e62f6b4668d14",
+      "bytes": 1292
+    },
+    {
+      "path": "evidence/P8/20261106-52e2e38-architect-review/source-audit.json",
+      "sha256": "6284d70d597fed11f21c12e6195a150db3fa056d0e1aaa68061b9f6f6a573db5",
+      "bytes": 4679
+    },
+    {
+      "path": "evidence/P8/20261106-52e2e38-architect-review/source-manifest.json",
+      "sha256": "ef744e1dfc47b58049957eca4b15f8deff4a41918ee40c68973d63a189faa607",
+      "bytes": 8154
+    },
+    {
+      "path": "evidence/P8/20261106-52e2e38-architect-review/syntax-execution.json",
+      "sha256": "30a97174ac89e27395f509b07c419d3e9fbaebc6d013081006756d90b2968a72",
+      "bytes": 1537
+    },
+    {
+      "path": "portal/networkpolicy/PLAN.md",
+      "sha256": "bb84c648ee572c6eaa63e7d65017e0d3434a5f1c85732696b1b96087de99a81e",
+      "bytes": 18772
+    }
+  ],
+  "matches": [],
+  "result": "NO_MATCH"
+}

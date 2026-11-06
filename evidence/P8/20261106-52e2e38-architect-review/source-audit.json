@@ -1,0 +1,104 @@
+{
+  "source_sha": "a443b5caa56d7de18dd78a2ea407b5e76763f36d",
+  "evidence_head": "52e2e38673671eb7a19dfbf0eeafd4209c4d72cb",
+  "method": "Exact Connector source bytes; synthetic runtime tests and direct source inspection; no upstream or private registry calls.",
+  "remaining_source_observations": [
+    {
+      "path": "portal/tools/readiness/wrapper.py",
+      "symbols": [
+        "budget_path",
+        "_count_request",
+        "_persist_budget_now",
+        "_count_bytes",
+        "_overall_exhausted",
+        "write_budget"
+      ],
+      "finding": "Stable budget authority and request reservation fixed. Body counters occur after transport return, elapsed overall is not advanced per I/O, fixed temp rename is not a serialized cumulative transaction.",
+      "tests": [
+        "test_corrected_authority_exhaustion_blocks_new_state",
+        "test_remaining_body_byte_is_enforced_inside_io",
+        "test_remaining_elapsed_second_cannot_authorize_300s_window",
+        "test_timeout_partial_stdout_is_accounted"
+      ]
+    },
+    {
+      "path": "portal/tools/readiness/wrapper.py",
+      "symbols": [
+        "main",
+        "run_read",
+        "validate_envelope"
+      ],
+      "finding": "Two health sweeps, no accepted interval/window execution; final sweep overwrites previous outcomes and duration_ms=0. Generic API allowlist and per-predicate partial validation remain.",
+      "tests": [
+        "test_first_health_failure_is_not_erased_by_final_sweep",
+        "test_health_retry_obeys_interval",
+        "test_portal_observation_fresh_at_s4_verdict",
+        "test_nested_malformed_health_returns_typed_verdict",
+        "test_pr6_list_cap_enforced",
+        "test_pr6_namespace_items_are_validated",
+        "test_pr5_rejects_wrong_service_namespace"
+      ]
+    },
+    {
+      "path": "portal/tools/readiness/wrapper.py",
+      "symbols": [
+        "default_http_get",
+        "persist_wal_baseline",
+        "read_wal_baseline",
+        "run_wal_window",
+        "validate_gate"
+      ],
+      "finding": "HTTP blocking read does not consume remain timeout. Baseline stores metrics without observation UID/time; gate source only regex; operation_end bound to issue time, not action receipt; clock gate_sha256 compared to package hash.",
+      "tests": [
+        "test_eof_after_deadline_is_not_accepted",
+        "test_baseline_identity_survives_cross_sample_change",
+        "test_current_operation_number_without_action_receipt_is_not_authority"
+      ]
+    },
+    {
+      "path": "portal/tools/readiness/wal.py",
+      "symbols": [
+        "wal_sample"
+      ],
+      "finding": "Primary instanceRole checked only before sample.",
+      "tests": [
+        "test_after_sample_role_change_blocks_pass"
+      ]
+    },
+    {
+      "path": "portal/tools/p8c-portal-release.yml.template",
+      "finding": "Future execution gate has no gate input/parser/expiry/workflow/package approval comparison; checks env attempt/repo/nonempty sha. No daemon cleanup step. debug workers has no per-command deadline.",
+      "tests": [
+        "test_release_gate_cannot_pass_without_gate_document"
+      ]
+    },
+    {
+      "path": "portal/tools/p8c-portal-seed.yml.template",
+      "finding": "APP_IMAGE_DIGEST consumed with set -u but never supplied. Registry proof exists and cleanup always exists; upload only seed-evidence.json omits proof files. debug workers command remains unbounded.",
+      "tests": [
+        "test_seed_record_positive_bootstrap_without_previous_app"
+      ]
+    },
+    {
+      "path": "portal/tools/release-check.py",
+      "finding": "first-creation ignores gate repository/package/workflow fields. Scan image binding is substring check, not exact expected digest; empty binding accepted. 404 classification is not independently proof of package absence.",
+      "tests": [
+        "test_first_creation_wrong_package_rejected",
+        "test_scan_same_image_wrong_digest_rejected",
+        "test_scan_exact_image_digest_positive_control"
+      ]
+    },
+    {
+      "path": "portal/tools/verify-pins.py",
+      "finding": "No offline/cache-read path; each binary/action/image verifier invokes HTTP. Not executed in this review."
+    },
+    {
+      "path": "portal/tools/test_release_negative.py",
+      "finding": "TestDigestPredicate still accepts returncode in (0,1,2) after digest CLI without required file path."
+    },
+    {
+      "path": "docs/architecture/P8C_EXECUTABLE_RELEASE_READINESS_RUNBOOK_20261104.md",
+      "finding": "Enforced budgets/freshness/typed/full routes statements exceed code evidence. Manifest omits some imported test fixture dependencies; matrix must reconcile all existing review requirements."
+    }
+  ]
+}

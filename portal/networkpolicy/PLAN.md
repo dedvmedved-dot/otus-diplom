@@ -1,13 +1,15 @@
-## Current Architect review — single-pass source remains PARTIAL (2026-11-06)
+## Current Architect review — 52e2e38 source contract (2026-11-06)
 
-Authority: docs/architecture/P8C_REVIEW_bc50834_SOURCE_CLOSURE_20261106.md.
-Reviewed source d2e8598a8720cb2dc5935ac33d218498cf846c45; evidence bc50834eb9a9757ba44643c0084226133d07880b.
-119/119 existing test methods independently PASS; additional contract 34 methods / 32 failures / 0 errors.
-C test isolation and source→tests→evidence order are accepted. A readiness and B release/seed remain PARTIAL.
-PRIMARY HERMES continues the existing task P8C-SOURCE-CLOSURE-SINGLE-PASS-20261106
-without intermediate permission requests; finish all source routes before the next final STOP.
-SOURCE_PACKAGE=REWORK_REQUIRED. No new features, no reopening accepted application/PG17/policies/inventory.
-Execution gates remain CLOSED: no live/SSH/CI/workflow publication/private registry/build/push/NetPol apply/production.
+Authority: docs/architecture/P8C_REVIEW_52e2e38_SOURCE_CONTRACT_20261106.md.
+Reviewed source a443b5caa56d7de18dd78a2ea407b5e76763f36d; evidence 52e2e38673671eb7a19dfbf0eeafd4209c4d72cb.
+Existing frozen suite independently 152/153 PASS. Remaining budget fixture is stale: corrected
+active authority fixture passes, giving 153/153 existing methods PASS. Historical evidence unchanged.
+Additional existing-contract controls: 20 methods / 2 PASS / 18 failures / 0 errors.
+C isolation and source→tests→evidence order remain CLOSED; confirmed A/B fixes are preserved.
+A readiness and B release/seed remain PARTIAL; SOURCE_PACKAGE=REWORK_REQUIRED.
+PRIMARY HERMES continues the existing single-pass task without another permission request,
+finishes all source routes and one complete verification package; Hermes2 is not involved.
+No new app/policy/collector/design scope. No live/SSH/CI/workflow/private registry/build/push/Owner/apply/production authorization.
 P8C=NOT_FINAL_ACCEPTED; P8D–P8G/P9=NOT_AUTHORIZED.
 
 # P8C NetworkPolicy plan (D1) — read-only preparation, not yet applied

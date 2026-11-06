@@ -1,0 +1,54 @@
+[
+  {
+    "argv": [
+      "bash",
+      "-n",
+      "portal/tools/run_offline_suite.sh"
+    ],
+    "cwd": "/workspace/scratch/14185c8f871f/review_52e2",
+    "start": "2026-11-06T17:34:48.869240+00:00",
+    "end": "2026-11-06T17:34:48.872661+00:00",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "bash",
+      "-n",
+      "portal/tools/install-verified-go.sh"
+    ],
+    "cwd": "/workspace/scratch/14185c8f871f/review_52e2",
+    "start": "2026-11-06T17:34:48.872673+00:00",
+    "end": "2026-11-06T17:34:48.875163+00:00",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-m",
+      "py_compile",
+      "portal/tools/provision-registry-pull.py",
+      "portal/tools/provision-ui-auth.py",
+      "portal/tools/release-check.py",
+      "portal/tools/release_qualification.py",
+      "portal/tools/test_helpers.py",
+      "portal/tools/test_release.py",
+      "portal/tools/test_release_negative.py",
+      "portal/tools/test_release_qualification.py",
+      "portal/tools/verify-pins.py",
+      "portal/tools/readiness/test_architect_residual.py",
+      "portal/tools/readiness/test_readiness.py",
+      "portal/tools/readiness/wal.py",
+      "portal/tools/readiness/wrapper.py"
+    ],
+    "cwd": "/workspace/scratch/14185c8f871f/review_52e2",
+    "start": "2026-11-06T17:34:48.875171+00:00",
+    "end": "2026-11-06T17:34:48.971736+00:00",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]

@@ -1,0 +1,39 @@
+test_budget_cannot_reset_with_new_state_directory_and_same_receipt (__main__.ReadinessCompletion.test_budget_cannot_reset_with_new_state_directory_and_same_receipt) ... ok
+test_hc_db_wrong_kind_cannot_pass_actual_read_path (__main__.ReadinessCompletion.test_hc_db_wrong_kind_cannot_pass_actual_read_path) ... ok
+test_health_freshness_rechecked_at_final_pass (__main__.ReadinessCompletion.test_health_freshness_rechecked_at_final_pass) ... ok
+test_health_transient_missing_then_ready_is_polled (__main__.ReadinessCompletion.test_health_transient_missing_then_ready_is_polled) ... ok
+test_incomplete_metrics_do_not_overwrite_valid_baseline (__main__.ReadinessCompletion.test_incomplete_metrics_do_not_overwrite_valid_baseline) ... ok
+test_inflight_attempt_persisted_before_crash (__main__.ReadinessCompletion.test_inflight_attempt_persisted_before_crash) ... ok
+test_journal_does_not_echo_malformed_condition_value (__main__.ReadinessCompletion.test_journal_does_not_echo_malformed_condition_value) ... ok
+test_list_item_cap_enforced (__main__.ReadinessCompletion.test_list_item_cap_enforced) ... ok
+test_malformed_health_returns_journal_not_uncaught_exception (__main__.ReadinessCompletion.test_malformed_health_returns_journal_not_uncaught_exception) ... ok
+test_nan_budget_blocks_before_io (__main__.ReadinessCompletion.test_nan_budget_blocks_before_io) ... ok
+test_overall_remaining_one_request_stops_before_second_io (__main__.ReadinessCompletion.test_overall_remaining_one_request_stops_before_second_io) ... ok
+test_partial_error_body_bytes_are_charged (__main__.ReadinessCompletion.test_partial_error_body_bytes_are_charged) ... ok
+test_positive_existing_six_stage_route (__main__.ReadinessCompletion.test_positive_existing_six_stage_route) ... ok
+test_post_operation_boundary_requires_bound_action_receipt (__main__.ReadinessCompletion.test_post_operation_boundary_requires_bound_action_receipt) ... ok
+test_postgres_restart_is_checked_by_container_name (__main__.ReadinessCompletion.test_postgres_restart_is_checked_by_container_name) ... ok
+test_pr5_without_uid_namespace_ownership_cannot_pass (__main__.ReadinessCompletion.test_pr5_without_uid_namespace_ownership_cannot_pass) ... ok
+test_pr6_wrong_resource_list_cannot_pass (__main__.ReadinessCompletion.test_pr6_wrong_resource_list_cannot_pass) ... ok
+test_receipt_from_different_gate_not_authority (__main__.ReadinessCompletion.test_receipt_from_different_gate_not_authority) ... ok
+test_secondary_role_cannot_pass_primary_sample (__main__.ReadinessCompletion.test_secondary_role_cannot_pass_primary_sample) ... ok
+test_wal_elapsed_includes_slot_waits (__main__.ReadinessCompletion.test_wal_elapsed_includes_slot_waits) ... ok
+test_wal_remaining_one_request_stops_before_second_wal_io (__main__.ReadinessCompletion.test_wal_remaining_one_request_stops_before_second_wal_io) ... ok
+test_qualifier_rejects_missing_seed_precheck_job (__main__.ReleaseCompletion.test_qualifier_rejects_missing_seed_precheck_job) ... ok
+test_release_has_execution_gate_before_protected_steps (__main__.ReleaseCompletion.test_release_has_execution_gate_before_protected_steps) ... ok
+test_scan_other_image_cannot_bind_release (__main__.ReleaseCompletion.test_scan_other_image_cannot_bind_release) ... ok
+test_seed_equal_application_digest_is_nonzero (__main__.ReleaseCompletion.test_seed_equal_application_digest_is_nonzero) ... ok
+test_seed_gate_requires_actual_source_repository_package_binding (__main__.ReleaseCompletion.test_seed_gate_requires_actual_source_repository_package_binding) ... ok
+test_seed_has_failure_cleanup_route (__main__.ReleaseCompletion.test_seed_has_failure_cleanup_route) ... ok
+test_seed_has_registry_byte_proof_before_acceptance (__main__.ReleaseCompletion.test_seed_has_registry_byte_proof_before_acceptance) ... ok
+test_seed_private_probe_error_plus_gate_does_not_create (__main__.ReleaseCompletion.test_seed_private_probe_error_plus_gate_does_not_create) ... ok
+test_seed_reuse_control_no_gate_evaluation (__main__.ReleaseCompletion.test_seed_reuse_control_no_gate_evaluation) ... ok
+test_seed_tag_is_source_bound (__main__.ReleaseCompletion.test_seed_tag_is_source_bound) ... ok
+test_seed_untrusted_input_is_data_not_shell (__main__.ReleaseCompletion.test_seed_untrusted_input_is_data_not_shell) ... ok
+test_http_read_receives_absolute_deadline_not_only_socket_timeout (__main__.TransportCompletion.test_http_read_receives_absolute_deadline_not_only_socket_timeout) ... ok
+test_kubectl_hard_timeout_not_plus_five_seconds (__main__.TransportCompletion.test_kubectl_hard_timeout_not_plus_five_seconds) ... ok
+
+----------------------------------------------------------------------
+Ran 34 tests in 2.137s
+
+OK

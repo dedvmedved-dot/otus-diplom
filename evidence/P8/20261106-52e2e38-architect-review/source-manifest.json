@@ -1,0 +1,204 @@
+{
+  "source": "a443b5caa56d7de18dd78a2ea407b5e76763f36d",
+  "evidence_head": "52e2e38673671eb7a19dfbf0eeafd4209c4d72cb",
+  "files": [
+    {
+      "path": "docs/architecture/P8C_EXECUTABLE_RELEASE_READINESS_RUNBOOK_20261104.md",
+      "git_blob": "43fbccc913dbb2196011ffdf5475dc2fade67328",
+      "sha256": "1be70e8f916e5560e7d4274a7f02389f6bd3ce43cbe110d4a70302befc040d18",
+      "bytes": 7656
+    },
+    {
+      "path": "evidence/P8/20261105-64e36a6-architect-review/accepted-baseline.json",
+      "git_blob": "2e0c524f34b7a6ea59f80c57f1b1370de9ee576a",
+      "sha256": "bff0b83fc5c662e585e3d82d93acf95aa698ca0916fa349df23007da4cc7f409",
+      "bytes": 1920
+    },
+    {
+      "path": "evidence/P8/20261105-64e36a6-architect-review/residual_test.py",
+      "git_blob": "fc3d65683dc3a890efd801b8158dedc26e93c2a2",
+      "sha256": "c7530b99806cd2effd12728e647d8f6cbeeabbd0c2ae401479c6f9d24270f282",
+      "bytes": 10180
+    },
+    {
+      "path": "evidence/P8/20261105-974e069-architect-review/scheduler_regression_test.py",
+      "git_blob": "e7dfc17ab28364b6423ddb2e92f54c2fce4e46f9",
+      "sha256": "fee4a8fd3514da50d947ff71f2a0e05cffaf022a16a3d97c9439115d25e20189",
+      "bytes": 9384
+    },
+    {
+      "path": "evidence/P8/20261105-c8007f5-architect-review/contract_test.py",
+      "git_blob": "382db2c3bef31ed7b1bebe4b598ea27a464da40e",
+      "sha256": "d063de3812278232e4eb10ddcc2d96b934c2d17d4a53c08594c3f15357c52437",
+      "bytes": 9201
+    },
+    {
+      "path": "evidence/P8/20261105-f783e1e-architect-review/regression_test.py",
+      "git_blob": "679d4e2fd39e8921ba1090d79b67ec6339344dad",
+      "sha256": "95a0769fd9e02e0c5fa4bd1790c8ad487ac93c8a205e0e12fd02c1b38dd9f516",
+      "bytes": 16921
+    },
+    {
+      "path": "evidence/P8/20261106-bc50834-architect-review/completion_contract_test.py",
+      "git_blob": "26df7ac0a2a104095e33397d9853f4ee3166c945",
+      "sha256": "d635ece3ce1e1200ffc20821c3f3566e0f28658282bd01b45882f651f461fd62",
+      "bytes": 15356
+    },
+    {
+      "path": "evidence/P8/20261106T090000Z-p8c-review-8784116-rework/raw-transcript.txt",
+      "git_blob": "b96face883cfa98c116777fdc37d972584469f91",
+      "sha256": "d231b6e87a664cefa0c680d672aea70f6c238354588eff3f22992be8567c00f0",
+      "bytes": 27528
+    },
+    {
+      "path": "evidence/P8/20261106T090000Z-p8c-review-8784116-rework/result.md",
+      "git_blob": "f86ef55b4b5101264d73645c2ddc691fcaf7e9c9",
+      "sha256": "ba4e1f9ac9df0718d61d719acccbef94a9d465b8dbe04847d9a033fc5790e307",
+      "bytes": 4433
+    },
+    {
+      "path": "evidence/P8/20261106T090000Z-p8c-review-8784116-rework/secret-scan.txt",
+      "git_blob": "74facfa74a8ddeb0b21a5af7359d2335115a9685",
+      "sha256": "9b4a33c6179fb9e8e75b1d9f1a71d01e601acfa35a714f4e5017823ae4b61e22",
+      "bytes": 189
+    },
+    {
+      "path": "evidence/P8/20261106T090000Z-p8c-review-8784116-rework/source-manifest.txt",
+      "git_blob": "261e5b3ae0e47fea2c5b45d3df6f7a09bd978073",
+      "sha256": "9b20e721da980b9e9294d0d8d608a1fe50f677c733f215ee930a6aee41e0d7f1",
+      "bytes": 1988
+    },
+    {
+      "path": "portal/networkpolicy/PLAN.md",
+      "git_blob": "9af528555ad729a8fac5cc5dd8ec60982cf4a2ac",
+      "sha256": "59db989082480115830e4f326bb1b9ad28c49d0538c92de70ec00f090db75f09",
+      "bytes": 18636
+    },
+    {
+      "path": "portal/tools/Seed.Containerfile",
+      "git_blob": "44277837983b847ca03280774b2ff124aafc0ca5",
+      "sha256": "a1d484391abac0c07c71633b6926acb8fc9a5f6d0c2dee6d0c97b6b575504437",
+      "bytes": 520
+    },
+    {
+      "path": "portal/tools/install-verified-go.sh",
+      "git_blob": "2b6e0c9a0127ac0a641feef791f017d287719543",
+      "sha256": "3a34d349b33f032513a21fecd795eeb26129c511c21f3e02f8774b74e7f8d356",
+      "bytes": 948
+    },
+    {
+      "path": "portal/tools/p8c-portal-release.yml.template",
+      "git_blob": "917248f88f1ac5d67bd469d54e93a5c2ceb7b1d6",
+      "sha256": "515dc451078631b0b525456694bd8049e1fa00ae93706aa379c926933bf274de",
+      "bytes": 13209
+    },
+    {
+      "path": "portal/tools/p8c-portal-seed.yml.template",
+      "git_blob": "f1fc3a49386fdd8b3f972197df39f7335ecb6caf",
+      "sha256": "06425f5c84f2512960d16e931eb455235381f72cac41f87938d4f09c84b1a400",
+      "bytes": 8362
+    },
+    {
+      "path": "portal/tools/pins.lock.json",
+      "git_blob": "4fb6f3531247c016d1d4d414eb7729988967e254",
+      "sha256": "b4f60edaae78aef79d6cfb3a2b47211a37315a6b579c6d0b10fcd542e2f13989",
+      "bytes": 2021
+    },
+    {
+      "path": "portal/tools/provision-registry-pull.py",
+      "git_blob": "b5ca5e0009db9a5bbfd2852353aaf5ad2043db05",
+      "sha256": "1dcd1496bc1839543e9bfb942e08b7be071ab224208149ccd6426541e29bea2a",
+      "bytes": 6363
+    },
+    {
+      "path": "portal/tools/provision-ui-auth.py",
+      "git_blob": "8cff514989f29fdb01f3df1843658933c935d953",
+      "sha256": "41898c22bb16333161ea31d48f0c9cd74c8bfc06ecb5741a0a97e46db338d172",
+      "bytes": 7508
+    },
+    {
+      "path": "portal/tools/readiness/readset.json",
+      "git_blob": "a4110e8f6b4ae46434568349b0d4622a237bb00c",
+      "sha256": "869018ae0774ca458635a5918fb8af7cdb682683b955a70bb9e3205d8b7753f9",
+      "bytes": 2497
+    },
+    {
+      "path": "portal/tools/readiness/test_architect_residual.py",
+      "git_blob": "d979c8ce798e3b8dbba9b7d5c1130c8326b80f8f",
+      "sha256": "d8e3a1e69824f302f0ede52feb49243af29ccd1034c427952bacb5f99109523d",
+      "bytes": 11792
+    },
+    {
+      "path": "portal/tools/readiness/test_readiness.py",
+      "git_blob": "01bc650c8e417cecaf480c209b3b65e771eb4bf7",
+      "sha256": "384ee1c2bdb223345bcb640d9581c740ddc60171af95eb46641601be0489de22",
+      "bytes": 9892
+    },
+    {
+      "path": "portal/tools/readiness/wal.py",
+      "git_blob": "8c75c9b29e71a8bf3e4e6fda1b3171a188951ccf",
+      "sha256": "863445032f89203a840f2a93717a9a17d22d70babdb345d9f335ce938af82cfc",
+      "bytes": 11961
+    },
+    {
+      "path": "portal/tools/readiness/wrapper.py",
+      "git_blob": "ab4723f1c4aab01baef62a3ba40a2e2d0816cffb",
+      "sha256": "6806ee0db3f126a06ad59edc73186dbe04e18ee6fd322d604e2f0db9aa91607a",
+      "bytes": 44317
+    },
+    {
+      "path": "portal/tools/release-check.py",
+      "git_blob": "918cac2bd0e828dba16855ddec9f9fb8656384c7",
+      "sha256": "ca34973dc061a783ee9f50b1b6dcb3a1232696a348a4d6c6b0e25b2583d5d908",
+      "bytes": 12331
+    },
+    {
+      "path": "portal/tools/release_qualification.py",
+      "git_blob": "3d5a4b408deb1845a29238906e162c19f1170b19",
+      "sha256": "f1522a80c24d1b5dc2cf7cb9bb0a66bafe3d21af5acb088f6a6a460045781802",
+      "bytes": 5493
+    },
+    {
+      "path": "portal/tools/run_offline_suite.sh",
+      "git_blob": "7f7a1b104dff94e8371278d3b057a86d2932e79b",
+      "sha256": "7e771796574d677c51c252a53206c1c5d4ee9e1bd85036e74519f9513bb8bc5e",
+      "bytes": 3157
+    },
+    {
+      "path": "portal/tools/test-dataflow.sh",
+      "git_blob": "5c42cd0398693fc6fe7343ad238d51b95d7e2170",
+      "sha256": "003f28971a8b7f38ec16dd4302d06a0c9bef6da7f00eba5a74e39b0e736b1d37",
+      "bytes": 430
+    },
+    {
+      "path": "portal/tools/test_helpers.py",
+      "git_blob": "ee2118eab90ff45d8e8f156d691cd7bbb1d866b0",
+      "sha256": "6b8649f2cb57584bb6931a748e97a751aa9f04083470794699e3b92b62e14b31",
+      "bytes": 13067
+    },
+    {
+      "path": "portal/tools/test_release.py",
+      "git_blob": "cf31c99d9e9d152c8b267007744e19444f7debe9",
+      "sha256": "5ae16c313c3778879333a56db3f71639889d2646ded7b6df5909e0a69d6a4654",
+      "bytes": 3454
+    },
+    {
+      "path": "portal/tools/test_release_negative.py",
+      "git_blob": "803ef23296a4083fce2256984bb61449314ef942",
+      "sha256": "c6b068e9ac9bc4dc3d20895545b1702eb76434d28cb0b87baff0e31e360a727d",
+      "bytes": 5192
+    },
+    {
+      "path": "portal/tools/test_release_qualification.py",
+      "git_blob": "7ee8c6c416529e2ab6d94bd0f5d302dd2eb99a99",
+      "sha256": "2f9a4b0bdbb984cd6e6b627a96381c0f708dfcda40b37dfe60450e17aba1663c",
+      "bytes": 1160
+    },
+    {
+      "path": "portal/tools/verify-pins.py",
+      "git_blob": "0bdb6b9c8cb46b4253fe65b61ed6276154e90ef1",
+      "sha256": "b2211963cf1c35496a4e2cfbe1053b7eb3e83ce83b6f962b0846b1efd59487c0",
+      "bytes": 5837
+    }
+  ]
+}

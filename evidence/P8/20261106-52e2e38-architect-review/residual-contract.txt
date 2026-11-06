@@ -1,0 +1,199 @@
+test_eof_after_deadline_is_not_accepted (__main__.HTTP.test_eof_after_deadline_is_not_accepted) ... FAIL
+test_after_sample_role_change_blocks_pass (__main__.Readiness.test_after_sample_role_change_blocks_pass) ... FAIL
+test_baseline_identity_survives_cross_sample_change (__main__.Readiness.test_baseline_identity_survives_cross_sample_change) ... FAIL
+test_corrected_authority_exhaustion_blocks_new_state (__main__.Readiness.test_corrected_authority_exhaustion_blocks_new_state) ... ok
+test_current_operation_number_without_action_receipt_is_not_authority (__main__.Readiness.test_current_operation_number_without_action_receipt_is_not_authority) ... FAIL
+test_first_health_failure_is_not_erased_by_final_sweep (__main__.Readiness.test_first_health_failure_is_not_erased_by_final_sweep) ... FAIL
+test_health_retry_obeys_interval (__main__.Readiness.test_health_retry_obeys_interval) ... FAIL
+test_nested_malformed_health_returns_typed_verdict (__main__.Readiness.test_nested_malformed_health_returns_typed_verdict) ... FAIL
+test_portal_observation_fresh_at_s4_verdict (__main__.Readiness.test_portal_observation_fresh_at_s4_verdict) ... FAIL
+test_pr5_rejects_wrong_service_namespace (__main__.Readiness.test_pr5_rejects_wrong_service_namespace) ... FAIL
+test_pr6_list_cap_enforced (__main__.Readiness.test_pr6_list_cap_enforced) ... FAIL
+test_pr6_namespace_items_are_validated (__main__.Readiness.test_pr6_namespace_items_are_validated) ... FAIL
+test_remaining_body_byte_is_enforced_inside_io (__main__.Readiness.test_remaining_body_byte_is_enforced_inside_io) ... FAIL
+test_remaining_elapsed_second_cannot_authorize_300s_window (__main__.Readiness.test_remaining_elapsed_second_cannot_authorize_300s_window) ... FAIL
+test_timeout_partial_stdout_is_accounted (__main__.Readiness.test_timeout_partial_stdout_is_accounted) ... FAIL
+test_first_creation_wrong_package_rejected (__main__.Release.test_first_creation_wrong_package_rejected) ... FAIL
+test_release_gate_cannot_pass_without_gate_document (__main__.Release.test_release_gate_cannot_pass_without_gate_document) ... FAIL
+test_scan_exact_image_digest_positive_control (__main__.Release.test_scan_exact_image_digest_positive_control) ... ok
+test_scan_same_image_wrong_digest_rejected (__main__.Release.test_scan_same_image_wrong_digest_rejected) ... FAIL
+test_seed_record_positive_bootstrap_without_previous_app (__main__.Release.test_seed_record_positive_bootstrap_without_previous_app) ... FAIL
+
+======================================================================
+FAIL: test_eof_after_deadline_is_not_accepted (__main__.HTTP.test_eof_after_deadline_is_not_accepted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_52e2/independent/residual_contract_test.py", line 138, in test_eof_after_deadline_is_not_accepted
+    with self.assertRaises(w.ReadError):w.default_http_get('http://127.0.0.1:9187/metrics',.02,1024)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ReadError not raised
+
+======================================================================
+FAIL: test_after_sample_role_change_blocks_pass (__main__.Readiness.test_after_sample_role_change_blocks_pass)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_52e2/independent/residual_contract_test.py", line 104, in test_after_sample_role_change_blocks_pass
+    self.raw=role;code,j=self.invoke();self.assertNotEqual(code,0,j['reads']['HC-WAL-PROGRESS'])
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {'attempt': 1, 'detail': 'fresh archive progress', 'disposition': 'PASS', 'duration_ms': 300000}
+
+======================================================================
+FAIL: test_baseline_identity_survives_cross_sample_change (__main__.Readiness.test_baseline_identity_survives_cross_sample_change)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_52e2/independent/residual_contract_test.py", line 112, in test_baseline_identity_survives_cross_sample_change
+    self.raw=replaced;code,j=self.invoke();self.assertNotEqual(code,0,j['reads']['HC-WAL-PROGRESS'])
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {'attempt': 1, 'detail': 'fresh archive progress', 'disposition': 'PASS', 'duration_ms': 300000}
+
+======================================================================
+FAIL: test_current_operation_number_without_action_receipt_is_not_authority (__main__.Readiness.test_current_operation_number_without_action_receipt_is_not_authority)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_52e2/independent/residual_contract_test.py", line 116, in test_current_operation_number_without_action_receipt_is_not_authority
+    code,j=self.invoke('S1');self.assertNotEqual(code,0,j['aggregate'])
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : PASS
+
+======================================================================
+FAIL: test_first_health_failure_is_not_erased_by_final_sweep (__main__.Readiness.test_first_health_failure_is_not_erased_by_final_sweep)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_52e2/independent/residual_contract_test.py", line 60, in test_first_health_failure_is_not_erased_by_final_sweep
+    self.assertNotEqual(code,0,(seen[0],j))
+AssertionError: 0 == 0 : (2, {'aggregate': 'PASS', 'budget': {'bytes': 7057, 'requests': 26, 'seconds': 300.0, 'wal_bytes': 3428, 'wal_requests': 10, 'wal_seconds': 300.0}, 'context': 'kubernetes-admin@pak-portal', 'reads': {'HC-ARCH-STATE': {'attempt': 2, 'detail': 'ContinuousArchiving True', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-DB': {'attempt': 2, 'detail': '3/3/3 Ready', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-DNS': {'attempt': 2, 'detail': 'DNS ready with 53/TCP+UDP in same slice', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-GW': {'disposition': 'NOT_APPLICABLE'}, 'HC-OP': {'attempt': 2, 'detail': 'operator ready', 'disposition': 'PASS', 'duration_ms': 0}, 'HC-PORTAL': {'disposition': 'NOT_APPLICABLE'}, 'HC-WAL-PROGRESS': {'attempt': 1, 'detail': 'fresh archive progress', 'disposition': 'PASS', 'duration_ms': 300000}, 'PR-3': {'attempt': 1, 'detail': 'exact ready API tuples', 'disposition': 'PASS', 'duration_ms': 0}, 'PR-5': {'disposition': 'NOT_APPLICABLE'}, 'PR-6': {'attempt': 1, 'detail': 'policy empty + tier/felix match accepted baseline', 'disposition': 'PASS', 'duration_ms': 0}}, 'stage': 'S0'})
+
+======================================================================
+FAIL: test_health_retry_obeys_interval (__main__.Readiness.test_health_retry_obeys_interval)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_52e2/independent/residual_contract_test.py", line 83, in test_health_retry_obeys_interval
+    self.assertTrue(code!=0 or len(ends)>=2 and ends[1]-ends[0]>=10,(code,ends))
+AssertionError: False is not true : (0, [300.0, 300.0])
+
+======================================================================
+FAIL: test_nested_malformed_health_returns_typed_verdict (__main__.Readiness.test_nested_malformed_health_returns_typed_verdict)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_52e2/independent/residual_contract_test.py", line 86, in test_nested_malformed_health_returns_typed_verdict
+    try:code,j=self.invoke()
+               ^^^^^^^^^^^^^
+  File "/workspace/scratch/14185c8f871f/review_52e2/evidence/P8/20261105-c8007f5-architect-review/contract_test.py", line 43, in invoke
+    code=w.main(['--gate',str(gp),'--out',str(out),'--state-dir',str(state),'--stage',stage,'--kubectl','FAKE'])
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/14185c8f871f/review_52e2/portal/tools/readiness/wrapper.py", line 1054, in main
+    disp, detail = pred(doc)
+                   ^^^^^^^^^
+  File "/workspace/scratch/14185c8f871f/review_52e2/portal/tools/readiness/wrapper.py", line 695, in pred_hc_op
+    conds = {c.get("type"): c for c in p.get("status", {}).get("conditions", []) if isinstance(c, dict)}
+                                       ^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_52e2/independent/residual_contract_test.py", line 87, in test_nested_malformed_health_returns_typed_verdict
+    except Exception as e:self.fail('uncaught '+type(e).__name__)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: uncaught AttributeError
+
+======================================================================
+FAIL: test_portal_observation_fresh_at_s4_verdict (__main__.Readiness.test_portal_observation_fresh_at_s4_verdict)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_52e2/independent/residual_contract_test.py", line 72, in test_portal_observation_fresh_at_s4_verdict
+    self.assertTrue(code!=0 or self.mono[0]-ends[-1]<=30,(code,'portal_age',self.mono[0]-ends[-1],j['budget']))
+AssertionError: False is not true : (0, 'portal_age', 42.0, {'bytes': 35652, 'requests': 113, 'seconds': 1814.0, 'wal_bytes': 20571, 'wal_requests': 60, 'wal_seconds': 1800.0})
+
+======================================================================
+FAIL: test_pr5_rejects_wrong_service_namespace (__main__.Readiness.test_pr5_rejects_wrong_service_namespace)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_52e2/independent/residual_contract_test.py", line 123, in test_pr5_rejects_wrong_service_namespace
+    code,j=self.invoke('S4');self.assertNotEqual(code,0,j['reads']['PR-5'])
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {'attempt': 1, 'detail': 'exact dataplane Service', 'disposition': 'PASS', 'duration_ms': 0}
+
+======================================================================
+FAIL: test_pr6_list_cap_enforced (__main__.Readiness.test_pr6_list_cap_enforced)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_52e2/independent/residual_contract_test.py", line 94, in test_pr6_list_cap_enforced
+    code,j=self.invoke();self.assertNotEqual(code,0,j['reads']['PR-6'])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {'attempt': 1, 'detail': 'policy empty + tier/felix match accepted baseline', 'disposition': 'PASS', 'duration_ms': 0}
+
+======================================================================
+FAIL: test_pr6_namespace_items_are_validated (__main__.Readiness.test_pr6_namespace_items_are_validated)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_52e2/independent/residual_contract_test.py", line 91, in test_pr6_namespace_items_are_validated
+    code,j=self.invoke();self.assertNotEqual(code,0,j['reads']['PR-6'])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {'attempt': 1, 'detail': 'policy empty + tier/felix match accepted baseline', 'disposition': 'PASS', 'duration_ms': 0}
+
+======================================================================
+FAIL: test_remaining_body_byte_is_enforced_inside_io (__main__.Readiness.test_remaining_body_byte_is_enforced_inside_io)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_52e2/independent/residual_contract_test.py", line 36, in test_remaining_body_byte_is_enforced_inside_io
+    self.assertLessEqual(j['budget']['bytes'],w.OVERALL_BODY_CAP,(code,j['budget']))
+AssertionError: 187695449 not less than or equal to 187695104 : (1, {'bytes': 187695449, 'requests': 1, 'seconds': 600.0, 'wal_bytes': 346, 'wal_requests': 1, 'wal_seconds': 600.0})
+
+======================================================================
+FAIL: test_remaining_elapsed_second_cannot_authorize_300s_window (__main__.Readiness.test_remaining_elapsed_second_cannot_authorize_300s_window)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_52e2/independent/residual_contract_test.py", line 40, in test_remaining_elapsed_second_cannot_authorize_300s_window
+    self.assertLessEqual(self.mono[0],1,(code,self.mono[0],j['budget']))
+AssertionError: 300.0 not less than or equal to 1 : (0, 300.0, {'bytes': 7057, 'requests': 26, 'seconds': 5564.0, 'wal_bytes': 3428, 'wal_requests': 10, 'wal_seconds': 300.0})
+
+======================================================================
+FAIL: test_timeout_partial_stdout_is_accounted (__main__.Readiness.test_timeout_partial_stdout_is_accounted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_52e2/independent/residual_contract_test.py", line 49, in test_timeout_partial_stdout_is_accounted
+    self.assertGreaterEqual(j['budget']['bytes'],64*len(self.calls),(code,len(self.calls),j['budget']))
+AssertionError: 0 not greater than or equal to 832 : (1, 13, {'bytes': 0, 'requests': 13, 'seconds': 600.712, 'wal_bytes': 0, 'wal_requests': 3, 'wal_seconds': 600.7129999999994})
+
+======================================================================
+FAIL: test_first_creation_wrong_package_rejected (__main__.Release.test_first_creation_wrong_package_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_52e2/independent/residual_contract_test.py", line 165, in test_first_creation_wrong_package_rejected
+    self.assertNotEqual(p.returncode,0,p.stdout)
+AssertionError: 0 == 0 : {"first_creation": "VERIFIED", "source_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
+
+
+======================================================================
+FAIL: test_release_gate_cannot_pass_without_gate_document (__main__.Release.test_release_gate_cannot_pass_without_gate_document)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_52e2/independent/residual_contract_test.py", line 159, in test_release_gate_cannot_pass_without_gate_document
+    self.assertNotEqual(p.returncode,0,p.stdout)
+AssertionError: 0 == 0 : GATE: source=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa repository=dedvmedved-dot/otus-diplom run_attempt=1
+
+
+======================================================================
+FAIL: test_scan_same_image_wrong_digest_rejected (__main__.Release.test_scan_same_image_wrong_digest_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_52e2/independent/residual_contract_test.py", line 154, in test_scan_same_image_wrong_digest_rejected
+    p=rn.run_verified(d);self.assertNotEqual(p.returncode,0,p.stdout)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {"image": "ghcr.io/dedvmedved-dot/otus-diplom-portal", "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "source": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "payloadBinding": "PASS"}
+
+
+======================================================================
+FAIL: test_seed_record_positive_bootstrap_without_previous_app (__main__.Release.test_seed_record_positive_bootstrap_without_previous_app)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_52e2/independent/residual_contract_test.py", line 171, in test_seed_record_positive_bootstrap_without_previous_app
+    self.assertEqual(p.returncode,0,p.stderr)
+AssertionError: 1 != 0 : bash: line 4: APP_IMAGE_DIGEST: unbound variable
+
+
+----------------------------------------------------------------------
+Ran 20 tests in 1.081s
+
+FAILED (failures=18)

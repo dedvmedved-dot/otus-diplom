@@ -1,0 +1,33 @@
+{
+  "review_head": "52e2e38673671eb7a19dfbf0eeafd4209c4d72cb",
+  "source_sha": "a443b5caa56d7de18dd78a2ea407b5e76763f36d",
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "commands": [
+    {
+      "name": "completion-authority-working",
+      "test_sha256": "e042e582b90c8b65055180e45debe50705c12f8ecc9e5bee3f503b0107ae2ce1",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/14185c8f871f/review_52e2/independent/completion_authority_working_test.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_52e2",
+      "start": "2026-11-06T17:30:52.905444+00:00",
+      "end": "2026-11-06T17:30:55.251455+00:00",
+      "exit": 0
+    },
+    {
+      "name": "residual-contract",
+      "test_sha256": "3ce61d7ec6dfcd87bb3a5d49d1736b1378e4191e006147db900b298541896276",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/14185c8f871f/review_52e2/independent/residual_contract_test.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_52e2",
+      "start": "2026-11-06T17:30:55.251529+00:00",
+      "end": "2026-11-06T17:30:56.504061+00:00",
+      "exit": 1
+    }
+  ]
+}
