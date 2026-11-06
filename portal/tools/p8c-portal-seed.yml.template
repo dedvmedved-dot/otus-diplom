@@ -1,5 +1,5 @@
 # P8C Portal private-seed bootstrap workflow — TEMPLATE (NOT published to .github/workflows).
-# Separate one-shot Owner-authorized bootstrap. Seed is NOT the Portal release, NOT deployable.
+# Separate one-shot Owner-authorized bootstrap (bootstrap-seed role). Seed is NOT the Portal release, NOT deployable.
 # Exact target: ghcr.io/dedvmedved-dot/otus-diplom-portal (private container package).
 # Typed precheck decides REUSE | CREATE_ALLOWED | STOP; REUSE/STOP perform ZERO build/push.
 name: p8c-portal-seed
@@ -19,7 +19,7 @@ permissions:
 env:
   REGISTRY: ghcr.io
   IMAGE: ghcr.io/dedvmedved-dot/otus-diplom-portal
-  SEED_TAG: bootstrap-seed
+  SEED_TAG: "seed-${{ github.sha }}"
 
 jobs:
   precheck:
@@ -34,10 +34,12 @@ jobs:
           persist-credentials: false
           ref: ${{ github.sha }}
 
-      - name: Deliver typed first-creation gate (explicit Owner input; never materialized from nowhere)
+      - name: Deliver typed first-creation gate (data via env, never shell)
         if: github.event.inputs.first_creation_gate != ''
+        env:
+          FIRST_CREATION_GATE: ${{ github.event.inputs.first_creation_gate }}
         run: |
-          printf '%s' '${{ github.event.inputs.first_creation_gate }}' > "$RUNNER_TEMP/first-creation-gate.json"
+          printf '%s' "$FIRST_CREATION_GATE" > "$RUNNER_TEMP/first-creation-gate.json"
 
       - name: Typed private-package precheck
         id: pre
@@ -45,10 +47,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          if python3 portal/tools/release-check.py private > "$RUNNER_TEMP/private.json" 2>/dev/null; then
+          private_rc=0
+          python3 portal/tools/release-check.py private > "$RUNNER_TEMP/private.json" 2>/dev/null || private_rc=$?
+          if [ "$private_rc" -eq 0 ]; then
             echo "result=REUSE" >> "$GITHUB_OUTPUT"
             echo "REUSE: existing private associated package"
-          elif [ -f "$RUNNER_TEMP/first-creation-gate.json" ] && \
+          elif [ "$private_rc" -eq 2 ] && [ -f "$RUNNER_TEMP/first-creation-gate.json" ] && \
                python3 portal/tools/release-check.py first-creation "$RUNNER_TEMP/first-creation-gate.json" >/dev/null 2>&1; then
             echo "result=CREATE_ALLOWED" >> "$GITHUB_OUTPUT"
             echo "CREATE_ALLOWED: typed first-creation gate verified"
@@ -135,6 +139,15 @@ jobs:
           # cleanup: stop the daemon only after the build
           kill "$(cat /tmp/seed-buildkitd.pid)" 2>/dev/null || true
 
+      - name: Verify seed registry bytes/digest (before acceptance)
+        if: needs.precheck.outputs.result == 'CREATE_ALLOWED'
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 portal/tools/release-check.py registry "$SEED_DIGEST" > "$RUNNER_TEMP/seed-registry.json"
+
       - name: Record seed digest + visibility + association (typed evidence)
         if: needs.precheck.outputs.result == 'CREATE_ALLOWED'
         env:
@@ -143,6 +156,15 @@ jobs:
           set -euo pipefail
           python3 portal/tools/release-check.py private > "$RUNNER_TEMP/private-after.json"
           python3 -c "import json,os; json.dump({'seed_digest': os.environ.get('SEED_DIGEST',''), 'not_deployable': True, 'seed_not_application_digest': os.environ.get('SEED_DIGEST','') != os.environ.get('APP_IMAGE_DIGEST','')}, open(os.environ['RUNNER_TEMP']+'/seed-evidence.json','w'))"
+          if [ "$SEED_DIGEST" = "$APP_IMAGE_DIGEST" ]; then
+            echo "STOP: seed digest must differ from application digest" >&2
+            exit 1
+          fi
+
+      - name: Cleanup buildkit daemon (always, on any outcome)
+        if: always()
+        run: |
+          if [ -f /tmp/seed-buildkitd.pid ]; then kill "$(cat /tmp/seed-buildkitd.pid)" 2>/dev/null || true; fi
 
       - name: Upload seed evidence
         if: always()

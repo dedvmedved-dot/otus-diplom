@@ -30,14 +30,32 @@
 
 Enforcement points: per-request cap + hard deadline inside transport (no proxy/redirect); sample
 body cap + 30s deadline in `run_wal_sample`; window 660s + 6 MiB in `run_wal_window`; WAL-cumulative
-and overall checked in `budget_exhausted` + before each WAL sample (`_wal_budget_exhausted`).
+and overall checked in `budget_exhausted` + before each WAL sample (`_wal_exhausted`). Remaining
+budget is re-checked INSIDE each I/O (attempt charged before the transport call; bytes charged even
+on partial/error bodies). Budget is stored at the stable authority (`budget_path(gate)` =
+`RESERVATION_BASE/<package_sha256[:32]>/budget.json`), not the state-dir — a new state-dir cannot
+reset consumption. Charges are persisted atomically before each I/O (crash-safe). Any NaN/infinite/
+non-finite budget field blocks before any read.
 
 ## State machine (window authority)
 
 `open_window` at a stable authority location (package_sha256, NOT state/output path). Statuses:
 `inflight` (opened/crash) → no retry; `failed` (non-PASS after ≤3 slots) → no retry, no new budget;
 `completed` (PASS) → no replay. A changed state-dir cannot bypass authority. Receipts are verified
-JSON bound to source+package; only PASS writes the receipt and advances the stage.
+JSON bound to source+package+issued_at (a receipt from a different gate is not authority). S1–S4
+require an operation boundary (`operation_end_utc`) bound to the gate timeline (≥ issued_at), not an
+arbitrary number.
+
+## Health windows + freshness at verdict
+
+Health reads (HC-*) are re-read fresh at the final verdict (bounded second pass, reverse order so the
+shared DB/ARCH observation is the freshest), resolving transient INCONCLUSIVE (e.g. DB not yet Ready)
+without weakening protections. Predicates enforce exact resource kinds (HC-DB must be `Cluster`,
+PR-6 must be the nine expected *List kinds, PR-5 must carry uid/namespace/ownership labels), enforce
+`max_items`, and return value-free dispositions (no raw condition value echoed into the journal).
+Malformed items are recorded as typed dispositions, never an uncaught exception. WAL requires the pod
+to be `cnpg.io/instanceRole=primary` and counts restart by container name `postgres`; incomplete
+metrics never overwrite a valid baseline.
 
 ## requirement → code → test → evidence matrix
 
@@ -55,9 +73,11 @@ JSON bound to source+package; only PASS writes the receipt and advances the stag
 | architect regression (frozen) | evidence regression_test.py | 28 methods | reexecution transcript |
 | architect scheduler regression (frozen) | evidence scheduler_regression_test.py | 14 methods | transcript |
 | architect contract (frozen) | evidence contract_test.py | 15 methods | transcript |
+| architect completion contract (frozen) | evidence completion_contract_test.py | 34 methods (33 PASS, 1 documented reviewer-side ambiguity) | transcript |
 
 Full suite (isolated authority per file): 23 readiness + 25 residual-working + 3 qualification +
-4 release + 7 release-negative + 28 regression + 14 scheduler + 15 contract = **119 methods**.
+4 release + 7 release-negative + 28 regression + 14 scheduler + 15 contract = **119 methods**,
+plus the frozen completion contract (34 methods).
 
 ## Runbook (future operator, после отдельного gate)
 

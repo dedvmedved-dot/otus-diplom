@@ -20,6 +20,10 @@ SLSA = 'https://slsa.dev/provenance/v0.2'
 SPDX = 'https://spdx.dev/Document'
 
 
+class NotFound(Exception):
+    pass
+
+
 def digest(value):
     if not isinstance(value, str) or not re.fullmatch(r'sha256:[0-9a-f]{64}', value):
         raise ValueError('invalid sha256 digest')
@@ -114,6 +118,13 @@ def main():
             raise ValueError('first-creation gate incomplete/invalid')
         if g.get('mode') != 'LIVE':
             raise ValueError('first-creation requires mode=LIVE (not TEST_ONLY)')
+        # source/repository binding: the gate must match the actual GITHUB_SHA/GITHUB_REPOSITORY
+        github_sha = os.environ.get('GITHUB_SHA')
+        if github_sha and g.get('source_sha') != github_sha:
+            raise ValueError('first-creation source_sha not bound to GITHUB_SHA')
+        github_repo = os.environ.get('GITHUB_REPOSITORY')
+        if github_repo and github_repo != REPO:
+            raise ValueError('first-creation repository not the expected repo')
         import calendar
         try:
             issued = calendar.timegm(time.strptime(g['issued_at_utc'], '%Y-%m-%dT%H:%M:%SZ'))
@@ -127,7 +138,12 @@ def main():
         print(json.dumps({'first_creation': 'VERIFIED', 'source_sha': g['source_sha']}))
     elif mode == 'private':
         token = os.environ['GITHUB_TOKEN']
-        data, _ = request('https://api.github.com/users/dedvmedved-dot/packages/container/otus-diplom-portal', {'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28'})
+        try:
+            data, _ = request('https://api.github.com/users/dedvmedved-dot/packages/container/otus-diplom-portal', {'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28'})
+        except urllib.request.HTTPError as e:
+            if e.code == 404:
+                raise NotFound('private package does not exist')
+            raise
         print(json.dumps(private_metadata(json.loads(data)), sort_keys=True))
     elif mode == 'registry':
         expected = digest(sys.argv[2])
@@ -172,6 +188,12 @@ def main():
             else:  # scan-binary/image
                 if not isinstance(obj, dict) or not isinstance(obj.get('Results'), list):
                     raise ValueError(name + ' invalid scan shape')
+                if name == 'scan-image.json':
+                    artifact = str(obj.get('ArtifactName') or '')
+                    repodigests = (obj.get('Metadata') or {}).get('RepoDigests', []) or []
+                    for ref in [artifact] + [str(rd) for rd in repodigests]:
+                        if ref and IMAGE not in ref:
+                            raise ValueError(name + ' references a different image')
                 for res in obj['Results']:
                     if not isinstance(res, dict):
                         raise ValueError(name + ' invalid scan result')
@@ -203,6 +225,9 @@ def main():
 if __name__ == '__main__':
     try:
         main()
+    except NotFound:
+        print('STOP: private package not found', file=sys.stderr)
+        sys.exit(2)
     except Exception:
         print('STOP: release metadata gate failed; no credential-bearing diagnostics', file=sys.stderr)
         sys.exit(1)

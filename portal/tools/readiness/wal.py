@@ -199,6 +199,9 @@ def wal_sample(cluster_doc, pod_doc, metrics_text, cluster_after, pod_after, clo
         return INCONCLUSIVE, None, "currentPrimary changed after sample"
     if cluster_doc.get("status", {}).get("currentPrimary") != pod_doc.get("metadata", {}).get("name"):
         return INCONCLUSIVE, None, "pod is not currentPrimary"
+    # primary role must be explicitly bound
+    if pod_doc.get("metadata", {}).get("labels", {}).get("cnpg.io/instanceRole") != "primary":
+        return INCONCLUSIVE, None, "pod is not primary instanceRole"
     # pod IP / restart / owner binding must be stable AND bound to the Cluster
     if pod_after.get("status", {}).get("podIP") != pod_doc.get("status", {}).get("podIP"):
         return INCONCLUSIVE, None, "pod IP changed after sample"
@@ -214,26 +217,32 @@ def wal_sample(cluster_doc, pod_doc, metrics_text, cluster_after, pod_after, clo
         return INCONCLUSIVE, None, "pod owner not bound to cluster"
     def restart(p):
         cs = p.get("status", {}).get("containerStatuses", []) or []
-        return cs[0].get("restartCount", 0) if cs else 0
-    if restart(pod_after) != restart(pod_doc):
-        return INCONCLUSIVE, None, "pod restart changed"
+        for c in cs:
+            if c.get("name") == "postgres":
+                return c.get("restartCount", 0)
+        return None
+    rb, ra = restart(pod_doc), restart(pod_after)
+    if rb is None or ra is None:
+        return INCONCLUSIVE, None, "postgres container missing"
+    if rb != ra:
+        return INCONCLUSIVE, None, "postgres restart changed"
     # node binding: clock evidence must match the sampled pod's node
     if clock_evidence.get("node") != pod_doc.get("spec", {}).get("nodeName"):
         return INCONCLUSIVE, None, "clock node does not match pod node"
     m, duplicates = parse_archiver_metrics(metrics_text)
     if duplicates:
-        return INCONCLUSIVE, m, "duplicate metric series: %s" % ",".join(sorted(duplicates))
+        return INCONCLUSIVE, None, "duplicate metric series: %s" % ",".join(sorted(duplicates))
     missing = [s for s in ARCHIVER_SERIES if s not in m]
     if missing:
-        return INCONCLUSIVE, m, "missing series: %s" % ",".join(missing)
+        return INCONCLUSIVE, None, "missing series: %s" % ",".join(missing)
     for k, v in m.items():
         if v != v or v in (float("inf"), float("-inf")):
-            return INCONCLUSIVE, m, "nonfinite metric %s" % k
+            return INCONCLUSIVE, None, "nonfinite metric %s" % k
     # future timestamp (relative to sample time) is invalid
     if m["cnpg_pg_stat_archiver_last_archived_time"] > now + CLOCK_SKEW_BOUND:
-        return INCONCLUSIVE, m, "future last_archived_time"
+        return INCONCLUSIVE, None, "future last_archived_time"
     if m["cnpg_pg_stat_archiver_last_failed_time"] > now + CLOCK_SKEW_BOUND:
-        return INCONCLUSIVE, m, "future last_failed_time"
+        return INCONCLUSIVE, None, "future last_failed_time"
     # first baseline sample is NOT proof of new WAL progress
     if baseline is None:
         return INCONCLUSIVE, m, "baseline sample recorded (no progress proof)"
@@ -242,7 +251,7 @@ def wal_sample(cluster_doc, pod_doc, metrics_text, cluster_after, pod_after, clo
     if m["cnpg_pg_stat_archiver_last_failed_time"] > baseline.get("cnpg_pg_stat_archiver_last_failed_time", 0):
         return FAIL, m, "last_failed_time advanced"
     if m["cnpg_pg_stat_archiver_stats_reset_time"] != baseline.get("cnpg_pg_stat_archiver_stats_reset_time", None):
-        return INCONCLUSIVE, m, "stats reset"
+        return INCONCLUSIVE, None, "stats reset"
     grown = m["cnpg_pg_stat_archiver_archived_count"] > baseline.get("cnpg_pg_stat_archiver_archived_count", 0)
     fresh_bound = baseline_observed_at if baseline_observed_at is not None else baseline.get("cnpg_pg_stat_archiver_last_archived_time", 0)
     fresh = m["cnpg_pg_stat_archiver_last_archived_time"] > fresh_bound

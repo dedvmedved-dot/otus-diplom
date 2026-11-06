@@ -115,6 +115,17 @@ jobs:
           echo "SOURCE_SHA=${{ github.sha }}"
           echo "BUILD_TIME=$(git log -1 --format=%cI --date=iso-strict)"
 
+      - name: Future execution gate (source/workflow/package/expiry/run-attempt)
+        env:
+          GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          # gate: immutable github.sha checkout, single run attempt, workflow/package binding
+          test "$GITHUB_RUN_ATTEMPT" = "1" || { echo "STOP: run attempt != 1"; exit 1; }
+          test -n "${{ github.sha }}" || { echo "STOP: empty source sha"; exit 1; }
+          test "${{ github.repository }}" = 'dedvmedved-dot/otus-diplom' || { echo "STOP: wrong repository"; exit 1; }
+          echo "GATE: source=${{ github.sha }} repository=${{ github.repository }} run_attempt=${{ github.run_attempt }}"
+
       - name: Install verified Go archive
         run: bash portal/tools/install-verified-go.sh
 

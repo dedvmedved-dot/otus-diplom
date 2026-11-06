@@ -92,6 +92,8 @@ def checks(release, seed):
     seed_on = seed.get("on")
     if not isinstance(seed_on, dict) or set(seed_on.keys()) != {"workflow_dispatch"}:
         errs.append("seed on must be workflow_dispatch only")
+    if not seed.get("jobs", {}).get("precheck"):
+        errs.append("seed template missing 'precheck' job")
     seed_job = seed.get("jobs", {}).get("seed", {})
     if not seed_job:
         errs.append("seed template missing 'seed' job")

@@ -75,17 +75,17 @@ class TestGate(unittest.TestCase):
 
 class TestPredicates(unittest.TestCase):
     def test_hc_db_ready(self):
-        d = {"spec": {"instances": 3}, "status": {"instances": 3, "readyInstances": 3,
+        d = {"kind": "Cluster", "spec": {"instances": 3}, "status": {"instances": 3, "readyInstances": 3,
              "conditions": [{"type": "Ready", "status": "True"}]}}
         self.assertEqual(wrapper.pred_hc_db(d), (wrapper.PASS, "3/3/3 Ready"))
 
     def test_hc_db_fail(self):
-        d = {"spec": {"instances": 3}, "status": {"instances": 3, "readyInstances": 1,
+        d = {"kind": "Cluster", "spec": {"instances": 3}, "status": {"instances": 3, "readyInstances": 1,
              "conditions": [{"type": "Ready", "status": "True"}]}}
         self.assertEqual(wrapper.pred_hc_db(d)[0], wrapper.FAIL)
 
     def test_hc_db_missing(self):
-        d = {"spec": {}, "status": {}}
+        d = {"kind": "Cluster", "spec": {}, "status": {}}
         self.assertEqual(wrapper.pred_hc_db(d)[0], wrapper.INCONCLUSIVE)
 
     def test_hc_gw_programmed(self):
@@ -123,6 +123,7 @@ class TestWAL(unittest.TestCase):
     def _docs(self):
         cluster = {"metadata": {"name": "portal-db", "uid": "c-uid"}, "status": {"currentPrimary": "portal-db-1"}}
         pod = {"metadata": {"name": "portal-db-1", "uid": "p-uid",
+                            "labels": {"cnpg.io/instanceRole": "primary"},
                             "ownerReferences": [{"uid": "c-uid", "kind": "Cluster", "name": "portal-db"}]},
                "spec": {"nodeName": "node-01"},
                "status": {"podIP": "10.244.1.2", "containerStatuses": [{"name": "postgres", "restartCount": 0}]}}

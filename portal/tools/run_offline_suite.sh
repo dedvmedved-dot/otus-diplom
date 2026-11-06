@@ -27,7 +27,8 @@ run() {
 }
 
 isolated() {
-  rm -rf /tmp/p8c-readiness /tmp/p8c-*.reserved 2>/dev/null || true
+  # Per-suite isolated authority: unique tempdir, never deletes a live operator's directory.
+  export P8C_READINESS_BASE="$(mktemp -d /tmp/p8c-readiness-XXXXXX)"
 }
 
 echo "UTC_START=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -63,6 +64,9 @@ run "architect scheduler regression (14)" python3 evidence/P8/20261105-974e069-a
 
 isolated
 run "architect contract (15)" python3 evidence/P8/20261105-c8007f5-architect-review/contract_test.py -v
+
+isolated
+run "architect completion (34)" python3 evidence/P8/20261106-bc50834-architect-review/completion_contract_test.py -v
 
 # --- public pin verification (cached evidence; no upstream re-download unless missing) ---
 isolated
