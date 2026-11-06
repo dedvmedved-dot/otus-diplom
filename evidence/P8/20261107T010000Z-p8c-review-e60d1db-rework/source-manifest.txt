@@ -1,0 +1,37 @@
+# Source manifest — review e60d1db rework (61e4a44)
+
+Base: 3ed8d029231793c3fa488cde7e90892b369faa23 (review of 9a4ed77 / evidence e60d1db)
+Final: 61e4a44e34cd680bafefc29851f382e2eb2102dd
+Fast-forward: yes. No force/rebase/amend.
+
+Source changed (diff 3ed8d02..61e4a44):
+  portal/tools/readiness/wrapper.py        — atomic additive _charge accounting (flock + delta),
+                                             durable overall/WAL seconds, over-cap suffix reject,
+                                             WAL HTTP remaining-cap, per-check W/I/N health windows +
+                                             freshness re-read, PR-6 cluster-scoped Namespace,
+                                             action_receipt full binding (gate/stage/outcome/time)
+  portal/tools/release-check.py            — release-gate + first-creation mandatory binding fields
+  portal/tools/verify-pins.py              — offline verifier binds cached evidence to current lock
+  portal/tools/p8c-portal-release.yml.template — workflow_dispatch gate input + Deliver step + cleanup
+  portal/tools/p8c-portal-seed.yml.template — readiness window message + proof package
+  portal/tools/run_offline_suite.sh        — added remaining-contract stage
+  portal/tools/test_route_e2e.py           — full-route E2E (network modes only mocked)
+  portal/tools/readiness/test_{contract,completion,residual}_authority_working.py — typed action_receipt
+  docs/architecture/P8C_EXECUTABLE_RELEASE_READINESS_RUNBOOK_20261104.md — synced
+
+Runtime/test dependency closure (imported by the active suite):
+  wrapper.py -> wal.py, readset.json (frozen), stdlib (fcntl/hashlib/json/os/select/subprocess/...)
+  active working copies -> evidence fixtures:
+      evidence/P8/20261105-974e069-architect-review/scheduler_regression_test.py (MainContract)
+      evidence/P8/20261105-c8007f5-architect-review/contract_test.py (WindowRoutes)
+      evidence/P8/20261105-f783e1e-architect-review/regression_test.py
+      evidence/P8/20261105-64e36a6-architect-review/accepted-baseline.json (PR-6 Tier/Felix)
+      evidence/P8/20261106-e60d1db-architect-review/remaining_contract_test.py (17 controls)
+  release-check.py, release_qualification.py, verify-pins.py (+ pins.lock.json, PyYAML)
+  template parse: p8c-portal-release.yml.template, p8c-portal-seed.yml.template
+  pinned public inputs: pins.lock.json (6 binaries + 3 actions + 1 image, 10/10 offline VERIFIED)
+
+Evidence (this package):
+  raw-transcript.txt  — UTC start/end, cwd, toolchain, launcher output, exit 0
+  secret-scan.txt     — no credential/token matches in source diff
+  result.md           — full closure matrix + verdict
