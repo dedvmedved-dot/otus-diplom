@@ -1,0 +1,23 @@
+# Source manifest — review f975527 rework (2nd pass, 94877dc)
+
+Base: cae118d644c7cc078ab999f7ffd1299e1fa0ba10 (evidence of 1st pass 266ea97)
+Final: 94877dc511c3998bd80bb2e780729367b1abd2e0
+Fast-forward: yes. No force/rebase/amend.
+
+Changed files (source diff cae118d..94877dc):
+  portal/tools/readiness/wrapper.py        — gate_identity_sha256(); run_wal_sample binds
+                                             clock evidence to the gate identity
+  portal/tools/p8c-portal-release.yml.template — always() cleanup + timeout 5 buildctl
+  portal/tools/p8c-portal-seed.yml.template — timeout 5 buildctl + full proof package upload
+  portal/tools/readiness/test_scheduler_authority_working.py   (new active copy)
+  portal/tools/readiness/test_contract_authority_working.py    (set gate-identity hash)
+  portal/tools/readiness/test_completion_authority_working.py  (set gate-identity hash)
+  portal/tools/readiness/test_residual_contract_working.py     (set gate-identity hash)
+  portal/tools/test_route_e2e.py           (new fake-tool route E2E, 4 methods)
+  portal/tools/run_offline_suite.sh        — added E2E stage + scheduler authority copy
+  docs/architecture/P8C_EXECUTABLE_RELEASE_READINESS_RUNBOOK_20261104.md — synced
+
+Evidence (this package):
+  raw-transcript.txt  — full launcher output on 94877dc (SUITE RESULT: PASS, exit 0)
+  secret-scan.txt     — no credential/token matches in source diff
+  result.md           — verdict + change summary
