@@ -121,9 +121,24 @@ def verify_offline():
     cached = os.path.join(CACHE, "pin-verification.json")
     prev = json.load(open(cached)) if os.path.exists(cached) else {"results": []}
     by_id = {r["id"]: r for r in prev["results"]}
-    for p in lock["actions"] + lock["images"]:
-        r = by_id.get(p["id"], {})
-        results.append({"id": p["id"], "status": r.get("status", "UNAVAILABLE"), "offline": True})
+    # actions: the cached commit_sha must bind to the CURRENT lock sha, not a same-id record
+    for p in lock["actions"]:
+        r = by_id.get(p["id"])
+        if r is None:
+            results.append({"id": p["id"], "status": "UNAVAILABLE", "offline": True})
+        elif r.get("commit_sha") != p["sha"]:
+            results.append({"id": p["id"], "status": "MISMATCH", "offline": True})
+        else:
+            results.append({"id": p["id"], "status": r.get("status", "UNAVAILABLE"), "offline": True})
+    # images: the cached declared digest must bind to the CURRENT lock digest
+    for p in lock["images"]:
+        r = by_id.get(p["id"])
+        if r is None:
+            results.append({"id": p["id"], "status": "UNAVAILABLE", "offline": True})
+        elif r.get("declared") != p["digest"]:
+            results.append({"id": p["id"], "status": "MISMATCH", "offline": True})
+        else:
+            results.append({"id": p["id"], "status": r.get("status", "UNAVAILABLE"), "offline": True})
     out = {"mode": "offline", "results": results}
     json.dump(out, open(os.path.join(CACHE, "pin-verification-offline.json"), "w"), indent=2)
     for r in results:

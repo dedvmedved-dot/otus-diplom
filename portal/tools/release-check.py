@@ -4,6 +4,7 @@ Cryptographic verification is done by pinned cosign BEFORE this payload check.
 These checks alone do not establish signatures, registry privacy or a release.
 """
 import base64
+import calendar
 import hashlib
 import json
 import os
@@ -104,53 +105,73 @@ def main():
     if mode == 'digest':
         print(digest(json.loads(Path(sys.argv[2]).read_text())['containerimage.digest']))
     elif mode == 'release-gate':
-        # typed release gate document: source/workflow/package/expiry/attempt must bind
+        # typed release gate document: source/workflow/package/mode/issued_at/expiry/attempt are
+        # all mandatory and must bind to the actual run (single attempt).
         gate_path, source, repository, attempt = Path(sys.argv[2]), sys.argv[3], sys.argv[4], sys.argv[5]
         try:
             g = json.loads(gate_path.read_text())
-        except Exception as e:
-            raise ValueError('release-gate unreadable: ' + type(e).__name__)
+        except Exception:
+            raise ValueError('release-gate unreadable')
         if not isinstance(g, dict):
             raise ValueError('release-gate not object')
         if g.get('source_sha') != source:
             raise ValueError('release-gate source_sha not bound')
-        if g.get('repository') not in (None, '', repository, REPO):
+        if g.get('repository') != repository:
             raise ValueError('release-gate repository not bound')
-        if g.get('attempt') is not None and str(g.get('attempt')) != str(attempt):
-            raise ValueError('release-gate attempt not bound (single-attempt only)')
-        if g.get('expiry_hours') is not None and (not isinstance(g.get('expiry_hours'), int) or not (0 < g['expiry_hours'] <= 24)):
-            raise ValueError('release-gate expiry invalid')
+        if g.get('package') != IMAGE:
+            raise ValueError('release-gate package not bound')
+        wf = g.get('workflow_sha')
+        if not isinstance(wf, str) or not re.fullmatch('[0-9a-f]{40}', wf):
+            raise ValueError('release-gate workflow_sha missing/invalid')
+        if g.get('mode') != 'LIVE':
+            raise ValueError('release-gate mode must be LIVE')
+        issued = g.get('issued_at_utc')
+        if not isinstance(issued, str) or not re.fullmatch(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z', issued):
+            raise ValueError('release-gate issued_at_utc missing/invalid')
+        expiry = g.get('expiry_hours')
+        if not isinstance(expiry, int) or not (0 < expiry <= 24):
+            raise ValueError('release-gate expiry_hours invalid')
+        try:
+            issued_epoch = calendar.timegm(time.strptime(issued, '%Y-%m-%dT%H:%M:%SZ'))
+        except Exception:
+            raise ValueError('release-gate issued_at_utc unparseable')
+        now = time.time()
+        if issued_epoch > now + 300:
+            raise ValueError('release-gate issued_at_utc in the future')
+        if issued_epoch + expiry * 3600 < now:
+            raise ValueError('release-gate expired')
+        if g.get('attempt') != 1:
+            raise ValueError('release-gate single-attempt only (attempt must be 1)')
         print(json.dumps({'gate': 'bound', 'source': source, 'repository': repository, 'attempt': attempt}))
     elif mode == 'predicate':
         print(json.dumps(predicate(sys.argv[2]), sort_keys=True))
     elif mode == 'first-creation':
-        # Typed first-creation gate validation (source-bound; NOT issued now).
+        # Typed first-creation gate: repository/package/workflow are MANDATORY and must bind to
+        # the actual source + target artifacts (404 alone is not a basis).
         gate_path = Path(sys.argv[2])
         try:
             g = json.loads(gate_path.read_text())
-        except Exception as e:
-            raise ValueError('first-creation gate unreadable: ' + type(e).__name__)
+        except Exception:
+            raise ValueError('first-creation gate unreadable')
         if not isinstance(g, dict) or not re.fullmatch('[0-9a-f]{40}', str(g.get('source_sha', ''))) \
                 or not re.fullmatch(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z', str(g.get('issued_at_utc', ''))) \
                 or not isinstance(g.get('expiry_hours'), int) or not (0 < g['expiry_hours'] <= 24):
             raise ValueError('first-creation gate incomplete/invalid')
         if g.get('mode') != 'LIVE':
             raise ValueError('first-creation requires mode=LIVE (not TEST_ONLY)')
-        # source/repository binding: the gate must match the actual GITHUB_SHA/GITHUB_REPOSITORY
         github_sha = os.environ.get('GITHUB_SHA')
-        if github_sha and g.get('source_sha') != github_sha:
+        if not github_sha or g.get('source_sha') != github_sha:
             raise ValueError('first-creation source_sha not bound to GITHUB_SHA')
-        github_repo = os.environ.get('GITHUB_REPOSITORY')
-        if github_repo and github_repo != REPO:
+        if os.environ.get('GITHUB_REPOSITORY') != REPO:
             raise ValueError('first-creation repository not the expected repo')
-        # the gate's OWN package/repository/workflow fields must bind to the expected artifacts
-        if g.get('repository') and g.get('repository') != REPO:
-            raise ValueError('first-creation gate.repository not the expected repo')
-        if g.get('package') and g.get('package') != IMAGE:
-            raise ValueError('first-creation gate.package not the expected image')
-        if g.get('workflow_sha') and not re.fullmatch('[0-9a-f]{40}', str(g.get('workflow_sha'))):
-            raise ValueError('first-creation gate.workflow_sha not a valid sha')
-        import calendar
+        if g.get('repository') != REPO:
+            raise ValueError('first-creation gate.repository not bound')
+        if g.get('package') != IMAGE:
+            raise ValueError('first-creation gate.package not bound')
+        wf = g.get('workflow_sha')
+        expected_wf = os.environ.get('GITHUB_WORKFLOW_SHA')
+        if not isinstance(wf, str) or not re.fullmatch('[0-9a-f]{40}', wf) or (expected_wf and wf != expected_wf):
+            raise ValueError('first-creation gate.workflow_sha not bound')
         try:
             issued = calendar.timegm(time.strptime(g['issued_at_utc'], '%Y-%m-%dT%H:%M:%SZ'))
         except Exception:

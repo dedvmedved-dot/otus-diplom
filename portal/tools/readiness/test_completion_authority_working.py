@@ -22,14 +22,17 @@ class ReadinessCompletion(unittest.TestCase):
     def setUp(self):
         fixture.WindowRoutes.setUp(self)
         self.g['clock_evidence']['gate_sha256']=w.gate_identity_sha256(self.g)
-    def op_gate(self):
+    def op_gate(self, stage):
+        prev = w.STAGES[w.STAGES.index(stage) - 1]
         self.g['operation_end_utc'] = self.now[0]
         self.g['action_receipt'] = {'source_sha': self.g['source_sha'],
                                     'package_sha256': self.g['package_sha256'],
+                                    'gate_sha256': w.gate_identity_sha256(self.g),
+                                    'stage': prev, 'outcome': w.PASS,
                                     'operation_end_utc': self.now[0]}
     def test_positive_existing_six_stage_route(self):
         for st in w.STAGE_ORDER:
-            if st!='S0':self.op_gate()
+            if st!='S0':self.op_gate(st)
             self.assertEqual(self.invoke(st)[0],0,st)
     def test_overall_remaining_one_request_stops_before_second_io(self):
         (self.state/'budget.json').write_text(json.dumps({'requests':232,'bytes':0,'seconds':0}))
@@ -48,7 +51,7 @@ class ReadinessCompletion(unittest.TestCase):
         with patch.object(w,'RESERVATION_BASE',str(self.root/'authority')):
             w.write_budget(self.g,{'requests':233,'bytes':0,'seconds':0})
         other=self.root/'other';other.mkdir();shutil.copyfile(self.state/'stage.receipt',other/'stage.receipt')
-        self.calls=[];self.op_gate()
+        self.calls=[];self.op_gate('S1')
         self.invoke('S1',state=other)
         self.assertEqual(self.calls,[],'Copying a valid receipt must not reset consumed budget')
     def test_wal_elapsed_includes_slot_waits(self):
@@ -89,9 +92,9 @@ class ReadinessCompletion(unittest.TestCase):
         self.assertEqual(code,0,j)
     def test_health_freshness_rechecked_at_final_pass(self):
         for st in w.STAGE_ORDER[:-1]:
-            if st!='S0':self.op_gate()
+            if st!='S0':self.op_gate(st)
             self.assertEqual(self.invoke(st)[0],0)
-        self.op_gate();raw=self.raw;observations=[]
+        self.op_gate('S4');raw=self.raw;observations=[]
         def slow(*args):
             b,rc=raw(*args)
             if args[2]==15:self.mono[0]+=14;self.now[0]+=14
@@ -115,9 +118,9 @@ class ReadinessCompletion(unittest.TestCase):
         code,j=self.invoke();self.assertNotEqual(code,0,j)
     def test_pr5_without_uid_namespace_ownership_cannot_pass(self):
         for st in w.STAGE_ORDER[:-1]:
-            if st!='S0':self.op_gate()
+            if st!='S0':self.op_gate(st)
             self.assertEqual(self.invoke(st)[0],0)
-        self.op_gate()
+        self.op_gate('S4')
         del self.docs[self.rs['PR-5']['path']]['items'][0]['metadata']
         code,j=self.invoke('S4');self.assertNotEqual(code,0,j)
     def test_post_operation_boundary_requires_bound_action_receipt(self):

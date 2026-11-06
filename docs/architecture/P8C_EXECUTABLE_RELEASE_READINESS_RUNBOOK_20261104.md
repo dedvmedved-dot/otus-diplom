@@ -35,10 +35,12 @@ budget is re-checked INSIDE each I/O (attempt charged before the transport call;
 on partial/error bodies; the read cap is lowered to the remaining body so a read can never exceed
 the limit and then be truncated). Budget is stored at the stable authority (`budget_path(gate)` =
 `RESERVATION_BASE/<package_sha256[:32]>/budget.json`), not the state-dir — a new state-dir cannot
-reset consumption. Persistence is concurrency-safe and crash-durable: `write_budget` takes a
-`fcntl.flock` on a sidecar lock file around the read-modify-write, MAX-merges each monotonic field
-with the on-disk value (no lost update / no decrease), and fsyncs the file and its directory before
-the atomic `os.replace`. Any NaN/infinite/non-finite budget field blocks before any read.
+reset consumption. Persistence is concurrency-safe and crash-durable: each charge is an atomic
+`_charge` under a `fcntl.flock` sidecar lock that reads the current value, checks `current+delta
+≤ cap`, and adds the delta (ADDITIVE, not MAX) before fsyncing the file and its directory and
+doing the atomic `os.replace`. Independent concurrent charges therefore sum correctly and a single
+remaining slot cannot be spent twice. `write_budget` remains the "set absolute" entry used by the
+fixture/authority seeding. Any NaN/infinite/non-finite budget field blocks before any read.
 
 ## State machine (window authority)
 
@@ -46,17 +48,20 @@ the atomic `os.replace`. Any NaN/infinite/non-finite budget field blocks before 
 `inflight` (opened/crash) → no retry; `failed` (non-PASS after ≤3 slots) → no retry, no new budget;
 `completed` (PASS) → no replay. A changed state-dir cannot bypass authority. Receipts are verified
 JSON bound to source+package+issued_at (a receipt from a different gate is not authority). S1–S4
-require an operation boundary (`operation_end_utc` ≥ issued_at) that is bound to a verified
-`action_receipt` (source_sha + package_sha256 + operation_end_utc) — an arbitrary number is not
-authority. The WAL baseline stores the pod UID (observation identity) + observed time and re-checks
-the UID on read; a cross-sample pod UID change invalidates the comparison.
+require an operation boundary (`operation_end_utc` ≥ issued_at) bound to a verified `action_receipt`
+that confirms the specific gate (`gate_sha256` = `gate_identity_sha256`), the previous `stage`, a
+successful `outcome=PASS` and the operation time — three equal fields are insufficient. The WAL
+baseline stores the pod UID (observation identity) + observed time and re-checks the UID on read;
+a cross-sample pod UID change invalidates the comparison.
 
 ## Health windows + freshness at verdict
 
-Health reads (HC-*) use bounded windows: a first observation's FAIL is preserved (failure
-precedence — never erased by a later sweep); a transient INCONCLUSIVE is retried after a bounded
-interval (10 s, limited by the remaining time budget); and at the verdict every mandatory
-observation is re-read fresh and gated on age ≤ 30 s (a stale observation → FAIL, no PASS).
+Health reads (HC-*) use bounded per-check W/I/N windows (interval + retries; e.g. HC-DNS interval5,
+HC-GW 12 retries): a first observation's FAIL is preserved (failure precedence — never erased by a
+later sweep); a transient INCONCLUSIVE is retried after the per-check interval, bounded by the
+remaining time budget; and at the verdict every mandatory observation is re-read fresh (reverse
+order so the shared DB/ARCH observation is the freshest) and gated on age ≤ 30 s (a stale
+observation → FAIL, no PASS).
 Predicates enforce the exact GVR binding per read (`kind` AND `apiVersion`, not just the broad
 `ALLOWED_API` or a name ending in `List`): HC-DB/ARCH-STATE must be `Cluster`@`postgresql.cnpg.io/v1`,
 PR-6 must be the nine expected (kind, apiVersion) pairs with typed items/max_items, PR-5 must be

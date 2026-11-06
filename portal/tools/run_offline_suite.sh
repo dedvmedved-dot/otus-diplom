@@ -74,6 +74,9 @@ run "architect completion authority working (34)" python3 portal/tools/readiness
 isolated
 run "architect residual contract working (20)" python3 portal/tools/readiness/test_residual_contract_working.py -v
 
+isolated
+run "architect remaining contract (17, review e60d1db)" python3 evidence/P8/20261106-e60d1db-architect-review/remaining_contract_test.py -v
+
 # --- public pin verification (offline: cached bytes + prior verified evidence; no network) ---
 isolated
 run "public pins verification (offline)" bash -c 'cd portal/tools && python3 verify-pins.py --offline'

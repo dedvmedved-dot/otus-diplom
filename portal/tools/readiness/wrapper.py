@@ -119,24 +119,59 @@ def _set_budget_context(gate, state_dir, budget):
     _BUDGET_CONTEXT = {"gate": gate, "state_dir": state_dir, "budget": budget}
 
 
-def _persist_budget_now():
-    c = _BUDGET_CONTEXT
-    if c["gate"] is None or c["budget"] is None:
-        return
-    b = dict(c["budget"])
-    b["requests"] = b.get("requests", 0) + _TRANSPORT["requests"]
-    b["bytes"] = b.get("bytes", 0) + _TRANSPORT["bytes"]
-    b["wal_requests"] = b.get("wal_requests", 0) + _WAL_TRANSPORT["requests"]
-    b["wal_bytes"] = b.get("wal_bytes", 0) + _WAL_TRANSPORT["bytes"]
-    b["wal_seconds"] = b.get("wal_seconds", 0.0) + _WAL_TRANSPORT["seconds"]
-    write_budget(c["gate"], b)
-    if c["state_dir"] is not None:
-        local = os.path.join(c["state_dir"], "budget.json")
-        tmp = local + ".tmp"
-        with open(tmp, "w") as f:
-            json.dump(b, f, sort_keys=True)
-        os.chmod(tmp, 0o600)
-        os.replace(tmp, local)
+_BUDGET_FIELDS = ("requests", "bytes", "seconds", "wal_requests", "wal_bytes", "wal_seconds")
+
+
+def _load_budget_file(p):
+    if not os.path.exists(p):
+        return {f: 0 for f in _BUDGET_FIELDS}
+    try:
+        b = json.loads(Path(p).read_text())
+    except Exception:
+        raise ReadError("budget state corrupt")
+    if not isinstance(b, dict):
+        raise ReadError("budget state corrupt")
+    for f in _BUDGET_FIELDS:
+        if not _finite_nonnegative(b.get(f, 0)):
+            raise ReadError("budget state not finite/nonnegative (corrupt)")
+    return b
+
+
+def _write_budget_file(p, budget):
+    tmp = p + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(budget, f, sort_keys=True)
+        f.flush()
+        os.fsync(f.fileno())
+    os.chmod(tmp, 0o600)
+    os.replace(tmp, p)
+    dirfd = os.open(os.path.dirname(p), os.O_RDONLY)
+    try:
+        os.fsync(dirfd)
+    finally:
+        os.close(dirfd)
+
+
+def _charge(gate, field, delta, cap):
+    """Atomically reserve+commit `delta` to one monotonic budget field under the authority lock.
+
+    The whole check-remaining/reserve/commit is serialized, so two independent charges are
+    additive (both count) and a single remaining slot cannot be spent twice."""
+    p = budget_path(gate)
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    lock = open(p + ".lock", "a+")
+    try:
+        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+        current = _load_budget_file(p)
+        new_val = current.get(field, 0) + delta
+        if new_val > cap:
+            raise ReadError("budget exhausted")
+        current[field] = new_val
+        _write_budget_file(p, current)
+        return current
+    finally:
+        fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
+        lock.close()
 
 
 def _reset_transport():
@@ -176,39 +211,65 @@ def _reset_read_cache():
 
 def _count_request():
     global _TRANSPORT
-    if _BUDGET_CONTEXT["gate"] is not None and _overall_exhausted():
-        raise ReadError("overall budget exhausted")
+    gate = _BUDGET_CONTEXT["gate"]
+    if gate is not None:
+        if _overall_exhausted():
+            raise ReadError("overall budget exhausted")
+        _charge(gate, "requests", 1, OVERALL_REQ_CAP)
     _TRANSPORT["requests"] += 1
-    _persist_budget_now()
 
 
 def _count_bytes(n):
     global _TRANSPORT
+    gate = _BUDGET_CONTEXT["gate"]
+    if gate is not None:
+        _charge(gate, "bytes", int(n), OVERALL_BODY_CAP)
     _TRANSPORT["bytes"] += int(n)
-    _persist_budget_now()
 
 
 def _count_wal_request():
     global _WAL_TRANSPORT
-    if _BUDGET_CONTEXT["gate"] is not None and _wal_exhausted():
-        raise ReadError("WAL budget exhausted")
+    gate = _BUDGET_CONTEXT["gate"]
+    if gate is not None:
+        if _wal_exhausted():
+            raise ReadError("WAL budget exhausted")
+        _charge(gate, "wal_requests", 1, WAL_REQ_CAP)
     _WAL_TRANSPORT["requests"] += 1
-    _persist_budget_now()
 
 
 def _count_wal_bytes(n):
     global _WAL_TRANSPORT
+    gate = _BUDGET_CONTEXT["gate"]
+    if gate is not None:
+        _charge(gate, "wal_bytes", int(n), WAL_BODY_CAP)
     _WAL_TRANSPORT["bytes"] += int(n)
-    _persist_budget_now()
 
 
 def _count_wal(nbytes, seconds):
     """WAL-cumulative budget accounting (subset of overall, tracked separately)."""
     global _TRANSPORT, _WAL_TRANSPORT
+    gate = _BUDGET_CONTEXT["gate"]
+    if gate is not None:
+        _charge(gate, "requests", 1, OVERALL_REQ_CAP)
+        _charge(gate, "bytes", int(nbytes), OVERALL_BODY_CAP)
+        _charge(gate, "wal_requests", 1, WAL_REQ_CAP)
+        _charge(gate, "wal_bytes", int(nbytes), WAL_BODY_CAP)
+        _charge(gate, "wal_seconds", float(seconds), WAL_SEC_CAP)
     _TRANSPORT["requests"] += 1
     _TRANSPORT["bytes"] += int(nbytes)
     _WAL_TRANSPORT["requests"] += 1
     _WAL_TRANSPORT["bytes"] += int(nbytes)
+    _WAL_TRANSPORT["seconds"] += float(seconds)
+
+
+def _count_wal_seconds(seconds):
+    global _WAL_TRANSPORT
+    gate = _BUDGET_CONTEXT["gate"]
+    if gate is not None:
+        try:
+            _charge(gate, "wal_seconds", float(seconds), WAL_SEC_CAP)
+        except ReadError:
+            pass
     _WAL_TRANSPORT["seconds"] += float(seconds)
 
 
@@ -222,8 +283,10 @@ def _remaining_seconds():
 
 def _count_seconds(n):
     global _TRANSPORT
+    gate = _BUDGET_CONTEXT["gate"]
+    if gate is not None:
+        _charge(gate, "seconds", float(n), OVERALL_SEC_CAP)
     _TRANSPORT["seconds"] += float(n)
-    _persist_budget_now()
 
 
 def _count_transport(nbytes):
@@ -534,7 +597,6 @@ def run_kubectl_raw(kubectl, path, timeout, cap):
             chunks.append(buf)
         if timed_out:
             # grab any bytes already buffered at the deadline (partial body accounting)
-            import fcntl
             fl = fcntl.fcntl(fd, fcntl.F_GETFL)
             fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
             try:
@@ -558,6 +620,18 @@ def run_kubectl_raw(kubectl, path, timeout, cap):
         except subprocess.TimeoutExpired:
             _count_bytes(total)
             raise ReadError("kubectl did not exit after stdout EOF")
+        if total >= cap:
+            # cap reached before EOF: reject if the process produced more bytes than the cap
+            # (a valid JSON prefix must not hide an over-cap suffix).
+            fl = fcntl.fcntl(fd, fcntl.F_GETFL)
+            fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+            try:
+                extra = os.read(fd, 1)
+            finally:
+                fcntl.fcntl(fd, fcntl.F_SETFL, fl)
+            if extra:
+                _count_bytes(total + len(extra))
+                raise ReadError("kubectl response exceeds cap")
     finally:
         try:
             if proc.poll() is None:
@@ -790,7 +864,7 @@ def pred_pr6(docs):
         if not isinstance(n, dict):
             return FAIL, "namespace item malformed"
         nm = n.get("metadata", {})
-        if not isinstance(nm, dict) or not nm.get("name") or not nm.get("namespace") or not nm.get("uid"):
+        if not isinstance(nm, dict) or not nm.get("name") or not nm.get("uid"):
             return FAIL, "namespace item identity missing"
     # pod list: typed items + max_items (from readset, 200)
     pod_items = docs[8].get("items", [])
@@ -1051,7 +1125,11 @@ def run_wal_sample(kubectl, http_get, clock_evidence, gate):
         try:
             _count_request()
             _count_wal_request()
-            metrics_text = http_get("http://%s:9187/metrics" % pod_ip, wal.REQ_TIMEOUT, wal.METRIC_CAP).decode()
+            remaining = _remaining_body()
+            if remaining <= 0:
+                return INCONCLUSIVE, "overall body budget exhausted", None, None
+            metrics_text = http_get("http://%s:9187/metrics" % pod_ip, wal.REQ_TIMEOUT,
+                                    min(wal.METRIC_CAP, remaining)).decode()
         except ReadError as e:
             return INCONCLUSIVE, str(e), None, None
         body_total[0] += len(metrics_text.encode())
@@ -1072,7 +1150,7 @@ def run_wal_sample(kubectl, http_get, clock_evidence, gate):
     except ReadError as e:
         return INCONCLUSIVE, str(e), None, None
     finally:
-        _WAL_TRANSPORT["seconds"] += (time.monotonic() - start)
+        _count_wal_seconds(time.monotonic() - start)
 
 
 def run_wal_window(kubectl, http_get, gate, state_dir, clock_evidence, stage="S0"):
@@ -1085,12 +1163,16 @@ def run_wal_window(kubectl, http_get, gate, state_dir, clock_evidence, stage="S0
         issued_epoch = parse_utc(gate.get("issued_at_utc", "")) if gate.get("issued_at_utc") else None
         if issued_epoch is not None and op_end < issued_epoch:
             return INCONCLUSIVE, "operation boundary not bound to gate (before issued_at)"
-        # operation boundary must be bound to a verified action receipt (confirmed operation),
-        # not an arbitrary number >= issued_at.
+        # operation boundary must be bound to a verified action receipt that confirms the
+        # specific gate/stage/operation/successful-outcome, not just three equal fields.
         receipt = gate.get("action_receipt")
+        prev_stage = STAGES[STAGES.index(stage) - 1]
         if not isinstance(receipt, dict) \
                 or receipt.get("source_sha") != gate.get("source_sha") \
                 or receipt.get("package_sha256") != gate.get("package_sha256") \
+                or receipt.get("gate_sha256") != gate_identity_sha256(gate) \
+                or receipt.get("stage") != prev_stage \
+                or receipt.get("outcome") != PASS \
                 or receipt.get("operation_end_utc") != op_end:
             return INCONCLUSIVE, "operation boundary not bound to an action receipt"
     baseline_rec = read_wal_baseline_record(state_dir, gate)
@@ -1112,7 +1194,7 @@ def run_wal_window(kubectl, http_get, gate, state_dir, clock_evidence, stage="S0
             if sleep_time > remaining:
                 sleep_time = remaining
             time.sleep(sleep_time)
-            _WAL_TRANSPORT["seconds"] += sleep_time  # WAL elapsed includes slot waits
+            _count_wal_seconds(sleep_time)  # WAL elapsed includes slot waits (durable)
             _count_seconds(sleep_time)  # overall elapsed tracked during execution
             slot_start = time.monotonic()
         wgate = dict(gate)
@@ -1236,31 +1318,62 @@ def main(argv):
         except ReadError as e:
             journal["reads"][read_id] = {"disposition": INCONCLUSIVE, "error": str(e), "attempt": 1}
 
-    # bounded health windows + freshness re-check at verdict.
-    _reset_read_cache()
+    # bounded health windows (per-check W/I/N) + freshness re-check at verdict.
     health_ids = [r for r in ordered
                   if r != wal_id and r.startswith("HC-") and args.stage in readset["reads"][r]["stages"]]
     HEALTH_MAX_AGE = 30.0
-    HEALTH_RETRY_INTERVAL = 10.0
-    for read_id in health_ids:
-        first = journal["reads"].get(read_id, {}).get("disposition")
-        if first == FAIL:
-            continue  # failure precedence: a FAIL is never erased by a later sweep
-        if first == INCONCLUSIVE:
-            # bounded retry interval (transient), limited by the remaining overall time budget
-            sleep_time = min(HEALTH_RETRY_INTERVAL, max(0.0, _remaining_seconds()))
+    # per-check W/I/N: interval (seconds between retries) and number of retries.
+    HEALTH_WINDOWS = {
+        "HC-DB": {"interval": 10, "retries": 2},
+        "HC-ARCH-STATE": {"interval": 10, "retries": 2},  # shares the DB GET within a round
+        "HC-OP": {"interval": 10, "retries": 2},
+        "HC-DNS": {"interval": 5, "retries": 2},
+        "HC-PORTAL": {"interval": 10, "retries": 2},
+        "HC-GW": {"interval": 10, "retries": 12},
+    }
+    max_retries = max(w["retries"] for w in HEALTH_WINDOWS.values())
+    for round_no in range(1, max_retries + 1):
+        _reset_read_cache()  # each round is a fresh GET (no cache hit across rounds)
+        progressed = False
+        for read_id in health_ids:
+            cur = journal["reads"].get(read_id, {}).get("disposition")
+            if cur == FAIL or cur == PASS:
+                continue  # failure precedence / already resolved
+            win = HEALTH_WINDOWS.get(read_id, {"interval": 10, "retries": 2})
+            if round_no > win["retries"]:
+                continue
+            sleep_time = min(win["interval"], max(0.0, _remaining_seconds()))
             if sleep_time > 0:
                 time.sleep(sleep_time)
                 _count_seconds(sleep_time)
+            try:
+                expect_list, pred = PREDICATES[read_id]
+                doc = run_read(readset, read_id, args.kubectl)
+                disp, detail = pred(doc)
+                journal["reads"][read_id] = {"disposition": disp, "detail": detail,
+                                             "attempt": round_no + 1, "observed_mono": time.monotonic()}
+            except ReadError as e:
+                journal["reads"][read_id] = {"disposition": INCONCLUSIVE, "error": str(e),
+                                             "attempt": round_no + 1, "observed_mono": time.monotonic()}
+            progressed = True
+        if not progressed:
+            break
+    # freshness re-read: re-read every non-FAIL check fresh at the verdict (reverse order so the
+    # shared DB/ARCH observation is the freshest); a FAIL is never erased by this sweep.
+    _reset_read_cache()
+    for read_id in reversed(health_ids):
+        if journal["reads"].get(read_id, {}).get("disposition") == FAIL:
+            continue  # failure precedence
         try:
             expect_list, pred = PREDICATES[read_id]
             doc = run_read(readset, read_id, args.kubectl)
             disp, detail = pred(doc)
             journal["reads"][read_id] = {"disposition": disp, "detail": detail,
-                                         "attempt": 2, "observed_mono": time.monotonic()}
+                                         "attempt": journal["reads"][read_id].get("attempt", 1) + 1,
+                                         "observed_mono": time.monotonic()}
         except ReadError as e:
             journal["reads"][read_id] = {"disposition": INCONCLUSIVE, "error": str(e),
-                                         "attempt": 2, "observed_mono": time.monotonic()}
+                                         "observed_mono": time.monotonic()}
     # freshness gate: any stale mandatory observation -> FAIL (no PASS with stale health)
     now_mono = time.monotonic()
     for read_id in health_ids:
@@ -1269,14 +1382,10 @@ def main(argv):
         if obs is not None and now_mono - obs > HEALTH_MAX_AGE:
             journal["reads"][read_id] = {"disposition": FAIL, "detail": "health observation stale at verdict"}
 
-    executed = [v for v in journal["reads"].values() if v.get("disposition") != NOT_APPLICABLE]
-    budget["requests"] = budget.get("requests", 0) + _TRANSPORT["requests"]
-    budget["bytes"] = budget.get("bytes", 0) + _TRANSPORT["bytes"]
-    budget["seconds"] = budget.get("seconds", 0.0) + sum(v.get("duration_ms", 0) for v in executed) / 1000.0
-    budget["wal_requests"] = budget.get("wal_requests", 0) + _WAL_TRANSPORT["requests"]
-    budget["wal_bytes"] = budget.get("wal_bytes", 0) + _WAL_TRANSPORT["bytes"]
-    budget["wal_seconds"] = budget.get("wal_seconds", 0.0) + _WAL_TRANSPORT["seconds"]
-    write_budget(gate, budget)
+    # authoritative budget: re-read the on-disk authority (atomic deltas already persisted by
+    # _charge). Seconds are the accumulated _count_seconds/_count_wal charges, not the (sweep-
+    # overwritten) per-read duration_ms of the final journal.
+    budget = read_budget(gate)
     _set_budget_context(None, None, None)  # clear context; direct run_wal_sample calls must not see a stale budget
     journal["budget"] = budget
 

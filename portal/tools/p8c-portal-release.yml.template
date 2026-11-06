@@ -5,7 +5,12 @@
 name: p8c-portal-release
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      release_gate:
+        description: 'Typed release gate JSON {source_sha, repository, package, workflow_sha, mode=LIVE, issued_at_utc, expiry_hours, attempt=1}; Owner supplies it explicitly. Absent => gate step fails.'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -115,6 +120,13 @@ jobs:
           echo "SOURCE_SHA=${{ github.sha }}"
           echo "BUILD_TIME=$(git log -1 --format=%cI --date=iso-strict)"
 
+      - name: Deliver typed release gate (data via env, never shell)
+        if: github.event.inputs.release_gate != ''
+        env:
+          RELEASE_GATE: ${{ github.event.inputs.release_gate }}
+        run: |
+          printf '%s' "$RELEASE_GATE" > "$RUNNER_TEMP/release-gate.json"
+
       - name: Future execution gate (source/workflow/package/expiry/run-attempt)
         env:
           GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
@@ -185,7 +197,7 @@ jobs:
             sleep 1
           done
           if [ "$READY" != "1" ]; then
-            echo "buildkitd worker not ready after 30s; last log lines:"
+            echo "buildkitd worker not ready within the bounded readiness window (30 x (timeout5 + sleep1))"
             tail -n 20 /tmp/buildkitd.log
             exit 1
           fi

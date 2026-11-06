@@ -46,8 +46,9 @@ class WindowRoutes(unittest.TestCase):
     def test_positive_s0_through_s4_mock_transport_control(self):
         for stage in w.STAGE_ORDER:
             if stage!='S0':
+                prev = w.STAGES[w.STAGES.index(stage) - 1]
                 self.g['operation_end_utc']=self.now[0]
-                self.g['action_receipt']={'source_sha':self.g['source_sha'],'package_sha256':self.g['package_sha256'],'operation_end_utc':self.now[0]}
+                self.g['action_receipt']={'source_sha':self.g['source_sha'],'package_sha256':self.g['package_sha256'],'gate_sha256':w.gate_identity_sha256(self.g),'stage':prev,'outcome':w.PASS,'operation_end_utc':self.now[0]}
             code,j=self.invoke(stage);self.assertEqual((code,j['aggregate']),(0,w.PASS),stage)
         self.assertEqual(json.loads((self.state/'stage.receipt').read_text())['stage'],'S4')
     def test_clean_failed_window_cannot_restart_three_more_samples(self):

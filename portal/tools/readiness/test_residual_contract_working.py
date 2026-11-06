@@ -22,9 +22,10 @@ class Readiness(unittest.TestCase):
  def setUp(self):
   f.WindowRoutes.setUp(self)
   self.g['clock_evidence']['gate_sha256']=w.gate_identity_sha256(self.g)
- def op_gate(self):
+ def op_gate(self, stage):
+  prev = w.STAGES[w.STAGES.index(stage) - 1]
   self.g['operation_end_utc']=self.now[0]
-  self.g['action_receipt']={'source_sha':self.g['source_sha'],'package_sha256':self.g['package_sha256'],'operation_end_utc':self.now[0]}
+  self.g['action_receipt']={'source_sha':self.g['source_sha'],'package_sha256':self.g['package_sha256'],'gate_sha256':w.gate_identity_sha256(self.g),'stage':prev,'outcome':w.PASS,'operation_end_utc':self.now[0]}
  def authority(self,**values):
   with patch.object(w,'RESERVATION_BASE',str(self.root/'authority')):
    w.write_budget(self.g,dict(requests=0,bytes=0,seconds=0,**{})|values)
@@ -32,7 +33,7 @@ class Readiness(unittest.TestCase):
   self.assertEqual(self.invoke()[0],0)
   self.authority(requests=233)
   other=self.root/'other';other.mkdir();shutil.copyfile(self.state/'stage.receipt',other/'stage.receipt')
-  self.calls=[];self.op_gate()
+  self.calls=[];self.op_gate('S1')
   code,j=self.invoke('S1',state=other)
   self.assertNotEqual(code,0);self.assertEqual(self.calls,[])
  def test_remaining_body_byte_is_enforced_inside_io(self):
@@ -65,9 +66,9 @@ class Readiness(unittest.TestCase):
   self.assertNotEqual(code,0,(seen[0],j))
  def test_portal_observation_fresh_at_s4_verdict(self):
   for stage in w.STAGE_ORDER[:-1]:
-   if stage!='S0':self.op_gate()
+   if stage!='S0':self.op_gate(stage)
    self.assertEqual(self.invoke(stage)[0],0)
-  self.op_gate();raw=self.raw;ends=[]
+  self.op_gate('S4');raw=self.raw;ends=[]
   def slow(*args):
    body,rc=raw(*args)
    if args[2]==15:self.mono[0]+=14;self.now[0]+=14
@@ -121,9 +122,9 @@ class Readiness(unittest.TestCase):
   code,j=self.invoke('S1');self.assertNotEqual(code,0,j['aggregate'])
  def test_pr5_rejects_wrong_service_namespace(self):
   for stage in w.STAGE_ORDER[:-1]:
-   if stage!='S0':self.op_gate()
+   if stage!='S0':self.op_gate(stage)
    self.assertEqual(self.invoke(stage)[0],0)
-  self.op_gate()
+  self.op_gate('S4')
   self.docs[self.rs['PR-5']['path']]['items'][0]['metadata']['namespace']='other'
   code,j=self.invoke('S4');self.assertNotEqual(code,0,j['reads']['PR-5'])
 
