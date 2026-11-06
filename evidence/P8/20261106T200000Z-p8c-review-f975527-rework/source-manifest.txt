@@ -1,0 +1,29 @@
+# Source manifest — review f975527 rework (266ea97)
+
+Base: f9755275004977eb54f49e44ae0d215670c32151
+Final: 266ea97b29bef119d0e26f8e94e4bb889c83b1b1
+Fast-forward: yes. No force/rebase/amend.
+
+Changed files (source diff):
+  portal/tools/readiness/wrapper.py        — remaining body/time inside I/O, partial/timeout bytes,
+                                             EOF-after-deadline, elapsed during execution, health
+                                             scheduler (failure precedence + retry interval +
+                                             freshness gate), PR-5/PR-6/HC-OP typed predicates,
+                                             action_receipt binding, baseline pod UID
+  portal/tools/readiness/wal.py            — instanceRole on both bracket sides
+  portal/tools/release-check.py            — release-gate mode, first-creation own-field binding,
+                                             scan-image exact image@digest
+  portal/tools/p8c-portal-release.yml.template — release gate requires typed gate document
+  portal/tools/p8c-portal-seed.yml.template — seed Record step tolerates absent APP_IMAGE_DIGEST
+  portal/tools/verify-pins.py              — --offline mode (cached bytes + prior evidence)
+  portal/tools/test_release_negative.py    — digest test uses a real file (exit 0/nonzero)
+  portal/tools/run_offline_suite.sh        — active working copies + offline pins
+  portal/tools/readiness/test_contract_authority_working.py     (active, action_receipt + budget fixture)
+  portal/tools/readiness/test_completion_authority_working.py   (active)
+  portal/tools/readiness/test_residual_contract_working.py      (active)
+  docs/architecture/P8C_EXECUTABLE_RELEASE_READINESS_RUNBOOK_20261104.md — synced matrix/runbook
+
+Evidence (this package):
+  raw-transcript.txt  — full launcher output on 266ea97 (SUITE RESULT: PASS, exit 0)
+  secret-scan.txt     — no credential/token matches in source diff
+  result.md           — verdict + change summary
