@@ -1,0 +1,262 @@
+UTC_START=2026-11-06T02:01:04Z
+SOURCE_SHA=d2e8598a8720cb2dc5935ac33d218498cf846c45
+python=Python 3.11.15  bash=5.2.21(1)-release  cwd=/root/otus-diplom
+################################################################
+### readiness (unit)
+### cwd=/root/otus-diplom argv=bash -c cd portal/tools/readiness && python3 -m unittest -v test_readiness
+################################################################
+test_bad_mode (test_readiness.TestGate.test_bad_mode) ... ok
+test_expired (test_readiness.TestGate.test_expired) ... ok
+test_expiry_over_24 (test_readiness.TestGate.test_expiry_over_24) ... ok
+test_future (test_readiness.TestGate.test_future) ... ok
+test_hash_mismatch (test_readiness.TestGate.test_hash_mismatch) ... ok
+test_valid (test_readiness.TestGate.test_valid) ... ok
+test_s0_fail_closed_without_wal (test_readiness.TestMain.test_s0_fail_closed_without_wal) ... /root/otus-diplom/portal/tools/readiness/test_readiness.py:180: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmphlvzkxy2/gate.json' mode='w' encoding='UTF-8'>
+  json.dump(gate(**(gate_override or {})), open(g, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/tools/readiness/wrapper.py:745: ResourceWarning: unclosed file <_io.BufferedReader name=3>
+  body, _ = run_kubectl_raw(kubectl, path, 5, 256 * 1024)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/tools/readiness/wrapper.py:664: ResourceWarning: unclosed file <_io.BufferedReader name=3>
+  body, _ = run_kubectl_raw(kubectl, p, timeout, cap)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/tools/readiness/wrapper.py:926: ResourceWarning: unclosed file <_io.BufferedReader name=3>
+  journal["reads"][read_id] = {"disposition": INCONCLUSIVE, "error": str(e), "attempt": 1}
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/root/otus-diplom/portal/tools/readiness/test_readiness.py:188: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmphlvzkxy2/out.json' mode='r' encoding='UTF-8'>
+  j = json.load(open(out)) if os.path.exists(out) else None
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_unknown_stage_nonzero (test_readiness.TestMain.test_unknown_stage_nonzero) ... /root/otus-diplom/portal/tools/readiness/test_readiness.py:180: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpph5pw2zs/gate.json' mode='w' encoding='UTF-8'>
+  json.dump(gate(**(gate_override or {})), open(g, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+STOP: unknown stage
+ok
+test_hc_db_fail (test_readiness.TestPredicates.test_hc_db_fail) ... ok
+test_hc_db_missing (test_readiness.TestPredicates.test_hc_db_missing) ... ok
+test_hc_db_ready (test_readiness.TestPredicates.test_hc_db_ready) ... ok
+test_hc_gw_false (test_readiness.TestPredicates.test_hc_gw_false) ... ok
+test_hc_gw_programmed (test_readiness.TestPredicates.test_hc_gw_programmed) ... ok
+test_pr3_empty_inconclusive (test_readiness.TestPredicates.test_pr3_empty_inconclusive) ... ok
+test_pr5_two_items_fail (test_readiness.TestPredicates.test_pr5_two_items_fail) ... ok
+test_rerun_blocked (test_readiness.TestReservation.test_rerun_blocked) ... ok
+test_clock_bare_number_rejected (test_readiness.TestWAL.test_clock_bare_number_rejected) ... ok
+test_clock_missing (test_readiness.TestWAL.test_clock_missing) ... ok
+test_clock_nan_rejected (test_readiness.TestWAL.test_clock_nan_rejected) ... ok
+test_clock_trusted_flag_rejected (test_readiness.TestWAL.test_clock_trusted_flag_rejected) ... ok
+test_failure_growth_wins (test_readiness.TestWAL.test_failure_growth_wins) ... ok
+test_identity_swap (test_readiness.TestWAL.test_identity_swap) ... ok
+test_missing_series (test_readiness.TestWAL.test_missing_series) ... ok
+
+----------------------------------------------------------------------
+Ran 23 tests in 0.400s
+
+OK
+aggregate=INCONCLUSIVE
+>>> PASS: readiness (unit)
+################################################################
+### architect residual (working copy, isolated)
+### cwd=/root/otus-diplom argv=python3 -m unittest -v portal/tools/readiness/test_architect_residual.py
+################################################################
+test_api_tuple_requires_port (portal.tools.readiness.test_architect_residual.ListsAndBaseline.test_api_tuple_requires_port) ... ok
+test_archived_nonempty_tier_felix_baseline_is_not_drift (portal.tools.readiness.test_architect_residual.ListsAndBaseline.test_archived_nonempty_tier_felix_baseline_is_not_drift) ... ok
+test_complete_list_absent_continue_positive (portal.tools.readiness.test_architect_residual.ListsAndBaseline.test_complete_list_absent_continue_positive) ... ok
+test_complete_list_empty_continue_positive (portal.tools.readiness.test_architect_residual.ListsAndBaseline.test_complete_list_empty_continue_positive) ... ok
+test_explicit_null_continue_negative (portal.tools.readiness.test_architect_residual.ListsAndBaseline.test_explicit_null_continue_negative) ... ok
+test_missing_expected_tiers_felix_not_pass (portal.tools.readiness.test_architect_residual.ListsAndBaseline.test_missing_expected_tiers_felix_not_pass) ... ok
+test_pinned_cnp_api_positive (portal.tools.readiness.test_architect_residual.ListsAndBaseline.test_pinned_cnp_api_positive) ... ok
+test_portal_required_generation_not_none_equals_none (portal.tools.readiness.test_architect_residual.ListsAndBaseline.test_portal_required_generation_not_none_equals_none) ... ok
+test_unrecognized_api_suffix_negative (portal.tools.readiness.test_architect_residual.ListsAndBaseline.test_unrecognized_api_suffix_negative) ... ok
+test_action_pin_error_diagnostic_no_signed_url (portal.tools.readiness.test_architect_residual.SeedAndRelease.test_action_pin_error_diagnostic_no_signed_url) ... ok
+test_author_valid_baseline_really_passes_verified (portal.tools.readiness.test_architect_residual.SeedAndRelease.test_author_valid_baseline_really_passes_verified) ... ok
+test_first_creation_mode_exists (portal.tools.readiness.test_architect_residual.SeedAndRelease.test_first_creation_mode_exists) ... ok
+test_independent_valid_artifact_control (portal.tools.readiness.test_architect_residual.SeedAndRelease.test_independent_valid_artifact_control) ... ok
+test_malformed_scan_leaf_rejected (portal.tools.readiness.test_architect_residual.SeedAndRelease.test_malformed_scan_leaf_rejected) ... ok
+test_qualifier_missing_checkout_and_inherited_write_all (portal.tools.readiness.test_architect_residual.SeedAndRelease.test_qualifier_missing_checkout_and_inherited_write_all) ... ok
+test_wrong_registry_image_binding_rejected (portal.tools.readiness.test_architect_residual.SeedAndRelease.test_wrong_registry_image_binding_rejected) ... ok
+test_child_stdout_eof_is_not_child_failure (portal.tools.readiness.test_architect_residual.StateAndExecution.test_child_stdout_eof_is_not_child_failure) ... /root/otus-diplom/portal/tools/readiness/test_architect_residual.py:114: ResourceWarning: unclosed file <_io.BufferedReader name=3>
+  body,status=w.run_kubectl_raw(str(f),'/api/v1/pods',1,1024)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_failed_stage_cannot_authorize_next (portal.tools.readiness.test_architect_residual.StateAndExecution.test_failed_stage_cannot_authorize_next) ... ok
+test_replay_new_parent_directory_rejected (portal.tools.readiness.test_architect_residual.StateAndExecution.test_replay_new_parent_directory_rejected) ... ok
+test_unbound_plain_text_receipt_not_authority (portal.tools.readiness.test_architect_residual.StateAndExecution.test_unbound_plain_text_receipt_not_authority) ... ok
+test_absent_owner_not_identity_proof (portal.tools.readiness.test_architect_residual.WALRoutes.test_absent_owner_not_identity_proof) ... ok
+test_clock_gate_binding_checked_on_actual_sample_route (portal.tools.readiness.test_architect_residual.WALRoutes.test_clock_gate_binding_checked_on_actual_sample_route) ... ok
+test_future_clock_not_accepted (portal.tools.readiness.test_architect_residual.WALRoutes.test_future_clock_not_accepted) ... ok
+test_main_sample_deadline_enforced (portal.tools.readiness.test_architect_residual.WALRoutes.test_main_sample_deadline_enforced) ... ok
+test_positive_fresh_progress_control (portal.tools.readiness.test_architect_residual.WALRoutes.test_positive_fresh_progress_control) ... ok
+
+----------------------------------------------------------------------
+Ran 25 tests in 0.633s
+
+OK
+>>> PASS: architect residual (working copy, isolated)
+################################################################
+### release qualification (unit)
+### cwd=/root/otus-diplom argv=bash -c cd portal/tools && python3 -m unittest -v test_release_qualification
+################################################################
+test_on_not_coerced_to_bool (test_release_qualification.TestQualification.test_on_not_coerced_to_bool) ... ok
+test_seed_not_release (test_release_qualification.TestQualification.test_seed_not_release) ... ok
+test_templates_parse_and_qualify (test_release_qualification.TestQualification.test_templates_parse_and_qualify) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.041s
+
+OK
+>>> PASS: release qualification (unit)
+################################################################
+### release (unit)
+### cwd=/root/otus-diplom argv=bash -c cd portal/tools && python3 -m unittest -v test_release
+################################################################
+test_digest_and_private_gate_fail_closed (test_release.TestReleaseBindings.test_digest_and_private_gate_fail_closed) ... ok
+test_predicate_and_subject_source_negatives (test_release.TestReleaseBindings.test_predicate_and_subject_source_negatives) ... ok
+test_sbom_exact_payload (test_release.TestReleaseBindings.test_sbom_exact_payload) ... ok
+test_signature_source_digest (test_release.TestReleaseBindings.test_signature_source_digest) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.002s
+
+OK
+>>> PASS: release (unit)
+################################################################
+### release negative (unit)
+### cwd=/root/otus-diplom argv=bash -c cd portal/tools && python3 -m unittest -v test_release_negative
+################################################################
+test_digest_mode_accepts_valid (test_release_negative.TestDigestPredicate.test_digest_mode_accepts_valid) ... ok
+test_bad_provenance_fails (test_release_negative.TestVerifiedBindings.test_bad_provenance_fails) ... ok
+test_invalid_provenance_json_fails (test_release_negative.TestVerifiedBindings.test_invalid_provenance_json_fails) ... ok
+test_invalid_scan_json_fails (test_release_negative.TestVerifiedBindings.test_invalid_scan_json_fails) ... ok
+test_missing_artifact_fails (test_release_negative.TestVerifiedBindings.test_missing_artifact_fails) ... ok
+test_sbom_missing_spdx_fails (test_release_negative.TestVerifiedBindings.test_sbom_missing_spdx_fails) ... ok
+test_wrong_build_digest_fails (test_release_negative.TestVerifiedBindings.test_wrong_build_digest_fails) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.548s
+
+OK
+>>> PASS: release negative (unit)
+################################################################
+### release/seed qualification (CLI)
+### cwd=/root/otus-diplom argv=bash -c cd portal/tools && python3 release_qualification.py
+################################################################
+{"errors": [], "qualified": true}
+>>> PASS: release/seed qualification (CLI)
+################################################################
+### architect regression (28)
+### cwd=/root/otus-diplom argv=python3 evidence/P8/20261105-f783e1e-architect-review/regression_test.py -v
+################################################################
+test_existing_output_preserved (__main__.GateState.test_existing_output_preserved) ... ok
+test_expired_gate_cannot_use_cli_now (__main__.GateState.test_expired_gate_cannot_use_cli_now) ... ok
+test_s4_before_s0_no_requests (__main__.GateState.test_s4_before_s0_no_requests) ... ok
+test_same_gate_new_state_directory_no_replay (__main__.GateState.test_same_gate_new_state_directory_no_replay) ... ok
+test_wal_bytes_participate_in_package_hash (__main__.GateState.test_wal_bytes_participate_in_package_hash) ... ok
+test_exception_diagnostic_cannot_echo_signed_query (__main__.PinDiagnostics.test_exception_diagnostic_cannot_echo_signed_query) ... ok
+test_dns_ready_without_ports_rejected (__main__.Predicates.test_dns_ready_without_ports_rejected) ... ok
+test_operator_running_not_ready_rejected (__main__.Predicates.test_operator_running_not_ready_rejected) ... ok
+test_pr3_wrong_slice_ports_and_unready_rejected (__main__.Predicates.test_pr3_wrong_slice_ports_and_unready_rejected) ... ok
+test_pr6_changed_felix_tier_baseline_rejected (__main__.Predicates.test_pr6_changed_felix_tier_baseline_rejected) ... ok
+test_wrong_list_kind_and_explicit_null_continue_rejected (__main__.Predicates.test_wrong_list_kind_and_explicit_null_continue_rejected) ... ok
+test_invalid_templates_rejected (__main__.Qualification.test_invalid_templates_rejected) ... ok
+test_author_negative_fixtures_reach_named_check (__main__.Release.test_author_negative_fixtures_reach_named_check) ... ok
+test_invalid_semantics_rejected_from_valid_baseline (__main__.Release.test_invalid_semantics_rejected_from_valid_baseline) ... ok
+test_positive_payload_binding_control (__main__.Release.test_positive_payload_binding_control) ... ok
+test_daemon_survives_until_build_step (__main__.Seed.test_daemon_survives_until_build_step) ... ok
+test_failed_precheck_cannot_create_from_magic_env (__main__.Seed.test_failed_precheck_cannot_create_from_magic_env) ... ok
+test_recipe_resolves_at_actual_working_directory (__main__.Seed.test_recipe_resolves_at_actual_working_directory) ... ok
+test_stop_is_non_success (__main__.Seed.test_stop_is_non_success) ... ok
+test_blocking_body_obeys_hard_deadline (__main__.Transport.test_blocking_body_obeys_hard_deadline) ... /root/otus-diplom/evidence/P8/20261105-f783e1e-architect-review/regression_test.py:172: ResourceWarning: unclosed file <_io.BufferedReader name=3>
+  except w.ReadError:pass
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_clock_expired_wrong_node_not_valid (__main__.WALContract.test_clock_expired_wrong_node_not_valid) ... ok
+test_default_http_has_no_environment_proxy (__main__.WALContract.test_default_http_has_no_environment_proxy) ... ok
+test_duplicate_series_rejected (__main__.WALContract.test_duplicate_series_rejected) ... ok
+test_first_baseline_not_progress_pass (__main__.WALContract.test_first_baseline_not_progress_pass) ... ok
+test_future_metric_timestamp_rejected (__main__.WALContract.test_future_metric_timestamp_rejected) ... ok
+test_pod_ip_restart_owner_change_rejected (__main__.WALContract.test_pod_ip_restart_owner_change_rejected) ... ok
+test_primary_swap_after_sample_rejected (__main__.WALContract.test_primary_swap_after_sample_rejected) ... ok
+test_sample_metadata_budget_5s_256k (__main__.WALContract.test_sample_metadata_budget_5s_256k) ... ok
+
+----------------------------------------------------------------------
+Ran 28 tests in 7.140s
+
+OK
+>>> PASS: architect regression (28)
+################################################################
+### architect scheduler regression (14)
+### cwd=/root/otus-diplom argv=python3 evidence/P8/20261105-974e069-architect-review/scheduler_regression_test.py -v
+################################################################
+test_dns_ports_on_empty_slice_not_proof_for_ready_endpoint (__main__.ExistingReadContract.test_dns_ports_on_empty_slice_not_proof_for_ready_endpoint) ... ok
+test_gateway_missing_generation_not_none_equals_none (__main__.ExistingReadContract.test_gateway_missing_generation_not_none_equals_none) ... ok
+test_pr3_port_belongs_to_same_slice_as_addresses (__main__.ExistingReadContract.test_pr3_port_belongs_to_same_slice_as_addresses) ... ok
+test_pr6_changed_bpf_field_not_silently_ignored (__main__.ExistingReadContract.test_pr6_changed_bpf_field_not_silently_ignored) ... ok
+test_budget_counts_requests_and_bytes_not_logical_checks (__main__.MainContract.test_budget_counts_requests_and_bytes_not_logical_checks) ... ok
+test_corrupt_budget_cannot_reset_to_zero (__main__.MainContract.test_corrupt_budget_cannot_reset_to_zero) ... ok
+test_crash_inflight_marker_does_not_authorize_second_process (__main__.MainContract.test_crash_inflight_marker_does_not_authorize_second_process) ... ok
+test_exhausted_budget_blocks_before_any_request (__main__.MainContract.test_exhausted_budget_blocks_before_any_request) ... ok
+test_first_valid_baseline_is_preserved_without_claiming_progress (__main__.MainContract.test_first_valid_baseline_is_preserved_without_claiming_progress) ... ok
+test_last_response_cannot_cross_sample_deadline_and_pass (__main__.MainContract.test_last_response_cannot_cross_sample_deadline_and_pass) ... ok
+test_new_state_directory_does_not_reset_budget (__main__.MainContract.test_new_state_directory_does_not_reset_budget) ... ok
+test_positive_prebound_sample_control (__main__.MainContract.test_positive_prebound_sample_control) ... ok
+test_s0_collects_own_baseline_then_progress_in_one_window (__main__.MainContract.test_s0_collects_own_baseline_then_progress_in_one_window) ... ok
+test_same_clock_new_invocation_is_not_second_slot (__main__.MainContract.test_same_clock_new_invocation_is_not_second_slot) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.055s
+
+OK
+>>> PASS: architect scheduler regression (14)
+################################################################
+### architect contract (15)
+### cwd=/root/otus-diplom argv=python3 evidence/P8/20261105-c8007f5-architect-review/contract_test.py -v
+################################################################
+test_first_creation_does_not_accept_expired_future_test_only_gate (__main__.SourceBoundaries.test_first_creation_does_not_accept_expired_future_test_only_gate) ... ok
+test_pr3_wrong_resource_kind_rejected_on_actual_read_path (__main__.SourceBoundaries.test_pr3_wrong_resource_kind_rejected_on_actual_read_path) ... ok
+test_pr5_requires_service_identity (__main__.SourceBoundaries.test_pr5_requires_service_identity) ... ok
+test_pr6_missing_expected_nftables_mode_rejected (__main__.SourceBoundaries.test_pr6_missing_expected_nftables_mode_rejected) ... ok
+test_slot_offsets_include_elapsed_sample_time (__main__.SourceBoundaries.test_slot_offsets_include_elapsed_sample_time) ... ok
+test_clean_failed_window_cannot_restart_three_more_samples (__main__.WindowRoutes.test_clean_failed_window_cannot_restart_three_more_samples) ... ok
+test_failed_request_attempts_are_charged (__main__.WindowRoutes.test_failed_request_attempts_are_charged) ... ok
+test_first_slot_failure_metrics_do_not_replace_valid_baseline (__main__.WindowRoutes.test_first_slot_failure_metrics_do_not_replace_valid_baseline) ... ok
+test_negative_budget_not_accepted (__main__.WindowRoutes.test_negative_budget_not_accepted) ... ok
+test_new_state_directory_after_nonpass_cannot_start_fresh_window (__main__.WindowRoutes.test_new_state_directory_after_nonpass_cannot_start_fresh_window) ... ok
+test_positive_s0_through_s4_mock_transport_control (__main__.WindowRoutes.test_positive_s0_through_s4_mock_transport_control) ... ok
+test_post_operation_stage_requires_its_action_boundary (__main__.WindowRoutes.test_post_operation_stage_requires_its_action_boundary) ... ok
+test_s0_progress_must_be_after_first_sample_end (__main__.WindowRoutes.test_s0_progress_must_be_after_first_sample_end) ... ok
+test_shared_db_arch_metadata_not_read_twice_at_same_tick (__main__.WindowRoutes.test_shared_db_arch_metadata_not_read_twice_at_same_tick) ... ok
+test_success_receipt_requires_fresh_operator_observation (__main__.WindowRoutes.test_success_receipt_requires_fresh_operator_observation) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.452s
+
+OK
+>>> PASS: architect contract (15)
+################################################################
+### public pins verification
+### cwd=/root/otus-diplom argv=bash -c cd portal/tools && python3 verify-pins.py
+################################################################
+go             VERIFIED
+buildkit       VERIFIED
+rootlesskit    VERIFIED
+syft           VERIFIED
+trivy          VERIFIED
+cosign         VERIFIED
+checkout       VERIFIED
+upload-artifact VERIFIED
+login-action   VERIFIED
+postgres       VERIFIED
+cache: /tmp/p8c-pin-cache
+>>> PASS: public pins verification
+################################################################
+### bash syntax (install-verified-go.sh)
+### cwd=/root/otus-diplom argv=bash -n portal/tools/install-verified-go.sh
+################################################################
+>>> PASS: bash syntax (install-verified-go.sh)
+################################################################
+### python syntax (all tools)
+### cwd=/root/otus-diplom argv=python3 -m py_compile portal/tools/readiness/test_architect_residual.py portal/tools/readiness/test_readiness.py portal/tools/readiness/wal.py portal/tools/readiness/wrapper.py portal/tools/provision-registry-pull.py portal/tools/provision-ui-auth.py portal/tools/release-check.py portal/tools/release_qualification.py portal/tools/test_helpers.py portal/tools/test_release_negative.py portal/tools/test_release.py portal/tools/test_release_qualification.py portal/tools/verify-pins.py
+################################################################
+>>> PASS: python syntax (all tools)
+UTC_END=2026-11-06T02:01:50Z
+SUITE RESULT: PASS
