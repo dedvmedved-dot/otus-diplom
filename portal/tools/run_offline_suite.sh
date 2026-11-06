@@ -53,6 +53,9 @@ isolated
 run "release negative (unit)" bash -c 'cd portal/tools && python3 -m unittest -v test_release_negative'
 
 isolated
+run "fake-tool route E2E (seed + release)" bash -c 'cd portal/tools && python3 -m unittest -v test_route_e2e'
+
+isolated
 run "release/seed qualification (CLI)" bash -c 'cd portal/tools && python3 release_qualification.py'
 
 # --- Architect regression suites (frozen in evidence, run as-is) ---
@@ -60,7 +63,7 @@ isolated
 run "architect regression (28)" python3 evidence/P8/20261105-f783e1e-architect-review/regression_test.py -v
 
 isolated
-run "architect scheduler regression (14)" python3 evidence/P8/20261105-974e069-architect-review/scheduler_regression_test.py -v
+run "architect scheduler authority working (14)" python3 portal/tools/readiness/test_scheduler_authority_working.py -v
 
 isolated
 run "architect contract authority working (15)" python3 portal/tools/readiness/test_contract_authority_working.py -v

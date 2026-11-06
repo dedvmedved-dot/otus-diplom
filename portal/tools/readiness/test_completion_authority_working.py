@@ -16,10 +16,12 @@ import release_qualification as qual
 SOURCE='d2e8598a8720cb2dc5935ac33d218498cf846c45'
 
 class ReadinessCompletion(unittest.TestCase):
-    setUp=fixture.WindowRoutes.setUp
     raw=fixture.WindowRoutes.raw
     http=fixture.WindowRoutes.http
     invoke=fixture.WindowRoutes.invoke
+    def setUp(self):
+        fixture.WindowRoutes.setUp(self)
+        self.g['clock_evidence']['gate_sha256']=w.gate_identity_sha256(self.g)
     def op_gate(self):
         self.g['operation_end_utc'] = self.now[0]
         self.g['action_receipt'] = {'source_sha': self.g['source_sha'],

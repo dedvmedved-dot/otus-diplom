@@ -75,7 +75,7 @@ incomplete metrics never overwrite a valid baseline.
 | budget accounting (attempts/bytes/elapsed) | wrapper._TRANSPORT/_WAL_TRANSPORT | contract test_budget_counts/failed_attempts/exhausted/negative | budget.json |
 | predicates PR-3/5/6, HC-* | wrapper.py PREDICATES | test_readiness + contract + regression | PASS/FAIL dispositions |
 | architect regression (frozen) | evidence regression_test.py | 28 methods | reexecution transcript |
-| architect scheduler regression (frozen) | evidence scheduler_regression_test.py | 14 methods | transcript |
+| architect scheduler regression (active working copy) | portal/tools/readiness/test_scheduler_authority_working.py | 14 methods | transcript |
 | architect contract (active working copy) | portal/tools/readiness/test_contract_authority_working.py | 15 methods | transcript |
 | architect completion contract (active working copy) | portal/tools/readiness/test_completion_authority_working.py | 34 methods | transcript |
 | architect residual contract (active working copy) | portal/tools/readiness/test_residual_contract_working.py | 20 methods | transcript |
@@ -94,7 +94,7 @@ the active working copy.
 ## Runbook (future operator, после отдельного gate)
 
 1. Operator: `python3 portal/tools/readiness/wrapper.py --gate <issued-gate.json> --out <journal> --state-dir <state> --stage S0 --kubectl kubectl`
-2. Gate manifest: mode=LIVE, context kubernetes-admin@pak-portal, source_sha, package_sha256 (=sha256(readset+wrapper+wal)), issued_at_utc, expiry_hours≤24, clock_evidence (typed dict: bound≤5, source, provenance_sha256, node, backend, observed_utc, validity_hours, gate_sha256=package_sha256), wal_baseline, operation_end_utc (S1–S4 required). Window authority keyed by package_sha256 at a stable location; receipts are verified JSON bound to source+package; failed/completed/inflight windows issue no new budget.
+2. Gate manifest: mode=LIVE, context kubernetes-admin@pak-portal, source_sha, package_sha256 (=sha256(readset+wrapper+wal)), issued_at_utc, expiry_hours≤24, clock_evidence (typed dict: bound≤5, source, provenance_sha256, node, backend, observed_utc, validity_hours, gate_sha256=gate_identity_sha256(gate) — bound to THIS gate, not the package hash), wal_baseline, operation_end_utc + action_receipt (S1–S4 required). Window authority keyed by package_sha256 at a stable location; receipts are verified JSON bound to source+package; failed/completed/inflight windows issue no new budget.
 3. Aggregates: PASS (exit 0) / FAIL, INCONCLUSIVE (exit 1) / gate-reject (exit 2). No-overwrite + window authority block re-run.
 4. Full offline suite: `bash portal/tools/run_offline_suite.sh` (nonzero on any mandatory error).
 5. CI release: publish template → manual dispatch (separate future authorization). Seed: separate one-shot bootstrap — Owner supplies the typed first-creation gate via workflow input (never materialized from nowhere).

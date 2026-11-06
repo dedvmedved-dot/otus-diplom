@@ -116,7 +116,7 @@ jobs:
           # NOTE: no EXIT trap here — the daemon must survive into the Build step.
           READY=0
           for i in $(seq 1 30); do
-            if buildctl --addr unix:///tmp/seed-buildkit.sock debug workers >/dev/null 2>&1; then READY=1; break; fi
+            if timeout 5 buildctl --addr unix:///tmp/seed-buildkit.sock debug workers >/dev/null 2>&1; then READY=1; break; fi
             sleep 1
           done
           if [ "$READY" != "1" ]; then echo "buildkitd not ready after 30s"; tail -20 /tmp/seed-buildkitd.log; exit 1; fi
@@ -166,10 +166,20 @@ jobs:
         run: |
           if [ -f /tmp/seed-buildkitd.pid ]; then kill "$(cat /tmp/seed-buildkitd.pid)" 2>/dev/null || true; fi
 
-      - name: Upload seed evidence
+      - name: Collect seed package evidence (all proof files)
+        if: always()
+        run: |
+          mkdir -p "$RUNNER_TEMP/seed-package"
+          for f in seed-evidence.json seed-registry.json private.json private-after.json \
+                   seed-metadata.json seed-digest.txt first-creation-gate.json; do
+            if [ -f "$RUNNER_TEMP/$f" ]; then cp "$RUNNER_TEMP/$f" "$RUNNER_TEMP/seed-package/"; fi
+          done
+          printf '%s\n' "$(ls -1 "$RUNNER_TEMP/seed-package")" | tee "$RUNNER_TEMP/seed-package/MANIFEST.txt"
+
+      - name: Upload seed evidence package
         if: always()
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
           name: portal-seed-evidence
           if-no-files-found: error
-          path: ${{ runner.temp }}/seed-evidence.json
+          path: ${{ runner.temp }}/seed-package/

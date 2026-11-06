@@ -16,10 +16,12 @@ import release_qualification as q
 import test_release_negative as rn
 
 class Readiness(unittest.TestCase):
- setUp=f.WindowRoutes.setUp
  raw=f.WindowRoutes.raw
  http=f.WindowRoutes.http
  invoke=f.WindowRoutes.invoke
+ def setUp(self):
+  f.WindowRoutes.setUp(self)
+  self.g['clock_evidence']['gate_sha256']=w.gate_identity_sha256(self.g)
  def op_gate(self):
   self.g['operation_end_utc']=self.now[0]
   self.g['action_receipt']={'source_sha':self.g['source_sha'],'package_sha256':self.g['package_sha256'],'operation_end_utc':self.now[0]}

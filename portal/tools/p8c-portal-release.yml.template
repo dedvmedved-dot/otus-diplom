@@ -177,9 +177,11 @@ jobs:
           unshare -Ur true || { echo "STOP: runner user namespaces unavailable"; exit 1; }
           rootlesskit --net=slirp4netns --copy-up=/etc --copy-up=/run \
             buildkitd --oci-worker-no-process-sandbox --addr unix:///tmp/buildkit.sock > /tmp/buildkitd.log 2>&1 &
+          BK_PID=$!
+          echo "$BK_PID" > /tmp/buildkitd.pid
           READY=0
           for i in $(seq 1 30); do
-            if buildctl debug workers >/dev/null 2>&1; then READY=1; break; fi
+            if timeout 5 buildctl debug workers >/dev/null 2>&1; then READY=1; break; fi
             sleep 1
           done
           if [ "$READY" != "1" ]; then
@@ -268,3 +270,8 @@ jobs:
           name: portal-sbom-signature-provenance
           if-no-files-found: error
           path: ${{ runner.temp }}/release/
+
+      - name: Cleanup buildkit daemon (always, on any outcome)
+        if: always()
+        run: |
+          if [ -f /tmp/buildkitd.pid ]; then kill "$(cat /tmp/buildkitd.pid)" 2>/dev/null || true; fi

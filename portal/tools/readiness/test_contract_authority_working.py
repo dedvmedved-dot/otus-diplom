@@ -15,6 +15,7 @@ SOURCE='783502a7eff2662d6f7612ccc56c4a9251e16ace'
 class WindowRoutes(unittest.TestCase):
     def setUp(self):
         old.MainContract.setUp(self);self.g['source_sha']=SOURCE
+        self.g['clock_evidence']['gate_sha256']=w.gate_identity_sha256(self.g)
         self.rs=json.loads(w.READSET.read_text())['reads'];self.idle=False;self.archived_before_baseline=False
         self.metrics_starts=[];self.health_calls=[]
         self.docs[self.rs['HC-PORTAL']['path']]={'apiVersion':'apps/v1','kind':'Deployment','metadata':{'name':'portal','namespace':'portal','generation':1},'spec':{'replicas':1},'status':{'observedGeneration':1,'readyReplicas':1,'availableReplicas':1,'updatedReplicas':1}}

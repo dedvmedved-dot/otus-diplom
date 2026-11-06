@@ -43,6 +43,14 @@ def package_hash():
     return sha256_hex(READSET.read_bytes() + Path(__file__).read_bytes() + Path(__file__).with_name("wal.py").read_bytes())
 
 
+def gate_identity_sha256(gate):
+    """Deterministic identity hash of the gate's binding fields — NOT the package hash.
+    Clock evidence must bind to THIS gate, not to any gate sharing the same package bytes."""
+    fields = {k: gate.get(k) for k in ("source_sha", "package_sha256", "issued_at_utc",
+                                       "expiry_hours", "mode", "context")}
+    return sha256_hex(json.dumps(fields, sort_keys=True, separators=(",", ":")).encode())
+
+
 def parse_utc(iso):
     if not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", iso or ""):
         raise ReadError("issued_at_utc invalid")
@@ -993,7 +1001,7 @@ def run_wal_sample(kubectl, http_get, clock_evidence, gate):
         disp, m, detail = wal.wal_sample(cluster, pod, metrics_text, cluster_after, pod_after,
                                          clock_evidence, baseline=gate.get("wal_baseline"),
                                          op_end_utc=gate.get("operation_end_utc"),
-                                         gate_hash=gate.get("package_sha256"),
+                                         gate_hash=gate_identity_sha256(gate),
                                          baseline_observed_at=gate.get("baseline_observed_at"))
         return disp, detail, m, pod.get("metadata", {}).get("uid")
     except ReadError as e:
