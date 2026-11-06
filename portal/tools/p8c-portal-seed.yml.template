@@ -5,7 +5,12 @@
 name: p8c-portal-seed
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      first_creation_gate:
+        description: 'Typed first-creation gate JSON {source_sha, issued_at_utc, expiry_hours, mode=LIVE}; Owner supplies it explicitly. Absent => REUSE/STOP only.'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -28,6 +33,11 @@ jobs:
         with:
           persist-credentials: false
           ref: ${{ github.sha }}
+
+      - name: Deliver typed first-creation gate (explicit Owner input; never materialized from nowhere)
+        if: github.event.inputs.first_creation_gate != ''
+        run: |
+          printf '%s' '${{ github.event.inputs.first_creation_gate }}' > "$RUNNER_TEMP/first-creation-gate.json"
 
       - name: Typed private-package precheck
         id: pre

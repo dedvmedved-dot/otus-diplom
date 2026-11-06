@@ -89,13 +89,39 @@ def atomic_reserve(path):
 
 RESERVATION_BASE = os.path.join(tempfile.gettempdir(), "p8c-readiness")
 
-_TRANSPORT = {"requests": 0, "bytes": 0}
+# Budget levels (accepted R4 design): overall vs WAL-cumulative vs window vs sample.
+OVERALL_REQ_CAP = 233
+OVERALL_BODY_CAP = 179 * 1024 * 1024
+OVERALL_SEC_CAP = 5265.0
+WAL_REQ_CAP = 90
+WAL_BODY_CAP = 36 * 1024 * 1024
+WAL_SEC_CAP = 3960.0
+
+_TRANSPORT = {"requests": 0, "bytes": 0, "seconds": 0.0}
+_WAL_TRANSPORT = {"requests": 0, "bytes": 0, "seconds": 0.0}
+_WAL_BUDGET_BASE = {"requests": 0, "bytes": 0, "seconds": 0.0}
 _READ_CACHE = {}
 
 
 def _reset_transport():
-    global _TRANSPORT
-    _TRANSPORT = {"requests": 0, "bytes": 0}
+    global _TRANSPORT, _WAL_TRANSPORT
+    _TRANSPORT = {"requests": 0, "bytes": 0, "seconds": 0.0}
+    _WAL_TRANSPORT = {"requests": 0, "bytes": 0, "seconds": 0.0}
+
+
+def _set_wal_budget_base(budget):
+    global _WAL_BUDGET_BASE
+    _WAL_BUDGET_BASE = {
+        "requests": budget.get("wal_requests", 0),
+        "bytes": budget.get("wal_bytes", 0),
+        "seconds": budget.get("wal_seconds", 0.0),
+    }
+
+
+def _wal_budget_exhausted():
+    return (_WAL_BUDGET_BASE["requests"] + _WAL_TRANSPORT["requests"] >= WAL_REQ_CAP
+            or _WAL_BUDGET_BASE["bytes"] + _WAL_TRANSPORT["bytes"] >= WAL_BODY_CAP
+            or _WAL_BUDGET_BASE["seconds"] + _WAL_TRANSPORT["seconds"] >= WAL_SEC_CAP)
 
 
 def _reset_read_cache():
@@ -113,6 +139,26 @@ def _count_bytes(n):
     _TRANSPORT["bytes"] += int(n)
 
 
+def _count_wal_request():
+    global _WAL_TRANSPORT
+    _WAL_TRANSPORT["requests"] += 1
+
+
+def _count_wal_bytes(n):
+    global _WAL_TRANSPORT
+    _WAL_TRANSPORT["bytes"] += int(n)
+
+
+def _count_wal(nbytes, seconds):
+    """WAL-cumulative budget accounting (subset of overall, tracked separately)."""
+    global _TRANSPORT, _WAL_TRANSPORT
+    _TRANSPORT["requests"] += 1
+    _TRANSPORT["bytes"] += int(nbytes)
+    _WAL_TRANSPORT["requests"] += 1
+    _WAL_TRANSPORT["bytes"] += int(nbytes)
+    _WAL_TRANSPORT["seconds"] += float(seconds)
+
+
 def _count_transport(nbytes):
     _count_request()
     _count_bytes(nbytes)
@@ -124,8 +170,13 @@ def budget_path(gate):
 
 
 def budget_exhausted(budget):
-    return (budget.get("requests", 0) >= 90 or budget.get("bytes", 0) >= 36 * 1024 * 1024
-            or budget.get("seconds", 0.0) >= 3960)
+    if budget.get("requests", 0) >= OVERALL_REQ_CAP or budget.get("bytes", 0) >= OVERALL_BODY_CAP \
+            or budget.get("seconds", 0.0) >= OVERALL_SEC_CAP:
+        return True
+    if budget.get("wal_requests", 0) >= WAL_REQ_CAP or budget.get("wal_bytes", 0) >= WAL_BODY_CAP \
+            or budget.get("wal_seconds", 0.0) >= WAL_SEC_CAP:
+        return True
+    return False
 
 
 def reservation_path(gate, stage):
@@ -137,7 +188,7 @@ def read_window_state(path):
     if not os.path.exists(path):
         return None
     try:
-        return json.loads(open(path).read())
+        return json.loads(Path(path).read_text())
     except Exception:
         return None
 
@@ -200,7 +251,7 @@ def read_receipt(receipt_path, gate):
     if not os.path.exists(receipt_path):
         return None
     try:
-        r = json.loads(open(receipt_path).read())
+        r = json.loads(Path(receipt_path).read_text())
     except Exception:
         return None
     if not isinstance(r, dict):
@@ -239,7 +290,7 @@ def read_budget(state_dir):
     if not os.path.exists(p):
         return {"requests": 0, "bytes": 0, "seconds": 0.0}
     try:
-        return json.loads(open(p).read())
+        return json.loads(Path(p).read_text())
     except Exception:
         raise ReadError("budget state corrupt")
 
@@ -270,7 +321,7 @@ def read_wal_baseline(state_dir, gate):
     if not os.path.exists(p):
         return None
     try:
-        rec = json.loads(open(p).read())
+        rec = json.loads(Path(p).read_text())
     except Exception:
         return None
     if rec.get("source_sha") == gate.get("source_sha") and rec.get("package_sha256") == gate.get("package_sha256"):
@@ -283,7 +334,7 @@ def read_slot_count(state_dir, stage):
     if not os.path.exists(p):
         return 0
     try:
-        return int(json.loads(open(p).read()).get("attempted", 0))
+        return int(json.loads(Path(p).read_text()).get("attempted", 0))
     except Exception:
         return 0
 
@@ -679,17 +730,26 @@ def default_http_get(url, timeout, cap):
 
 
 def run_wal_sample(kubectl, http_get, clock_evidence, gate):
-    """5-request sample: Cluster -> Pod -> metrics -> same Pod -> same Cluster (30s hard deadline)."""
+    """5-request sample: Cluster -> Pod -> metrics -> same Pod -> same Cluster (30s hard deadline,
+    2 MiB body cap; WAL-cumulative requests/bytes/seconds charged regardless of outcome)."""
     start = time.monotonic()
+    body_total = [0]
+    if _wal_budget_exhausted():
+        return INCONCLUSIVE, "WAL budget exhausted", None
 
     def raw(path):
         if time.monotonic() - start > wal.SAMPLE_DEADLINE:
             raise ReadError("sample deadline exceeded")
         _count_request()
+        _count_wal_request()
         body, _ = run_kubectl_raw(kubectl, path, 5, 256 * 1024)
         if time.monotonic() - start > wal.SAMPLE_DEADLINE:
             raise ReadError("sample deadline exceeded")
+        body_total[0] += len(body)
+        if body_total[0] > wal.SAMPLE_BODY_CAP:
+            raise ReadError("sample body cap exceeded")
         _count_bytes(len(body))
+        _count_wal_bytes(len(body))
         return validate_envelope(body, False)
 
     try:
@@ -709,10 +769,15 @@ def run_wal_sample(kubectl, http_get, clock_evidence, gate):
             return INCONCLUSIVE, "sample deadline exceeded", None
         try:
             _count_request()
+            _count_wal_request()
             metrics_text = http_get("http://%s:9187/metrics" % pod_ip, wal.REQ_TIMEOUT, wal.METRIC_CAP).decode()
-            _count_bytes(len(metrics_text.encode()))
         except ReadError as e:
             return INCONCLUSIVE, str(e), None
+        body_total[0] += len(metrics_text.encode())
+        if body_total[0] > wal.SAMPLE_BODY_CAP:
+            return INCONCLUSIVE, "sample body cap exceeded", None
+        _count_bytes(len(metrics_text.encode()))
+        _count_wal_bytes(len(metrics_text.encode()))
         if time.monotonic() - start > wal.SAMPLE_DEADLINE:
             return INCONCLUSIVE, "sample deadline exceeded", None
         pod_after = raw(pod_path)
@@ -725,16 +790,23 @@ def run_wal_sample(kubectl, http_get, clock_evidence, gate):
         return disp, detail, m
     except ReadError as e:
         return INCONCLUSIVE, str(e), None
+    finally:
+        _WAL_TRANSPORT["seconds"] += (time.monotonic() - start)
 
 
 def run_wal_window(kubectl, http_get, gate, state_dir, clock_evidence, stage="S0"):
-    """WAL observation window: <=3 samples at absolute offsets 0/300/600s (sample elapsed time accounted)."""
+    """WAL observation window: <=3 samples at absolute offsets 0/300/600s; 660s hard deadline and
+    6 MiB window body cap; baseline persists across slots."""
     if stage != "S0" and not gate.get("operation_end_utc"):
         return INCONCLUSIVE, "no operation boundary for post-operation stage"
     baseline = gate.get("wal_baseline") or read_wal_baseline(state_dir, gate)
     baseline_observed_at = None
-    slot_start = time.monotonic()
+    window_start = time.monotonic()
+    wal_bytes_start = _WAL_TRANSPORT["bytes"]
+    slot_start = window_start
     for slot in range(wal.WINDOW_SLOTS):
+        if time.monotonic() - window_start > wal.WINDOW_DEADLINE:
+            return INCONCLUSIVE, "window deadline exceeded"
         if slot > 0:
             elapsed = time.monotonic() - slot_start
             time.sleep(max(0.0, 300.0 - elapsed))
@@ -749,6 +821,8 @@ def run_wal_window(kubectl, http_get, gate, state_dir, clock_evidence, stage="S0
             disp, detail, m = res
         else:
             disp, detail, m = res[0], res[1], None
+        if _WAL_TRANSPORT["bytes"] - wal_bytes_start > wal.WINDOW_BODY_CAP:
+            return INCONCLUSIVE, "window body cap exceeded"
         if m is not None and disp != FAIL:
             persist_wal_baseline(state_dir, gate, m)
             baseline = m
@@ -821,9 +895,11 @@ def main(argv):
     if budget_exhausted(budget):
         print("STOP: budget exhausted", file=sys.stderr)
         return 2
-    if any(v < 0 for v in (budget.get("requests", 0), budget.get("bytes", 0), budget.get("seconds", 0.0))):
+    if any(v < 0 for v in (budget.get("requests", 0), budget.get("bytes", 0), budget.get("seconds", 0.0),
+                           budget.get("wal_requests", 0), budget.get("wal_bytes", 0), budget.get("wal_seconds", 0.0))):
         print("STOP: budget state negative (corrupt)", file=sys.stderr)
         return 2
+    _set_wal_budget_base(budget)
     _reset_transport()
     _reset_read_cache()
     read_ids = list(readset["reads"].keys())
@@ -853,6 +929,9 @@ def main(argv):
     budget["requests"] = budget.get("requests", 0) + _TRANSPORT["requests"]
     budget["bytes"] = budget.get("bytes", 0) + _TRANSPORT["bytes"]
     budget["seconds"] = budget.get("seconds", 0.0) + sum(v.get("duration_ms", 0) for v in executed) / 1000.0
+    budget["wal_requests"] = budget.get("wal_requests", 0) + _WAL_TRANSPORT["requests"]
+    budget["wal_bytes"] = budget.get("wal_bytes", 0) + _WAL_TRANSPORT["bytes"]
+    budget["wal_seconds"] = budget.get("wal_seconds", 0.0) + _WAL_TRANSPORT["seconds"]
     write_budget(args.state_dir, budget)
     journal["budget"] = budget
 
