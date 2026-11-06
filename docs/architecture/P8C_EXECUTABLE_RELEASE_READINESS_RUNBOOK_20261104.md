@@ -32,10 +32,13 @@ Enforcement points: per-request cap + hard deadline inside transport (no proxy/r
 body cap + 30s deadline in `run_wal_sample`; window 660s + 6 MiB in `run_wal_window`; WAL-cumulative
 and overall checked in `budget_exhausted` + before each WAL sample (`_wal_exhausted`). Remaining
 budget is re-checked INSIDE each I/O (attempt charged before the transport call; bytes charged even
-on partial/error bodies). Budget is stored at the stable authority (`budget_path(gate)` =
+on partial/error bodies; the read cap is lowered to the remaining body so a read can never exceed
+the limit and then be truncated). Budget is stored at the stable authority (`budget_path(gate)` =
 `RESERVATION_BASE/<package_sha256[:32]>/budget.json`), not the state-dir — a new state-dir cannot
-reset consumption. Charges are persisted atomically before each I/O (crash-safe). Any NaN/infinite/
-non-finite budget field blocks before any read.
+reset consumption. Persistence is concurrency-safe and crash-durable: `write_budget` takes a
+`fcntl.flock` on a sidecar lock file around the read-modify-write, MAX-merges each monotonic field
+with the on-disk value (no lost update / no decrease), and fsyncs the file and its directory before
+the atomic `os.replace`. Any NaN/infinite/non-finite budget field blocks before any read.
 
 ## State machine (window authority)
 
@@ -54,9 +57,11 @@ Health reads (HC-*) use bounded windows: a first observation's FAIL is preserved
 precedence — never erased by a later sweep); a transient INCONCLUSIVE is retried after a bounded
 interval (10 s, limited by the remaining time budget); and at the verdict every mandatory
 observation is re-read fresh and gated on age ≤ 30 s (a stale observation → FAIL, no PASS).
-Predicates enforce exact resource kinds (HC-DB must be `Cluster`, PR-6 must be the nine expected
-*List kinds and each list's typed items/max_items, PR-5 must carry uid/namespace=envoy-gateway-system
-/ownership labels), and return value-free dispositions (no raw value echoed). Malformed/nested items
+Predicates enforce the exact GVR binding per read (`kind` AND `apiVersion`, not just the broad
+`ALLOWED_API` or a name ending in `List`): HC-DB/ARCH-STATE must be `Cluster`@`postgresql.cnpg.io/v1`,
+PR-6 must be the nine expected (kind, apiVersion) pairs with typed items/max_items, PR-5 must be
+`ServiceList`@`v1` with uid/namespace=envoy-gateway-system/ownership labels. Diagnostics are
+value-free (no raw condition value, field name, or unknown key is echoed). Malformed/nested items
 are recorded as typed dispositions, never an uncaught exception. WAL requires the pod to be
 `cnpg.io/instanceRole=primary` on BOTH bracket sides and counts restart by container name `postgres`;
 incomplete metrics never overwrite a valid baseline.

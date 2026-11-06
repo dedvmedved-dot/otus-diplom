@@ -75,32 +75,34 @@ class TestGate(unittest.TestCase):
 
 class TestPredicates(unittest.TestCase):
     def test_hc_db_ready(self):
-        d = {"kind": "Cluster", "spec": {"instances": 3}, "status": {"instances": 3, "readyInstances": 3,
+        d = {"kind": "Cluster", "apiVersion": "postgresql.cnpg.io/v1", "spec": {"instances": 3}, "status": {"instances": 3, "readyInstances": 3,
              "conditions": [{"type": "Ready", "status": "True"}]}}
         self.assertEqual(wrapper.pred_hc_db(d), (wrapper.PASS, "3/3/3 Ready"))
 
     def test_hc_db_fail(self):
-        d = {"kind": "Cluster", "spec": {"instances": 3}, "status": {"instances": 3, "readyInstances": 1,
+        d = {"kind": "Cluster", "apiVersion": "postgresql.cnpg.io/v1", "spec": {"instances": 3}, "status": {"instances": 3, "readyInstances": 1,
              "conditions": [{"type": "Ready", "status": "True"}]}}
         self.assertEqual(wrapper.pred_hc_db(d)[0], wrapper.FAIL)
 
     def test_hc_db_missing(self):
-        d = {"kind": "Cluster", "spec": {}, "status": {}}
+        d = {"kind": "Cluster", "apiVersion": "postgresql.cnpg.io/v1", "spec": {}, "status": {}}
         self.assertEqual(wrapper.pred_hc_db(d)[0], wrapper.INCONCLUSIVE)
 
     def test_hc_gw_programmed(self):
-        d = {"metadata": {"generation": 1}, "status": {"conditions": [
+        d = {"kind": "Gateway", "apiVersion": "gateway.networking.k8s.io/v1",
+             "metadata": {"generation": 1}, "status": {"conditions": [
             {"type": "Accepted", "status": "True", "observedGeneration": 1},
             {"type": "Programmed", "status": "True", "observedGeneration": 1}]}}
         self.assertEqual(wrapper.pred_hc_gw(d)[0], wrapper.PASS)
 
     def test_hc_gw_false(self):
-        d = {"metadata": {"generation": 1}, "status": {"conditions": [
+        d = {"kind": "Gateway", "apiVersion": "gateway.networking.k8s.io/v1",
+             "metadata": {"generation": 1}, "status": {"conditions": [
             {"type": "Programmed", "status": "False", "observedGeneration": 1}]}}
         self.assertEqual(wrapper.pred_hc_gw(d)[0], wrapper.FAIL)
 
     def test_pr5_two_items_fail(self):
-        d = {"items": [{"spec": {"type": "LoadBalancer", "externalTrafficPolicy": "Local",
+        d = {"kind": "ServiceList", "apiVersion": "v1", "items": [{"spec": {"type": "LoadBalancer", "externalTrafficPolicy": "Local",
              "ports": [{"port": 443, "targetPort": 10443, "protocol": "TCP"}]},
              "status": {"loadBalancer": {"ingress": [{"ip": "1.2.3.4"}]}}},
              {"spec": {"type": "ClusterIP", "ports": []}, "status": {}}]}
@@ -197,7 +199,8 @@ class TestMain(unittest.TestCase):
         # Good HC-DB/ARCH-STATE fixtures, but WAL has no live transport -> aggregate INCONCLUSIVE, exit 1.
         fixtures = {
             "/apis/postgresql.cnpg.io/v1/namespaces/portal/clusters/portal-db":
-                {"spec": {"instances": 3}, "status": {"instances": 3, "readyInstances": 3,
+                {"kind": "Cluster", "apiVersion": "postgresql.cnpg.io/v1",
+                 "spec": {"instances": 3}, "status": {"instances": 3, "readyInstances": 3,
                  "conditions": [{"type": "Ready", "status": "True"}, {"type": "ContinuousArchiving", "status": "True"}]}},
             "/api/v1/namespaces/cnpg-system/pods?labelSelector=app.kubernetes.io%2Fname%3Dcloudnative-pg&limit=200":
                 {"apiVersion": "v1", "kind": "PodList", "items": [{"status": {"phase": "Running"}}]},

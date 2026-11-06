@@ -40,12 +40,15 @@ def listing(kind='PodList',api='v1',cont_marker='ABSENT'):
     if cont_marker!='ABSENT':d['metadata']['continue']=cont_marker
     return d
 
-def pr6_listing(kind):
-    return dict(kind=kind, apiVersion='v1', metadata={'resourceVersion': '1'}, items=[])
+def pr6_listing(kind, api='v1'):
+    return dict(kind=kind, apiVersion=api, metadata={'resourceVersion': '1'}, items=[])
 
 PR6_KINDS = ["NetworkPolicyList", "NetworkPolicyList", "GlobalNetworkPolicyList",
              "HostEndpointList", "ClusterNetworkPolicyList", "TierList",
              "FelixConfigurationList", "NamespaceList", "PodList"]
+PR6_APIS = ["networking.k8s.io/v1", "crd.projectcalico.org/v1", "crd.projectcalico.org/v1",
+            "crd.projectcalico.org/v1", "policy.networking.k8s.io/v1alpha2",
+            "crd.projectcalico.org/v1", "crd.projectcalico.org/v1", "v1", "v1"]
 
 
 class ListsAndBaseline(unittest.TestCase):
@@ -67,12 +70,12 @@ class ListsAndBaseline(unittest.TestCase):
     def test_archived_nonempty_tier_felix_baseline_is_not_drift(self):
         a=json.loads((ROOT/'evidence/P8/20261105-64e36a6-architect-review/accepted-baseline.json').read_text())
         records={r['id']:json.loads(r['output']) for r in a['records']}
-        ds=[pr6_listing(k) for k in PR6_KINDS]
+        ds=[pr6_listing(k, a) for k, a in zip(PR6_KINDS, PR6_APIS)]
         ds[5]['items']=records['F-TIER'];ds[6]['items']=[records['F-FELIX']]
         self.assertEqual(w.pred_pr6(ds)[0],w.PASS)
 
     def test_missing_expected_tiers_felix_not_pass(self):
-        self.assertNotEqual(w.pred_pr6([pr6_listing(k) for k in PR6_KINDS])[0],w.PASS)
+        self.assertNotEqual(w.pred_pr6([pr6_listing(k, a) for k, a in zip(PR6_KINDS, PR6_APIS)])[0],w.PASS)
 
     def test_api_tuple_requires_port(self):
         d={'items':[{'endpoints':[{'addresses':['172.30.140.101','172.30.140.102','172.30.140.103'],'conditions':{'ready':True}}]}]}

@@ -12,6 +12,7 @@ This module is a source implementation. Running it against a live cluster
 requires a future, separately-issued execution gate; it is NOT authorization.
 """
 import calendar
+import fcntl
 import hashlib
 import json
 import os
@@ -399,13 +400,45 @@ def read_budget(gate, state_dir=None):
 
 
 def write_budget(gate, budget):
+    """Persist cumulative consumption to the stable authority.
+
+    Serialized read-modify-write (fcntl.flock on a sidecar lock file) + fsync of file and
+    directory, and a MAX merge per monotonic field, so concurrent processes cannot lose an
+    update and a crash after a counter increment cannot silently drop it."""
     p = budget_path(gate)
     os.makedirs(os.path.dirname(p), exist_ok=True)
-    tmp = p + ".tmp"
-    with open(tmp, "w") as f:
-        json.dump(budget, f, sort_keys=True)
-    os.chmod(tmp, 0o600)
-    os.replace(tmp, p)
+    lock = open(p + ".lock", "a+")
+    try:
+        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+        current = {}
+        if os.path.exists(p):
+            try:
+                current = json.loads(Path(p).read_text())
+            except Exception:
+                raise ReadError("budget state corrupt")
+        if not isinstance(current, dict):
+            raise ReadError("budget state corrupt")
+        merged = dict(budget)
+        for k in merged:
+            if k in current:
+                if not _finite_nonnegative(current[k]) or not _finite_nonnegative(merged[k]):
+                    raise ReadError("budget state not finite/nonnegative (corrupt)")
+                merged[k] = max(merged[k], current[k])
+        tmp = p + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(merged, f, sort_keys=True)
+            f.flush()
+            os.fsync(f.fileno())
+        os.chmod(tmp, 0o600)
+        os.replace(tmp, p)
+        dirfd = os.open(os.path.dirname(p), os.O_RDONLY)
+        try:
+            os.fsync(dirfd)
+        finally:
+            os.close(dirfd)
+    finally:
+        fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
+        lock.close()
 
 
 def persist_wal_baseline(state_dir, gate, metrics, pod_uid=None, observed_at=None):
@@ -578,6 +611,18 @@ def validate_envelope(body, expect_list):
 
 # ---- predicates (accepted design) ----
 
+def _check_gvr(doc, kind, api):
+    """Exact GVR binding: the response must be the exact kind + apiVersion, not merely
+    a member of the broad ALLOWED_API or a name ending in 'List'."""
+    if not isinstance(doc, dict):
+        return FAIL, "not an object"
+    if doc.get("kind") != kind:
+        return FAIL, "wrong resource kind"
+    if doc.get("apiVersion") != api:
+        return FAIL, "wrong apiVersion"
+    return None
+
+
 def _cond_ready(doc, ctype):
     conds = doc.get("status", {}).get("conditions", [])
     for c in conds:
@@ -587,8 +632,9 @@ def _cond_ready(doc, ctype):
 
 
 def pred_hc_db(doc):
-    if not isinstance(doc, dict) or doc.get("kind") != "Cluster":
-        return FAIL, "HC-DB wrong resource kind"
+    err = _check_gvr(doc, "Cluster", "postgresql.cnpg.io/v1")
+    if err:
+        return err
     spec_inst = doc.get("spec", {}).get("instances")
     st = doc.get("status", {})
     si, ri = st.get("instances"), st.get("readyInstances")
@@ -603,8 +649,9 @@ def pred_hc_db(doc):
 
 
 def pred_hc_arch(doc):
-    if not isinstance(doc, dict) or doc.get("kind") != "Cluster":
-        return FAIL, "HC-ARCH wrong resource kind"
+    err = _check_gvr(doc, "Cluster", "postgresql.cnpg.io/v1")
+    if err:
+        return err
     s = _cond_ready(doc, "ContinuousArchiving")
     if s == "True":
         return PASS, "ContinuousArchiving True"
@@ -624,8 +671,9 @@ def _ready_eps(doc):
 
 
 def pred_pr3(doc):
-    if not isinstance(doc, dict) or doc.get("kind") != "EndpointSliceList":
-        return FAIL, "PR-3 wrong resource kind"
+    err = _check_gvr(doc, "EndpointSliceList", "discovery.k8s.io/v1")
+    if err:
+        return err
     addrs = set()
     saw_ready = False
     for it in doc.get("items", []):
@@ -659,8 +707,9 @@ def pred_pr3(doc):
 
 
 def pred_pr5(doc):
-    if not isinstance(doc, dict) or doc.get("kind") != "ServiceList":
-        return FAIL, "PR-5 wrong resource kind"
+    err = _check_gvr(doc, "ServiceList", "v1")
+    if err:
+        return err
     items = doc.get("items", [])
     if len(items) != 1:
         return FAIL if len(items) > 1 else INCONCLUSIVE, "service count != 1"
@@ -693,12 +742,18 @@ def pred_pr6(docs):
     # nine responses: policy lists empty; Tier/Felix compared to accepted safe baseline projection.
     if not isinstance(docs, list) or len(docs) != 9:
         return FAIL, "expected 9 responses"
-    expected_kinds = ["NetworkPolicyList", "NetworkPolicyList", "GlobalNetworkPolicyList",
-                      "HostEndpointList", "ClusterNetworkPolicyList", "TierList",
-                      "FelixConfigurationList", "NamespaceList", "PodList"]
-    for idx, kind in enumerate(expected_kinds):
-        if not isinstance(docs[idx], dict) or docs[idx].get("kind") != kind:
-            return FAIL, "PR-6 response %d wrong kind" % idx
+    expected = [("NetworkPolicyList", "networking.k8s.io/v1"),
+                ("NetworkPolicyList", "crd.projectcalico.org/v1"),
+                ("GlobalNetworkPolicyList", "crd.projectcalico.org/v1"),
+                ("HostEndpointList", "crd.projectcalico.org/v1"),
+                ("ClusterNetworkPolicyList", "policy.networking.k8s.io/v1alpha2"),
+                ("TierList", "crd.projectcalico.org/v1"),
+                ("FelixConfigurationList", "crd.projectcalico.org/v1"),
+                ("NamespaceList", "v1"),
+                ("PodList", "v1")]
+    for idx, (kind, api) in enumerate(expected):
+        if not isinstance(docs[idx], dict) or docs[idx].get("kind") != kind or docs[idx].get("apiVersion") != api:
+            return FAIL, "PR-6 response %d wrong kind/apiVersion" % idx
     for name, idx in (("KNP", 0), ("NP", 1), ("GNP", 2), ("HEP", 3), ("CNP", 4)):
         if docs[idx].get("items"):
             return FAIL, "%s nonempty" % name
@@ -726,7 +781,7 @@ def pred_pr6(docs):
         if k == "nftablesMode":
             continue
         if v is not None:
-            return FAIL, "felix field drift: " + k
+            return FAIL, "felix field drift"
     # namespace list: typed items with full identity (no null/malformed)
     ns_items = docs[7].get("items", [])
     if not isinstance(ns_items, list):
@@ -753,8 +808,9 @@ def pred_pr6(docs):
 
 
 def pred_hc_op(doc):
-    if not isinstance(doc, dict) or doc.get("kind") != "PodList":
-        return FAIL, "HC-OP wrong resource kind"
+    err = _check_gvr(doc, "PodList", "v1")
+    if err:
+        return err
     pods = doc.get("items", [])
     if not isinstance(pods, list):
         return INCONCLUSIVE, "operator pods empty"
@@ -777,6 +833,9 @@ def pred_hc_op(doc):
 
 
 def pred_hc_dns(doc):
+    err = _check_gvr(doc, "EndpointSliceList", "discovery.k8s.io/v1")
+    if err:
+        return err
     for it in doc.get("items", []):
         ports = {(p.get("port"), p.get("protocol")) for p in it.get("ports", [])}
         has_53 = (53, "TCP") in ports and (53, "UDP") in ports
@@ -794,6 +853,9 @@ def pred_hc_dns(doc):
 
 
 def pred_hc_portal(doc):
+    err = _check_gvr(doc, "Deployment", "apps/v1")
+    if err:
+        return err
     meta_gen = doc.get("metadata", {}).get("generation")
     obs_gen = doc.get("status", {}).get("observedGeneration")
     if not isinstance(meta_gen, int) or not isinstance(obs_gen, int):
@@ -808,6 +870,9 @@ def pred_hc_portal(doc):
 
 
 def pred_hc_gw(doc):
+    err = _check_gvr(doc, "Gateway", "gateway.networking.k8s.io/v1")
+    if err:
+        return err
     meta_gen = doc.get("metadata", {}).get("generation")
     if not isinstance(meta_gen, int):
         return INCONCLUSIVE, "gateway generation missing"
