@@ -1,0 +1,99 @@
+[
+  {
+    "test": "test_create_allowed_full_route_build_postproof_cleanup",
+    "test_result": "PASS",
+    "actually_executed_template_steps": [
+      {
+        "step": "Typed private-package precheck",
+        "exit": 0,
+        "stderr": ""
+      },
+      {
+        "step": "Start rootless BuildKit (bounded readiness + cleanup)",
+        "exit": 0,
+        "stderr": ""
+      },
+      {
+        "step": "Build + push minimal seed (bootstrap-only, not deployable)",
+        "exit": 0,
+        "stderr": ""
+      },
+      {
+        "step": "Verify seed registry bytes/digest (before acceptance)",
+        "exit": 1,
+        "stderr": "bash: line 2: SEED_DIGEST: unbound variable\n"
+      },
+      {
+        "step": "Record seed digest + visibility + association (typed evidence)",
+        "exit": 2,
+        "stderr": "mocked-private\n"
+      },
+      {
+        "step": "Cleanup buildkit daemon (always, on any outcome)",
+        "exit": 0,
+        "stderr": ""
+      },
+      {
+        "step": "Collect seed package evidence (all proof files)",
+        "exit": 0,
+        "stderr": ""
+      }
+    ]
+  },
+  {
+    "test": "test_release_full_route_gate_build_scan_sign_attest_proof_cleanup",
+    "test_result": "PASS",
+    "actually_executed_template_steps": [
+      {
+        "step": "Verify clean tree and source provenance",
+        "exit": 129,
+        "stderr": "warning: Not a git repository. Use --no-index to compare two paths outside a working tree\nusage: git diff --no-index [<options>] <path> <path> [<pathspec>...]\n\nDiff output format options\n    -p, --patch           generate patch\n    -s, --no-patch        suppress diff output\n    -u                    generate patch\n    -U, --unified[=<n>]   generate diffs with <n> lines context\n    -W, --[no-]function-context\n                          generate diffs with <n> lines context\n    --raw                 generate the diff in raw format\n    --patch-with-raw      synonym for '-p --raw'\n    --patch-with-stat     synonym for '-p --stat'\n    --numstat             machine friendly --stat\n    --shortstat           output only the last line of --stat\n    -X, --dirstat[=<param1>,<param2>...]\n                          output the distribution of relative amount of changes for each sub-directory\n    --cumulative          synonym for --dirstat=cumulative\n    --dirstat-by-file[=<param1>,<param2>...]\n                          synonym for --dirstat=files,<param1>,<param2>...\n    --check               warn if changes introduce conflict markers or whitespace errors\n    --summary             condensed summary such as creations, renames and mode changes\n    --name-only           show only names of changed files\n    --name-status         show only names and status of changed files\n    --stat[=<width>[,<name-width>[,<count>]]]\n                          generate diffstat\n    --stat-width <width>  generate "
+      },
+      {
+        "step": "Deliver typed release gate (data via env, never shell)",
+        "exit": 0,
+        "stderr": ""
+      },
+      {
+        "step": "Future execution gate (source/workflow/package/expiry/run-attempt)",
+        "exit": 0,
+        "stderr": ""
+      },
+      {
+        "step": "Private package prerequisite (before any push)",
+        "exit": 1,
+        "stderr": "mocked-private\ncp: cannot stat '/tmp/tmp1h33uaeo/run/go-version.txt': No such file or directory\ncp: cannot stat '/tmp/tmp1h33uaeo/run/go-binary.sha256': No such file or directory\n"
+      },
+      {
+        "step": "Build binary (reproducible)",
+        "exit": 0,
+        "stderr": ""
+      },
+      {
+        "step": "Build OCI image (rootless buildctl) + immutable digest from metadata",
+        "exit": 0,
+        "stderr": ""
+      },
+      {
+        "step": "Verify registry bytes and private visibility after push",
+        "exit": 0,
+        "stderr": "mocked-private\n"
+      },
+      {
+        "step": "Sign keyless + verify exact identity/issuer/source",
+        "exit": 1,
+        "stderr": "bash: line 2: workflow=${{ github.workflow }}: bad substitution\n"
+      },
+      {
+        "step": "SBOM + provenance attestation (generate + verify both)",
+        "exit": 0,
+        "stderr": ""
+      },
+      {
+        "step": "Cleanup buildkit daemon (always, on any outcome)",
+        "exit": 0,
+        "stderr": ""
+      }
+    ]
+  }
+]

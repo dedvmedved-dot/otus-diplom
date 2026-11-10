@@ -1,0 +1,64 @@
+{
+  "utc": "2026-11-10T02:57:49.920611+00:00",
+  "scope": "exact publication payload excluding scan output",
+  "limitations": "heuristic; synthetic fixture identities/hash references are not credentials",
+  "files": [
+    {
+      "path": "evidence/P8/20261110-c98fea1-architect-review/reexecution.json",
+      "sha256": "633826ec22578f3dfd78ca85735c571b853e66262ddb9433a309a8343b97a2b6"
+    },
+    {
+      "path": "evidence/P8/20261110-c98fea1-architect-review/reexecution-raw.txt",
+      "sha256": "8f3706dbbe1f8e5379b40f727d2c2a62bf4cb8c581baa574fec7e5632947ebb2"
+    },
+    {
+      "path": "evidence/P8/20261110-c98fea1-architect-review/residual_contract_test.py",
+      "sha256": "610b3cd8398c818070f16692a241e78be16d599515c1ffefdff1f917f7d3bf56"
+    },
+    {
+      "path": "evidence/P8/20261110-c98fea1-architect-review/residual-contract.txt",
+      "sha256": "e6fd3085db8dd2594da4452e4ffcf2177231497944c3008716b2eb73265906c5"
+    },
+    {
+      "path": "evidence/P8/20261110-c98fea1-architect-review/additional-execution.json",
+      "sha256": "fa734b8661f114533feabd54cd66cf8a3a945a9e9da35896065b83244f1053ed"
+    },
+    {
+      "path": "evidence/P8/20261110-c98fea1-architect-review/audit_routes.py",
+      "sha256": "12950217bda73169c44dbefe8755aaf10b97eb20390032d9d6d87bd4c94989f6"
+    },
+    {
+      "path": "evidence/P8/20261110-c98fea1-architect-review/route-audit.json",
+      "sha256": "ebdf5075422a4dfe64ad13f00edd3c4e6d4fc6f87dc63d4eecb277c7824b4427"
+    },
+    {
+      "path": "evidence/P8/20261110-c98fea1-architect-review/source-manifest.json",
+      "sha256": "dfba65fd8aaef1f01a8fbfcbe9fa98432ef99acb239b406a532f3ea9100e2d5d"
+    },
+    {
+      "path": "evidence/P8/20261110-c98fea1-architect-review/syntax-execution.json",
+      "sha256": "0315324ffcff02db7b354c9093a4e03847c5f2d7a2d4debd41158d20a219bdd7"
+    },
+    {
+      "path": "evidence/P8/20261110-c98fea1-architect-review/run_review.py",
+      "sha256": "a700118afe7e336fd9db69cd3ec04169c3c1bb71a656325ad981809e64dc8b16"
+    },
+    {
+      "path": "evidence/P8/20261110-c98fea1-architect-review/network-guard/sitecustomize.py",
+      "sha256": "40694c896c7b45c4334430cb36dff4f488390cc14501e24bdd946a4fc6a30362"
+    },
+    {
+      "path": "evidence/P8/20261110-c98fea1-architect-review/network-summary.json",
+      "sha256": "42aecac5e76693ebe27c7215a62e7b8e9d2f4c409d4a32d4616334d905029aa7"
+    },
+    {
+      "path": "docs/architecture/P8C_REVIEW_c98fea1_RUNTIME_CONTRACT_20261110.md",
+      "sha256": "c247da3ef252e13e97773e98ffa45aff3317d951a63d31f215db496f3c61b582"
+    },
+    {
+      "path": "portal/networkpolicy/PLAN.md",
+      "sha256": "c7fc2e507b06445e85409b7b30e000dd1530e93ddd4ee9631bf8661d3550bcd1"
+    }
+  ],
+  "matches": []
+}

@@ -1,0 +1,117 @@
+test_actual_attempt_two_rejected_with_gate_attempt_one (__main__.ReleaseGateControls.test_actual_attempt_two_rejected_with_gate_attempt_one) ... FAIL
+test_bound_gate_positive_control (__main__.ReleaseGateControls.test_bound_gate_positive_control) ... ok
+test_different_runtime_workflow_sha_rejected (__main__.ReleaseGateControls.test_different_runtime_workflow_sha_rejected) ... FAIL
+test_future_gate_is_not_active_yet (__main__.ReleaseGateControls.test_future_gate_is_not_active_yet) ... FAIL
+test_offline_image_evidence_requires_observed_digest_binding (__main__.ReleaseGateControls.test_offline_image_evidence_requires_observed_digest_binding) ... /workspace/scratch/14185c8f871f/review_c98fea1/portal/tools/verify-pins.py:111: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpklytvolq/tmpfx35ev1e/lock.json' mode='r' encoding='UTF-8'>
+  lock = json.load(open(LOCK))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/scratch/14185c8f871f/review_c98fea1/portal/tools/verify-pins.py:122: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpklytvolq/tmpfx35ev1e/pin-verification.json' mode='r' encoding='UTF-8'>
+  prev = json.load(open(cached)) if os.path.exists(cached) else {"results": []}
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/scratch/14185c8f871f/review_c98fea1/portal/tools/verify-pins.py:143: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpklytvolq/tmpfx35ev1e/pin-verification-offline.json' mode='w' encoding='UTF-8'>
+  json.dump(out, open(os.path.join(CACHE, "pin-verification-offline.json"), "w"), indent=2)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+FAIL
+test_actual_transport_elapsed_persists_in_overall_budget (__main__.RouteControls.test_actual_transport_elapsed_persists_in_overall_budget) ... FAIL
+test_fifth_operator_observation_within_accepted_window (__main__.RouteControls.test_fifth_operator_observation_within_accepted_window) ... FAIL
+test_gateway_observations_stay_within_accepted_n12 (__main__.RouteControls.test_gateway_observations_stay_within_accepted_n12) ... FAIL
+test_positive_s0_control (__main__.RouteControls.test_positive_s0_control) ... ok
+test_wal_remaining_byte_limits_first_metadata_read (__main__.RouteControls.test_wal_remaining_byte_limits_first_metadata_read) ... FAIL
+test_consumed_bytes_are_not_lost_on_remaining_cap_error (__main__.TransportDurability.test_consumed_bytes_are_not_lost_on_remaining_cap_error) ... /opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/traceback.py:241: ResourceWarning: unclosed file <_io.BufferedReader name=3>
+  tb.tb_frame.clear()
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+FAIL
+test_wal_seconds_cap_overrun_is_not_silently_dropped (__main__.TransportDurability.test_wal_seconds_cap_overrun_is_not_silently_dropped) ... FAIL
+
+======================================================================
+FAIL: test_actual_attempt_two_rejected_with_gate_attempt_one (__main__.ReleaseGateControls.test_actual_attempt_two_rejected_with_gate_attempt_one)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_c98fea1/independent/residual_contract_test.py", line 91, in test_actual_attempt_two_rejected_with_gate_attempt_one
+    p=self.run_gate(self.gate(),'2');self.assertNotEqual(p.returncode,0,p.stdout)
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {"gate": "bound", "source": "61e4a44e34cd680bafefc29851f382e2eb2102dd", "repository": "dedvmedved-dot/otus-diplom", "attempt": "2"}
+
+
+======================================================================
+FAIL: test_different_runtime_workflow_sha_rejected (__main__.ReleaseGateControls.test_different_runtime_workflow_sha_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_c98fea1/independent/residual_contract_test.py", line 93, in test_different_runtime_workflow_sha_rejected
+    g=self.gate();g['workflow_sha']='b'*40;p=self.run_gate(g);self.assertNotEqual(p.returncode,0,p.stdout)
+                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {"gate": "bound", "source": "61e4a44e34cd680bafefc29851f382e2eb2102dd", "repository": "dedvmedved-dot/otus-diplom", "attempt": "1"}
+
+
+======================================================================
+FAIL: test_future_gate_is_not_active_yet (__main__.ReleaseGateControls.test_future_gate_is_not_active_yet)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_c98fea1/independent/residual_contract_test.py", line 95, in test_future_gate_is_not_active_yet
+    g=self.gate();g['issued_at_utc']=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime(time.time()+120));p=self.run_gate(g);self.assertNotEqual(p.returncode,0,p.stdout)
+                                                                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {"gate": "bound", "source": "61e4a44e34cd680bafefc29851f382e2eb2102dd", "repository": "dedvmedved-dot/otus-diplom", "attempt": "1"}
+
+
+======================================================================
+FAIL: test_offline_image_evidence_requires_observed_digest_binding (__main__.ReleaseGateControls.test_offline_image_evidence_requires_observed_digest_binding)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_c98fea1/independent/residual_contract_test.py", line 103, in test_offline_image_evidence_requires_observed_digest_binding
+    self.assertNotEqual(code,0)
+AssertionError: 0 == 0
+
+======================================================================
+FAIL: test_actual_transport_elapsed_persists_in_overall_budget (__main__.RouteControls.test_actual_transport_elapsed_persists_in_overall_budget)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_c98fea1/independent/residual_contract_test.py", line 36, in test_actual_transport_elapsed_persists_in_overall_budget
+    self.assertGreaterEqual(j['budget']['seconds'],self.mono[0],{'budget':j['budget']['seconds'],'elapsed':self.mono[0]})
+AssertionError: 295.0 not greater than or equal to 321.0 : {'budget': 295.0, 'elapsed': 321.0}
+
+======================================================================
+FAIL: test_fifth_operator_observation_within_accepted_window (__main__.RouteControls.test_fifth_operator_observation_within_accepted_window)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_c98fea1/independent/residual_contract_test.py", line 29, in test_fifth_operator_observation_within_accepted_window
+    self.raw=raw;code,j=self.invoke();self.assertEqual(code,0,{'observations':seen,'verdict':j['reads']['HC-OP']})
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 0 : {'observations': [300.0, 310.0, 320.0, 320.0], 'verdict': {'attempt': 4, 'detail': 'operator pods empty', 'disposition': 'INCONCLUSIVE', 'observed_mono': 320.0}}
+
+======================================================================
+FAIL: test_gateway_observations_stay_within_accepted_n12 (__main__.RouteControls.test_gateway_observations_stay_within_accepted_n12)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_c98fea1/independent/residual_contract_test.py", line 50, in test_gateway_observations_stay_within_accepted_n12
+    self.assertLessEqual(len(seen),12,seen)
+AssertionError: 14 not less than or equal to 12 : [1800.0, 1810.0, 1820.0, 1830.0, 1840.0, 1850.0, 1860.0, 1870.0, 1880.0, 1890.0, 1900.0, 1910.0, 1920.0, 1920.0]
+
+======================================================================
+FAIL: test_wal_remaining_byte_limits_first_metadata_read (__main__.RouteControls.test_wal_remaining_byte_limits_first_metadata_read)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_c98fea1/independent/residual_contract_test.py", line 58, in test_wal_remaining_byte_limits_first_metadata_read
+    self.assertTrue(caps);self.assertLessEqual(caps[0],1,caps)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 262144 not less than or equal to 1 : [262144]
+
+======================================================================
+FAIL: test_consumed_bytes_are_not_lost_on_remaining_cap_error (__main__.TransportDurability.test_consumed_bytes_are_not_lost_on_remaining_cap_error)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_c98fea1/independent/residual_contract_test.py", line 69, in test_consumed_bytes_are_not_lost_on_remaining_cap_error
+    self.assertGreaterEqual(stored,b['bytes']+2,{'stored':stored,'initial':b['bytes'],'consumed_at_least':2})
+AssertionError: 187695102 not greater than or equal to 187695104 : {'stored': 187695102, 'initial': 187695102, 'consumed_at_least': 2}
+
+======================================================================
+FAIL: test_wal_seconds_cap_overrun_is_not_silently_dropped (__main__.TransportDurability.test_wal_seconds_cap_overrun_is_not_silently_dropped)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_c98fea1/independent/residual_contract_test.py", line 79, in test_wal_seconds_cap_overrun_is_not_silently_dropped
+    self.assertTrue(raised or stored>=w.WAL_SEC_CAP,{'raised':raised,'authority':stored,'runtime':w._WAL_TRANSPORT['seconds']})
+AssertionError: False is not true : {'raised': False, 'authority': 3959.0, 'runtime': 2.0}
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.314s
+
+FAILED (failures=10)

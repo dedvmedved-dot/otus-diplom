@@ -1,0 +1,6 @@
+{
+  "guard": "network-guard/sitecustomize.py",
+  "DNS_connect_attempt_log_present": false,
+  "additional_attempt_log_present": false,
+  "actual_cluster_registry_CI_calls": 0
+}

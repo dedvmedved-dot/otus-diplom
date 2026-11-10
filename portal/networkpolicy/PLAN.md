@@ -1,14 +1,14 @@
-## Current Architect review — e60d1db source contract (2026-11-06)
+## Current Architect review — c98fea1 executable contract (2026-11-10)
 
-Authority: docs/architecture/P8C_REVIEW_e60d1db_SOURCE_CONTRACT_20261106.md.
-Reviewed source 9a4ed77d3131d0b2078b6917e1a7d4419ec02b65; evidence e60d1db38fdb19997acc4bbc3177f65e49cb8514.
-Existing active methods independently 177/177 PASS under an offline network guard.
-Additional existing-contract controls: 17 methods / 3 PASS / 14 failures / 0 errors.
-A accounting/transport/health/receipt and B full release/seed routes remain PARTIAL;
-SOURCE_PACKAGE=REWORK_REQUIRED. Full E2E claims are not supported by the four route tests.
-Confirmed fixes and C isolation remain accepted. PRIMARY HERMES continues the same
-single-pass source task; no Hermes2, no new permission required for source correction.
-No live/SSH/cluster/CI/workflow/private registry/real build/push/Owner/apply/production authorization.
+Authority: docs/architecture/P8C_REVIEW_c98fea1_RUNTIME_CONTRACT_20261110.md.
+Reviewed source 61e4a44e34cd680bafefc29851f382e2eb2102dd; evidence c98fea1af48128a2f1db7b600f7e9475c5b3914e.
+194/194 active methods independently PASS, including the previous 17 controls.
+Residual existing-contract checks: 12 methods / 2 PASS / 10 failures / 0 errors.
+Accounting/health windows, runtime release-gate binding and full route E2E remain PARTIAL.
+Route E2E currently ignores mandatory step failures and mocks the semantic proof validator.
+SOURCE_PACKAGE=REWORK_REQUIRED. Confirmed fixes and C isolation remain CLOSED.
+PRIMARY HERMES continues the existing source task in one package; no Hermes2, no new source permission needed.
+No live/SSH/CI/workflow/private registry/real build/push/Owner/apply/production authorization.
 P8C=NOT_FINAL_ACCEPTED; P8D–P8G/P9=NOT_AUTHORIZED.
 
 # P8C NetworkPolicy plan (D1) — read-only preparation, not yet applied
