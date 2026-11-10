@@ -1,0 +1,106 @@
+test_http_partial_charged_to_wal_subset (__main__.Budgets.test_http_partial_charged_to_wal_subset) ... FAIL
+test_late_http_chunk_still_counts_bytes (__main__.Budgets.test_late_http_chunk_still_counts_bytes) ... FAIL
+test_read_timeout_uses_current_authority_remaining (__main__.Budgets.test_read_timeout_uses_current_authority_remaining) ... FAIL
+test_wal_timeout_respects_overall_remaining (__main__.Budgets.test_wal_timeout_respects_overall_remaining) ... FAIL
+test_wal_timeout_respects_wal_remaining (__main__.Budgets.test_wal_timeout_respects_wal_remaining) ... FAIL
+test_cleanup_nonzero_cannot_report_route_pass (__main__.CleanupOutcome.test_cleanup_nonzero_cannot_report_route_pass) ... FAIL
+test_positive_s0 (__main__.HealthWindow.test_positive_s0) ... ok
+test_retry_response_after_dns_deadline_not_pass (__main__.HealthWindow.test_retry_response_after_dns_deadline_not_pass) ... FAIL
+test_missing_document_binding_rejected (__main__.SeedBinding.test_missing_document_binding_rejected) ... FAIL
+test_missing_runtime_binding_rejected (__main__.SeedBinding.test_missing_runtime_binding_rejected) ... FAIL
+test_null_document_binding_rejected (__main__.SeedBinding.test_null_document_binding_rejected) ... FAIL
+test_positive_bound_attempt_one (__main__.SeedBinding.test_positive_bound_attempt_one) ... ok
+
+======================================================================
+FAIL: test_http_partial_charged_to_wal_subset (__main__.Budgets.test_http_partial_charged_to_wal_subset)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_a5e58bd/independent/remaining_execution_test.py", line 64, in test_http_partial_charged_to_wal_subset
+    self.assertEqual(b['wal_bytes'],expected,b)
+AssertionError: 224 != 288 : {'requests': 3, 'bytes': 288, 'seconds': 0.0004903839871985838, 'wal_requests': 3, 'wal_bytes': 224, 'wal_seconds': 0.0022655030043097213}
+
+======================================================================
+FAIL: test_late_http_chunk_still_counts_bytes (__main__.Budgets.test_late_http_chunk_still_counts_bytes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_a5e58bd/independent/remaining_execution_test.py", line 45, in test_late_http_chunk_still_counts_bytes
+    self.assertGreaterEqual(w.read_budget(self.g).get('bytes',0),64)
+AssertionError: 0 not greater than or equal to 64
+
+======================================================================
+FAIL: test_read_timeout_uses_current_authority_remaining (__main__.Budgets.test_read_timeout_uses_current_authority_remaining)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_a5e58bd/independent/remaining_execution_test.py", line 34, in test_read_timeout_uses_current_authority_remaining
+    self.assertEqual(len(seen),1);self.assertLessEqual(seen[0],1,seen)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 15 not less than or equal to 1 : [15]
+
+======================================================================
+FAIL: test_wal_timeout_respects_overall_remaining (__main__.Budgets.test_wal_timeout_respects_overall_remaining)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_a5e58bd/independent/remaining_execution_test.py", line 22, in test_wal_timeout_respects_overall_remaining
+    self.assertEqual(len(seen),1);self.assertLessEqual(seen[0],1,seen)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 5 not less than or equal to 1 : [5]
+
+======================================================================
+FAIL: test_wal_timeout_respects_wal_remaining (__main__.Budgets.test_wal_timeout_respects_wal_remaining)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_a5e58bd/independent/remaining_execution_test.py", line 27, in test_wal_timeout_respects_wal_remaining
+    self.assertEqual(len(seen),1);self.assertLessEqual(seen[0],1,seen)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 5 not less than or equal to 1 : [5]
+
+======================================================================
+FAIL: test_cleanup_nonzero_cannot_report_route_pass (__main__.CleanupOutcome.test_cleanup_nonzero_cannot_report_route_pass)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_a5e58bd/independent/remaining_execution_test.py", line 117, in test_cleanup_nonzero_cannot_report_route_pass
+    self.assertTrue(failures,{'failures':failures,'trace':seen})
+AssertionError: [] is not true : {'failures': [], 'trace': [('Verify clean tree and source provenance', 0), ('Deliver typed release gate (data via env, never shell)', 0), ('Future execution gate (source/workflow/package/expiry/run-attempt)', 0), ('Install verified Go archive', 0), ('Private package prerequisite (before any push)', 0), ('Build binary (reproducible)', 0), ('Install rootlesskit + BuildKit (pinned, verified)', 0), ('Build OCI image (rootless buildctl) + immutable digest from metadata', 0), ('Verify registry bytes and private visibility after push', 0), ('Install Syft + generate final-image SBOM', 0), ('Install Trivy + scan final image (binary + OCI)', 0), ('Install Cosign (exact pinned version)', 0), ('Sign keyless + verify exact identity/issuer/source', 0), ('SBOM + provenance attestation (generate + verify both)', 0), ('Cleanup buildkit daemon (always, on any outcome)', 42)]}
+
+======================================================================
+FAIL: test_retry_response_after_dns_deadline_not_pass (__main__.HealthWindow.test_retry_response_after_dns_deadline_not_pass)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_a5e58bd/independent/remaining_execution_test.py", line 83, in test_retry_response_after_dns_deadline_not_pass
+    self.assertNotEqual(code,0,{'calls':calls,'dns':j['reads']['HC-DNS'],'aggregate':j['aggregate']})
+AssertionError: 0 == 0 : {'calls': [{'start': 300.0, 'timeout': 15}, {'start': 305.0, 'timeout': 15}, {'start': 310.0, 'timeout': 15}, {'start': 315.0, 'timeout': 15}, {'start': 320.0, 'timeout': 15}, {'start': 331.0, 'timeout': 15}], 'dns': {'attempt': 6, 'detail': 'DNS ready with 53/TCP+UDP in same slice', 'disposition': 'PASS', 'observed_mono': 331.0}, 'aggregate': 'PASS'}
+
+======================================================================
+FAIL: test_missing_document_binding_rejected (__main__.SeedBinding.test_missing_document_binding_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_a5e58bd/independent/remaining_execution_test.py", line 99, in test_missing_document_binding_rejected
+    r=self.run_gate(lambda g:g.pop('attempt'));self.assertNotEqual(r.returncode,0,r.stdout)
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {"first_creation": "VERIFIED", "source_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
+
+
+======================================================================
+FAIL: test_missing_runtime_binding_rejected (__main__.SeedBinding.test_missing_runtime_binding_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_a5e58bd/independent/remaining_execution_test.py", line 97, in test_missing_runtime_binding_rejected
+    r=self.run_gate(runtime=None);self.assertNotEqual(r.returncode,0,r.stdout)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {"first_creation": "VERIFIED", "source_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
+
+
+======================================================================
+FAIL: test_null_document_binding_rejected (__main__.SeedBinding.test_null_document_binding_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_a5e58bd/independent/remaining_execution_test.py", line 101, in test_null_document_binding_rejected
+    r=self.run_gate(lambda g:g.update(attempt=None));self.assertNotEqual(r.returncode,0,r.stdout)
+                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : {"first_creation": "VERIFIED", "source_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
+
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.773s
+
+FAILED (failures=10)

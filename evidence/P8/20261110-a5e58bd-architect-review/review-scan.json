@@ -1,0 +1,56 @@
+{
+  "method": "Python re; frozen input; output excluded; no raw match values",
+  "limitations": "heuristic only, not proof that every possible secret is absent",
+  "input": [
+    {
+      "path": "docs/architecture/P8C_REVIEW_a5e58bd_EXECUTION_CONTRACT_20261110.md",
+      "sha256": "32994b39744278af1bc14d769674dc0d690fab86f882bdc83815a633e2d65c98"
+    },
+    {
+      "path": "portal/networkpolicy/PLAN.md",
+      "sha256": "719a634403d43bace30395d191623a7efb1bbb09541d52ea53eecfe9a4e11ca0"
+    },
+    {
+      "path": "evidence/P8/20261110-a5e58bd-architect-review/reexecution.json",
+      "sha256": "d8fdd5a97fa25f06cf797554786d32fa05ff791d402f0f6568e09e69b9d7a447"
+    },
+    {
+      "path": "evidence/P8/20261110-a5e58bd-architect-review/reexecution-raw.txt",
+      "sha256": "1718ad1e934cffb1f1338dbc7dc9c70b6d9f472d24c88a9e615564a07a083b9c"
+    },
+    {
+      "path": "evidence/P8/20261110-a5e58bd-architect-review/remaining_execution_test.py",
+      "sha256": "0b76f85552211faa07a10ba6ee6cb404e6bc1b8f50c497bc773f45c5f8795545"
+    },
+    {
+      "path": "evidence/P8/20261110-a5e58bd-architect-review/additional-execution.json",
+      "sha256": "4350b0673ca486fe758cbd6b58c04b508df9f783a0f587dee7c8c5778d5d436a"
+    },
+    {
+      "path": "evidence/P8/20261110-a5e58bd-architect-review/additional-raw.txt",
+      "sha256": "ae36ae08a0eca39d1cc2867750fc0b6e278254cd63ffc7d122055870556996a7"
+    },
+    {
+      "path": "evidence/P8/20261110-a5e58bd-architect-review/source-manifest.json",
+      "sha256": "288f305febb2651ff133d9d462b1b361acfc454573168a4d040eb45d62c0fb1e"
+    },
+    {
+      "path": "evidence/P8/20261110-a5e58bd-architect-review/syntax-execution.json",
+      "sha256": "db9c7b783efa61b416d54177358af34c672f1030fa35910f67943ca9b3e44fab"
+    },
+    {
+      "path": "evidence/P8/20261110-a5e58bd-architect-review/run_review.py",
+      "sha256": "c0fb1097df53f92c0ba1c289003e8b9da577d407d34b23bbdafcefa6efac1bf2"
+    },
+    {
+      "path": "evidence/P8/20261110-a5e58bd-architect-review/network-guard/sitecustomize.py",
+      "sha256": "40694c896c7b45c4334430cb36dff4f488390cc14501e24bdd946a4fc6a30362"
+    },
+    {
+      "path": "evidence/P8/20261110-a5e58bd-architect-review/network-summary.json",
+      "sha256": "4460991cb2d7b3a53ee25a1011b9667173d95c7fbc61994178d71037b1c105bf"
+    }
+  ],
+  "findings": [],
+  "result": "NO_MATCH"
+}

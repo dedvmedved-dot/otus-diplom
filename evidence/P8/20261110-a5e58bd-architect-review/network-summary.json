@@ -1,0 +1,6 @@
+{
+  "guard": "network-guard/sitecustomize.py",
+  "suite_attempt_log_present": false,
+  "additional_attempt_log_present": false,
+  "live_cluster_CI_registry_calls": 0
+}

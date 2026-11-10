@@ -1,13 +1,13 @@
-## Current Architect review — 935feb3 execution remainder (2026-11-10)
+## Current Architect review — a5e58bd execution remainder (2026-11-10)
 
-Authority: docs/architecture/P8C_REVIEW_935feb3_EXECUTION_REMAINDER_20261110.md.
-Reviewed source 3422e31e97742dd32ad5044451eb062ee5dacf1d; evidence 935feb3de24116d52fd8c4da7ac963242a82fc07.
-207/207 active methods independently PASS (the author report said206; its raw transcript has207).
-Previous12 controls PASS. Positive seed/release routes now accepted as synthetic offline proof.
-Residual existing-contract controls:7 methods /1 PASS /6 failures /0 errors.
-R1 terminal budget/deadline/partial-body handling, R2 final window boundary, R3 seed attempt,
-and R4 negative cleanup routing remain PARTIAL. E pin binding CLOSED; confirmed fixes preserved.
-SOURCE_PACKAGE=REWORK_REQUIRED. PRIMARY HERMES continues the same source task; no Hermes2.
+Authority: docs/architecture/P8C_REVIEW_a5e58bd_EXECUTION_CONTRACT_20261110.md.
+Source225004d12abe5ed2796c4bcd5e57c7ba945ded52 / evidence a5e58bd2567694e3c644c6a0dafead44ff9bb9f2.
+214/214 active methods and previous7 controls independently PASS.
+Additional existing-contract controls:12 methods /2 PASS /10 failures /0 errors.
+Remaining R1 WAL/current-authority deadlines and partial subsets; R2 late retry window;
+R3 missing seed attempt binding; R4 cleanup outcome and full negative route coverage.
+Previously verified fixes preserved; E CLOSED. PRIMARY HERMES continues same source task.
+SOURCE_ACCEPTANCE=REWORK_REQUIRED; SOURCE_WORK=IN_PROGRESS/PARTIAL. No Hermes2.
 No live/SSH/CI/workflow/private registry/real build/push/Owner/apply/production authorization.
 P8C=NOT_FINAL_ACCEPTED; P8D–P8G/P9=NOT_AUTHORIZED.
 
