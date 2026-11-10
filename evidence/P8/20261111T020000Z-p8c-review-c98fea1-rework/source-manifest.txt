@@ -1,0 +1,39 @@
+# Source manifest — review c98fea1 rework (3422e31)
+
+Base: 2a38af9f8caa84268a41158efc8459e564b83fad (review of 61e4a44 / evidence c98fea1)
+Final: 3422e31e97742dd32ad5044451eb062ee5dacf1d
+Fast-forward: yes. No force/rebase/amend.
+
+Source changed (diff 2a38af9..3422e31):
+  portal/tools/readiness/wrapper.py  — _charge(commit=) overrun semantics (bytes/seconds recorded on
+                                       overrun, requests reserve-only); _io_call charges transport
+                                       elapsed to overall seconds; WAL reads bounded by
+                                       min(sample/window/WAL/overall) remaining body; per-check
+                                       W/I/N health scheduler (N = first GET + N-2 retries + freshness);
+                                       Gateway N12, DNS I5/W30, freshness age per-check.
+  portal/tools/release-check.py       — release-gate + first-creation: run_attempt==1 (compared),
+                                       workflow_sha bound to GITHUB_WORKFLOW_SHA, no future grace.
+  portal/tools/verify-pins.py         — offline image evidence binds observed manifest_sha256 to lock.
+  portal/tools/test_route_e2e.py      — full-route E2E (real validators, env/output/if emulation,
+                                       mandatory exit assertions, digest-mismatch negative).
+  portal/tools/run_offline_suite.sh   — added c98fea1 residual contract (12) stage.
+  docs/architecture/P8C_EXECUTABLE_RELEASE_READINESS_RUNBOOK_20261104.md — synced W/I/N table,
+                                       accounting overrun semantics, gate binding, E2E, counts.
+
+Runtime/test dependency closure (imported by the active suite):
+  wrapper.py -> wal.py, readset.json (frozen), stdlib (fcntl/hashlib/json/os/select/subprocess/...)
+  active working copies -> evidence fixtures:
+      evidence/P8/20261105-974e069-architect-review/scheduler_regression_test.py (MainContract)
+      evidence/P8/20261105-c8007f5-architect-review/contract_test.py (WindowRoutes)
+      evidence/P8/20261105-f783e1e-architect-review/regression_test.py
+      evidence/P8/20261105-64e36a6-architect-review/accepted-baseline.json (PR-6 Tier/Felix)
+      evidence/P8/20261106-e60d1db-architect-review/remaining_contract_test.py (17 controls)
+      evidence/P8/20261110-c98fea1-architect-review/residual_contract_test.py (12 controls)
+  release-check.py, release_qualification.py, verify-pins.py (+ pins.lock.json, PyYAML)
+  template parse: p8c-portal-release.yml.template, p8c-portal-seed.yml.template
+  pinned public inputs: pins.lock.json (6 binaries + 3 actions + 1 image, 10/10 offline VERIFIED)
+
+Evidence (this package):
+  raw-transcript.txt  — UTC start/end, cwd, toolchain, launcher output, exit 0
+  secret-scan.txt     — no credential/token matches in source diff
+  result.md           — full closure matrix + verdict
