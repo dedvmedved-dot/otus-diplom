@@ -1,0 +1,18 @@
+{
+  "source_sha": "3422e31e97742dd32ad5044451eb062ee5dacf1d",
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "/workspace/scratch/14185c8f871f/review_935feb3/independent/final_contract_test.py",
+    "-v"
+  ],
+  "cwd": "/workspace/scratch/14185c8f871f/review_935feb3",
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "start": "2026-11-10T03:46:30.505594+00:00",
+  "end": "2026-11-10T03:46:30.895632+00:00",
+  "exit": 1,
+  "methods": 7,
+  "pass": 1,
+  "failures": 6,
+  "errors": 0,
+  "network_guard": true
+}

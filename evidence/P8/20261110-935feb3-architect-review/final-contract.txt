@@ -1,0 +1,62 @@
+test_http_partial_body_is_charged_on_read_error (__main__.BudgetTermination.test_http_partial_body_is_charged_on_read_error) ... FAIL
+test_no_second_io_after_overall_time_exhaustion (__main__.BudgetTermination.test_no_second_io_after_overall_time_exhaustion) ... FAIL
+test_timeout_argument_is_bounded_by_remaining_overall (__main__.BudgetTermination.test_timeout_argument_is_bounded_by_remaining_overall) ... FAIL
+test_late_dns_cannot_turn_expired_window_into_pass (__main__.HealthWindows.test_late_dns_cannot_turn_expired_window_into_pass) ... FAIL
+test_positive_s0_control (__main__.HealthWindows.test_positive_s0_control) ... ok
+test_release_build_failure_executes_always_cleanup (__main__.NegativeRoute.test_release_build_failure_executes_always_cleanup) ... FAIL
+test_actual_second_seed_run_rejected (__main__.SeedGate.test_actual_second_seed_run_rejected) ... FAIL
+
+======================================================================
+FAIL: test_http_partial_body_is_charged_on_read_error (__main__.BudgetTermination.test_http_partial_body_is_charged_on_read_error)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_935feb3/independent/final_contract_test.py", line 52, in test_http_partial_body_is_charged_on_read_error
+    self.assertGreaterEqual(w.read_budget(self.g)['bytes'],64)
+AssertionError: 0 not greater than or equal to 64
+
+======================================================================
+FAIL: test_no_second_io_after_overall_time_exhaustion (__main__.BudgetTermination.test_no_second_io_after_overall_time_exhaustion)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_935feb3/independent/final_contract_test.py", line 30, in test_no_second_io_after_overall_time_exhaustion
+    self.assertEqual(len(calls),1,{'calls':calls,'authority':w.read_budget(self.g)})
+AssertionError: 2 != 1 : {'calls': [{'timeout': 15, 'start': 0.0}, {'timeout': 15, 'start': 2.0}], 'authority': {'requests': 2, 'bytes': 0, 'seconds': 5268.0, 'wal_requests': 0, 'wal_bytes': 0, 'wal_seconds': 0.0}}
+
+======================================================================
+FAIL: test_timeout_argument_is_bounded_by_remaining_overall (__main__.BudgetTermination.test_timeout_argument_is_bounded_by_remaining_overall)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_935feb3/independent/final_contract_test.py", line 37, in test_timeout_argument_is_bounded_by_remaining_overall
+    self.assertTrue(seen);self.assertLessEqual(seen[0],1,seen)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 15 not less than or equal to 1 : [15]
+
+======================================================================
+FAIL: test_late_dns_cannot_turn_expired_window_into_pass (__main__.HealthWindows.test_late_dns_cannot_turn_expired_window_into_pass)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_935feb3/independent/final_contract_test.py", line 71, in test_late_dns_cannot_turn_expired_window_into_pass
+    self.assertNotEqual(code,0,{'dns_times':dns,'operator_times':ops,'dns':j['reads']['HC-DNS'],'aggregate':j['aggregate']})
+AssertionError: 0 == 0 : {'dns_times': [300.0, 315.0, 330.0, 340.0], 'operator_times': [300.0, 310.0, 325.0, 340.0, 340.0], 'dns': {'attempt': 4, 'detail': 'DNS ready with 53/TCP+UDP in same slice', 'disposition': 'PASS', 'observed_mono': 340.0}, 'aggregate': 'PASS'}
+
+======================================================================
+FAIL: test_release_build_failure_executes_always_cleanup (__main__.NegativeRoute.test_release_build_failure_executes_always_cleanup)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_935feb3/independent/final_contract_test.py", line 94, in test_release_build_failure_executes_always_cleanup
+    self.assertTrue(any(x['name'].startswith('Cleanup buildkit daemon') for x in executed),executed)
+AssertionError: False is not true : [{'name': 'Verify clean tree and source provenance', 'exit': 0}, {'name': 'Deliver typed release gate (data via env, never shell)', 'exit': 0}, {'name': 'Future execution gate (source/workflow/package/expiry/run-attempt)', 'exit': 0}, {'name': 'Install verified Go archive', 'exit': 0}, {'name': 'Private package prerequisite (before any push)', 'exit': 0}, {'name': 'Build binary (reproducible)', 'exit': 0}, {'name': 'Install rootlesskit + BuildKit (pinned, verified)', 'exit': 0}, {'name': 'Build OCI image (rootless buildctl) + immutable digest from metadata', 'exit': 42}]
+
+======================================================================
+FAIL: test_actual_second_seed_run_rejected (__main__.SeedGate.test_actual_second_seed_run_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_935feb3/independent/final_contract_test.py", line 79, in test_actual_second_seed_run_rejected
+    self.assertNotEqual(r.returncode,0,r.stdout)
+AssertionError: 0 == 0 : {"first_creation": "VERIFIED", "source_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
+
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.266s
+
+FAILED (failures=6)

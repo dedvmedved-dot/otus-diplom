@@ -1,0 +1,64 @@
+{
+  "method": "Python re; frozen input; no raw matched values emitted",
+  "limitations": "heuristic patterns only; not proof of absence of all secrets",
+  "input": [
+    {
+      "path": "docs/architecture/P8C_REVIEW_935feb3_EXECUTION_REMAINDER_20261110.md",
+      "sha256": "5dcfec478b734e1327618ec5edcc4b88bdeb63bdaee7c4063c02778c2bd25331"
+    },
+    {
+      "path": "portal/networkpolicy/PLAN.md",
+      "sha256": "6be9483892a7f0cf78420699f71f1a2aa76fb1156b561bcc67504f3cf886fc23"
+    },
+    {
+      "path": "evidence/P8/20261110-935feb3-architect-review/reexecution.json",
+      "sha256": "45dfaa34221829fdb745730f48a1ed703f7a7ba3740819cb5e90cfe51bd23248"
+    },
+    {
+      "path": "evidence/P8/20261110-935feb3-architect-review/reexecution-raw.txt",
+      "sha256": "f8512a167a39844495f7c65dc7c9f78a17e606ff3238acb56a90f217046133d0"
+    },
+    {
+      "path": "evidence/P8/20261110-935feb3-architect-review/final_contract_test.py",
+      "sha256": "1c566666ec3a9e7525a96098fc8b48e26079e839da32b3106ec48fcd7e8bac76"
+    },
+    {
+      "path": "evidence/P8/20261110-935feb3-architect-review/final-contract.txt",
+      "sha256": "7b55338afb7661d99ee4147e040e43c9719fb0115da41588451cac737d19dc5c"
+    },
+    {
+      "path": "evidence/P8/20261110-935feb3-architect-review/additional-execution.json",
+      "sha256": "279efd9779314406ae2c2896f3c76612dd0c29c0b6e5eab35d3c7b81131986c0"
+    },
+    {
+      "path": "evidence/P8/20261110-935feb3-architect-review/audit_routes.py",
+      "sha256": "558f08152ae9b17aebe58fafb75a71065925fea12ce8f0c8fd5212f3645b23dd"
+    },
+    {
+      "path": "evidence/P8/20261110-935feb3-architect-review/route-audit.json",
+      "sha256": "9bf8caab372a4869dc0e99aaf8046db1dcf20af2851970e4f01cf1770a2b0ac5"
+    },
+    {
+      "path": "evidence/P8/20261110-935feb3-architect-review/source-manifest.json",
+      "sha256": "7b41cb097e20a69db9041bb21ff5bbcaaf689e5b61ada05c63fbbaef541bbb95"
+    },
+    {
+      "path": "evidence/P8/20261110-935feb3-architect-review/syntax-execution.json",
+      "sha256": "c5fcf40748313194f945f79518c9618906c107184f77fcef58116e7800ade7f9"
+    },
+    {
+      "path": "evidence/P8/20261110-935feb3-architect-review/run_review.py",
+      "sha256": "7a1fe978f4e86d1ae21fa49ad24a674fac164991da7e350a15d42701aea754be"
+    },
+    {
+      "path": "evidence/P8/20261110-935feb3-architect-review/network-guard/sitecustomize.py",
+      "sha256": "40694c896c7b45c4334430cb36dff4f488390cc14501e24bdd946a4fc6a30362"
+    },
+    {
+      "path": "evidence/P8/20261110-935feb3-architect-review/network-summary.json",
+      "sha256": "a857740c18a886d3934fe67b91ab403f5a89d7cee047c1cb967af4d2df60e5ba"
+    }
+  ],
+  "findings": [],
+  "result": "NO_MATCH"
+}

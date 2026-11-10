@@ -1,0 +1,106 @@
+[
+  {
+    "test": "test_create_allowed_full_route",
+    "result": "PASS",
+    "calls": [
+      {
+        "step": "Typed private-package precheck",
+        "exit": 0
+      },
+      {
+        "step": "Install rootlesskit + BuildKit (pinned, verified)",
+        "exit": 0
+      },
+      {
+        "step": "Start rootless BuildKit (bounded readiness + cleanup)",
+        "exit": 0
+      },
+      {
+        "step": "Build + push minimal seed (bootstrap-only, not deployable)",
+        "exit": 0
+      },
+      {
+        "step": "Verify seed registry bytes/digest (before acceptance)",
+        "exit": 0
+      },
+      {
+        "step": "Record seed digest + visibility + association (typed evidence)",
+        "exit": 0
+      },
+      {
+        "step": "Cleanup buildkit daemon (always, on any outcome)",
+        "exit": 0
+      },
+      {
+        "step": "Collect seed package evidence (all proof files)",
+        "exit": 0
+      }
+    ]
+  },
+  {
+    "test": "test_full_route_all_mandatory_steps_zero",
+    "result": "PASS",
+    "calls": [
+      {
+        "step": "Verify clean tree and source provenance",
+        "exit": 0
+      },
+      {
+        "step": "Deliver typed release gate (data via env, never shell)",
+        "exit": 0
+      },
+      {
+        "step": "Future execution gate (source/workflow/package/expiry/run-attempt)",
+        "exit": 0
+      },
+      {
+        "step": "Install verified Go archive",
+        "exit": 0
+      },
+      {
+        "step": "Private package prerequisite (before any push)",
+        "exit": 0
+      },
+      {
+        "step": "Build binary (reproducible)",
+        "exit": 0
+      },
+      {
+        "step": "Install rootlesskit + BuildKit (pinned, verified)",
+        "exit": 0
+      },
+      {
+        "step": "Build OCI image (rootless buildctl) + immutable digest from metadata",
+        "exit": 0
+      },
+      {
+        "step": "Verify registry bytes and private visibility after push",
+        "exit": 0
+      },
+      {
+        "step": "Install Syft + generate final-image SBOM",
+        "exit": 0
+      },
+      {
+        "step": "Install Trivy + scan final image (binary + OCI)",
+        "exit": 0
+      },
+      {
+        "step": "Install Cosign (exact pinned version)",
+        "exit": 0
+      },
+      {
+        "step": "Sign keyless + verify exact identity/issuer/source",
+        "exit": 0
+      },
+      {
+        "step": "SBOM + provenance attestation (generate + verify both)",
+        "exit": 0
+      },
+      {
+        "step": "Cleanup buildkit daemon (always, on any outcome)",
+        "exit": 0
+      }
+    ]
+  }
+]

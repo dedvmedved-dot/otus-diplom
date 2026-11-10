@@ -1,0 +1,347 @@
+COMMAND {"name": "readiness", "argv": ["/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3", "-m", "unittest", "-v", "test_readiness"], "cwd": "/workspace/scratch/14185c8f871f/review_935feb3/portal/tools/readiness", "start": "2026-11-10T03:43:16.781351+00:00", "end": "2026-11-10T03:43:17.353651+00:00", "exit": 0}
+test_bad_mode (test_readiness.TestGate.test_bad_mode) ... ok
+test_expired (test_readiness.TestGate.test_expired) ... ok
+test_expiry_over_24 (test_readiness.TestGate.test_expiry_over_24) ... ok
+test_future (test_readiness.TestGate.test_future) ... ok
+test_hash_mismatch (test_readiness.TestGate.test_hash_mismatch) ... ok
+test_valid (test_readiness.TestGate.test_valid) ... ok
+test_s0_fail_closed_without_wal (test_readiness.TestMain.test_s0_fail_closed_without_wal) ... /workspace/scratch/14185c8f871f/review_935feb3/portal/tools/readiness/test_readiness.py:183: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpmyu6kksd/tmps5t6yx3f/gate.json' mode='w' encoding='UTF-8'>
+  json.dump(gate(**(gate_override or {})), open(g, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/scratch/14185c8f871f/review_935feb3/portal/tools/readiness/wrapper.py:317: ResourceWarning: unclosed file <_io.BufferedReader name=3>
+  return fn(*args, **kwargs)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/scratch/14185c8f871f/review_935feb3/portal/tools/readiness/test_readiness.py:191: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpmyu6kksd/tmps5t6yx3f/out.json' mode='r' encoding='UTF-8'>
+  j = json.load(open(out)) if os.path.exists(out) else None
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_unknown_stage_nonzero (test_readiness.TestMain.test_unknown_stage_nonzero) ... /workspace/scratch/14185c8f871f/review_935feb3/portal/tools/readiness/test_readiness.py:183: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpmyu6kksd/tmp771y3t6k/gate.json' mode='w' encoding='UTF-8'>
+  json.dump(gate(**(gate_override or {})), open(g, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+STOP: unknown stage
+ok
+test_hc_db_fail (test_readiness.TestPredicates.test_hc_db_fail) ... ok
+test_hc_db_missing (test_readiness.TestPredicates.test_hc_db_missing) ... ok
+test_hc_db_ready (test_readiness.TestPredicates.test_hc_db_ready) ... ok
+test_hc_gw_false (test_readiness.TestPredicates.test_hc_gw_false) ... ok
+test_hc_gw_programmed (test_readiness.TestPredicates.test_hc_gw_programmed) ... ok
+test_pr3_empty_inconclusive (test_readiness.TestPredicates.test_pr3_empty_inconclusive) ... ok
+test_pr5_two_items_fail (test_readiness.TestPredicates.test_pr5_two_items_fail) ... ok
+test_rerun_blocked (test_readiness.TestReservation.test_rerun_blocked) ... ok
+test_clock_bare_number_rejected (test_readiness.TestWAL.test_clock_bare_number_rejected) ... ok
+test_clock_missing (test_readiness.TestWAL.test_clock_missing) ... ok
+test_clock_nan_rejected (test_readiness.TestWAL.test_clock_nan_rejected) ... ok
+test_clock_trusted_flag_rejected (test_readiness.TestWAL.test_clock_trusted_flag_rejected) ... ok
+test_failure_growth_wins (test_readiness.TestWAL.test_failure_growth_wins) ... ok
+test_identity_swap (test_readiness.TestWAL.test_identity_swap) ... ok
+test_missing_series (test_readiness.TestWAL.test_missing_series) ... ok
+
+----------------------------------------------------------------------
+Ran 23 tests in 0.443s
+
+OK
+aggregate=INCONCLUSIVE
+
+COMMAND {"name": "residual-working", "argv": ["/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3", "-m", "unittest", "-v", "test_architect_residual"], "cwd": "/workspace/scratch/14185c8f871f/review_935feb3/portal/tools/readiness", "start": "2026-11-10T03:43:17.353691+00:00", "end": "2026-11-10T03:44:17.899522+00:00", "exit": 0}
+test_api_tuple_requires_port (test_architect_residual.ListsAndBaseline.test_api_tuple_requires_port) ... ok
+test_archived_nonempty_tier_felix_baseline_is_not_drift (test_architect_residual.ListsAndBaseline.test_archived_nonempty_tier_felix_baseline_is_not_drift) ... ok
+test_complete_list_absent_continue_positive (test_architect_residual.ListsAndBaseline.test_complete_list_absent_continue_positive) ... ok
+test_complete_list_empty_continue_positive (test_architect_residual.ListsAndBaseline.test_complete_list_empty_continue_positive) ... ok
+test_explicit_null_continue_negative (test_architect_residual.ListsAndBaseline.test_explicit_null_continue_negative) ... ok
+test_missing_expected_tiers_felix_not_pass (test_architect_residual.ListsAndBaseline.test_missing_expected_tiers_felix_not_pass) ... ok
+test_pinned_cnp_api_positive (test_architect_residual.ListsAndBaseline.test_pinned_cnp_api_positive) ... ok
+test_portal_required_generation_not_none_equals_none (test_architect_residual.ListsAndBaseline.test_portal_required_generation_not_none_equals_none) ... ok
+test_unrecognized_api_suffix_negative (test_architect_residual.ListsAndBaseline.test_unrecognized_api_suffix_negative) ... ok
+test_action_pin_error_diagnostic_no_signed_url (test_architect_residual.SeedAndRelease.test_action_pin_error_diagnostic_no_signed_url) ... ok
+test_author_valid_baseline_really_passes_verified (test_architect_residual.SeedAndRelease.test_author_valid_baseline_really_passes_verified) ... ok
+test_first_creation_mode_exists (test_architect_residual.SeedAndRelease.test_first_creation_mode_exists) ... ok
+test_independent_valid_artifact_control (test_architect_residual.SeedAndRelease.test_independent_valid_artifact_control) ... ok
+test_malformed_scan_leaf_rejected (test_architect_residual.SeedAndRelease.test_malformed_scan_leaf_rejected) ... ok
+test_qualifier_missing_checkout_and_inherited_write_all (test_architect_residual.SeedAndRelease.test_qualifier_missing_checkout_and_inherited_write_all) ... ok
+test_wrong_registry_image_binding_rejected (test_architect_residual.SeedAndRelease.test_wrong_registry_image_binding_rejected) ... ok
+test_child_stdout_eof_is_not_child_failure (test_architect_residual.StateAndExecution.test_child_stdout_eof_is_not_child_failure) ... /workspace/scratch/14185c8f871f/review_935feb3/portal/tools/readiness/test_architect_residual.py:125: ResourceWarning: unclosed file <_io.BufferedReader name=3>
+  body,status=w.run_kubectl_raw(str(f),'/api/v1/pods',1,1024)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_failed_stage_cannot_authorize_next (test_architect_residual.StateAndExecution.test_failed_stage_cannot_authorize_next) ... ok
+test_replay_new_parent_directory_rejected (test_architect_residual.StateAndExecution.test_replay_new_parent_directory_rejected) ... ok
+test_unbound_plain_text_receipt_not_authority (test_architect_residual.StateAndExecution.test_unbound_plain_text_receipt_not_authority) ... ok
+test_absent_owner_not_identity_proof (test_architect_residual.WALRoutes.test_absent_owner_not_identity_proof) ... ok
+test_clock_gate_binding_checked_on_actual_sample_route (test_architect_residual.WALRoutes.test_clock_gate_binding_checked_on_actual_sample_route) ... ok
+test_future_clock_not_accepted (test_architect_residual.WALRoutes.test_future_clock_not_accepted) ... ok
+test_main_sample_deadline_enforced (test_architect_residual.WALRoutes.test_main_sample_deadline_enforced) ... ok
+test_positive_fresh_progress_control (test_architect_residual.WALRoutes.test_positive_fresh_progress_control) ... ok
+
+----------------------------------------------------------------------
+Ran 25 tests in 60.392s
+
+OK
+
+COMMAND {"name": "qualification", "argv": ["/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3", "-m", "unittest", "-v", "test_release_qualification"], "cwd": "/workspace/scratch/14185c8f871f/review_935feb3/portal/tools", "start": "2026-11-10T03:44:17.899551+00:00", "end": "2026-11-10T03:44:17.999210+00:00", "exit": 0}
+test_on_not_coerced_to_bool (test_release_qualification.TestQualification.test_on_not_coerced_to_bool) ... ok
+test_seed_not_release (test_release_qualification.TestQualification.test_seed_not_release) ... ok
+test_templates_parse_and_qualify (test_release_qualification.TestQualification.test_templates_parse_and_qualify) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.024s
+
+OK
+
+COMMAND {"name": "release", "argv": ["/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3", "-m", "unittest", "-v", "test_release"], "cwd": "/workspace/scratch/14185c8f871f/review_935feb3/portal/tools", "start": "2026-11-10T03:44:17.999249+00:00", "end": "2026-11-10T03:44:18.091187+00:00", "exit": 0}
+test_digest_and_private_gate_fail_closed (test_release.TestReleaseBindings.test_digest_and_private_gate_fail_closed) ... ok
+test_predicate_and_subject_source_negatives (test_release.TestReleaseBindings.test_predicate_and_subject_source_negatives) ... ok
+test_sbom_exact_payload (test_release.TestReleaseBindings.test_sbom_exact_payload) ... ok
+test_signature_source_digest (test_release.TestReleaseBindings.test_signature_source_digest) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.001s
+
+OK
+
+COMMAND {"name": "release-negative", "argv": ["/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3", "-m", "unittest", "-v", "test_release_negative"], "cwd": "/workspace/scratch/14185c8f871f/review_935feb3/portal/tools", "start": "2026-11-10T03:44:18.091424+00:00", "end": "2026-11-10T03:44:18.554133+00:00", "exit": 0}
+test_digest_mode_accepts_valid (test_release_negative.TestDigestPredicate.test_digest_mode_accepts_valid) ... ok
+test_bad_provenance_fails (test_release_negative.TestVerifiedBindings.test_bad_provenance_fails) ... ok
+test_invalid_provenance_json_fails (test_release_negative.TestVerifiedBindings.test_invalid_provenance_json_fails) ... ok
+test_invalid_scan_json_fails (test_release_negative.TestVerifiedBindings.test_invalid_scan_json_fails) ... ok
+test_missing_artifact_fails (test_release_negative.TestVerifiedBindings.test_missing_artifact_fails) ... ok
+test_sbom_missing_spdx_fails (test_release_negative.TestVerifiedBindings.test_sbom_missing_spdx_fails) ... ok
+test_wrong_build_digest_fails (test_release_negative.TestVerifiedBindings.test_wrong_build_digest_fails) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.389s
+
+OK
+
+COMMAND {"name": "route-e2e", "argv": ["/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3", "-m", "unittest", "-v", "test_route_e2e"], "cwd": "/workspace/scratch/14185c8f871f/review_935feb3/portal/tools", "start": "2026-11-10T03:44:18.554179+00:00", "end": "2026-11-10T03:44:20.102643+00:00", "exit": 0}
+test_digest_mismatch_fails_verified (test_route_e2e.ReleaseRouteE2E.test_digest_mismatch_fails_verified) ... ok
+test_full_route_all_mandatory_steps_zero (test_route_e2e.ReleaseRouteE2E.test_full_route_all_mandatory_steps_zero) ... ok
+test_gate_required (test_route_e2e.ReleaseRouteE2E.test_gate_required) ... ok
+test_create_allowed_full_route (test_route_e2e.SeedRouteE2E.test_create_allowed_full_route) ... ok
+test_reuse_and_stop_do_zero_build (test_route_e2e.SeedRouteE2E.test_reuse_and_stop_do_zero_build) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 1.447s
+
+OK
+
+COMMAND {"name": "qualification-cli", "argv": ["/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3", "release_qualification.py"], "cwd": "/workspace/scratch/14185c8f871f/review_935feb3/portal/tools", "start": "2026-11-10T03:44:20.102667+00:00", "end": "2026-11-10T03:44:20.153947+00:00", "exit": 0}
+{"errors": [], "qualified": true}
+
+COMMAND {"name": "regression", "argv": ["/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3", "evidence/P8/20261105-f783e1e-architect-review/regression_test.py", "-v"], "cwd": "/workspace/scratch/14185c8f871f/review_935feb3", "start": "2026-11-10T03:44:20.153982+00:00", "end": "2026-11-10T03:44:22.246531+00:00", "exit": 0}
+test_existing_output_preserved (__main__.GateState.test_existing_output_preserved) ... ok
+test_expired_gate_cannot_use_cli_now (__main__.GateState.test_expired_gate_cannot_use_cli_now) ... ok
+test_s4_before_s0_no_requests (__main__.GateState.test_s4_before_s0_no_requests) ... ok
+test_same_gate_new_state_directory_no_replay (__main__.GateState.test_same_gate_new_state_directory_no_replay) ... ok
+test_wal_bytes_participate_in_package_hash (__main__.GateState.test_wal_bytes_participate_in_package_hash) ... ok
+test_exception_diagnostic_cannot_echo_signed_query (__main__.PinDiagnostics.test_exception_diagnostic_cannot_echo_signed_query) ... ok
+test_dns_ready_without_ports_rejected (__main__.Predicates.test_dns_ready_without_ports_rejected) ... ok
+test_operator_running_not_ready_rejected (__main__.Predicates.test_operator_running_not_ready_rejected) ... ok
+test_pr3_wrong_slice_ports_and_unready_rejected (__main__.Predicates.test_pr3_wrong_slice_ports_and_unready_rejected) ... ok
+test_pr6_changed_felix_tier_baseline_rejected (__main__.Predicates.test_pr6_changed_felix_tier_baseline_rejected) ... ok
+test_wrong_list_kind_and_explicit_null_continue_rejected (__main__.Predicates.test_wrong_list_kind_and_explicit_null_continue_rejected) ... ok
+test_invalid_templates_rejected (__main__.Qualification.test_invalid_templates_rejected) ... ok
+test_author_negative_fixtures_reach_named_check (__main__.Release.test_author_negative_fixtures_reach_named_check) ... ok
+test_invalid_semantics_rejected_from_valid_baseline (__main__.Release.test_invalid_semantics_rejected_from_valid_baseline) ... ok
+test_positive_payload_binding_control (__main__.Release.test_positive_payload_binding_control) ... ok
+test_daemon_survives_until_build_step (__main__.Seed.test_daemon_survives_until_build_step) ... ok
+test_failed_precheck_cannot_create_from_magic_env (__main__.Seed.test_failed_precheck_cannot_create_from_magic_env) ... ok
+test_recipe_resolves_at_actual_working_directory (__main__.Seed.test_recipe_resolves_at_actual_working_directory) ... ok
+test_stop_is_non_success (__main__.Seed.test_stop_is_non_success) ... ok
+test_blocking_body_obeys_hard_deadline (__main__.Transport.test_blocking_body_obeys_hard_deadline) ... /workspace/scratch/14185c8f871f/review_935feb3/evidence/P8/20261105-f783e1e-architect-review/regression_test.py:172: ResourceWarning: unclosed file <_io.BufferedReader name=3>
+  except w.ReadError:pass
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_clock_expired_wrong_node_not_valid (__main__.WALContract.test_clock_expired_wrong_node_not_valid) ... ok
+test_default_http_has_no_environment_proxy (__main__.WALContract.test_default_http_has_no_environment_proxy) ... ok
+test_duplicate_series_rejected (__main__.WALContract.test_duplicate_series_rejected) ... ok
+test_first_baseline_not_progress_pass (__main__.WALContract.test_first_baseline_not_progress_pass) ... ok
+test_future_metric_timestamp_rejected (__main__.WALContract.test_future_metric_timestamp_rejected) ... ok
+test_pod_ip_restart_owner_change_rejected (__main__.WALContract.test_pod_ip_restart_owner_change_rejected) ... ok
+test_primary_swap_after_sample_rejected (__main__.WALContract.test_primary_swap_after_sample_rejected) ... ok
+test_sample_metadata_budget_5s_256k (__main__.WALContract.test_sample_metadata_budget_5s_256k) ... ok
+
+----------------------------------------------------------------------
+Ran 28 tests in 1.962s
+
+OK
+
+COMMAND {"name": "scheduler-working", "argv": ["/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3", "portal/tools/readiness/test_scheduler_authority_working.py", "-v"], "cwd": "/workspace/scratch/14185c8f871f/review_935feb3", "start": "2026-11-10T03:44:22.246571+00:00", "end": "2026-11-10T03:44:22.454694+00:00", "exit": 0}
+test_dns_ports_on_empty_slice_not_proof_for_ready_endpoint (__main__.ExistingReadContract.test_dns_ports_on_empty_slice_not_proof_for_ready_endpoint) ... ok
+test_gateway_missing_generation_not_none_equals_none (__main__.ExistingReadContract.test_gateway_missing_generation_not_none_equals_none) ... ok
+test_pr3_port_belongs_to_same_slice_as_addresses (__main__.ExistingReadContract.test_pr3_port_belongs_to_same_slice_as_addresses) ... ok
+test_pr6_changed_bpf_field_not_silently_ignored (__main__.ExistingReadContract.test_pr6_changed_bpf_field_not_silently_ignored) ... ok
+test_budget_counts_requests_and_bytes_not_logical_checks (__main__.MainContract.test_budget_counts_requests_and_bytes_not_logical_checks) ... ok
+test_corrupt_budget_cannot_reset_to_zero (__main__.MainContract.test_corrupt_budget_cannot_reset_to_zero) ... ok
+test_crash_inflight_marker_does_not_authorize_second_process (__main__.MainContract.test_crash_inflight_marker_does_not_authorize_second_process) ... ok
+test_exhausted_budget_blocks_before_any_request (__main__.MainContract.test_exhausted_budget_blocks_before_any_request) ... ok
+test_first_valid_baseline_is_preserved_without_claiming_progress (__main__.MainContract.test_first_valid_baseline_is_preserved_without_claiming_progress) ... ok
+test_last_response_cannot_cross_sample_deadline_and_pass (__main__.MainContract.test_last_response_cannot_cross_sample_deadline_and_pass) ... ok
+test_new_state_directory_does_not_reset_budget (__main__.MainContract.test_new_state_directory_does_not_reset_budget) ... ok
+test_positive_prebound_sample_control (__main__.MainContract.test_positive_prebound_sample_control) ... ok
+test_s0_collects_own_baseline_then_progress_in_one_window (__main__.MainContract.test_s0_collects_own_baseline_then_progress_in_one_window) ... ok
+test_same_clock_new_invocation_is_not_second_slot (__main__.MainContract.test_same_clock_new_invocation_is_not_second_slot) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.092s
+
+OK
+
+COMMAND {"name": "contract-working", "argv": ["/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3", "portal/tools/readiness/test_contract_authority_working.py", "-v"], "cwd": "/workspace/scratch/14185c8f871f/review_935feb3", "start": "2026-11-10T03:44:22.454740+00:00", "end": "2026-11-10T03:44:22.964757+00:00", "exit": 0}
+test_first_creation_does_not_accept_expired_future_test_only_gate (__main__.SourceBoundaries.test_first_creation_does_not_accept_expired_future_test_only_gate) ... ok
+test_pr3_wrong_resource_kind_rejected_on_actual_read_path (__main__.SourceBoundaries.test_pr3_wrong_resource_kind_rejected_on_actual_read_path) ... ok
+test_pr5_requires_service_identity (__main__.SourceBoundaries.test_pr5_requires_service_identity) ... ok
+test_pr6_missing_expected_nftables_mode_rejected (__main__.SourceBoundaries.test_pr6_missing_expected_nftables_mode_rejected) ... ok
+test_slot_offsets_include_elapsed_sample_time (__main__.SourceBoundaries.test_slot_offsets_include_elapsed_sample_time) ... ok
+test_clean_failed_window_cannot_restart_three_more_samples (__main__.WindowRoutes.test_clean_failed_window_cannot_restart_three_more_samples) ... ok
+test_failed_request_attempts_are_charged (__main__.WindowRoutes.test_failed_request_attempts_are_charged) ... ok
+test_first_slot_failure_metrics_do_not_replace_valid_baseline (__main__.WindowRoutes.test_first_slot_failure_metrics_do_not_replace_valid_baseline) ... ok
+test_negative_budget_not_accepted (__main__.WindowRoutes.test_negative_budget_not_accepted) ... ok
+test_new_state_directory_after_nonpass_cannot_start_fresh_window (__main__.WindowRoutes.test_new_state_directory_after_nonpass_cannot_start_fresh_window) ... ok
+test_positive_s0_through_s4_mock_transport_control (__main__.WindowRoutes.test_positive_s0_through_s4_mock_transport_control) ... ok
+test_post_operation_stage_requires_its_action_boundary (__main__.WindowRoutes.test_post_operation_stage_requires_its_action_boundary) ... ok
+test_s0_progress_must_be_after_first_sample_end (__main__.WindowRoutes.test_s0_progress_must_be_after_first_sample_end) ... ok
+test_shared_db_arch_metadata_not_read_twice_at_same_tick (__main__.WindowRoutes.test_shared_db_arch_metadata_not_read_twice_at_same_tick) ... ok
+test_success_receipt_requires_fresh_operator_observation (__main__.WindowRoutes.test_success_receipt_requires_fresh_operator_observation) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.365s
+
+OK
+
+COMMAND {"name": "completion-working", "argv": ["/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3", "portal/tools/readiness/test_completion_authority_working.py", "-v"], "cwd": "/workspace/scratch/14185c8f871f/review_935feb3", "start": "2026-11-10T03:44:22.964797+00:00", "end": "2026-11-10T03:44:25.542808+00:00", "exit": 0}
+test_budget_cannot_reset_with_new_state_directory_and_same_receipt (__main__.ReadinessCompletion.test_budget_cannot_reset_with_new_state_directory_and_same_receipt) ... ok
+test_hc_db_wrong_kind_cannot_pass_actual_read_path (__main__.ReadinessCompletion.test_hc_db_wrong_kind_cannot_pass_actual_read_path) ... ok
+test_health_freshness_rechecked_at_final_pass (__main__.ReadinessCompletion.test_health_freshness_rechecked_at_final_pass) ... ok
+test_health_transient_missing_then_ready_is_polled (__main__.ReadinessCompletion.test_health_transient_missing_then_ready_is_polled) ... ok
+test_incomplete_metrics_do_not_overwrite_valid_baseline (__main__.ReadinessCompletion.test_incomplete_metrics_do_not_overwrite_valid_baseline) ... ok
+test_inflight_attempt_persisted_before_crash (__main__.ReadinessCompletion.test_inflight_attempt_persisted_before_crash) ... ok
+test_journal_does_not_echo_malformed_condition_value (__main__.ReadinessCompletion.test_journal_does_not_echo_malformed_condition_value) ... ok
+test_list_item_cap_enforced (__main__.ReadinessCompletion.test_list_item_cap_enforced) ... ok
+test_malformed_health_returns_journal_not_uncaught_exception (__main__.ReadinessCompletion.test_malformed_health_returns_journal_not_uncaught_exception) ... ok
+test_nan_budget_blocks_before_io (__main__.ReadinessCompletion.test_nan_budget_blocks_before_io) ... ok
+test_overall_remaining_one_request_stops_before_second_io (__main__.ReadinessCompletion.test_overall_remaining_one_request_stops_before_second_io) ... ok
+test_partial_error_body_bytes_are_charged (__main__.ReadinessCompletion.test_partial_error_body_bytes_are_charged) ... ok
+test_positive_existing_six_stage_route (__main__.ReadinessCompletion.test_positive_existing_six_stage_route) ... ok
+test_post_operation_boundary_requires_bound_action_receipt (__main__.ReadinessCompletion.test_post_operation_boundary_requires_bound_action_receipt) ... ok
+test_postgres_restart_is_checked_by_container_name (__main__.ReadinessCompletion.test_postgres_restart_is_checked_by_container_name) ... ok
+test_pr5_without_uid_namespace_ownership_cannot_pass (__main__.ReadinessCompletion.test_pr5_without_uid_namespace_ownership_cannot_pass) ... ok
+test_pr6_wrong_resource_list_cannot_pass (__main__.ReadinessCompletion.test_pr6_wrong_resource_list_cannot_pass) ... ok
+test_receipt_from_different_gate_not_authority (__main__.ReadinessCompletion.test_receipt_from_different_gate_not_authority) ... ok
+test_secondary_role_cannot_pass_primary_sample (__main__.ReadinessCompletion.test_secondary_role_cannot_pass_primary_sample) ... ok
+test_wal_elapsed_includes_slot_waits (__main__.ReadinessCompletion.test_wal_elapsed_includes_slot_waits) ... ok
+test_wal_remaining_one_request_stops_before_second_wal_io (__main__.ReadinessCompletion.test_wal_remaining_one_request_stops_before_second_wal_io) ... ok
+test_qualifier_rejects_missing_seed_precheck_job (__main__.ReleaseCompletion.test_qualifier_rejects_missing_seed_precheck_job) ... ok
+test_release_has_execution_gate_before_protected_steps (__main__.ReleaseCompletion.test_release_has_execution_gate_before_protected_steps) ... ok
+test_scan_other_image_cannot_bind_release (__main__.ReleaseCompletion.test_scan_other_image_cannot_bind_release) ... ok
+test_seed_equal_application_digest_is_nonzero (__main__.ReleaseCompletion.test_seed_equal_application_digest_is_nonzero) ... ok
+test_seed_gate_requires_actual_source_repository_package_binding (__main__.ReleaseCompletion.test_seed_gate_requires_actual_source_repository_package_binding) ... ok
+test_seed_has_failure_cleanup_route (__main__.ReleaseCompletion.test_seed_has_failure_cleanup_route) ... ok
+test_seed_has_registry_byte_proof_before_acceptance (__main__.ReleaseCompletion.test_seed_has_registry_byte_proof_before_acceptance) ... ok
+test_seed_private_probe_error_plus_gate_does_not_create (__main__.ReleaseCompletion.test_seed_private_probe_error_plus_gate_does_not_create) ... ok
+test_seed_reuse_control_no_gate_evaluation (__main__.ReleaseCompletion.test_seed_reuse_control_no_gate_evaluation) ... ok
+test_seed_tag_is_source_bound (__main__.ReleaseCompletion.test_seed_tag_is_source_bound) ... ok
+test_seed_untrusted_input_is_data_not_shell (__main__.ReleaseCompletion.test_seed_untrusted_input_is_data_not_shell) ... ok
+test_http_read_receives_absolute_deadline_not_only_socket_timeout (__main__.TransportCompletion.test_http_read_receives_absolute_deadline_not_only_socket_timeout) ... ok
+test_kubectl_hard_timeout_not_plus_five_seconds (__main__.TransportCompletion.test_kubectl_hard_timeout_not_plus_five_seconds) ... ok
+
+----------------------------------------------------------------------
+Ran 34 tests in 2.418s
+
+OK
+
+COMMAND {"name": "residual-contract-working", "argv": ["/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3", "portal/tools/readiness/test_residual_contract_working.py", "-v"], "cwd": "/workspace/scratch/14185c8f871f/review_935feb3", "start": "2026-11-10T03:44:25.542854+00:00", "end": "2026-11-10T03:44:28.417020+00:00", "exit": 0}
+test_eof_after_deadline_is_not_accepted (__main__.HTTP.test_eof_after_deadline_is_not_accepted) ... ok
+test_after_sample_role_change_blocks_pass (__main__.Readiness.test_after_sample_role_change_blocks_pass) ... ok
+test_baseline_identity_survives_cross_sample_change (__main__.Readiness.test_baseline_identity_survives_cross_sample_change) ... ok
+test_corrected_authority_exhaustion_blocks_new_state (__main__.Readiness.test_corrected_authority_exhaustion_blocks_new_state) ... ok
+test_current_operation_number_without_action_receipt_is_not_authority (__main__.Readiness.test_current_operation_number_without_action_receipt_is_not_authority) ... ok
+test_first_health_failure_is_not_erased_by_final_sweep (__main__.Readiness.test_first_health_failure_is_not_erased_by_final_sweep) ... ok
+test_health_retry_obeys_interval (__main__.Readiness.test_health_retry_obeys_interval) ... ok
+test_nested_malformed_health_returns_typed_verdict (__main__.Readiness.test_nested_malformed_health_returns_typed_verdict) ... ok
+test_portal_observation_fresh_at_s4_verdict (__main__.Readiness.test_portal_observation_fresh_at_s4_verdict) ... ok
+test_pr5_rejects_wrong_service_namespace (__main__.Readiness.test_pr5_rejects_wrong_service_namespace) ... ok
+test_pr6_list_cap_enforced (__main__.Readiness.test_pr6_list_cap_enforced) ... ok
+test_pr6_namespace_items_are_validated (__main__.Readiness.test_pr6_namespace_items_are_validated) ... ok
+test_remaining_body_byte_is_enforced_inside_io (__main__.Readiness.test_remaining_body_byte_is_enforced_inside_io) ... ok
+test_remaining_elapsed_second_cannot_authorize_300s_window (__main__.Readiness.test_remaining_elapsed_second_cannot_authorize_300s_window) ... ok
+test_timeout_partial_stdout_is_accounted (__main__.Readiness.test_timeout_partial_stdout_is_accounted) ... ok
+test_first_creation_wrong_package_rejected (__main__.Release.test_first_creation_wrong_package_rejected) ... ok
+test_release_gate_cannot_pass_without_gate_document (__main__.Release.test_release_gate_cannot_pass_without_gate_document) ... ok
+test_scan_exact_image_digest_positive_control (__main__.Release.test_scan_exact_image_digest_positive_control) ... ok
+test_scan_same_image_wrong_digest_rejected (__main__.Release.test_scan_same_image_wrong_digest_rejected) ... ok
+test_seed_record_positive_bootstrap_without_previous_app (__main__.Release.test_seed_record_positive_bootstrap_without_previous_app) ... ok
+
+----------------------------------------------------------------------
+Ran 20 tests in 2.747s
+
+OK
+
+COMMAND {"name": "remaining-17", "argv": ["/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3", "evidence/P8/20261106-e60d1db-architect-review/remaining_contract_test.py", "-v"], "cwd": "/workspace/scratch/14185c8f871f/review_935feb3", "start": "2026-11-10T03:44:28.417059+00:00", "end": "2026-11-10T03:44:28.978589+00:00", "exit": 0}
+test_elapsed_seconds_persist_before_next_io (__main__.BudgetTransport.test_elapsed_seconds_persist_before_next_io) ... ok
+test_exact_cap_control (__main__.BudgetTransport.test_exact_cap_control) ... /workspace/scratch/14185c8f871f/review_935feb3/evidence/P8/20261106-e60d1db-architect-review/remaining_contract_test.py:46: ResourceWarning: unclosed file <_io.BufferedReader name=3>
+  body,code=w.run_kubectl_raw(self.fake(b'{}'),'/api/v1/pods',2,2);self.assertEqual((body,code),(b'{}',0))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_independent_concurrent_charges_are_additive (__main__.BudgetTransport.test_independent_concurrent_charges_are_additive) ... ok
+test_last_request_slot_cannot_be_spent_twice (__main__.BudgetTransport.test_last_request_slot_cannot_be_spent_twice) ... ok
+test_valid_prefix_cannot_hide_over_cap_suffix (__main__.BudgetTransport.test_valid_prefix_cannot_hide_over_cap_suffix) ... /opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/traceback.py:241: ResourceWarning: unclosed file <_io.BufferedReader name=5>
+  tb.tb_frame.clear()
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_realistic_cluster_scoped_namespace_list_control (__main__.MainRoutes.test_realistic_cluster_scoped_namespace_list_control) ... ok
+test_s0_positive_control (__main__.MainRoutes.test_s0_positive_control) ... ok
+test_transient_operator_has_full_accepted_health_window (__main__.MainRoutes.test_transient_operator_has_full_accepted_health_window) ... ok
+test_wal_metrics_cap_uses_remaining_overall_body (__main__.MainRoutes.test_wal_metrics_cap_uses_remaining_overall_body) ... ok
+test_wrong_stage_gate_failed_action_receipt_blocks (__main__.MainRoutes.test_wrong_stage_gate_failed_action_receipt_blocks) ... ok
+test_cached_verified_status_does_not_verify_another_pin (__main__.ReleaseBindings.test_cached_verified_status_does_not_verify_another_pin) ... /workspace/scratch/14185c8f871f/review_935feb3/portal/tools/verify-pins.py:111: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpcsdn79tr/tmp6_zu7drt/lock.json' mode='r' encoding='UTF-8'>
+  lock = json.load(open(LOCK))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/scratch/14185c8f871f/review_935feb3/portal/tools/verify-pins.py:122: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpcsdn79tr/tmp6_zu7drt/pin-verification.json' mode='r' encoding='UTF-8'>
+  prev = json.load(open(cached)) if os.path.exists(cached) else {"results": []}
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/scratch/14185c8f871f/review_935feb3/portal/tools/verify-pins.py:144: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmpcsdn79tr/tmp6_zu7drt/pin-verification-offline.json' mode='w' encoding='UTF-8'>
+  json.dump(out, open(os.path.join(CACHE, "pin-verification-offline.json"), "w"), indent=2)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_release_attempt_two_rejected (__main__.ReleaseBindings.test_release_attempt_two_rejected) ... ok
+test_release_expired_test_only_rejected (__main__.ReleaseBindings.test_release_expired_test_only_rejected) ... ok
+test_release_missing_fields_rejected (__main__.ReleaseBindings.test_release_missing_fields_rejected) ... ok
+test_seed_missing_package_repository_workflow_rejected (__main__.ReleaseBindings.test_seed_missing_package_repository_workflow_rejected) ... ok
+test_seed_positive_bound_control (__main__.ReleaseBindings.test_seed_positive_bound_control) ... ok
+test_seed_unbound_workflow_rejected (__main__.ReleaseBindings.test_seed_unbound_workflow_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 0.443s
+
+OK
+
+COMMAND {"name": "residual-12", "argv": ["/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3", "evidence/P8/20261110-c98fea1-architect-review/residual_contract_test.py", "-v"], "cwd": "/workspace/scratch/14185c8f871f/review_935feb3", "start": "2026-11-10T03:44:28.978633+00:00", "end": "2026-11-10T03:44:29.451093+00:00", "exit": 0}
+test_actual_attempt_two_rejected_with_gate_attempt_one (__main__.ReleaseGateControls.test_actual_attempt_two_rejected_with_gate_attempt_one) ... ok
+test_bound_gate_positive_control (__main__.ReleaseGateControls.test_bound_gate_positive_control) ... ok
+test_different_runtime_workflow_sha_rejected (__main__.ReleaseGateControls.test_different_runtime_workflow_sha_rejected) ... ok
+test_future_gate_is_not_active_yet (__main__.ReleaseGateControls.test_future_gate_is_not_active_yet) ... ok
+test_offline_image_evidence_requires_observed_digest_binding (__main__.ReleaseGateControls.test_offline_image_evidence_requires_observed_digest_binding) ... /workspace/scratch/14185c8f871f/review_935feb3/portal/tools/verify-pins.py:111: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp7wv4osrt/tmpvzei19qm/lock.json' mode='r' encoding='UTF-8'>
+  lock = json.load(open(LOCK))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/scratch/14185c8f871f/review_935feb3/portal/tools/verify-pins.py:122: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp7wv4osrt/tmpvzei19qm/pin-verification.json' mode='r' encoding='UTF-8'>
+  prev = json.load(open(cached)) if os.path.exists(cached) else {"results": []}
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/workspace/scratch/14185c8f871f/review_935feb3/portal/tools/verify-pins.py:144: ResourceWarning: unclosed file <_io.TextIOWrapper name='/tmp/tmp7wv4osrt/tmpvzei19qm/pin-verification-offline.json' mode='w' encoding='UTF-8'>
+  json.dump(out, open(os.path.join(CACHE, "pin-verification-offline.json"), "w"), indent=2)
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_actual_transport_elapsed_persists_in_overall_budget (__main__.RouteControls.test_actual_transport_elapsed_persists_in_overall_budget) ... ok
+test_fifth_operator_observation_within_accepted_window (__main__.RouteControls.test_fifth_operator_observation_within_accepted_window) ... ok
+test_gateway_observations_stay_within_accepted_n12 (__main__.RouteControls.test_gateway_observations_stay_within_accepted_n12) ... ok
+test_positive_s0_control (__main__.RouteControls.test_positive_s0_control) ... ok
+test_wal_remaining_byte_limits_first_metadata_read (__main__.RouteControls.test_wal_remaining_byte_limits_first_metadata_read) ... ok
+test_consumed_bytes_are_not_lost_on_remaining_cap_error (__main__.TransportDurability.test_consumed_bytes_are_not_lost_on_remaining_cap_error) ... /opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/traceback.py:241: ResourceWarning: unclosed file <_io.BufferedReader name=3>
+  tb.tb_frame.clear()
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_wal_seconds_cap_overrun_is_not_silently_dropped (__main__.TransportDurability.test_wal_seconds_cap_overrun_is_not_silently_dropped) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.353s
+
+OK
