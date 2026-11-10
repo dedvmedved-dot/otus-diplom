@@ -295,6 +295,29 @@ def _run_step(step, env, ctx):
                           capture_output=True, text=True, timeout=90)
 
 
+def _run_job_steps(steps, env, ctx):
+    """Run a job's shell steps, tracking failure and always-running cleanup.
+
+    Returns (names, failures). A nonzero non-always step marks failure and skips subsequent
+    protected steps; `if: always()` steps still run. The caller asserts on the result."""
+    names = []
+    failures = []
+    failed = False
+    for s in steps:
+        if s.get('uses') or not _eval_if(s.get('if'), ctx):
+            continue
+        is_always = s.get('if') == 'always()'
+        if failed and not is_always:
+            continue
+        rr = _run_step(s, env, ctx)
+        name = s.get('name', '')
+        names.append(name)
+        if rr.returncode != 0 and not is_always:
+            failed = True
+            failures.append((name, rr.returncode, rr.stderr))
+    return names, failures
+
+
 def _gate(now=None):
     return {'source_sha': SOURCE, 'repository': REPO, 'package': IMAGE,
             'workflow_sha': SOURCE, 'mode': 'LIVE',
@@ -362,14 +385,9 @@ class SeedRouteE2E(unittest.TestCase):
 
         # seed job: every CREATE_ALLOWED / always() step must exit 0.
         steps = self.seed['jobs']['seed']['steps']
-        names = []
-        for s in steps:
-            if s.get('uses') or not _eval_if(s.get('if'), self.ctx):
-                continue
-            rr = _run_step(s, self.env, self.ctx)
-            name = s.get('name', '')
-            self.assertEqual(rr.returncode, 0, (name, rr.stderr))
-            names.append(name)
+        names, failures = _run_job_steps(steps, self.env, self.ctx)
+        if failures:
+            self.fail('seed mandatory steps failed: %r' % (failures,))
         joined = ' | '.join(names)
         for expected in ('Start rootless BuildKit', 'Build + push minimal seed',
                          'Verify seed registry', 'Record seed digest', 'Cleanup buildkit daemon',
@@ -415,16 +433,9 @@ class ReleaseRouteE2E(unittest.TestCase):
 
     def _run_release_route(self):
         """Run the release job's shell steps; return the ordered list of step names."""
-        steps = self.release['jobs']['release']['steps']
-        names = []
-        for s in steps:
-            if s.get('uses') or not _eval_if(s.get('if'), self.ctx):
-                continue
-            rr = _run_step(s, self.env, self.ctx)
-            name = s.get('name', '')
-            # every mandatory (non-always) shell step must succeed
-            self.assertEqual(rr.returncode, 0, (name, rr.stderr, rr.stdout))
-            names.append(name)
+        names, failures = _run_job_steps(self.release['jobs']['release']['steps'], self.env, self.ctx)
+        if failures:
+            self.fail('mandatory steps failed: %r' % (failures,))
         return names
 
     def _prep_release(self):

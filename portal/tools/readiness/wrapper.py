@@ -200,13 +200,36 @@ def _set_budget_base(budget):
     }
 
 
+def _authority_exhausted(gate, overall=True):
+    """Consult the on-disk authority for a terminal exhaustion signal (recorded overruns count)."""
+    if gate is None:
+        return False
+    try:
+        b = _load_budget_file(budget_path(gate))
+    except ReadError:
+        return True  # corrupt authority -> fail closed
+    if overall:
+        return (b.get("requests", 0) >= OVERALL_REQ_CAP
+                or b.get("bytes", 0) >= OVERALL_BODY_CAP
+                or b.get("seconds", 0.0) >= OVERALL_SEC_CAP)
+    return (b.get("wal_requests", 0) >= WAL_REQ_CAP
+            or b.get("wal_bytes", 0) >= WAL_BODY_CAP
+            or b.get("wal_seconds", 0.0) >= WAL_SEC_CAP)
+
+
 def _overall_exhausted():
+    gate = _BUDGET_CONTEXT["gate"]
+    if gate is not None and _authority_exhausted(gate, True):
+        return True
     return (_BUDGET_BASE["requests"] + _TRANSPORT["requests"] >= OVERALL_REQ_CAP
             or _BUDGET_BASE["bytes"] + _TRANSPORT["bytes"] >= OVERALL_BODY_CAP
             or _BUDGET_BASE["seconds"] + _TRANSPORT["seconds"] >= OVERALL_SEC_CAP)
 
 
 def _wal_exhausted():
+    gate = _BUDGET_CONTEXT["gate"]
+    if gate is not None and _authority_exhausted(gate, False):
+        return True
     return (_BUDGET_BASE["wal_requests"] + _WAL_TRANSPORT["requests"] >= WAL_REQ_CAP
             or _BUDGET_BASE["wal_bytes"] + _WAL_TRANSPORT["bytes"] >= WAL_BODY_CAP
             or _BUDGET_BASE["wal_seconds"] + _WAL_TRANSPORT["seconds"] >= WAL_SEC_CAP)
@@ -1016,7 +1039,11 @@ def run_read(readset, read_id, kubectl, timeout=15, cap=1048576):
             remaining = _remaining_body()
             if remaining <= 0:
                 raise ReadError("overall body budget exhausted")
-            body, code = _io_call(run_kubectl_raw, kubectl, p, timeout, min(cap, remaining))
+            remaining_secs = _remaining_seconds()
+            if remaining_secs <= 0:
+                raise ReadError("overall time budget exhausted")
+            body, code = _io_call(run_kubectl_raw, kubectl, p, min(timeout, remaining_secs),
+                                  min(cap, remaining))
             if len(body) > remaining:
                 raise ReadError("overall body budget exceeded")
             _count_bytes(len(body))
@@ -1077,10 +1104,10 @@ def default_http_get(url, timeout, cap):
     opener = urllib.request.build_opener(NoRedirect, urllib.request.ProxyHandler({}))
     req = urllib.request.Request(url)
     deadline = time.monotonic() + timeout
+    chunks = []
+    total = 0
     try:
         with opener.open(req, timeout=timeout) as resp:
-            chunks = []
-            total = 0
             while True:
                 remain = deadline - time.monotonic()
                 if remain <= 0:
@@ -1097,8 +1124,10 @@ def default_http_get(url, timeout, cap):
                 chunks.append(buf)
             return b"".join(chunks)
     except ReadError:
+        _count_bytes(total)  # charge any partial body already received before the error
         raise
     except Exception as e:
+        _count_bytes(total)  # charge partial body on transport error (never lose consumed bytes)
         raise ReadError("metrics fetch failed: %s" % type(e).__name__)
 
 
@@ -1324,12 +1353,15 @@ def main(argv):
     read_ids = list(readset["reads"].keys())
     wal_id = "HC-WAL-PROGRESS" if "HC-WAL-PROGRESS" in readset["reads"] else None
     ordered = ([wal_id] + [r for r in read_ids if r != wal_id]) if wal_id else read_ids
+    first_obs = {}
     for read_id in ordered:
         spec = readset["reads"][read_id]
         if args.stage not in spec["stages"]:
             journal["reads"][read_id] = {"disposition": NOT_APPLICABLE}
             continue
         start = time.monotonic()
+        if read_id.startswith("HC-") and read_id != wal_id:
+            first_obs[read_id] = start
         try:
             if spec.get("method") == "wal":
                 disp, detail = run_wal_window(args.kubectl, default_http_get, gate, args.state_dir, gate.get("clock_evidence"), args.stage)
@@ -1359,7 +1391,6 @@ def main(argv):
         "HC-GW": {"window": 120, "interval": 10, "n": 12},
     }
     HEALTH_MAX_AGE = {"HC-GW": 60.0}  # Gateway freshness <= 60s; others default 30s
-    health_window_start = time.monotonic()
     max_retries = max(w["n"] - 2 for w in HEALTH_WINDOWS.values())
     for round_no in range(1, max_retries + 1):
         _reset_read_cache()  # each round is a fresh GET (no cache hit across rounds)
@@ -1371,7 +1402,8 @@ def main(argv):
             win = HEALTH_WINDOWS.get(read_id, {"window": 60, "interval": 10, "n": 6})
             if round_no > win["n"] - 2:
                 continue  # N total observations, minus first GET and the final freshness re-read
-            if time.monotonic() - health_window_start > win["window"]:
+            # absolute window end is anchored to this check's FIRST observation, not a shared clock
+            if time.monotonic() - first_obs.get(read_id, time.monotonic()) > win["window"]:
                 continue  # absolute window end reached; no further observation for this check
             sleep_time = min(win["interval"], max(0.0, _remaining_seconds()))
             if sleep_time > 0:
@@ -1393,8 +1425,15 @@ def main(argv):
     # observation is the freshest); a FAIL is never erased by this sweep.
     _reset_read_cache()
     for read_id in reversed(health_ids):
-        if journal["reads"].get(read_id, {}).get("disposition") == FAIL:
+        cur = journal["reads"].get(read_id, {}).get("disposition")
+        if cur == FAIL:
             continue  # failure precedence
+        win = HEALTH_WINDOWS.get(read_id, {"window": 60, "interval": 10, "n": 6})
+        # a late healthy response must not close a check that never passed inside its window
+        if cur == INCONCLUSIVE and time.monotonic() - first_obs.get(read_id, time.monotonic()) > win["window"]:
+            journal["reads"][read_id] = {"disposition": FAIL, "detail": "health window expired without PASS",
+                                         "observed_mono": time.monotonic()}
+            continue
         try:
             expect_list, pred = PREDICATES[read_id]
             doc = run_read(readset, read_id, args.kubectl)

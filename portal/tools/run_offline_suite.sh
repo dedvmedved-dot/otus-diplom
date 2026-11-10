@@ -80,6 +80,9 @@ run "architect remaining contract (17, review e60d1db)" python3 evidence/P8/2026
 isolated
 run "architect residual contract (12, review c98fea1)" python3 evidence/P8/20261110-c98fea1-architect-review/residual_contract_test.py -v
 
+isolated
+run "architect final contract (7, review 935feb3)" python3 evidence/P8/20261110-935feb3-architect-review/final_contract_test.py -v
+
 # --- public pin verification (offline: cached bytes + prior verified evidence; no network) ---
 isolated
 run "public pins verification (offline)" bash -c 'cd portal/tools && python3 verify-pins.py --offline'
