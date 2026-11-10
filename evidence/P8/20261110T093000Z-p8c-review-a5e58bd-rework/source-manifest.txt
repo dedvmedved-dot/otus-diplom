@@ -1,0 +1,47 @@
+# Source manifest — review a5e58bd rework (7235e71)
+
+Base: 4cff2e709d50f05bfb182fae3cc950cddd3f818b (review of 225004d / evidence a5e58bd)
+Final: 7235e713ad22ab530bbd67c16c1b33a587506964
+Fast-forward: yes. No force/rebase/amend.
+
+Source changed (diff 4cff2e7..7235e71):
+  portal/tools/readiness/wrapper.py  — remaining-capacity helpers (_remaining_body/_remaining_seconds/
+                                       _remaining_wal_body/_remaining_wal_seconds) read the CURRENT
+                                       on-disk authority; run_read + both WAL metadata/HTTP reads bound
+                                       timeout by min(overall seconds, WAL seconds, sample deadline);
+                                       default_http_get counts the late chunk and charges the partial
+                                       body (overall + WAL subset) on any error; health window checked
+                                       before sleep, after sleep, and at GET completion with the
+                                       transport timeout bounded by the remaining window.
+  portal/tools/release-check.py       — first-creation single-attempt mandatory: GITHUB_RUN_ATTEMPT=1
+                                       AND typed integer attempt=1 (missing/null/bool/2 rejected).
+  portal/tools/test_route_e2e.py      — _run_job_steps records ANY nonzero (incl. always cleanup) as
+                                       a route failure; a nonzero non-always step skips subsequent
+                                       protected steps while cleanup runs.
+  portal/tools/readiness/test_remaining_contract_working.py — NEW active working copy of the frozen
+                                       e60d1db controls, syncing the positive fixture to attempt=1 +
+                                       GITHUB_RUN_ATTEMPT=1 (historical evidence file frozen).
+  portal/tools/run_offline_suite.sh   — runs the active remaining-contract working copy; adds the
+                                       a5e58bd remaining-execution (12) stage.
+  docs/architecture/P8C_EXECUTABLE_RELEASE_READINESS_RUNBOOK_20261104.md — synced (226 methods).
+
+Runtime/test dependency closure (imported by the active suite):
+  wrapper.py -> wal.py, readset.json (frozen), stdlib (fcntl/hashlib/json/os/select/subprocess/...)
+  active working copies -> evidence fixtures:
+      evidence/P8/20261105-974e069-architect-review/scheduler_regression_test.py (MainContract)
+      evidence/P8/20261105-c8007f5-architect-review/contract_test.py (WindowRoutes)
+      evidence/P8/20261105-f783e1e-architect-review/regression_test.py
+      evidence/P8/20261105-64e36a6-architect-review/accepted-baseline.json (PR-6 Tier/Felix)
+      evidence/P8/20261106-e60d1db-architect-review/remaining_contract_test.py (frozen; active copy
+        test_remaining_contract_working.py syncs attempt binding)
+      evidence/P8/20261110-c98fea1-architect-review/residual_contract_test.py (12 controls)
+      evidence/P8/20261110-935feb3-architect-review/final_contract_test.py (7 controls)
+      evidence/P8/20261110-a5e58bd-architect-review/remaining_execution_test.py (12 controls)
+  release-check.py, release_qualification.py, verify-pins.py (+ pins.lock.json, PyYAML)
+  template parse: p8c-portal-release.yml.template, p8c-portal-seed.yml.template
+  pinned public inputs: pins.lock.json (6 binaries + 3 actions + 1 image, 10/10 offline VERIFIED)
+
+Evidence (this package):
+  raw-transcript.txt  — UTC start/end, cwd, toolchain, launcher output, exit 0
+  secret-scan.txt     — no credential/token matches in source diff
+  result.md           — full closure matrix + verdict
