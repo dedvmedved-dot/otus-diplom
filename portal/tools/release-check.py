@@ -166,11 +166,14 @@ def main():
             raise ValueError('first-creation gate incomplete/invalid')
         if g.get('mode') != 'LIVE':
             raise ValueError('first-creation requires mode=LIVE (not TEST_ONLY)')
-        # single-attempt: the actual run_attempt must be 1 when it is bound (a real second seed
-        # run is rejected); the gate's own attempt field, when present, must also be 1.
+        # single-attempt: BOTH bindings are mandatory and typed. The actual run_attempt must be 1
+        # and the gate must declare an integer attempt=1 (missing/null/bool/2 are all rejected).
         run_attempt = os.environ.get('GITHUB_RUN_ATTEMPT')
-        if (run_attempt is not None and run_attempt != '1') or (g.get('attempt') is not None and g.get('attempt') != 1):
-            raise ValueError('first-creation single-attempt only (attempt and run_attempt must be 1)')
+        if run_attempt != '1':
+            raise ValueError('first-creation requires GITHUB_RUN_ATTEMPT=1 (missing/other rejected)')
+        attempt = g.get('attempt')
+        if not isinstance(attempt, int) or isinstance(attempt, bool) or attempt != 1:
+            raise ValueError('first-creation requires attempt=1 (integer, non-null)')
         github_sha = os.environ.get('GITHUB_SHA')
         if not github_sha or g.get('source_sha') != github_sha:
             raise ValueError('first-creation source_sha not bound to GITHUB_SHA')

@@ -304,16 +304,46 @@ def _count_wal_seconds(seconds):
     _WAL_TRANSPORT["seconds"] += float(seconds)
 
 
+def _authority_budget():
+    """Return the current on-disk authority budget, or None when no gate is bound.
+
+    Remaining-capacity decisions use the CURRENT authority (recorded overruns included), not the
+    process-local base+transport which can be stale relative to a completed concurrent charge."""
+    gate = _BUDGET_CONTEXT["gate"]
+    if gate is None:
+        return None
+    try:
+        return _load_budget_file(budget_path(gate))
+    except ReadError:
+        return None
+
+
 def _remaining_body():
+    b = _authority_budget()
+    if b is not None:
+        return OVERALL_BODY_CAP - b.get("bytes", 0)
     return OVERALL_BODY_CAP - (_BUDGET_BASE["bytes"] + _TRANSPORT["bytes"])
 
 
 def _remaining_seconds():
+    b = _authority_budget()
+    if b is not None:
+        return OVERALL_SEC_CAP - b.get("seconds", 0.0)
     return OVERALL_SEC_CAP - (_BUDGET_BASE["seconds"] + _TRANSPORT["seconds"])
 
 
 def _remaining_wal_body():
+    b = _authority_budget()
+    if b is not None:
+        return WAL_BODY_CAP - b.get("wal_bytes", 0)
     return WAL_BODY_CAP - (_BUDGET_BASE["wal_bytes"] + _WAL_TRANSPORT["bytes"])
+
+
+def _remaining_wal_seconds():
+    b = _authority_budget()
+    if b is not None:
+        return WAL_SEC_CAP - b.get("wal_seconds", 0.0)
+    return WAL_SEC_CAP - (_BUDGET_BASE["wal_seconds"] + _WAL_TRANSPORT["seconds"])
 
 
 def _count_seconds(n):
@@ -1113,11 +1143,12 @@ def default_http_get(url, timeout, cap):
                 if remain <= 0:
                     raise ReadError("metrics deadline exceeded")
                 buf = resp.read(min(65536, cap + 1 - total))
-                # absolute deadline bounds the blocking read's completion, not just its start
+                # the blocking read may have completed after the absolute deadline
                 if time.monotonic() > deadline:
+                    total += len(buf)  # count the late chunk before rejecting it
                     raise ReadError("metrics deadline exceeded")
                 if not buf:
-                    break
+                    break  # clean EOF before the deadline
                 total += len(buf)
                 if total > cap:
                     raise ReadError("metrics response exceeds cap")
@@ -1125,9 +1156,11 @@ def default_http_get(url, timeout, cap):
             return b"".join(chunks)
     except ReadError:
         _count_bytes(total)  # charge any partial body already received before the error
+        _count_wal_bytes(total)  # the WAL subset is consumed even on a failed metrics fetch
         raise
     except Exception as e:
         _count_bytes(total)  # charge partial body on transport error (never lose consumed bytes)
+        _count_wal_bytes(total)
         raise ReadError("metrics fetch failed: %s" % type(e).__name__)
 
 
@@ -1148,7 +1181,11 @@ def run_wal_sample(kubectl, http_get, clock_evidence, gate):
         remaining = min(_remaining_body(), _remaining_wal_body(), wal.SAMPLE_BODY_CAP - body_total[0])
         if remaining <= 0:
             raise ReadError("body budget exhausted")
-        body, code = _io_call(run_kubectl_raw, kubectl, path, 5, min(wal.METADATA_CAP, remaining))
+        t_limit = max(0.0, min(wal.REQ_TIMEOUT, _remaining_seconds(), _remaining_wal_seconds(),
+                               wal.SAMPLE_DEADLINE - (time.monotonic() - start)))
+        if t_limit <= 0:
+            raise ReadError("time budget exhausted")
+        body, code = _io_call(run_kubectl_raw, kubectl, path, t_limit, min(wal.METADATA_CAP, remaining))
         if time.monotonic() - start > wal.SAMPLE_DEADLINE:
             raise ReadError("sample deadline exceeded")
         body_total[0] += len(body)
@@ -1183,7 +1220,11 @@ def run_wal_sample(kubectl, http_get, clock_evidence, gate):
             remaining = min(_remaining_body(), _remaining_wal_body(), wal.SAMPLE_BODY_CAP - body_total[0])
             if remaining <= 0:
                 return INCONCLUSIVE, "body budget exhausted", None, None
-            metrics_text = _io_call(http_get, "http://%s:9187/metrics" % pod_ip, wal.REQ_TIMEOUT,
+            t_limit = max(0.0, min(wal.REQ_TIMEOUT, _remaining_seconds(), _remaining_wal_seconds(),
+                                   wal.SAMPLE_DEADLINE - (time.monotonic() - start)))
+            if t_limit <= 0:
+                return INCONCLUSIVE, "time budget exhausted", None, None
+            metrics_text = _io_call(http_get, "http://%s:9187/metrics" % pod_ip, t_limit,
                                     min(wal.METRIC_CAP, remaining)).decode()
         except ReadError as e:
             return INCONCLUSIVE, str(e), None, None
@@ -1402,19 +1443,32 @@ def main(argv):
             win = HEALTH_WINDOWS.get(read_id, {"window": 60, "interval": 10, "n": 6})
             if round_no > win["n"] - 2:
                 continue  # N total observations, minus first GET and the final freshness re-read
+            fo = first_obs.get(read_id, time.monotonic())
             # absolute window end is anchored to this check's FIRST observation, not a shared clock
-            if time.monotonic() - first_obs.get(read_id, time.monotonic()) > win["window"]:
-                continue  # absolute window end reached; no further observation for this check
+            if time.monotonic() - fo >= win["window"]:
+                continue  # window already ended before this retry
             sleep_time = min(win["interval"], max(0.0, _remaining_seconds()))
             if sleep_time > 0:
                 time.sleep(sleep_time)
                 _count_seconds(sleep_time)
+            # after the sleep the window may have ended (the sleep crossed the absolute end)
+            if time.monotonic() - fo >= win["window"]:
+                journal["reads"][read_id] = {"disposition": FAIL, "detail": "health window expired before observation",
+                                             "attempt": round_no + 1, "observed_mono": time.monotonic()}
+                progressed = True
+                continue
+            window_remaining = win["window"] - (time.monotonic() - fo)
             try:
                 expect_list, pred = PREDICATES[read_id]
-                doc = run_read(readset, read_id, args.kubectl)
+                doc = run_read(readset, read_id, args.kubectl, min(15, max(0.1, window_remaining)))
                 disp, detail = pred(doc)
-                journal["reads"][read_id] = {"disposition": disp, "detail": detail,
-                                             "attempt": round_no + 1, "observed_mono": time.monotonic()}
+                # the observation may have completed after the window end (a late response)
+                if time.monotonic() - fo >= win["window"]:
+                    journal["reads"][read_id] = {"disposition": FAIL, "detail": "health observation after window end",
+                                                 "attempt": round_no + 1, "observed_mono": time.monotonic()}
+                else:
+                    journal["reads"][read_id] = {"disposition": disp, "detail": detail,
+                                                 "attempt": round_no + 1, "observed_mono": time.monotonic()}
             except ReadError as e:
                 journal["reads"][read_id] = {"disposition": INCONCLUSIVE, "error": str(e),
                                              "attempt": round_no + 1, "observed_mono": time.monotonic()}
@@ -1429,18 +1483,26 @@ def main(argv):
         if cur == FAIL:
             continue  # failure precedence
         win = HEALTH_WINDOWS.get(read_id, {"window": 60, "interval": 10, "n": 6})
+        fo = first_obs.get(read_id, time.monotonic())
+        window_remaining = win["window"] - (time.monotonic() - fo)
         # a late healthy response must not close a check that never passed inside its window
-        if cur == INCONCLUSIVE and time.monotonic() - first_obs.get(read_id, time.monotonic()) > win["window"]:
+        if cur == INCONCLUSIVE and window_remaining <= 0:
             journal["reads"][read_id] = {"disposition": FAIL, "detail": "health window expired without PASS",
                                          "observed_mono": time.monotonic()}
             continue
+        timeout = min(15, max(0.1, window_remaining)) if cur == INCONCLUSIVE else 15
         try:
             expect_list, pred = PREDICATES[read_id]
-            doc = run_read(readset, read_id, args.kubectl)
+            doc = run_read(readset, read_id, args.kubectl, timeout)
             disp, detail = pred(doc)
-            journal["reads"][read_id] = {"disposition": disp, "detail": detail,
-                                         "attempt": journal["reads"][read_id].get("attempt", 1) + 1,
-                                         "observed_mono": time.monotonic()}
+            if cur == INCONCLUSIVE and time.monotonic() - fo >= win["window"]:
+                journal["reads"][read_id] = {"disposition": FAIL, "detail": "health observation after window end",
+                                             "attempt": journal["reads"][read_id].get("attempt", 1) + 1,
+                                             "observed_mono": time.monotonic()}
+            else:
+                journal["reads"][read_id] = {"disposition": disp, "detail": detail,
+                                             "attempt": journal["reads"][read_id].get("attempt", 1) + 1,
+                                             "observed_mono": time.monotonic()}
         except ReadError as e:
             journal["reads"][read_id] = {"disposition": INCONCLUSIVE, "error": str(e),
                                          "observed_mono": time.monotonic()}

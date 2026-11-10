@@ -45,12 +45,14 @@ fixture/authority seeding. Overrun semantics split by field kind: continuous con
 never turns into "nothing was consumed"; discrete reservations (requests/wal_requests) are not
 recorded on overrun (`commit=False`) so a slot is not spent twice. Actual transport elapsed time
 (`_io_call` around every kubectl/HTTP call) is charged to overall seconds alongside explicit sleeps,
-so I/O time is not lost from the budget; `default_http_get` charges any partial body it already
-received before a deadline/transport error. Exhaustion is a TERMINAL authority: `_overall_exhausted`/
-`_wal_exhausted` consult the on-disk authority (recorded overruns count), so after the overall time
-budget is spent no further I/O is issued; and each transport call's `timeout` is bounded up-front by
-`min(timeout, remaining enclosing deadline)` (the remaining overall seconds). Any NaN/infinite/
-non-finite budget field blocks before any read.
+so I/O time is not lost from the budget; `default_http_get` counts a late chunk and charges any
+partial body (overall AND WAL subset) it already received before a deadline/transport error.
+Exhaustion is a TERMINAL authority: `_overall_exhausted`/`_wal_exhausted` consult the on-disk
+authority (recorded overruns count), so after the overall time budget is spent no further I/O is
+issued; and every transport call's `timeout` is bounded up-front by the minimum of the remaining
+enclosing deadlines — overall seconds, WAL seconds and the sample deadline (`run_read` and both WAL
+metadata/HTTP reads use the CURRENT authority remainder, not a stale process-local base). Any
+NaN/infinite/non-finite budget field blocks before any read.
 
 ## State machine (window authority)
 
@@ -73,9 +75,10 @@ A first observation's FAIL is preserved (failure precedence — never erased by 
 transient INCONCLUSIVE is retried after the per-check interval inside the absolute window; and the
 final freshness re-read (reverse order so the shared DB/ARCH observation is the freshest) is gated
 on per-check age (≤30 s for normal checks, ≤60 s for Gateway). The window end is anchored to each
-check's FIRST observation (not a shared clock), and the final freshness re-read cannot turn an
-INCONCLUSIVE check into PASS after its window expired — a late healthy response never closes a
-check that never passed inside its allowed window.
+check's FIRST observation (not a shared clock); it is checked before the sleep, after the sleep,
+and at GET completion, and the transport timeout is bounded by the remaining window — so a late
+healthy response (retry or final freshness re-read) never closes a check that never passed inside
+its allowed window.
 Predicates enforce the exact GVR binding per read (`kind` AND `apiVersion`, not just the broad
 `ALLOWED_API` or a name ending in `List`): HC-DB/ARCH-STATE must be `Cluster`@`postgresql.cnpg.io/v1`,
 PR-6 must be the nine expected (kind, apiVersion) pairs with typed items/max_items, PR-5 must be
@@ -107,20 +110,22 @@ incomplete metrics never overwrite a valid baseline.
 
 Full suite (isolated authority per file): 23 readiness + 25 residual-working + 3 qualification +
 4 release + 7 release-negative + 5 route E2E + 28 regression + 14 scheduler + 15 contract-authority
-+ 34 completion-authority + 20 residual-contract + 17 remaining-contract + 12 residual-contract
-(c98fea1) + 7 final-contract (935feb3) = **214 methods**, plus qualification CLI (`qualified:true`)
-and offline pin verification.
++ 34 completion-authority + 20 residual-contract + 17 remaining-contract (active) + 12
+residual-contract (c98fea1) + 7 final-contract (935feb3) + 12 remaining-execution (a5e58bd) =
+**226 methods**, plus qualification CLI (`qualified:true`) and offline pin verification.
 
 Release-gate binding (R3): the `release-gate` and `first-creation` validators require the actual
-run attempt (argv run_attempt / `GITHUB_RUN_ATTEMPT` must be 1 when bound), `workflow_sha` equal to
-the runtime `GITHUB_WORKFLOW_SHA` (a missing runtime binding is NOT authorization), and an
+run attempt (`argv run_attempt` / `GITHUB_RUN_ATTEMPT` = 1) AND a typed integer `attempt=1` in the
+document (missing/null/bool/2 all rejected — no permissive bypass), `workflow_sha` equal to the
+runtime `GITHUB_WORKFLOW_SHA` (a missing runtime binding is NOT authorization), and an
 already-elapsed `issued_at_utc` (no future grace). Route E2E (R4) executes the full seed
 CREATE_ALLOWED and release routes with only the network-only modes (private/registry) and external
 tool binaries faked; the gate/digest/predicate/`verified` validators run for real,
 `GITHUB_ENV`/`GITHUB_OUTPUT`/`if:`/`always()` cleanup are emulated, and the exit code of every
-mandatory step is asserted (a digest mismatch is caught). A single shared route runner handles both
-positive and negative routes: a nonzero non-always step marks failure, skips subsequent protected
-steps, but still executes `if: always()` cleanup before the test fails.
+mandatory step is asserted (a digest mismatch is caught). A single shared route runner handles
+positive and negative routes: a nonzero non-always step marks failure and skips subsequent protected
+steps, `if: always()` cleanup still runs, and a nonzero cleanup is itself recorded as a route
+failure (always determines execution, not whether the return code counts).
 
 Note: the frozen historical completion_contract_test.py / residual_contract_test.py are NOT modified;
 their positive S0→S4 flows predate the action-receipt binding, so the active working copies add the

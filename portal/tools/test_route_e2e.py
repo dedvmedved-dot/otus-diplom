@@ -312,9 +312,12 @@ def _run_job_steps(steps, env, ctx):
         rr = _run_step(s, env, ctx)
         name = s.get('name', '')
         names.append(name)
-        if rr.returncode != 0 and not is_always:
-            failed = True
+        if rr.returncode != 0:
+            # ANY nonzero (mandatory or always) is a failure of the final verdict; an always-step
+            # failure is recorded but does not stop subsequent always-steps.
             failures.append((name, rr.returncode, rr.stderr))
+            if not is_always:
+                failed = True  # skip subsequent protected steps after a protected failure
     return names, failures
 
 
