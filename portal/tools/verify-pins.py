@@ -130,12 +130,13 @@ def verify_offline():
             results.append({"id": p["id"], "status": "MISMATCH", "offline": True})
         else:
             results.append({"id": p["id"], "status": r.get("status", "UNAVAILABLE"), "offline": True})
-    # images: the cached declared digest must bind to the CURRENT lock digest
+    # images: cached declared digest AND observed manifest digest must both bind to the CURRENT
+    # lock digest (a cached VERIFIED record whose observed manifest is a different image fails).
     for p in lock["images"]:
         r = by_id.get(p["id"])
         if r is None:
             results.append({"id": p["id"], "status": "UNAVAILABLE", "offline": True})
-        elif r.get("declared") != p["digest"]:
+        elif r.get("declared") != p["digest"] or r.get("manifest_sha256") != p["digest"]:
             results.append({"id": p["id"], "status": "MISMATCH", "offline": True})
         else:
             results.append({"id": p["id"], "status": r.get("status", "UNAVAILABLE"), "offline": True})

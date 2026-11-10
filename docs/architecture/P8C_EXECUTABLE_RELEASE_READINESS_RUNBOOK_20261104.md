@@ -40,7 +40,13 @@ reset consumption. Persistence is concurrency-safe and crash-durable: each charg
 ≤ cap`, and adds the delta (ADDITIVE, not MAX) before fsyncing the file and its directory and
 doing the atomic `os.replace`. Independent concurrent charges therefore sum correctly and a single
 remaining slot cannot be spent twice. `write_budget` remains the "set absolute" entry used by the
-fixture/authority seeding. Any NaN/infinite/non-finite budget field blocks before any read.
+fixture/authority seeding. Overrun semantics split by field kind: continuous consumption
+(bytes/seconds) is RECORDED even when it crosses the cap (`_charge(..., commit=True)`) so a failure
+never turns into "nothing was consumed"; discrete reservations (requests/wal_requests) are not
+recorded on overrun (`commit=False`) so a slot is not spent twice. Actual transport elapsed time
+(`_io_call` around every kubectl/HTTP call) is charged to overall seconds alongside explicit sleeps,
+so I/O time is not lost from the budget. Any NaN/infinite/non-finite budget field blocks before any
+read.
 
 ## State machine (window authority)
 
@@ -56,12 +62,13 @@ a cross-sample pod UID change invalidates the comparison.
 
 ## Health windows + freshness at verdict
 
-Health reads (HC-*) use bounded per-check W/I/N windows (interval + retries; e.g. HC-DNS interval5,
-HC-GW 12 retries): a first observation's FAIL is preserved (failure precedence — never erased by a
-later sweep); a transient INCONCLUSIVE is retried after the per-check interval, bounded by the
-remaining time budget; and at the verdict every mandatory observation is re-read fresh (reverse
-order so the shared DB/ARCH observation is the freshest) and gated on age ≤ 30 s (a stale
-observation → FAIL, no PASS).
+Health reads (HC-*) use a per-check W/I/N scheduler driven by a single table (W = absolute window,
+I = retry interval, N = TOTAL observations INCLUDING the first GET and the final freshness re-read;
+retries = N−2): DB/ARCH (shared), OP, Portal = W60/I10/N6; DNS = W30/I5/N6; Gateway = W120/I10/N12.
+A first observation's FAIL is preserved (failure precedence — never erased by a later sweep); a
+transient INCONCLUSIVE is retried after the per-check interval inside the absolute window; and the
+final freshness re-read (reverse order so the shared DB/ARCH observation is the freshest) is gated
+on per-check age (≤30 s for normal checks, ≤60 s for Gateway).
 Predicates enforce the exact GVR binding per read (`kind` AND `apiVersion`, not just the broad
 `ALLOWED_API` or a name ending in `List`): HC-DB/ARCH-STATE must be `Cluster`@`postgresql.cnpg.io/v1`,
 PR-6 must be the nine expected (kind, apiVersion) pairs with typed items/max_items, PR-5 must be
@@ -92,8 +99,17 @@ incomplete metrics never overwrite a valid baseline.
 | pin verification (10/10, offline) | verify-pins.py --offline | launcher → exit 0 | pin-verification-offline.json |
 
 Full suite (isolated authority per file): 23 readiness + 25 residual-working + 3 qualification +
-4 release + 7 release-negative + 28 regression + 14 scheduler + 15 contract-authority + 34 completion
--authority + 20 residual-contract = **173 methods**.
+4 release + 7 release-negative + 5 route E2E + 28 regression + 14 scheduler + 15 contract-authority
++ 34 completion-authority + 20 residual-contract + 17 remaining-contract + 12 residual-contract
+(c98fea1) = **206 methods**, plus qualification CLI (`qualified:true`) and offline pin verification.
+
+Release-gate binding (R3): the `release-gate` and `first-creation` validators require the actual
+run attempt (argv run_attempt must be 1), `workflow_sha` equal to the runtime `GITHUB_WORKFLOW_SHA`
+(a missing runtime binding is NOT authorization), and an already-elapsed `issued_at_utc` (no future
+grace). Route E2E (R4) executes the full seed CREATE_ALLOWED and release routes with only the
+network-only modes (private/registry) and external tool binaries faked; the gate/digest/predicate/
+`verified` validators run for real, `GITHUB_ENV`/`GITHUB_OUTPUT`/`if:`/`always()` cleanup are
+emulated, and the exit code of every mandatory step is asserted (a digest mismatch is caught).
 
 Note: the frozen historical completion_contract_test.py / residual_contract_test.py are NOT modified;
 their positive S0→S4 flows predate the action-receipt binding, so the active working copies add the

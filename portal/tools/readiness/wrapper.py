@@ -152,11 +152,16 @@ def _write_budget_file(p, budget):
         os.close(dirfd)
 
 
-def _charge(gate, field, delta, cap):
+def _charge(gate, field, delta, cap, commit=True):
     """Atomically reserve+commit `delta` to one monotonic budget field under the authority lock.
 
     The whole check-remaining/reserve/commit is serialized, so two independent charges are
-    additive (both count) and a single remaining slot cannot be spent twice."""
+    additive (both count) and a single remaining slot cannot be spent twice.
+
+    `commit` controls overrun semantics: for continuous consumption (bytes/seconds) the consumed
+    delta is RECORDED even when it crosses the cap (a failure must not turn into "nothing was
+    consumed"); for discrete reservations (requests) the slot is not recorded when the cap would
+    be exceeded (the slot is not spent)."""
     p = budget_path(gate)
     os.makedirs(os.path.dirname(p), exist_ok=True)
     lock = open(p + ".lock", "a+")
@@ -165,6 +170,9 @@ def _charge(gate, field, delta, cap):
         current = _load_budget_file(p)
         new_val = current.get(field, 0) + delta
         if new_val > cap:
+            if commit:
+                current[field] = new_val  # preserve the actually-consumed delta on overrun
+                _write_budget_file(p, current)
             raise ReadError("budget exhausted")
         current[field] = new_val
         _write_budget_file(p, current)
@@ -215,7 +223,7 @@ def _count_request():
     if gate is not None:
         if _overall_exhausted():
             raise ReadError("overall budget exhausted")
-        _charge(gate, "requests", 1, OVERALL_REQ_CAP)
+        _charge(gate, "requests", 1, OVERALL_REQ_CAP, commit=False)
     _TRANSPORT["requests"] += 1
 
 
@@ -233,7 +241,7 @@ def _count_wal_request():
     if gate is not None:
         if _wal_exhausted():
             raise ReadError("WAL budget exhausted")
-        _charge(gate, "wal_requests", 1, WAL_REQ_CAP)
+        _charge(gate, "wal_requests", 1, WAL_REQ_CAP, commit=False)
     _WAL_TRANSPORT["requests"] += 1
 
 
@@ -250,9 +258,9 @@ def _count_wal(nbytes, seconds):
     global _TRANSPORT, _WAL_TRANSPORT
     gate = _BUDGET_CONTEXT["gate"]
     if gate is not None:
-        _charge(gate, "requests", 1, OVERALL_REQ_CAP)
+        _charge(gate, "requests", 1, OVERALL_REQ_CAP, commit=False)
         _charge(gate, "bytes", int(nbytes), OVERALL_BODY_CAP)
-        _charge(gate, "wal_requests", 1, WAL_REQ_CAP)
+        _charge(gate, "wal_requests", 1, WAL_REQ_CAP, commit=False)
         _charge(gate, "wal_bytes", int(nbytes), WAL_BODY_CAP)
         _charge(gate, "wal_seconds", float(seconds), WAL_SEC_CAP)
     _TRANSPORT["requests"] += 1
@@ -281,6 +289,10 @@ def _remaining_seconds():
     return OVERALL_SEC_CAP - (_BUDGET_BASE["seconds"] + _TRANSPORT["seconds"])
 
 
+def _remaining_wal_body():
+    return WAL_BODY_CAP - (_BUDGET_BASE["wal_bytes"] + _WAL_TRANSPORT["bytes"])
+
+
 def _count_seconds(n):
     global _TRANSPORT
     gate = _BUDGET_CONTEXT["gate"]
@@ -292,6 +304,19 @@ def _count_seconds(n):
 def _count_transport(nbytes):
     _count_request()
     _count_bytes(nbytes)
+
+
+def _io_call(fn, *args, **kwargs):
+    """Run a transport call and charge its actual elapsed time to the overall seconds budget.
+
+    The elapsed (not just explicit sleeps) is part of the consumed I/O budget; it must not be
+    lost. The charge is recorded in a finally so a transport error still accounts for the time
+    spent inside the I/O."""
+    t0 = time.monotonic()
+    try:
+        return fn(*args, **kwargs)
+    finally:
+        _count_seconds(time.monotonic() - t0)
 
 
 def budget_path(gate):
@@ -991,7 +1016,7 @@ def run_read(readset, read_id, kubectl, timeout=15, cap=1048576):
             remaining = _remaining_body()
             if remaining <= 0:
                 raise ReadError("overall body budget exhausted")
-            body, code = run_kubectl_raw(kubectl, p, timeout, min(cap, remaining))
+            body, code = _io_call(run_kubectl_raw, kubectl, p, timeout, min(cap, remaining))
             if len(body) > remaining:
                 raise ReadError("overall body budget exceeded")
             _count_bytes(len(body))
@@ -1090,10 +1115,11 @@ def run_wal_sample(kubectl, http_get, clock_evidence, gate):
             raise ReadError("sample deadline exceeded")
         _count_request()
         _count_wal_request()
-        remaining = _remaining_body()
+        # bound each metadata read by the minimum of sample/window/WAL/overall remaining body.
+        remaining = min(_remaining_body(), _remaining_wal_body(), wal.SAMPLE_BODY_CAP - body_total[0])
         if remaining <= 0:
-            raise ReadError("overall body budget exhausted")
-        body, code = run_kubectl_raw(kubectl, path, 5, min(256 * 1024, remaining))
+            raise ReadError("body budget exhausted")
+        body, code = _io_call(run_kubectl_raw, kubectl, path, 5, min(wal.METADATA_CAP, remaining))
         if time.monotonic() - start > wal.SAMPLE_DEADLINE:
             raise ReadError("sample deadline exceeded")
         body_total[0] += len(body)
@@ -1125,10 +1151,10 @@ def run_wal_sample(kubectl, http_get, clock_evidence, gate):
         try:
             _count_request()
             _count_wal_request()
-            remaining = _remaining_body()
+            remaining = min(_remaining_body(), _remaining_wal_body(), wal.SAMPLE_BODY_CAP - body_total[0])
             if remaining <= 0:
-                return INCONCLUSIVE, "overall body budget exhausted", None, None
-            metrics_text = http_get("http://%s:9187/metrics" % pod_ip, wal.REQ_TIMEOUT,
+                return INCONCLUSIVE, "body budget exhausted", None, None
+            metrics_text = _io_call(http_get, "http://%s:9187/metrics" % pod_ip, wal.REQ_TIMEOUT,
                                     min(wal.METRIC_CAP, remaining)).decode()
         except ReadError as e:
             return INCONCLUSIVE, str(e), None, None
@@ -1321,17 +1347,20 @@ def main(argv):
     # bounded health windows (per-check W/I/N) + freshness re-check at verdict.
     health_ids = [r for r in ordered
                   if r != wal_id and r.startswith("HC-") and args.stage in readset["reads"][r]["stages"]]
-    HEALTH_MAX_AGE = 30.0
-    # per-check W/I/N: interval (seconds between retries) and number of retries.
+    # per-check W/I/N: W = absolute window (s), I = retry interval (s), N = TOTAL observations
+    # INCLUDING the first GET (already done in the main loop) and the final freshness re-read.
+    # retries = N - 2.
     HEALTH_WINDOWS = {
-        "HC-DB": {"interval": 10, "retries": 2},
-        "HC-ARCH-STATE": {"interval": 10, "retries": 2},  # shares the DB GET within a round
-        "HC-OP": {"interval": 10, "retries": 2},
-        "HC-DNS": {"interval": 5, "retries": 2},
-        "HC-PORTAL": {"interval": 10, "retries": 2},
-        "HC-GW": {"interval": 10, "retries": 12},
+        "HC-DB": {"window": 60, "interval": 10, "n": 6},
+        "HC-ARCH-STATE": {"window": 60, "interval": 10, "n": 6},  # shares the DB GET within a round
+        "HC-OP": {"window": 60, "interval": 10, "n": 6},
+        "HC-DNS": {"window": 30, "interval": 5, "n": 6},
+        "HC-PORTAL": {"window": 60, "interval": 10, "n": 6},
+        "HC-GW": {"window": 120, "interval": 10, "n": 12},
     }
-    max_retries = max(w["retries"] for w in HEALTH_WINDOWS.values())
+    HEALTH_MAX_AGE = {"HC-GW": 60.0}  # Gateway freshness <= 60s; others default 30s
+    health_window_start = time.monotonic()
+    max_retries = max(w["n"] - 2 for w in HEALTH_WINDOWS.values())
     for round_no in range(1, max_retries + 1):
         _reset_read_cache()  # each round is a fresh GET (no cache hit across rounds)
         progressed = False
@@ -1339,9 +1368,11 @@ def main(argv):
             cur = journal["reads"].get(read_id, {}).get("disposition")
             if cur == FAIL or cur == PASS:
                 continue  # failure precedence / already resolved
-            win = HEALTH_WINDOWS.get(read_id, {"interval": 10, "retries": 2})
-            if round_no > win["retries"]:
-                continue
+            win = HEALTH_WINDOWS.get(read_id, {"window": 60, "interval": 10, "n": 6})
+            if round_no > win["n"] - 2:
+                continue  # N total observations, minus first GET and the final freshness re-read
+            if time.monotonic() - health_window_start > win["window"]:
+                continue  # absolute window end reached; no further observation for this check
             sleep_time = min(win["interval"], max(0.0, _remaining_seconds()))
             if sleep_time > 0:
                 time.sleep(sleep_time)
@@ -1358,8 +1389,8 @@ def main(argv):
             progressed = True
         if not progressed:
             break
-    # freshness re-read: re-read every non-FAIL check fresh at the verdict (reverse order so the
-    # shared DB/ARCH observation is the freshest); a FAIL is never erased by this sweep.
+    # freshness re-read (the final N-th observation): reverse order so the shared DB/ARCH
+    # observation is the freshest); a FAIL is never erased by this sweep.
     _reset_read_cache()
     for read_id in reversed(health_ids):
         if journal["reads"].get(read_id, {}).get("disposition") == FAIL:
@@ -1374,12 +1405,13 @@ def main(argv):
         except ReadError as e:
             journal["reads"][read_id] = {"disposition": INCONCLUSIVE, "error": str(e),
                                          "observed_mono": time.monotonic()}
-    # freshness gate: any stale mandatory observation -> FAIL (no PASS with stale health)
+    # freshness gate: stale mandatory observation -> FAIL (no PASS with stale health). Per-check age.
     now_mono = time.monotonic()
     for read_id in health_ids:
         ent = journal["reads"].get(read_id, {})
         obs = ent.get("observed_mono")
-        if obs is not None and now_mono - obs > HEALTH_MAX_AGE:
+        max_age = HEALTH_MAX_AGE.get(read_id, 30.0)
+        if obs is not None and now_mono - obs > max_age:
             journal["reads"][read_id] = {"disposition": FAIL, "detail": "health observation stale at verdict"}
 
     # authoritative budget: re-read the on-disk authority (atomic deltas already persisted by

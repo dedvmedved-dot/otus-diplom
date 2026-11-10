@@ -123,6 +123,11 @@ def main():
         wf = g.get('workflow_sha')
         if not isinstance(wf, str) or not re.fullmatch('[0-9a-f]{40}', wf):
             raise ValueError('release-gate workflow_sha missing/invalid')
+        # workflow_sha must bind to the ACTUAL workflow (GITHUB_WORKFLOW_SHA), not just be a 40-hex
+        # string; a missing runtime binding is not authorization.
+        expected_wf = os.environ.get('GITHUB_WORKFLOW_SHA')
+        if not expected_wf or wf != expected_wf:
+            raise ValueError('release-gate workflow_sha not bound to actual workflow')
         if g.get('mode') != 'LIVE':
             raise ValueError('release-gate mode must be LIVE')
         issued = g.get('issued_at_utc')
@@ -136,12 +141,14 @@ def main():
         except Exception:
             raise ValueError('release-gate issued_at_utc unparseable')
         now = time.time()
-        if issued_epoch > now + 300:
-            raise ValueError('release-gate issued_at_utc in the future')
+        if issued_epoch > now:
+            raise ValueError('release-gate issued_at_utc not yet active (future)')
         if issued_epoch + expiry * 3600 < now:
             raise ValueError('release-gate expired')
-        if g.get('attempt') != 1:
-            raise ValueError('release-gate single-attempt only (attempt must be 1)')
+        # single attempt: the gate must declare attempt=1 AND the actual run attempt must be 1
+        # (a real second run is rejected, not silently accepted).
+        if g.get('attempt') != 1 or str(attempt) != '1':
+            raise ValueError('release-gate single-attempt only (attempt and run_attempt must be 1)')
         print(json.dumps({'gate': 'bound', 'source': source, 'repository': repository, 'attempt': attempt}))
     elif mode == 'predicate':
         print(json.dumps(predicate(sys.argv[2]), sort_keys=True))
@@ -170,15 +177,17 @@ def main():
             raise ValueError('first-creation gate.package not bound')
         wf = g.get('workflow_sha')
         expected_wf = os.environ.get('GITHUB_WORKFLOW_SHA')
-        if not isinstance(wf, str) or not re.fullmatch('[0-9a-f]{40}', wf) or (expected_wf and wf != expected_wf):
-            raise ValueError('first-creation gate.workflow_sha not bound')
+        # workflow_sha is MANDATORY and must bind to the actual workflow; a missing runtime
+        # binding is NOT authorization (unlike the prior "only if env present").
+        if not isinstance(wf, str) or not re.fullmatch('[0-9a-f]{40}', wf) or not expected_wf or wf != expected_wf:
+            raise ValueError('first-creation gate.workflow_sha not bound to actual workflow')
         try:
             issued = calendar.timegm(time.strptime(g['issued_at_utc'], '%Y-%m-%dT%H:%M:%SZ'))
         except Exception:
             raise ValueError('first-creation issued_at unparseable')
         now = time.time()
-        if issued > now + 300:
-            raise ValueError('first-creation issued_at in the future')
+        if issued > now:
+            raise ValueError('first-creation issued_at not yet active (future)')
         if issued + g['expiry_hours'] * 3600 < now:
             raise ValueError('first-creation gate expired')
         print(json.dumps({'first_creation': 'VERIFIED', 'source_sha': g['source_sha']}))
