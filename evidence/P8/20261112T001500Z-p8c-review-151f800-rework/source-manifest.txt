@@ -1,0 +1,42 @@
+# Source manifest — review 151f800 rework (7ec15cc)
+
+Base: 151f800af93b328a24a6bcb03665e728e1f279a5 (review of 7adcb29 / evidence 04b8e74)
+Final: 7ec15cc7d34bf30645a3af94dfefbd4cf3084848
+Fast-forward: yes. No force/rebase/amend.
+
+Source changed (diff 151f800..7ec15cc):
+  portal/tools/readiness/wrapper.py  — default_http_get runs the whole HTTP operation in a bounded
+                                       worker thread; the total deadline is enforced by shutdown() of
+                                       the exposed socket at the deadline (interrupting a slow
+                                       header/chunk-size-line trickle), and the worker finishes its
+                                       durable byte accounting before the terminal outcome. Body read
+                                       keeps read1 + socket re-arm. run_wal_sample accounts raw bytes
+                                       (overall + WAL) BEFORE .decode(), returning a typed INCONCLUSIVE
+                                       on non-UTF8; _io_call records an elapsed-charge overrun durably
+                                       without raising so a received body is not discarded.
+  portal/tools/run_offline_suite.sh   — adds the 151f800 HTTP-lifecycle (6) stage.
+  docs/architecture/P8C_EXECUTABLE_RELEASE_READINESS_RUNBOOK_20261104.md — synced (240 methods).
+
+Runtime/test dependency closure (imported by the active suite):
+  wrapper.py -> wal.py, readset.json (frozen), stdlib (fcntl/hashlib/json/os/select/socket/subprocess/
+               threading)
+  active working copies -> evidence fixtures:
+      evidence/P8/20261105-974e069-architect-review/scheduler_regression_test.py (MainContract)
+      evidence/P8/20261105-c8007f5-architect-review/contract_test.py (WindowRoutes)
+      evidence/P8/20261105-f783e1e-architect-review/regression_test.py
+      evidence/P8/20261105-64e36a6-architect-review/accepted-baseline.json (PR-6 Tier/Felix)
+      evidence/P8/20261106-e60d1db-architect-review/remaining_contract_test.py (frozen; active copy
+        test_remaining_contract_working.py syncs attempt binding)
+      evidence/P8/20261110-c98fea1-architect-review/residual_contract_test.py (12 controls)
+      evidence/P8/20261110-935feb3-architect-review/final_contract_test.py (7 controls)
+      evidence/P8/20261110-a5e58bd-architect-review/remaining_execution_test.py (12 controls)
+      evidence/P8/20261111-73a5c28-architect-review/execution_boundary_test.py (8 controls)
+      evidence/P8/20261111-04b8e74-architect-review/http_lifecycle_test.py (6 controls)
+  release-check.py, release_qualification.py, verify-pins.py (+ pins.lock.json, PyYAML)
+  template parse: p8c-portal-release.yml.template, p8c-portal-seed.yml.template
+  pinned public inputs: pins.lock.json (6 binaries + 3 actions + 1 image, 10/10 offline VERIFIED)
+
+Evidence (this package):
+  raw-transcript.txt  — UTC start/end, cwd, toolchain, launcher output, exit 0
+  secret-scan.txt     — no credential/token matches in source diff
+  result.md           — full closure matrix + verdict
