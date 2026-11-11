@@ -390,12 +390,17 @@ def _io_call(fn, *args, **kwargs):
 
     The elapsed (not just explicit sleeps) is part of the consumed I/O budget; it must not be
     lost. The charge is recorded in a finally so a transport error still accounts for the time
-    spent inside the I/O."""
+    spent inside the I/O. An overrun in the elapsed charge is recorded durably but NOT raised
+    here — the caller must still receive the body so it can account the actual received bytes
+    before a terminal outcome; the exhausted budget is then detected by the next permit check."""
     t0 = time.monotonic()
     try:
         return fn(*args, **kwargs)
     finally:
-        _count_seconds(time.monotonic() - t0)
+        try:
+            _count_seconds(time.monotonic() - t0)
+        except ReadError:
+            pass  # overrun already recorded durably by _charge
 
 
 def budget_path(gate):
@@ -1154,52 +1159,102 @@ def wal_sample(cluster_doc, pod_doc, metrics_text, cluster_after, pod_after):
 def default_http_get(url, timeout, cap):
     # No redirects, NO environment proxy; used only in an authorized live session.
     import urllib.request
+    import threading
+
     class NoRedirect(urllib.request.HTTPRedirectHandler):
         def redirect_request(self, *a, **k):
             raise ReadError("redirect forbidden")
-    opener = urllib.request.build_opener(NoRedirect, urllib.request.ProxyHandler({}))
-    req = urllib.request.Request(url)
-    deadline = time.monotonic() + timeout
-    chunks = []
-    total = 0
-    try:
-        with opener.open(req, timeout=timeout) as resp:
-            # read1 (a single recv) returns as soon as data is available, so a slow trickle is
-            # re-checked against the absolute deadline between chunks instead of blocking until a
-            # large amt or EOF; the underlying socket inactivity timeout is re-armed to the
-            # remaining deadline so a fully stalled stream also aborts at the absolute deadline.
-            read_fn = getattr(resp, "read1", None)
-            if read_fn is None:
-                read_fn = resp.read
-            while True:
-                remain = deadline - time.monotonic()
-                if remain <= 0:
-                    raise ReadError("metrics deadline exceeded")
+
+    def _read(opener, req):
+        deadline = time.monotonic() + timeout
+        chunks = []
+        total = 0
+        try:
+            with opener.open(req, timeout=timeout) as resp:
+                # expose the underlying socket so the total-deadline watchdog can terminate a
+                # still-trickling body/framing read (inactivity timeout alone cannot).
                 try:
                     raw = getattr(getattr(resp, "fp", None), "raw", None)
                     sock = getattr(raw, "_sock", None) if raw is not None else None
                     if sock is not None:
-                        sock.settimeout(min(remain, 1.0))
+                        holder["sock"] = sock
                 except Exception:
                     pass
-                buf = read_fn(min(65536, cap + 1 - total))
-                # the blocking read may have completed after the absolute deadline
-                if time.monotonic() > deadline:
-                    total += len(buf)  # count the late chunk before rejecting it
-                    raise ReadError("metrics deadline exceeded")
-                if not buf:
-                    break  # clean EOF before the deadline
-                total += len(buf)
-                if total > cap:
-                    raise ReadError("metrics response exceeds cap")
-                chunks.append(buf)
-            return b"".join(chunks)
-    except ReadError:
-        _charge_partial(total, wal=True)  # partial body consumed by overall AND WAL subset
-        raise
-    except Exception as e:
-        _charge_partial(total, wal=True)  # partial body on transport error (never lose consumed bytes)
-        raise ReadError("metrics fetch failed: %s" % type(e).__name__)
+                # read1 (a single recv) returns as soon as data is available, so a slow trickle is
+                # re-checked against the absolute deadline between chunks instead of blocking until
+                # a large amt or EOF; the underlying socket inactivity timeout is re-armed to the
+                # remaining deadline so a fully stalled stream also aborts at the absolute deadline.
+                read_fn = getattr(resp, "read1", None)
+                if read_fn is None:
+                    read_fn = resp.read
+                while True:
+                    remain = deadline - time.monotonic()
+                    if remain <= 0:
+                        raise ReadError("metrics deadline exceeded")
+                    try:
+                        raw = getattr(getattr(resp, "fp", None), "raw", None)
+                        sock = getattr(raw, "_sock", None) if raw is not None else None
+                        if sock is not None:
+                            sock.settimeout(min(remain, 1.0))
+                    except Exception:
+                        pass
+                    buf = read_fn(min(65536, cap + 1 - total))
+                    # the blocking read may have completed after the absolute deadline
+                    if time.monotonic() > deadline:
+                        total += len(buf)  # count the late chunk before rejecting it
+                        raise ReadError("metrics deadline exceeded")
+                    if not buf:
+                        break  # clean EOF before the deadline
+                    total += len(buf)
+                    if total > cap:
+                        raise ReadError("metrics response exceeds cap")
+                    chunks.append(buf)
+                return b"".join(chunks)
+        except ReadError:
+            _charge_partial(total, wal=True)  # partial body consumed by overall AND WAL subset
+            raise
+        except Exception as e:
+            _charge_partial(total, wal=True)  # partial body on transport error (never lose consumed bytes)
+            raise ReadError("metrics fetch failed: %s" % type(e).__name__)
+
+    opener = urllib.request.build_opener(NoRedirect, urllib.request.ProxyHandler({}))
+    req = urllib.request.Request(url)
+    holder = {"body": None, "err": None, "done": False, "sock": None}
+
+    def _worker():
+        try:
+            holder["body"] = _read(opener, req)
+        except BaseException as e:
+            holder["err"] = e
+        finally:
+            holder["done"] = True
+
+    # the total deadline covers the WHOLE operation — connection open, status/headers, chunk
+    # framing and body. A slow trickle during header/framing reads (which the socket inactivity
+    # timeout cannot catch) is terminated by bounding the worker thread's completion; when the
+    # underlying socket has already been exposed, it is closed so the worker finishes its byte
+    # accounting before we return the terminal outcome.
+    t = threading.Thread(target=_worker, daemon=True)
+    t.start()
+    t.join(timeout)
+    if not holder["done"]:
+        sock = holder.get("sock")
+        if sock is not None:
+            # shutdown (not close) actually interrupts a blocked recv in the worker thread, so the
+            # worker completes its durable byte accounting before we return the terminal outcome.
+            import socket as _socket
+            try:
+                sock.shutdown(_socket.SHUT_RDWR)
+            except Exception:
+                try:
+                    sock.close()
+                except Exception:
+                    pass
+            t.join(1.0)
+        raise ReadError("metrics deadline exceeded")
+    if holder["err"] is not None:
+        raise holder["err"]
+    return holder["body"]
 
 
 def run_wal_sample(kubectl, http_get, clock_evidence, gate):
@@ -1266,15 +1321,21 @@ def run_wal_sample(kubectl, http_get, clock_evidence, gate):
                                    wal.SAMPLE_DEADLINE - (time.monotonic() - start)))
             if t_limit <= 0:
                 return INCONCLUSIVE, "time budget exhausted", None, None
-            metrics_text = _io_call(http_get, "http://%s:9187/metrics" % pod_ip, t_limit,
-                                    min(wal.METRIC_CAP, remaining)).decode()
+            raw_metrics = _io_call(http_get, "http://%s:9187/metrics" % pod_ip, t_limit,
+                                   min(wal.METRIC_CAP, remaining))
         except ReadError as e:
             return INCONCLUSIVE, str(e), None, None
-        body_total[0] += len(metrics_text.encode())
+        # account the raw received bytes BEFORE decode and before any terminal outcome; a decode
+        # failure or a later accounting error must not lose the bytes already received.
+        body_total[0] += len(raw_metrics)
         if body_total[0] > wal.SAMPLE_BODY_CAP:
+            _charge_partial(len(raw_metrics), wal=True)
             return INCONCLUSIVE, "sample body cap exceeded", None, None
-        _count_bytes(len(metrics_text.encode()))
-        _count_wal_bytes(len(metrics_text.encode()))
+        _charge_partial(len(raw_metrics), wal=True)
+        try:
+            metrics_text = raw_metrics.decode()
+        except UnicodeDecodeError:
+            return INCONCLUSIVE, "metrics not valid UTF-8", None, None
         if time.monotonic() - start > wal.SAMPLE_DEADLINE:
             return INCONCLUSIVE, "sample deadline exceeded", None, None
         pod_after = raw(pod_path)
