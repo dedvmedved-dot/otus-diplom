@@ -1,12 +1,12 @@
-## Current Architect review — 73a5c28 execution boundaries (2026-11-11)
+## Current Architect review — 04b8e74 HTTP lifecycle (2026-11-11)
 
-Authority: docs/architecture/P8C_REVIEW_73a5c28_EXECUTION_BOUNDARIES_20261111.md.
-Source7235e713ad22ab530bbd67c16c1b33a587506964 / evidence73a5c28e6a547ccfb181ec6f99a3a64c5381325e.
-226/226 active methods and previous12 controls independently PASS.
-R2 and R3 CLOSED. R4 nonzero/REUSE/STOP matrix:8/8 scenarios independently PASS.
-Remaining: R1 hard HTTP deadline, in-flight WAL elapsed, all-counter partial/error consumption,
-WAL-bounded waits; R4 executor exception must still execute always cleanup.
-Additional controls:8 methods /2 PASS /6 failures /0 errors. E and earlier accepted fixes preserved.
+Authority: docs/architecture/P8C_REVIEW_04b8e74_HTTP_LIFECYCLE_20261111.md.
+Source 7adcb29135c0e3bec7cf16c177e028dd91d1d440 / evidence 04b8e7452857230c2af588fbd70d61871cd24f16.
+234/234 active methods and previous 8 controls independently PASS.
+R4 CLOSED; R2/R3 and earlier E accepted fixes preserved.
+Remaining R1: absolute HTTP deadline including headers/chunk framing;
+consume all received bytes before decode and before accounting terminal outcome.
+Additional controls: 6 methods / 1 PASS / 5 assertion failures / 0 errors.
 SOURCE_ACCEPTANCE=REWORK_REQUIRED; SOURCE_WORK=IN_PROGRESS/PARTIAL. PRIMARY HERMES, no Hermes2.
 No live/SSH/CI/workflow/private registry/real build/push/Owner/apply/production authorization.
 P8C=NOT_FINAL_ACCEPTED; P8D–P8G/P9=NOT_AUTHORIZED.

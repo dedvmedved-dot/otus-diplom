@@ -1,0 +1,7 @@
+{
+  "guard": "socket.connect and socket.getaddrinfo blocked in Python process tree",
+  "attempt_logs": [],
+  "live_cluster_ssh_registry_ci": "NOT_EXECUTED",
+  "additional_test": "anonymous AF_UNIX socketpair; no TCP; synthetic transport in accounting controls",
+  "pins": "author offline result not independently rerun"
+}

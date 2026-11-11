@@ -1,0 +1,175 @@
+{
+  "utc": "2026-11-11T20:46:30.204089+00:00",
+  "checks": [
+    {
+      "path": "evidence/P8/20261105-64e36a6-architect-review/residual_test.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "evidence/P8/20261105-974e069-architect-review/scheduler_regression_test.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "evidence/P8/20261105-c8007f5-architect-review/contract_test.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "evidence/P8/20261105-f783e1e-architect-review/regression_test.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "evidence/P8/20261106-52e2e38-architect-review/completion_authority_working_test.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "evidence/P8/20261106-52e2e38-architect-review/residual_contract_test.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "evidence/P8/20261106-bc50834-architect-review/completion_contract_test.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "evidence/P8/20261106-e60d1db-architect-review/remaining_contract_test.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "evidence/P8/20261110-935feb3-architect-review/final_contract_test.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "evidence/P8/20261110-a5e58bd-architect-review/remaining_execution_test.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "evidence/P8/20261110-c98fea1-architect-review/residual_contract_test.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "evidence/P8/20261111-73a5c28-architect-review/execution_boundary_test.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "portal/tools/install-verified-go.sh",
+      "check": "bash -n",
+      "exit": 0
+    },
+    {
+      "path": "portal/tools/provision-registry-pull.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "portal/tools/provision-ui-auth.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "portal/tools/readiness/test_architect_residual.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "portal/tools/readiness/test_completion_authority_working.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "portal/tools/readiness/test_contract_authority_working.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "portal/tools/readiness/test_readiness.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "portal/tools/readiness/test_remaining_contract_working.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "portal/tools/readiness/test_residual_contract_working.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "portal/tools/readiness/test_scheduler_authority_working.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "portal/tools/readiness/wal.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "portal/tools/readiness/wrapper.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "portal/tools/release-check.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "portal/tools/release_qualification.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "portal/tools/run_offline_suite.sh",
+      "check": "bash -n",
+      "exit": 0
+    },
+    {
+      "path": "portal/tools/test-dataflow.sh",
+      "check": "bash -n",
+      "exit": 0
+    },
+    {
+      "path": "portal/tools/test_helpers.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "portal/tools/test_release.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "portal/tools/test_release_negative.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "portal/tools/test_release_qualification.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "portal/tools/test_route_e2e.py",
+      "check": "ast.parse",
+      "exit": 0
+    },
+    {
+      "path": "portal/tools/verify-pins.py",
+      "check": "ast.parse",
+      "exit": 0
+    }
+  ]
+}

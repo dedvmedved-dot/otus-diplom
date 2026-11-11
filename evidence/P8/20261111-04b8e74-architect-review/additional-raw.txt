@@ -1,0 +1,68 @@
+test_completed_body_is_consumed_when_time_charge_overruns (__main__.HTTPLifecycle.test_completed_body_is_consumed_when_time_charge_overruns) ... FAIL
+test_non_utf8_metrics_all_received_bytes_consumed (__main__.HTTPLifecycle.test_non_utf8_metrics_all_received_bytes_consumed) ... FAIL
+test_non_utf8_metrics_has_typed_nonpass (__main__.HTTPLifecycle.test_non_utf8_metrics_has_typed_nonpass) ... FAIL
+test_normal_headers_and_chunked_body_positive (__main__.HTTPLifecycle.test_normal_headers_and_chunked_body_positive) ... ok
+test_total_deadline_includes_chunk_size_line (__main__.HTTPLifecycle.test_total_deadline_includes_chunk_size_line) ... FAIL
+test_total_deadline_includes_response_headers (__main__.HTTPLifecycle.test_total_deadline_includes_response_headers) ... FAIL
+
+======================================================================
+FAIL: test_completed_body_is_consumed_when_time_charge_overruns (__main__.HTTPLifecycle.test_completed_body_is_consumed_when_time_charge_overruns)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_04b8e74/independent/http_lifecycle_test.py", line 66, in test_completed_body_is_consumed_when_time_charge_overruns
+    self.assertEqual((b['bytes'],b['wal_bytes']),(len(body),len(body)),b)
+AssertionError: Tuples differ: (0, 0) != (129, 129)
+
+First differing element 0:
+0
+129
+
+- (0, 0)
++ (129, 129) : {'requests': 1, 'bytes': 0, 'seconds': 5265.05, 'wal_requests': 1, 'wal_bytes': 0, 'wal_seconds': 0.1}
+
+======================================================================
+FAIL: test_non_utf8_metrics_all_received_bytes_consumed (__main__.HTTPLifecycle.test_non_utf8_metrics_all_received_bytes_consumed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_04b8e74/independent/http_lifecycle_test.py", line 80, in test_non_utf8_metrics_all_received_bytes_consumed
+    self.assertEqual((b['bytes'],b['wal_bytes']),(expected,expected),{'uncaught':err,'budget':b,'expected':expected})
+AssertionError: Tuples differ: (224, 224) != (288, 288)
+
+First differing element 0:
+224
+288
+
+- (224, 224)
++ (288, 288) : {'uncaught': 'UnicodeDecodeError', 'budget': {'requests': 3, 'bytes': 224, 'seconds': 3.980199994657596e-05, 'wal_requests': 3, 'wal_bytes': 224, 'wal_seconds': 0.0032674710000719642}, 'expected': 288}
+
+======================================================================
+FAIL: test_non_utf8_metrics_has_typed_nonpass (__main__.HTTPLifecycle.test_non_utf8_metrics_has_typed_nonpass)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_04b8e74/independent/http_lifecycle_test.py", line 77, in test_non_utf8_metrics_has_typed_nonpass
+    self.assertIsNone(err,{'uncaught':err,'budget':b});self.assertEqual(result[0],w.INCONCLUSIVE)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'UnicodeDecodeError' is not None : {'uncaught': 'UnicodeDecodeError', 'budget': {'requests': 3, 'bytes': 224, 'seconds': 4.038199972455914e-05, 'wal_requests': 3, 'wal_bytes': 224, 'wal_seconds': 0.002010160000054384}}
+
+======================================================================
+FAIL: test_total_deadline_includes_chunk_size_line (__main__.HTTPLifecycle.test_total_deadline_includes_chunk_size_line)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_04b8e74/independent/http_lifecycle_test.py", line 53, in test_total_deadline_includes_chunk_size_line
+    self.assertEqual(err,'ReadError');self.assertLessEqual(elapsed,.11,{'phase':'chunk framing','deadline':.05,'margin':.06,'elapsed':elapsed})
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0.3047670050000306 not less than or equal to 0.11 : {'phase': 'chunk framing', 'deadline': 0.05, 'margin': 0.06, 'elapsed': 0.3047670050000306}
+
+======================================================================
+FAIL: test_total_deadline_includes_response_headers (__main__.HTTPLifecycle.test_total_deadline_includes_response_headers)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_04b8e74/independent/http_lifecycle_test.py", line 50, in test_total_deadline_includes_response_headers
+    self.assertEqual(err,'ReadError');self.assertLessEqual(elapsed,.11,{'phase':'headers','deadline':.05,'margin':.06,'elapsed':elapsed})
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0.30320564000021477 not less than or equal to 0.11 : {'phase': 'headers', 'deadline': 0.05, 'margin': 0.06, 'elapsed': 0.30320564000021477}
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.624s
+
+FAILED (failures=5)

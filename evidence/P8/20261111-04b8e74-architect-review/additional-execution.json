@@ -1,0 +1,18 @@
+{
+  "source_sha": "7adcb29135c0e3bec7cf16c177e028dd91d1d440",
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "/workspace/scratch/14185c8f871f/review_04b8e74/independent/http_lifecycle_test.py",
+    "-v"
+  ],
+  "cwd": "/workspace/scratch/14185c8f871f/review_04b8e74",
+  "start": "2026-11-11T20:44:23.375286+00:00",
+  "end": "2026-11-11T20:44:24.217150+00:00",
+  "exit": 1,
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "methods": 6,
+  "pass": 1,
+  "failures": 5,
+  "errors": 0,
+  "transport": "synthetic plus anonymous local AF_UNIX socketpair; no TCP/DNS/cluster"
+}
