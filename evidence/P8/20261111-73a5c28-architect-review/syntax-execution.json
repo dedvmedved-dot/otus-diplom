@@ -1,0 +1,90 @@
+[
+  {
+    "path": "portal/tools/provision-registry-pull.py",
+    "syntax": "PASS"
+  },
+  {
+    "path": "portal/tools/provision-ui-auth.py",
+    "syntax": "PASS"
+  },
+  {
+    "path": "portal/tools/readiness/test_architect_residual.py",
+    "syntax": "PASS"
+  },
+  {
+    "path": "portal/tools/readiness/test_completion_authority_working.py",
+    "syntax": "PASS"
+  },
+  {
+    "path": "portal/tools/readiness/test_contract_authority_working.py",
+    "syntax": "PASS"
+  },
+  {
+    "path": "portal/tools/readiness/test_readiness.py",
+    "syntax": "PASS"
+  },
+  {
+    "path": "portal/tools/readiness/test_remaining_contract_working.py",
+    "syntax": "PASS"
+  },
+  {
+    "path": "portal/tools/readiness/test_residual_contract_working.py",
+    "syntax": "PASS"
+  },
+  {
+    "path": "portal/tools/readiness/test_scheduler_authority_working.py",
+    "syntax": "PASS"
+  },
+  {
+    "path": "portal/tools/readiness/wal.py",
+    "syntax": "PASS"
+  },
+  {
+    "path": "portal/tools/readiness/wrapper.py",
+    "syntax": "PASS"
+  },
+  {
+    "path": "portal/tools/release-check.py",
+    "syntax": "PASS"
+  },
+  {
+    "path": "portal/tools/release_qualification.py",
+    "syntax": "PASS"
+  },
+  {
+    "path": "portal/tools/test_helpers.py",
+    "syntax": "PASS"
+  },
+  {
+    "path": "portal/tools/test_release.py",
+    "syntax": "PASS"
+  },
+  {
+    "path": "portal/tools/test_release_negative.py",
+    "syntax": "PASS"
+  },
+  {
+    "path": "portal/tools/test_release_qualification.py",
+    "syntax": "PASS"
+  },
+  {
+    "path": "portal/tools/test_route_e2e.py",
+    "syntax": "PASS"
+  },
+  {
+    "path": "portal/tools/verify-pins.py",
+    "syntax": "PASS"
+  },
+  {
+    "path": "portal/tools/install-verified-go.sh",
+    "bash-n-exit": 0
+  },
+  {
+    "path": "portal/tools/run_offline_suite.sh",
+    "bash-n-exit": 0
+  },
+  {
+    "path": "portal/tools/test-dataflow.sh",
+    "bash-n-exit": 0
+  }
+]

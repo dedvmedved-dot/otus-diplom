@@ -1,0 +1,67 @@
+test_readiness_build_proof_failure_matrix (__main__.RouteMatrix.test_readiness_build_proof_failure_matrix) ... ok
+test_seed_reuse_stop_full_routing_no_build (__main__.RouteMatrix.test_seed_reuse_stop_full_routing_no_build) ... ok
+test_timeout_exception_still_reaches_cleanup (__main__.RouteMatrix.test_timeout_exception_still_reaches_cleanup) ... FAIL
+test_http_absolute_deadline_during_trickle_read (__main__.TransportBoundaries.test_http_absolute_deadline_during_trickle_read) ... FAIL
+test_kubectl_partial_error_counts_wal_subset (__main__.TransportBoundaries.test_kubectl_partial_error_counts_wal_subset) ... /workspace/scratch/14185c8f871f/review_73a5c28/portal/tools/readiness/wrapper.py:1247: ResourceWarning: unclosed file <_io.BufferedReader name=3>
+  return INCONCLUSIVE, str(e), None, None
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+FAIL
+test_overall_overrun_does_not_skip_wal_consumption (__main__.TransportBoundaries.test_overall_overrun_does_not_skip_wal_consumption) ... FAIL
+test_wal_remaining_decreases_inside_sample (__main__.TransportBoundaries.test_wal_remaining_decreases_inside_sample) ... FAIL
+test_window_wait_cannot_outspend_wal_remaining (__main__.TransportBoundaries.test_window_wait_cannot_outspend_wal_remaining) ... FAIL
+
+======================================================================
+FAIL: test_timeout_exception_still_reaches_cleanup (__main__.RouteMatrix.test_timeout_exception_still_reaches_cleanup)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_73a5c28/independent/execution_boundary_test.py", line 115, in test_timeout_exception_still_reaches_cleanup
+    self.assertTrue(any(x.startswith('Cleanup buildkit') for x in trace),{'uncaught_timeout':thrown,'trace':trace})
+AssertionError: False is not true : {'uncaught_timeout': True, 'trace': ['Verify clean tree and source provenance', 'Deliver typed release gate (data via env, never shell)', 'Future execution gate (source/workflow/package/expiry/run-attempt)', 'Install verified Go archive', 'Private package prerequisite (before any push)', 'Build binary (reproducible)', 'Install rootlesskit + BuildKit (pinned, verified)', 'Build OCI image (rootless buildctl) + immutable digest from metadata']}
+
+======================================================================
+FAIL: test_http_absolute_deadline_during_trickle_read (__main__.TransportBoundaries.test_http_absolute_deadline_during_trickle_read)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_73a5c28/independent/execution_boundary_test.py", line 34, in test_http_absolute_deadline_during_trickle_read
+    self.assertLessEqual(elapsed,.11,{'deadline':.05,'allowed_scheduling_margin':.06,'elapsed':elapsed})
+AssertionError: 0.4041067220000514 not less than or equal to 0.11 : {'deadline': 0.05, 'allowed_scheduling_margin': 0.06, 'elapsed': 0.4041067220000514}
+
+======================================================================
+FAIL: test_kubectl_partial_error_counts_wal_subset (__main__.TransportBoundaries.test_kubectl_partial_error_counts_wal_subset)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_73a5c28/independent/execution_boundary_test.py", line 47, in test_kubectl_partial_error_counts_wal_subset
+    b=w.read_budget(self.g);self.assertEqual(result[0],w.INCONCLUSIVE);self.assertEqual(b['bytes'],64,b);self.assertEqual(b['wal_bytes'],64,b)
+                                                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 64 : {'requests': 1, 'bytes': 64, 'seconds': 0.13254892499980997, 'wal_requests': 1, 'wal_bytes': 0, 'wal_seconds': 0.1384886450000522}
+
+======================================================================
+FAIL: test_overall_overrun_does_not_skip_wal_consumption (__main__.TransportBoundaries.test_overall_overrun_does_not_skip_wal_consumption)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_73a5c28/independent/execution_boundary_test.py", line 58, in test_overall_overrun_does_not_skip_wal_consumption
+    b=w.read_budget(self.g);self.assertEqual(b['bytes'],w.OVERALL_BODY_CAP+1,b);self.assertEqual(b['wal_bytes'],2,b)
+                                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 2 : {'requests': 0, 'bytes': 187695105, 'seconds': 0.0, 'wal_requests': 0, 'wal_bytes': 0, 'wal_seconds': 0.0}
+
+======================================================================
+FAIL: test_wal_remaining_decreases_inside_sample (__main__.TransportBoundaries.test_wal_remaining_decreases_inside_sample)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_73a5c28/independent/execution_boundary_test.py", line 43, in test_wal_remaining_decreases_inside_sample
+    self.assertEqual(len(seen),2,seen);self.assertLessEqual(seen[1],.25,seen)
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1.0 not less than or equal to 0.25 : [1.0, 1.0]
+
+======================================================================
+FAIL: test_window_wait_cannot_outspend_wal_remaining (__main__.TransportBoundaries.test_window_wait_cannot_outspend_wal_remaining)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_73a5c28/independent/execution_boundary_test.py", line 65, in test_window_wait_cannot_outspend_wal_remaining
+    self.assertLessEqual(sum(waits),1,{'waits':waits,'authority':w.read_budget(self.g)})
+AssertionError: 600.0 not less than or equal to 1 : {'waits': [300.0, 300.0], 'authority': {'requests': 1, 'bytes': 0, 'seconds': 600.0, 'wal_requests': 1, 'wal_bytes': 0, 'wal_seconds': 4559.0}}
+
+----------------------------------------------------------------------
+Ran 8 tests in 2.452s
+
+FAILED (failures=6)

@@ -1,0 +1,56 @@
+{
+  "method": "Python re; frozen input; output excluded; raw matches not emitted",
+  "limitations": "heuristic only, not proof that every possible secret is absent",
+  "input": [
+    {
+      "path": "docs/architecture/P8C_REVIEW_73a5c28_EXECUTION_BOUNDARIES_20261111.md",
+      "sha256": "373bc95373b9f99515481b814eceeb1b00d94d6896f4230f041b08a662aa5559"
+    },
+    {
+      "path": "portal/networkpolicy/PLAN.md",
+      "sha256": "21ae4c59d9ae9d76f886cc5a8f8520dd30967d1f1f41d7d97f2896050517a606"
+    },
+    {
+      "path": "evidence/P8/20261111-73a5c28-architect-review/reexecution.json",
+      "sha256": "6ba4a4ddda684166bcab96c19a318b8687ffc780111b5860a61d4f107c5c24db"
+    },
+    {
+      "path": "evidence/P8/20261111-73a5c28-architect-review/reexecution-raw.txt",
+      "sha256": "c961dce838bfa27d3d08899b400e664fea357fcdf1e6f4f04926150cecce5133"
+    },
+    {
+      "path": "evidence/P8/20261111-73a5c28-architect-review/execution_boundary_test.py",
+      "sha256": "cbc8460084c7f5a4537fb25fecc608491c1b84d0e54ef28342a522fdfd63799f"
+    },
+    {
+      "path": "evidence/P8/20261111-73a5c28-architect-review/additional-execution.json",
+      "sha256": "b671939e36176f577af0b8706af57c00703d084e083773d494c565a7f9e1277c"
+    },
+    {
+      "path": "evidence/P8/20261111-73a5c28-architect-review/additional-raw.txt",
+      "sha256": "c6fd905f790e20838aee609ed8458a151ad3c8f4ddb7be370433a641f1ba543c"
+    },
+    {
+      "path": "evidence/P8/20261111-73a5c28-architect-review/source-manifest.json",
+      "sha256": "b4c362c0b0ea22837133ed09be02a9a69ef79af56fe7b629d81bab9798d00513"
+    },
+    {
+      "path": "evidence/P8/20261111-73a5c28-architect-review/syntax-execution.json",
+      "sha256": "75670b456db4a62f4d6daa6240e4dc8b4aba0c76b1ff178b4a87e3d75c0caee7"
+    },
+    {
+      "path": "evidence/P8/20261111-73a5c28-architect-review/run_review.py",
+      "sha256": "cee743d1d6f34e088385dd3b883eb77d82a05baebf2006fd68e217afa2f30a65"
+    },
+    {
+      "path": "evidence/P8/20261111-73a5c28-architect-review/network-guard/sitecustomize.py",
+      "sha256": "40694c896c7b45c4334430cb36dff4f488390cc14501e24bdd946a4fc6a30362"
+    },
+    {
+      "path": "evidence/P8/20261111-73a5c28-architect-review/network-summary.json",
+      "sha256": "d995fee688b89e60a8969763683f550d6013f2cd9b31235fe66428cac5be3e78"
+    }
+  ],
+  "findings": [],
+  "result": "NO_MATCH"
+}

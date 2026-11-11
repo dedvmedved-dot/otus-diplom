@@ -1,0 +1,7 @@
+{
+  "guard": "network-guard/sitecustomize.py",
+  "suite_attempt_log_present": false,
+  "additional_attempt_log_present": false,
+  "external_network_cluster_CI_registry_calls": 0,
+  "local_test_transport": "anonymous AF_UNIX socketpair; no TCP listener, no DNS, no remote host"
+}
