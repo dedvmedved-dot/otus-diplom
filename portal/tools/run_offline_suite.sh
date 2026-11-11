@@ -86,6 +86,9 @@ run "architect final contract (7, review 935feb3)" python3 evidence/P8/20261110-
 isolated
 run "architect remaining execution (12, review a5e58bd)" python3 evidence/P8/20261110-a5e58bd-architect-review/remaining_execution_test.py -v
 
+isolated
+run "architect execution boundaries (8, review b50f638)" python3 evidence/P8/20261111-73a5c28-architect-review/execution_boundary_test.py -v
+
 # --- public pin verification (offline: cached bytes + prior verified evidence; no network) ---
 isolated
 run "public pins verification (offline)" bash -c 'cd portal/tools && python3 verify-pins.py --offline'

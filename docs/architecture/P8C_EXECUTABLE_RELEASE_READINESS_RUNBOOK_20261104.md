@@ -50,9 +50,16 @@ partial body (overall AND WAL subset) it already received before a deadline/tran
 Exhaustion is a TERMINAL authority: `_overall_exhausted`/`_wal_exhausted` consult the on-disk
 authority (recorded overruns count), so after the overall time budget is spent no further I/O is
 issued; and every transport call's `timeout` is bounded up-front by the minimum of the remaining
-enclosing deadlines — overall seconds, WAL seconds and the sample deadline (`run_read` and both WAL
-metadata/HTTP reads use the CURRENT authority remainder, not a stale process-local base). Any
-NaN/infinite/non-finite budget field blocks before any read.
+enclosing deadlines — overall seconds, WAL seconds (including the in-flight elapsed of the current
+sample, tracked via `_WAL_SAMPLE_START`) and the sample deadline (`run_read` and both WAL
+metadata/HTTP reads use the CURRENT authority remainder, not a stale process-local base). A WAL slot
+wait is a first-class permit bounded by the same remaining WAL/overall time. Partial consumption is
+charged to BOTH counters via `_charge_partial` (overall + WAL subset) on every error path — a
+kubectl timeout, an HTTP over-cap, or a transport error — and an overrun in one counter never skips
+the others. The HTTP body read uses `read1` (a single recv) with the underlying socket inactivity
+timeout re-armed to the remaining deadline, so the absolute deadline is enforced DURING a slow
+trickle, not only checked after a blocking read completes. Any NaN/infinite/non-finite budget field
+blocks before any read.
 
 ## State machine (window authority)
 
@@ -111,8 +118,9 @@ incomplete metrics never overwrite a valid baseline.
 Full suite (isolated authority per file): 23 readiness + 25 residual-working + 3 qualification +
 4 release + 7 release-negative + 5 route E2E + 28 regression + 14 scheduler + 15 contract-authority
 + 34 completion-authority + 20 residual-contract + 17 remaining-contract (active) + 12
-residual-contract (c98fea1) + 7 final-contract (935feb3) + 12 remaining-execution (a5e58bd) =
-**226 methods**, plus qualification CLI (`qualified:true`) and offline pin verification.
+residual-contract (c98fea1) + 7 final-contract (935feb3) + 12 remaining-execution (a5e58bd) +
+8 execution-boundaries (b50f638) = **234 methods**, plus qualification CLI (`qualified:true`) and
+offline pin verification.
 
 Release-gate binding (R3): the `release-gate` and `first-creation` validators require the actual
 run attempt (`argv run_attempt` / `GITHUB_RUN_ATTEMPT` = 1) AND a typed integer `attempt=1` in the
@@ -125,7 +133,9 @@ tool binaries faked; the gate/digest/predicate/`verified` validators run for rea
 mandatory step is asserted (a digest mismatch is caught). A single shared route runner handles
 positive and negative routes: a nonzero non-always step marks failure and skips subsequent protected
 steps, `if: always()` cleanup still runs, and a nonzero cleanup is itself recorded as a route
-failure (always determines execution, not whether the return code counts).
+failure (always determines execution, not whether the return code counts). The runner also
+normalizes the executor's own exceptions (e.g. `subprocess.TimeoutExpired`) into a failed outcome —
+protected steps are skipped, remaining `always()` cleanup still runs, and the route cannot PASS.
 
 Note: the frozen historical completion_contract_test.py / residual_contract_test.py are NOT modified;
 their positive S0→S4 flows predate the action-receipt binding, so the active working copies add the

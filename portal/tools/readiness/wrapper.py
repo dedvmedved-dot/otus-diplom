@@ -304,6 +304,29 @@ def _count_wal_seconds(seconds):
     _WAL_TRANSPORT["seconds"] += float(seconds)
 
 
+# In-flight WAL tracking: while a WAL sample is executing, its elapsed time is not yet durable
+# (charged in the sample's finally), so remaining-WAL-time decisions must also subtract the
+# in-flight elapsed, and the transport layer must know whether the current read is a WAL read.
+_WAL_ACTIVE = [False]
+_WAL_SAMPLE_START = [None]
+
+
+def _charge_partial(total, wal=True):
+    """Durable-charge a partial body into every applicable counter. An overrun in one counter
+    (already recorded durably by _charge) must NOT prevent the remaining counters from recording
+    the same consumption before the terminal outcome is raised."""
+    if total <= 0:
+        return
+    counters = [_count_bytes]
+    if wal:
+        counters.append(_count_wal_bytes)
+    for fn in counters:
+        try:
+            fn(total)
+        except ReadError:
+            pass
+
+
 def _authority_budget():
     """Return the current on-disk authority budget, or None when no gate is bound.
 
@@ -340,10 +363,13 @@ def _remaining_wal_body():
 
 
 def _remaining_wal_seconds():
+    inflight = 0.0
+    if _WAL_SAMPLE_START[0] is not None:
+        inflight = time.monotonic() - _WAL_SAMPLE_START[0]
     b = _authority_budget()
     if b is not None:
-        return WAL_SEC_CAP - b.get("wal_seconds", 0.0)
-    return WAL_SEC_CAP - (_BUDGET_BASE["wal_seconds"] + _WAL_TRANSPORT["seconds"])
+        return WAL_SEC_CAP - b.get("wal_seconds", 0.0) - inflight
+    return WAL_SEC_CAP - (_BUDGET_BASE["wal_seconds"] + _WAL_TRANSPORT["seconds"] + inflight)
 
 
 def _count_seconds(n):
@@ -690,13 +716,13 @@ def run_kubectl_raw(kubectl, path, timeout, cap):
                     chunks.append(buf)
             finally:
                 fcntl.fcntl(fd, fcntl.F_SETFL, fl)
-            _count_bytes(total)  # preserve partial bytes on timeout
+            _charge_partial(total, wal=_WAL_ACTIVE[0])  # preserve partial bytes on timeout
             raise ReadError("kubectl deadline exceeded")
         # EOF or cap reached: wait for the child to exit within the remaining deadline
         try:
             proc.wait(timeout=max(0.1, hard_deadline - time.monotonic()))
         except subprocess.TimeoutExpired:
-            _count_bytes(total)
+            _charge_partial(total, wal=_WAL_ACTIVE[0])
             raise ReadError("kubectl did not exit after stdout EOF")
         if total >= cap:
             # cap reached before EOF: reject if the process produced more bytes than the cap
@@ -708,7 +734,7 @@ def run_kubectl_raw(kubectl, path, timeout, cap):
             finally:
                 fcntl.fcntl(fd, fcntl.F_SETFL, fl)
             if extra:
-                _count_bytes(total + len(extra))
+                _charge_partial(total + len(extra), wal=_WAL_ACTIVE[0])
                 raise ReadError("kubectl response exceeds cap")
     finally:
         try:
@@ -1138,11 +1164,25 @@ def default_http_get(url, timeout, cap):
     total = 0
     try:
         with opener.open(req, timeout=timeout) as resp:
+            # read1 (a single recv) returns as soon as data is available, so a slow trickle is
+            # re-checked against the absolute deadline between chunks instead of blocking until a
+            # large amt or EOF; the underlying socket inactivity timeout is re-armed to the
+            # remaining deadline so a fully stalled stream also aborts at the absolute deadline.
+            read_fn = getattr(resp, "read1", None)
+            if read_fn is None:
+                read_fn = resp.read
             while True:
                 remain = deadline - time.monotonic()
                 if remain <= 0:
                     raise ReadError("metrics deadline exceeded")
-                buf = resp.read(min(65536, cap + 1 - total))
+                try:
+                    raw = getattr(getattr(resp, "fp", None), "raw", None)
+                    sock = getattr(raw, "_sock", None) if raw is not None else None
+                    if sock is not None:
+                        sock.settimeout(min(remain, 1.0))
+                except Exception:
+                    pass
+                buf = read_fn(min(65536, cap + 1 - total))
                 # the blocking read may have completed after the absolute deadline
                 if time.monotonic() > deadline:
                     total += len(buf)  # count the late chunk before rejecting it
@@ -1155,12 +1195,10 @@ def default_http_get(url, timeout, cap):
                 chunks.append(buf)
             return b"".join(chunks)
     except ReadError:
-        _count_bytes(total)  # charge any partial body already received before the error
-        _count_wal_bytes(total)  # the WAL subset is consumed even on a failed metrics fetch
+        _charge_partial(total, wal=True)  # partial body consumed by overall AND WAL subset
         raise
     except Exception as e:
-        _count_bytes(total)  # charge partial body on transport error (never lose consumed bytes)
-        _count_wal_bytes(total)
+        _charge_partial(total, wal=True)  # partial body on transport error (never lose consumed bytes)
         raise ReadError("metrics fetch failed: %s" % type(e).__name__)
 
 
@@ -1169,7 +1207,11 @@ def run_wal_sample(kubectl, http_get, clock_evidence, gate):
     2 MiB body cap; WAL-cumulative requests/bytes/seconds charged regardless of outcome)."""
     start = time.monotonic()
     body_total = [0]
+    _WAL_SAMPLE_START[0] = start
+    _WAL_ACTIVE[0] = True
     if _wal_exhausted():
+        _WAL_SAMPLE_START[0] = None
+        _WAL_ACTIVE[0] = False
         return INCONCLUSIVE, "WAL budget exhausted", None, None
 
     def raw(path):
@@ -1247,6 +1289,8 @@ def run_wal_sample(kubectl, http_get, clock_evidence, gate):
         return INCONCLUSIVE, str(e), None, None
     finally:
         _count_wal_seconds(time.monotonic() - start)
+        _WAL_SAMPLE_START[0] = None
+        _WAL_ACTIVE[0] = False
 
 
 def run_wal_window(kubectl, http_get, gate, state_dir, clock_evidence, stage="S0"):
@@ -1284,9 +1328,10 @@ def run_wal_window(kubectl, http_get, gate, state_dir, clock_evidence, stage="S0
         if slot > 0:
             elapsed = time.monotonic() - slot_start
             sleep_time = max(0.0, 300.0 - elapsed)
-            remaining = _remaining_seconds()
+            # the wait is a first-class permit: bounded by BOTH overall and WAL remaining time
+            remaining = min(_remaining_seconds(), _remaining_wal_seconds())
             if remaining <= 0:
-                return INCONCLUSIVE, "overall time budget exhausted"
+                return INCONCLUSIVE, "time budget exhausted"
             if sleep_time > remaining:
                 sleep_time = remaining
             time.sleep(sleep_time)

@@ -309,10 +309,23 @@ def _run_job_steps(steps, env, ctx):
         is_always = s.get('if') == 'always()'
         if failed and not is_always:
             continue
-        rr = _run_step(s, env, ctx)
         name = s.get('name', '')
         names.append(name)
-        if rr.returncode != 0:
+        try:
+            rr = _run_step(s, env, ctx)
+        except subprocess.TimeoutExpired:
+            # the executor's own timeout is a failed outcome, never a silent pass
+            failures.append((name, 'timeout', None))
+            if not is_always:
+                failed = True
+            continue
+        except Exception as e:
+            # any executor exception is a failed outcome (value-free reason preserved)
+            failures.append((name, type(e).__name__, None))
+            if not is_always:
+                failed = True
+            continue
+        if rr is not None and rr.returncode != 0:
             # ANY nonzero (mandatory or always) is a failure of the final verdict; an always-step
             # failure is recorded but does not stop subsequent always-steps.
             failures.append((name, rr.returncode, rr.stderr))
