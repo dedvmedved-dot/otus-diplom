@@ -1,0 +1,24 @@
+test_headers_io_terminated_before_terminal_return (__main__.TerminalLifecycle.test_headers_io_terminated_before_terminal_return) ... FAIL
+test_metadata_body_charges_wal_even_when_overall_charge_overruns (__main__.TerminalLifecycle.test_metadata_body_charges_wal_even_when_overall_charge_overruns) ... FAIL
+test_metadata_body_normal_charge_positive (__main__.TerminalLifecycle.test_metadata_body_normal_charge_positive) ... ok
+
+======================================================================
+FAIL: test_headers_io_terminated_before_terminal_return (__main__.TerminalLifecycle.test_headers_io_terminated_before_terminal_return)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_6c18d79/independent/terminal_lifecycle_test.py", line 83, in test_headers_io_terminated_before_terminal_return
+    self.assertTrue(finished_at_return and open_finished.is_set(),
+AssertionError: False is not true : {'open_finished_at_return': False, 'open_finished_after_60ms': False, 'bytes_sent_after_return': 5, 'worker_alive': True}
+
+======================================================================
+FAIL: test_metadata_body_charges_wal_even_when_overall_charge_overruns (__main__.TerminalLifecycle.test_metadata_body_charges_wal_even_when_overall_charge_overruns)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/14185c8f871f/review_6c18d79/independent/terminal_lifecycle_test.py", line 123, in test_metadata_body_charges_wal_even_when_overall_charge_overruns
+    self.assertEqual(budget['wal_bytes'], size, budget)
+AssertionError: 0 != 98 : {'requests': 1, 'bytes': 187695201, 'seconds': 0.00016986899936455302, 'wal_requests': 1, 'wal_bytes': 0, 'wal_seconds': 0.0027253849984845147}
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.133s
+
+FAILED (failures=2)

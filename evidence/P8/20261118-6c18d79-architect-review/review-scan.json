@@ -1,0 +1,62 @@
+{
+  "scope": "frozen publication payload excluding scan report",
+  "files": [
+    {
+      "path": "docs/architecture/P8C_REVIEW_6c18d79_TERMINAL_LIFECYCLE_20261118.md",
+      "sha256": "36e97ba369cade3a0736cf3f58e3cbb0044b874f0c721d5a0e98369441c9b51e"
+    },
+    {
+      "path": "portal/networkpolicy/PLAN.md",
+      "sha256": "6b24652f845708d29e69d34c79e15dfd0ac4c0a6f5a897c2298605650342587b"
+    },
+    {
+      "path": "evidence/P8/20261118-6c18d79-architect-review/terminal_lifecycle_test.py",
+      "sha256": "256df55a9ceaad9c6836c91a3413372cc6323cc2e6a88bf705b8212ae0424b94"
+    },
+    {
+      "path": "evidence/P8/20261118-6c18d79-architect-review/additional-execution.json",
+      "sha256": "f9085f807708cd7b4063450a58ebdadfa36135a89f396ae337e6573b18a1ffdc"
+    },
+    {
+      "path": "evidence/P8/20261118-6c18d79-architect-review/additional-raw.txt",
+      "sha256": "93ae52ae6a034f22e39a77f3a9caeb3adbaaef41785fcc986a782c51e9e13e08"
+    },
+    {
+      "path": "evidence/P8/20261118-6c18d79-architect-review/reexecution.json",
+      "sha256": "9aca4410950e15a49a950c1482e48a509bec41333026bd05f7506c05d2d50fd4"
+    },
+    {
+      "path": "evidence/P8/20261118-6c18d79-architect-review/reexecution-raw.txt",
+      "sha256": "224cc7ced814e0d2c81b77bef1916416a7866df0d7c52189157e6d657ee64bd8"
+    },
+    {
+      "path": "evidence/P8/20261118-6c18d79-architect-review/run_review.py",
+      "sha256": "65645882a40aa0d9d266c16a5fb0b7971764432cd2c74902ddb184d417244f90"
+    },
+    {
+      "path": "evidence/P8/20261118-6c18d79-architect-review/source-manifest.json",
+      "sha256": "c6569c04d925d2c4265ec6e12cec721ea52e4f2118cdd2a22a62dfeb98831b25"
+    },
+    {
+      "path": "evidence/P8/20261118-6c18d79-architect-review/syntax-execution.json",
+      "sha256": "9e9d4d9434e9ea5b156119e89ea84a4e6f01d4bc6ec665739cefffa5c4dcc5b5"
+    },
+    {
+      "path": "evidence/P8/20261118-6c18d79-architect-review/network-summary.json",
+      "sha256": "cd91b9273a374d835e835d6b74e9899fa31b50145b623793b36d3e02728114db"
+    },
+    {
+      "path": "evidence/P8/20261118-6c18d79-architect-review/network-guard/sitecustomize.py",
+      "sha256": "40694c896c7b45c4334430cb36dff4f488390cc14501e24bdd946a4fc6a30362"
+    }
+  ],
+  "patterns": [
+    "private_key",
+    "github_token",
+    "aws_access_key",
+    "url_credentials"
+  ],
+  "matches": [],
+  "result": "NO_MATCH",
+  "limitations": "heuristic pattern scan, not proof of absence of all sensitive values"
+}

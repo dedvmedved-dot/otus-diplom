@@ -1,0 +1,7 @@
+{
+  "guard": "socket.connect/socket.getaddrinfo blocked in Python process tree",
+  "attempt_logs": [],
+  "live_ssh_cluster_ci_private_registry": "NOT_EXECUTED",
+  "additional_controls": "anonymous AF_UNIX socketpair plus synthetic kubectl transport",
+  "pins": "author offline 10/10 reported; not independently reverified upstream"
+}

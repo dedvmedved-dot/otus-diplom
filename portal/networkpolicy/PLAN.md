@@ -1,12 +1,12 @@
-## Current Architect review — 04b8e74 HTTP lifecycle (2026-11-11)
+## Current Architect review — 6c18d79 terminal lifecycle (2026-11-18)
 
-Authority: docs/architecture/P8C_REVIEW_04b8e74_HTTP_LIFECYCLE_20261111.md.
-Source 7adcb29135c0e3bec7cf16c177e028dd91d1d440 / evidence 04b8e7452857230c2af588fbd70d61871cd24f16.
-234/234 active methods and previous 8 controls independently PASS.
-R4 CLOSED; R2/R3 and earlier E accepted fixes preserved.
-Remaining R1: absolute HTTP deadline including headers/chunk framing;
-consume all received bytes before decode and before accounting terminal outcome.
-Additional controls: 6 methods / 1 PASS / 5 assertion failures / 0 errors.
+Authority: docs/architecture/P8C_REVIEW_6c18d79_TERMINAL_LIFECYCLE_20261118.md.
+Source 7ec15cc7d34bf30645a3af94dfefbd4cf3084848 / evidence 6c18d7940477513337d849276fd63d89d74fe202.
+240/240 active methods and previous 6 HTTP controls independently PASS.
+R2/R3/R4 and earlier accepted fixes preserved. Raw-metrics decode/accounting fixes accepted.
+Remaining R1 only: actually terminate HTTP header I/O before terminal return;
+charge metadata-body bytes to every applicable counter when overall consumption overruns.
+Additional controls: 3 methods / 1 PASS / 2 assertion failures / 0 errors.
 SOURCE_ACCEPTANCE=REWORK_REQUIRED; SOURCE_WORK=IN_PROGRESS/PARTIAL. PRIMARY HERMES, no Hermes2.
 No live/SSH/CI/workflow/private registry/real build/push/Owner/apply/production authorization.
 P8C=NOT_FINAL_ACCEPTED; P8D–P8G/P9=NOT_AUTHORIZED.
