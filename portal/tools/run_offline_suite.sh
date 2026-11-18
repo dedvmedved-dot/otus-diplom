@@ -92,6 +92,9 @@ run "architect execution boundaries (8, review b50f638)" python3 evidence/P8/202
 isolated
 run "architect HTTP lifecycle (6, review 151f800)" python3 evidence/P8/20261111-04b8e74-architect-review/http_lifecycle_test.py -v
 
+isolated
+run "architect terminal lifecycle (3, review 1887149)" python3 evidence/P8/20261118-6c18d79-architect-review/terminal_lifecycle_test.py -v
+
 # --- public pin verification (offline: cached bytes + prior verified evidence; no network) ---
 isolated
 run "public pins verification (offline)" bash -c 'cd portal/tools && python3 verify-pins.py --offline'

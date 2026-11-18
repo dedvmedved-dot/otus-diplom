@@ -59,13 +59,16 @@ kubectl timeout, an HTTP over-cap, or a transport error — and an overrun in on
 the others. The HTTP body read uses `read1` (a single recv) with the underlying socket inactivity
 timeout re-armed to the remaining deadline, so the absolute deadline is enforced DURING a slow
 trickle, not only checked after a blocking read completes. The whole HTTP operation (connection
-open, status/headers, chunk framing and body) runs under ONE total deadline enforced by a bounded
-worker thread: a slow header or chunk-size-line trickle (which the socket inactivity timeout cannot
-catch) is terminated by `shutdown` of the exposed socket at the deadline, and the worker finishes
-its durable byte accounting before the terminal outcome. Raw received bytes are accounted to the
-applicable counters BEFORE decode and BEFORE any terminal outcome: a non-UTF8 body yields a typed
-INCONCLUSIVE with all bytes already consumed, and an elapsed-charge overrun no longer discards the
-body already received. Any NaN/infinite/non-finite budget field
+open, status/headers, chunk framing and body) runs under ONE total deadline: the read is performed
+in a worker thread whose underlying socket is tracked via a `socket.socket.makefile` interception
+(a slow header or chunk-size-line trickle — which the socket inactivity timeout cannot catch — has
+its socket `shutdown()` at the deadline), so the blocking read is actually terminated and the worker
+finishes its durable byte accounting before the terminal outcome; the worker is then joined, so no
+I/O continues after the terminal outcome. Raw received bytes are accounted to the applicable
+counters BEFORE decode and BEFORE any terminal outcome, and a metadata body is charged through the
+same consume-all path (`_charge_partial`): a non-UTF8 body yields a typed INCONCLUSIVE with all bytes
+already consumed, and an overrun in one counter (overall or elapsed-charge) never skips the WAL
+subset. Any NaN/infinite/non-finite budget field
 blocks before any read.
 
 ## State machine (window authority)
@@ -126,8 +129,8 @@ Full suite (isolated authority per file): 23 readiness + 25 residual-working + 3
 4 release + 7 release-negative + 5 route E2E + 28 regression + 14 scheduler + 15 contract-authority
 + 34 completion-authority + 20 residual-contract + 17 remaining-contract (active) + 12
 residual-contract (c98fea1) + 7 final-contract (935feb3) + 12 remaining-execution (a5e58bd) +
-8 execution-boundaries (b50f638) + 6 HTTP-lifecycle (151f800) = **240 methods**, plus
-qualification CLI (`qualified:true`) and offline pin verification.
+8 execution-boundaries (b50f638) + 6 HTTP-lifecycle (151f800) + 3 terminal-lifecycle (1887149) =
+**243 methods**, plus qualification CLI (`qualified:true`) and offline pin verification.
 
 Release-gate binding (R3): the `release-gate` and `first-creation` validators require the actual
 run attempt (`argv run_attempt` / `GITHUB_RUN_ATTEMPT` = 1) AND a typed integer `attempt=1` in the

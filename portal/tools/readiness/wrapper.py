@@ -1160,6 +1160,7 @@ def default_http_get(url, timeout, cap):
     # No redirects, NO environment proxy; used only in an authorized live session.
     import urllib.request
     import threading
+    import socket as _socket
 
     class NoRedirect(urllib.request.HTTPRedirectHandler):
         def redirect_request(self, *a, **k):
@@ -1171,19 +1172,9 @@ def default_http_get(url, timeout, cap):
         total = 0
         try:
             with opener.open(req, timeout=timeout) as resp:
-                # expose the underlying socket so the total-deadline watchdog can terminate a
-                # still-trickling body/framing read (inactivity timeout alone cannot).
-                try:
-                    raw = getattr(getattr(resp, "fp", None), "raw", None)
-                    sock = getattr(raw, "_sock", None) if raw is not None else None
-                    if sock is not None:
-                        holder["sock"] = sock
-                except Exception:
-                    pass
                 # read1 (a single recv) returns as soon as data is available, so a slow trickle is
-                # re-checked against the absolute deadline between chunks instead of blocking until
-                # a large amt or EOF; the underlying socket inactivity timeout is re-armed to the
-                # remaining deadline so a fully stalled stream also aborts at the absolute deadline.
+                # re-checked against the absolute deadline between chunks; the socket inactivity
+                # timeout is re-armed to the remaining deadline so a stalled stream also aborts.
                 read_fn = getattr(resp, "read1", None)
                 if read_fn is None:
                     read_fn = resp.read
@@ -1219,30 +1210,32 @@ def default_http_get(url, timeout, cap):
 
     opener = urllib.request.build_opener(NoRedirect, urllib.request.ProxyHandler({}))
     req = urllib.request.Request(url)
-    holder = {"body": None, "err": None, "done": False, "sock": None}
+
+    # Track the underlying socket (created inside opener.open / HTTPResponse.begin) so the deadline
+    # cancellation can terminate a still-blocking header/framing/body read whose socket is otherwise
+    # inaccessible until opener.open() returns. HTTPResponse wraps the socket via makefile("rb"),
+    # which is the single common interception point for both the real urllib and the test opener.
+    registry = []
+    orig_makefile = _socket.socket.makefile
+
+    def _tracking_makefile(self, *args, **kwargs):
+        fp = orig_makefile(self, *args, **kwargs)
+        registry.append(self)
+        return fp
+
+    _socket.socket.makefile = _tracking_makefile
+    result = {"body": None, "err": None, "done": False}
 
     def _worker():
         try:
-            holder["body"] = _read(opener, req)
+            result["body"] = _read(opener, req)
         except BaseException as e:
-            holder["err"] = e
+            result["err"] = e
         finally:
-            holder["done"] = True
+            result["done"] = True
 
-    # the total deadline covers the WHOLE operation — connection open, status/headers, chunk
-    # framing and body. A slow trickle during header/framing reads (which the socket inactivity
-    # timeout cannot catch) is terminated by bounding the worker thread's completion; when the
-    # underlying socket has already been exposed, it is closed so the worker finishes its byte
-    # accounting before we return the terminal outcome.
-    t = threading.Thread(target=_worker, daemon=True)
-    t.start()
-    t.join(timeout)
-    if not holder["done"]:
-        sock = holder.get("sock")
-        if sock is not None:
-            # shutdown (not close) actually interrupts a blocked recv in the worker thread, so the
-            # worker completes its durable byte accounting before we return the terminal outcome.
-            import socket as _socket
+    def _cancel():
+        for sock in list(registry):
             try:
                 sock.shutdown(_socket.SHUT_RDWR)
             except Exception:
@@ -1250,11 +1243,23 @@ def default_http_get(url, timeout, cap):
                     sock.close()
                 except Exception:
                     pass
+
+    try:
+        t = threading.Thread(target=_worker, daemon=True)
+        t.start()
+        t.join(timeout)
+        if not result["done"]:
+            # the worker is still blocked in a header/framing/body read: actually terminate it by
+            # shutting down the tracked socket, then wait for the worker to finish its accounting.
+            _cancel()
             t.join(1.0)
-        raise ReadError("metrics deadline exceeded")
-    if holder["err"] is not None:
-        raise holder["err"]
-    return holder["body"]
+        if result["err"] is not None:
+            raise result["err"]
+        if not result["done"]:
+            raise ReadError("metrics deadline exceeded")
+        return result["body"]
+    finally:
+        _socket.socket.makefile = orig_makefile
 
 
 def run_wal_sample(kubectl, http_get, clock_evidence, gate):
@@ -1290,8 +1295,8 @@ def run_wal_sample(kubectl, http_get, clock_evidence, gate):
             raise ReadError("sample body cap exceeded")
         if len(body) > remaining:
             raise ReadError("overall body budget exceeded")
-        _count_bytes(len(body))
-        _count_wal_bytes(len(body))
+        # consume-all: an overrun in the overall counter must not skip the WAL-subset charge.
+        _charge_partial(len(body), wal=True)
         if code != 0:
             raise ReadError("kubectl exit %d" % code)
         return validate_envelope(body, False)
