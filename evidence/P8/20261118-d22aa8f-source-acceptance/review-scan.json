@@ -1,0 +1,50 @@
+{
+  "scope": "frozen publication payload excluding scan report",
+  "files": [
+    {
+      "path": "docs/architecture/P8C_SOURCE_ACCEPTANCE_d22aa8f_20261118.md",
+      "sha256": "8ce0fec0567e8ba2b4e729fd6a12f414765868c082281e0edc57cf04763b12d5"
+    },
+    {
+      "path": "portal/networkpolicy/PLAN.md",
+      "sha256": "218a832046d73c38d9746fb21025378fa8b90d96112a2df3f7930f452a8b0022"
+    },
+    {
+      "path": "evidence/P8/20261118-d22aa8f-source-acceptance/reexecution.json",
+      "sha256": "1ab638fb7b6b0efbcfe1e31fcfecb6ebf11c24ccfc934f835002918262877038"
+    },
+    {
+      "path": "evidence/P8/20261118-d22aa8f-source-acceptance/reexecution-raw.txt",
+      "sha256": "89a40082e1048a301bd826e8454757ec1720a7dc8d2c0f0b0514e79622fd473f"
+    },
+    {
+      "path": "evidence/P8/20261118-d22aa8f-source-acceptance/run_review.py",
+      "sha256": "730a8491f0053e776ff0eda85d61ea01bb8f684501e42537aec3e13b50daeafc"
+    },
+    {
+      "path": "evidence/P8/20261118-d22aa8f-source-acceptance/source-manifest.json",
+      "sha256": "62402fe2fc97e9d8cca4e5b451cd2f188548c5b745024671f7e823fb7d79da20"
+    },
+    {
+      "path": "evidence/P8/20261118-d22aa8f-source-acceptance/syntax-execution.json",
+      "sha256": "c636b5b8f4cb992aa915e5c72add93fad53d2209a7705e2f7b4ddfa270c4ad3e"
+    },
+    {
+      "path": "evidence/P8/20261118-d22aa8f-source-acceptance/network-summary.json",
+      "sha256": "df1e7e18c84ec02747663f7a9b27b3159452d7abd5009fb66fc3f3f391ae907c"
+    },
+    {
+      "path": "evidence/P8/20261118-d22aa8f-source-acceptance/network-guard/sitecustomize.py",
+      "sha256": "40694c896c7b45c4334430cb36dff4f488390cc14501e24bdd946a4fc6a30362"
+    }
+  ],
+  "patterns": [
+    "private_key",
+    "github_token",
+    "aws_access_key",
+    "url_credentials"
+  ],
+  "matches": [],
+  "result": "NO_MATCH",
+  "limitations": "heuristic pattern scan, not proof of absence of all sensitive values"
+}

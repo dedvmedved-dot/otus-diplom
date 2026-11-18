@@ -1,0 +1,268 @@
+{
+  "source_sha": "f657318125628c986728c5e1fc0055f424c1d90a",
+  "review_head": "d22aa8f1170deaf09580518916ea02c7c4d8bfba",
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "offline_network_guard": true,
+  "commands": [
+    {
+      "name": "readiness",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-m",
+        "unittest",
+        "-v",
+        "test_readiness"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_d22aa8f/portal/tools/readiness",
+      "start": "2026-11-18T11:58:54.338157+00:00",
+      "end": "2026-11-18T11:58:55.303303+00:00",
+      "exit": 0,
+      "methods": 23
+    },
+    {
+      "name": "residual-working",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-m",
+        "unittest",
+        "-v",
+        "test_architect_residual"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_d22aa8f/portal/tools/readiness",
+      "start": "2026-11-18T11:58:55.303348+00:00",
+      "end": "2026-11-18T11:59:56.317597+00:00",
+      "exit": 0,
+      "methods": 25
+    },
+    {
+      "name": "qualification",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-m",
+        "unittest",
+        "-v",
+        "test_release_qualification"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_d22aa8f/portal/tools",
+      "start": "2026-11-18T11:59:56.317650+00:00",
+      "end": "2026-11-18T11:59:56.545860+00:00",
+      "exit": 0,
+      "methods": 3
+    },
+    {
+      "name": "release",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-m",
+        "unittest",
+        "-v",
+        "test_release"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_d22aa8f/portal/tools",
+      "start": "2026-11-18T11:59:56.545904+00:00",
+      "end": "2026-11-18T11:59:56.705706+00:00",
+      "exit": 0,
+      "methods": 4
+    },
+    {
+      "name": "release-negative",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-m",
+        "unittest",
+        "-v",
+        "test_release_negative"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_d22aa8f/portal/tools",
+      "start": "2026-11-18T11:59:56.705749+00:00",
+      "end": "2026-11-18T11:59:57.700607+00:00",
+      "exit": 0,
+      "methods": 7
+    },
+    {
+      "name": "route-e2e",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-m",
+        "unittest",
+        "-v",
+        "test_route_e2e"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_d22aa8f/portal/tools",
+      "start": "2026-11-18T11:59:57.700649+00:00",
+      "end": "2026-11-18T12:00:00.430594+00:00",
+      "exit": 0,
+      "methods": 5
+    },
+    {
+      "name": "qualification-cli",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "release_qualification.py"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_d22aa8f/portal/tools",
+      "start": "2026-11-18T12:00:00.430639+00:00",
+      "end": "2026-11-18T12:00:00.531521+00:00",
+      "exit": 0,
+      "methods": 0
+    },
+    {
+      "name": "regression",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "evidence/P8/20261105-f783e1e-architect-review/regression_test.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_d22aa8f",
+      "start": "2026-11-18T12:00:00.531717+00:00",
+      "end": "2026-11-18T12:00:03.181858+00:00",
+      "exit": 0,
+      "methods": 28
+    },
+    {
+      "name": "scheduler-working",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "portal/tools/readiness/test_scheduler_authority_working.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_d22aa8f",
+      "start": "2026-11-18T12:00:03.181912+00:00",
+      "end": "2026-11-18T12:00:03.598641+00:00",
+      "exit": 0,
+      "methods": 14
+    },
+    {
+      "name": "contract-working",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "portal/tools/readiness/test_contract_authority_working.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_d22aa8f",
+      "start": "2026-11-18T12:00:03.598683+00:00",
+      "end": "2026-11-18T12:00:04.353347+00:00",
+      "exit": 0,
+      "methods": 15
+    },
+    {
+      "name": "completion-working",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "portal/tools/readiness/test_completion_authority_working.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_d22aa8f",
+      "start": "2026-11-18T12:00:04.353410+00:00",
+      "end": "2026-11-18T12:00:07.591420+00:00",
+      "exit": 0,
+      "methods": 34
+    },
+    {
+      "name": "residual-contract-working",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "portal/tools/readiness/test_residual_contract_working.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_d22aa8f",
+      "start": "2026-11-18T12:00:07.591464+00:00",
+      "end": "2026-11-18T12:00:10.323664+00:00",
+      "exit": 0,
+      "methods": 20
+    },
+    {
+      "name": "remaining-17",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "portal/tools/readiness/test_remaining_contract_working.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_d22aa8f",
+      "start": "2026-11-18T12:00:10.323706+00:00",
+      "end": "2026-11-18T12:00:11.223316+00:00",
+      "exit": 0,
+      "methods": 17
+    },
+    {
+      "name": "residual-12",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "evidence/P8/20261110-c98fea1-architect-review/residual_contract_test.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_d22aa8f",
+      "start": "2026-11-18T12:00:11.223440+00:00",
+      "end": "2026-11-18T12:00:11.957448+00:00",
+      "exit": 0,
+      "methods": 12
+    },
+    {
+      "name": "final-7",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "evidence/P8/20261110-935feb3-architect-review/final_contract_test.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_d22aa8f",
+      "start": "2026-11-18T12:00:11.957550+00:00",
+      "end": "2026-11-18T12:00:12.678741+00:00",
+      "exit": 0,
+      "methods": 7
+    },
+    {
+      "name": "remaining-execution-12",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "evidence/P8/20261110-a5e58bd-architect-review/remaining_execution_test.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_d22aa8f",
+      "start": "2026-11-18T12:00:12.678866+00:00",
+      "end": "2026-11-18T12:00:14.366468+00:00",
+      "exit": 0,
+      "methods": 12
+    },
+    {
+      "name": "execution-boundary-8",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "evidence/P8/20261111-73a5c28-architect-review/execution_boundary_test.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_d22aa8f",
+      "start": "2026-11-18T12:00:14.366642+00:00",
+      "end": "2026-11-18T12:00:17.131939+00:00",
+      "exit": 0,
+      "methods": 8
+    },
+    {
+      "name": "http-lifecycle-6",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "evidence/P8/20261111-04b8e74-architect-review/http_lifecycle_test.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_d22aa8f",
+      "start": "2026-11-18T12:00:17.132006+00:00",
+      "end": "2026-11-18T12:00:17.443010+00:00",
+      "exit": 0,
+      "methods": 6
+    },
+    {
+      "name": "terminal-lifecycle-3",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "evidence/P8/20261118-6c18d79-architect-review/terminal_lifecycle_test.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/14185c8f871f/review_d22aa8f",
+      "start": "2026-11-18T12:00:17.443050+00:00",
+      "end": "2026-11-18T12:00:17.768890+00:00",
+      "exit": 0,
+      "methods": 3
+    }
+  ],
+  "total_methods": 243,
+  "all_commands_exit_zero": true
+}

@@ -1,15 +1,15 @@
-## Current Architect review — 6c18d79 terminal lifecycle (2026-11-18)
+## Current Architect decision — source accepted (2026-11-18)
 
-Authority: docs/architecture/P8C_REVIEW_6c18d79_TERMINAL_LIFECYCLE_20261118.md.
-Source 7ec15cc7d34bf30645a3af94dfefbd4cf3084848 / evidence 6c18d7940477513337d849276fd63d89d74fe202.
-240/240 active methods and previous 6 HTTP controls independently PASS.
-R2/R3/R4 and earlier accepted fixes preserved. Raw-metrics decode/accounting fixes accepted.
-Remaining R1 only: actually terminate HTTP header I/O before terminal return;
-charge metadata-body bytes to every applicable counter when overall consumption overruns.
-Additional controls: 3 methods / 1 PASS / 2 assertion failures / 0 errors.
-SOURCE_ACCEPTANCE=REWORK_REQUIRED; SOURCE_WORK=IN_PROGRESS/PARTIAL. PRIMARY HERMES, no Hermes2.
-No live/SSH/CI/workflow/private registry/real build/push/Owner/apply/production authorization.
+Authority: docs/architecture/P8C_SOURCE_ACCEPTANCE_d22aa8f_20261118.md.
+ACCEPTED_SOURCE_SHA=f657318125628c986728c5e1fc0055f424c1d90a.
+Reviewed evidence d22aa8f1170deaf09580518916ea02c7c4d8bfba.
+SOURCE_WORK=COMPLETE; SOURCE_ACCEPTANCE=ACCEPTED; R1/R2/R3/R4=CLOSED.
+243/243 active methods independently PASS; qualification CLI qualified:true.
+Source rework is complete. No new source-development/test-expansion task is required.
+NEXT_STAGE=RELEASE_EXECUTION_GATE, separately authorized and bound to accepted package/workflow bytes.
+CI/release/workflow publication or dispatch/seed push/live-readiness/Owner/apply/production NOT_AUTHORIZED.
 P8C=NOT_FINAL_ACCEPTED; P8D–P8G/P9=NOT_AUTHORIZED.
+Historical instructions below preserve history; their open source-status is superseded by this acceptance.
 
 # P8C NetworkPolicy plan (D1) — read-only preparation, not yet applied
 
