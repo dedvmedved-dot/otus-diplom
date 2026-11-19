@@ -1,13 +1,13 @@
 # P8C CI Release Gate — спецификация (ПОДГОТОВКА, НЕ ИСПОЛНЕНИЕ)
 
-Дата: 2026-11-19 (R2 — исправления по вердикту #11 P8C_R2_REVIEW_11, commit c5813284), Europe/Moscow.
+Дата: 2026-11-19 (R3 — исправления по вердикту #13 P8C_R2_REVIEW_13, commit a32701f9), Europe/Moscow.
 Исполнитель подготовки: PRIMARY HERMES (engineer, assignee `hermes-5.187.1.37-engineer`).
 Тип документа: спецификация gate (AUTHOR_PROPOSAL), НЕ допуск на исполнение.
 
 Статусные строки:
 
 ```text
-CI_RELEASE_GATE_SPEC = REVIEW_READY (AUTHOR_PROPOSAL, R2; не ARCHITECT_ACCEPTED)
+CI_RELEASE_GATE_SPEC = REVIEW_READY (AUTHOR_PROPOSAL, R3; не ARCHITECT_ACCEPTED)
 CI_RELEASE / WORKFLOW_PUBLICATION / WORKFLOW_DISPATCH / BOOTSTRAP_PUSH = NOT_AUTHORIZED
 LIVE_READINESS / NETWORKPOLICY_APPLY / DEPLOYMENT = FORBIDDEN
 P8C = NOT_FINAL_ACCEPTED
@@ -55,6 +55,21 @@ GHCR относятся к зеркалу `dedvmedved-dot/otus-diplom`. Закр
    (только решение, НЕТ digest/registry binding), STOP (пакета нет), частичная ошибка (push мог
    уже состояться). `private.json`/`first-creation-gate.json` — на runner'е precheck, в пакет
    seed НЕ передаются. MANIFEST = `ls`, НЕ доказательство полноты.
+
+Изменения R3 (по пунктам 1 и 3 вердикта #13 / P8C_R2_REVIEW_13, commit a32701f9):
+
+1. §1.2.2 — дополнена привязка seed admission (FACT): helper `release-check.py` (строки
+   177–179, 186–191) сравнивает `source_sha` именно с runtime `GITHUB_SHA` (env), а
+   `workflow_sha` — отдельно с `GITHUB_WORKFLOW_SHA` (env); буквальный checkout (включая
+   precheck) и изменение тега эту проверку НЕ изменяют. Добавлен REQUIRED для seed
+   first-creation (привязка к литералу `d22aa8f…` требует изменения helper'а → новые pins).
+   Уточнены release L142/L143 (L142 — admission, L143 — диагностический лог `GATE: source=…`,
+   не вторая проверка) и §1.2.2 L124 (HEAD `main` равен коммиту публикации лишь если ветка
+   не сдвинулась с момента публикации).
+2. §4.4 — семантика `seed_not_application_digest` исправлена: явно разделены записанное
+   значение (L158, безусловно), условие отказа (L159–162, только при непустом
+   `APP_IMAGE_DIGEST`) и вывод проверяющего (`true` при отсутствующем application digest
+   НЕ доказывает различие). Scope (§2.3–2.4) и проект бюджета (§3.3) СОХРАНЕНЫ без изменений.
 
 ---
 
@@ -120,10 +135,25 @@ source `d22aa8f…`. SHA коммита, который в будущем опу
 | p8c-portal-seed.yml.template | 22 | `SEED_TAG` (`seed-<github.sha>`) |
 | p8c-portal-seed.yml.template | 35, 77 | checkout job `precheck`/`seed` (`ref`) |
 
+Дополнение к FACT — привязка seed admission (в helper'е, НЕ в шаблоне). Seed admission
+(seed template L55–57 вызывает `release-check.py first-creation`) проверяется НЕ через
+шаблонную подстановку `${{ github.sha }}`, а helper'ом `release-check.py` по env-переменным
+runtime: строками 177–179 `source_sha` сравнивается именно с `GITHUB_SHA` (env), а строками
+186–191 `workflow_sha` — отдельно с `GITHUB_WORKFLOW_SHA` (env). Буквальный checkout (включая
+precheck `ref: ${{ github.sha }}`, L35) и изменение `SEED_TAG` (L22) эту проверку НЕ изменяют
+— она читает env-переменные runtime, а не checkout/тег.
+
+Release L142–143: L142 — сам admission-вызов `release-check.py release-gate <gate.json>
+"${{ github.sha }}" ...` (аргумент source); L143 — только диагностический лог
+`GATE: source=…`, а НЕ вторая проверка.
+
 Проблема: после публикации workflow новым коммитом в `main`, для `workflow_dispatch`
-значение `github.sha` = HEAD `main` = коммит публикации, а **не** pinned source `d22aa8f…`.
-Поэтому текущие байты привязывают checkout, admission, бинарник, подпись, provenance и
-seed-тег к runtime `github.sha`, а не к принятому source.
+значение `github.sha` = HEAD `main` на момент dispatch, а **не** pinned source `d22aa8f…`.
+HEAD `main` равен коммиту публикации ЛИШЬ если ветка `main` не сдвинулась с момента
+публикации (после коммита публикации в `main` не было новых коммитов); иначе `github.sha`
+укажет на более поздний HEAD, отличный от коммита публикации. Поэтому текущие байты
+привязывают checkout, admission, бинарник, подпись, provenance и seed-тег к runtime
+`github.sha`, а не к принятому source.
 
 **Требуемая привязка (REQUIRED — НЕ обеспечена текущими байтами):** каждый из перечисленных
 `${{ github.sha }}` обязан указывать на литерал `d22aa8f1170deaf09580518916ea02c7c4d8bfba`
@@ -134,7 +164,13 @@ seed-тег к runtime `github.sha`, а не к принятому source.
 - `SOURCE_SHA`, admission-аргумент `release-gate`, ldflags `main.sourceRevision`, cosign
   `-a ref`, `predicate` и `verified` — на тот же литерал, а не на runtime `github.sha`;
 - `SEED_TAG` — на тег от литерала `d22aa8f…`, а не от `github.sha`;
-- gate связывает `source_sha` с этим литералом, а не с runtime `github.sha`.
+- gate связывает `source_sha` с этим литералом, а не с runtime `github.sha`;
+- seed first-creation gate связывает `source_sha` с литералом `d22aa8f…`, а не с runtime
+  `GITHUB_SHA` (env), и `workflow_sha` — с `GITHUB_WORKFLOW_SHA` опубликованной копии
+  (pinned template). Сейчас это НЕ обеспечено: helper `release-check.py` (строки 177–179,
+  186–191) читает env-переменные runtime, поэтому привязка к литералу достижима только
+  изменением helper'а, что меняет его blob/sha256 (§1.2) → отдельное решение Архитектора о
+  новых pins. Helper НЕ менять без этого решения.
 
 Проверка идентичности опубликованных байтов (реальная проверка): перед выдачей gate
 сверяются байты опубликованного `.github/workflows/p8c-portal-release.yml` с pinned template
@@ -392,12 +428,22 @@ runner'е job `seed`. Job `precheck` выполняется на ДРУГОМ ru
 - `MANIFEST.txt` (L177) = `ls -1` собранных файлов; это НЕ доказательство полноты набора —
   он перечисляет только то, что реально было скопировано.
 
-Уточнение `seed_digest != application_digest`: сравнение доказуемо ТОЛЬКО когда application
-digest известен (release уже выполнен и вернул digest). При CREATE_ALLOWED сравнение выполняется
-в seed template строками 158–162 и только при непустом `APP_IMAGE_DIGEST`. Если application
-digest неизвестен/отсутствует — это отдельное состояние «неприменимо/неизвестно», а НЕ
-доказательство различия; отсутствие известного application digest НЕ трактуется как прохождение
-проверки.
+Уточнение `seed_digest != application_digest` — явно разделены записанное значение, условие
+отказа и вывод проверяющего:
+
+- **Записанное значение (L158, безусловно)**: L158 ВСЕГДА вычисляет и записывает в
+  `seed-evidence.json` поле `seed_not_application_digest` как булево выражение
+  `SEED_DIGEST != APP_IMAGE_DIGEST` (оба значения из env, при отсутствии — пустая строка).
+  При непустом `SEED_DIGEST` и ОТСУТСТВУЮЩЕМ `APP_IMAGE_DIGEST` поле примет `true` — это
+  сравнение с пустой строкой, а не с реальным application digest.
+- **Условие отказа (L159–162, условно)**: отказ (STOP/`exit 1`) срабатывает ТОЛЬКО при
+  непустом `APP_IMAGE_DIGEST` И `SEED_DIGEST == APP_IMAGE_DIGEST`. При пустом
+  `APP_IMAGE_DIGEST` отказ на равенстве НЕ выполняется.
+- **Вывод проверяющего**: различие `seed_digest != application_digest` доказуемо ТОЛЬКО когда
+  application digest известен (release уже выполнен и вернул digest). Значение
+  `seed_not_application_digest: true`, полученное при отсутствующем application digest, НЕ
+  доказывает различие; отсутствие известного application digest — это состояние
+  «неприменимо/неизвестно», а НЕ прохождение проверки.
 
 Ответственный: `release-check.py` (first-creation/seed-проверки) + ревью Архитектора/Owner-а
 итогового пакета. STOP: при CREATE_ALLOWED, если `seed_digest` зафиксировать не удалось, ИЛИ
@@ -448,8 +494,8 @@ PREPARATION = COMPLETE (REVIEW_READY, offline)
 EXECUTION    = NOT_AUTHORIZED
 ```
 
-Подготовка спецификации завершена (R2 — исправления по четырём пунктам вердикта #11
-P8C_R2_REVIEW_11, поверх R1).
+Подготовка спецификации завершена (R3 — исправления по пунктам 1 и 3 вердикта #13
+P8C_R2_REVIEW_13, поверх R2).
 Допуск на исполнение gate НЕ выдан. Жду решения Архитектора (STAGE P8C: PASSED + PROCEED)
 перед публикацией workflow и любым CI-run. Source-этап не переоткрывается; публикация/dispatch
 workflow, build/push/sign/attest, live-readiness, NetworkPolicy apply, deployment и P8D+ —
