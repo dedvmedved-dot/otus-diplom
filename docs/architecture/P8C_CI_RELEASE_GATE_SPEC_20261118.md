@@ -1,13 +1,13 @@
 # P8C CI Release Gate — спецификация (ПОДГОТОВКА, НЕ ИСПОЛНЕНИЕ)
 
-Дата: 2026-11-18, Europe/Moscow. Исполнитель подготовки: PRIMARY HERMES (engineer,
-assignee `hermes-5.187.1.37-engineer`). Тип документа: спецификация gate (AUTHOR_PROPOSAL),
-НЕ допуск на исполнение.
+Дата: 2026-11-19 (R1 — исправления по вердикту #2 issuecomment-409), Europe/Moscow.
+Исполнитель подготовки: PRIMARY HERMES (engineer, assignee `hermes-5.187.1.37-engineer`).
+Тип документа: спецификация gate (AUTHOR_PROPOSAL), НЕ допуск на исполнение.
 
 Статусные строки:
 
 ```text
-CI_RELEASE_GATE_SPEC = REVIEW_READY (AUTHOR_PROPOSAL, не ARCHITECT_ACCEPTED)
+CI_RELEASE_GATE_SPEC = REVIEW_READY (AUTHOR_PROPOSAL, R1; не ARCHITECT_ACCEPTED)
 CI_RELEASE / WORKFLOW_PUBLICATION / WORKFLOW_DISPATCH / BOOTSTRAP_PUSH = NOT_AUTHORIZED
 LIVE_READINESS / NETWORKPOLICY_APPLY / DEPLOYMENT = FORBIDDEN
 P8C = NOT_FINAL_ACCEPTED
@@ -22,6 +22,21 @@ P8C = NOT_FINAL_ACCEPTED
 `aiopslab/otus-diplom` (git.aiopslab.online). Исполнение CI (GitHub Actions) и private-реестр
 GHCR относятся к зеркалу `dedvmedved-dot/otus-diplom`. Закреплённые SHA едины для обоих
 зеркал (main совпадает на pinned source).
+
+Изменения R1 (по четырём пунктам вердикта #2/issuecomment-409):
+
+1. §1.2.1–1.2.2 — явно разграничены blob-объект (SHA контента) и SHA будущего коммита
+   публикации workflow; добавлены проверка побайтовой идентичности опубликованного
+   workflow и согласование source checkout с runtime SHA (публикация коммитом меняет
+   `github.sha`, поэтому checkout привязан к литералу `d22aa8f…`, не к `HEAD main`).
+2. §2.3–2.4 — release и seed разделены как независимые scope; seed объявлен
+   необязательным и с отдельным допуском; устранено противоречие тегов
+   (`candidate` — release; `seed-<sha>` — только seed при CREATE_ALLOWED).
+3. §3 — лимиты разделены на обеспеченные (в pinned шаблонах/коде) и предложенные
+   (требуют доказательства одноразовости); определена единица бюджета и владелец
+   учёта/погашения; зафиксирован STOP до доказательства одноразовости.
+4. §4.4 — состав seed-evidence распределён по исходам (CREATE_ALLOWED/REUSE/STOP);
+   убрана трактовка отсутствия известного application digest как доказательства различия.
 
 ---
 
@@ -51,6 +66,42 @@ SHA git, sha256 — SHA-256 содержимого файла):
 | portal/tools/verify-pins.py | 7704268df59ad94cac2c141c57bebb61a94a6b96 | a058c5449cf4a9a88006886c7fe39ef0e1d5ba74f796f3fba3f9bd8855faf3e3 | 8182 |
 | portal/tools/pins.lock.json | 4fb6f3531247c016d1d4d414eb7729988967e254 | b4f60edaae78aef79d6cfb3a2b47211a37315a6b579c6d0b10fcd542e2f13989 | 2021 |
 | portal/tools/install-verified-go.sh | 2b6e0c9a0127ac0a641feef791f017d287719543 | 3a34d349b33f032513a21fecd795eeb26129c511c21f3e02f8774b74e7f8d356 | 948 |
+
+### 1.2.1 Что такое «blob» в §1.2 (уточнение R1)
+
+Столбец `blob` — это git object SHA-1 (SHA-1 содержимого файла, 40 hex), **не** SHA коммита.
+Значения `blob`/`sha256`/`size` фиксируют содержимое шаблонов и gate-помощников на принятом
+source `d22aa8f…`. SHA коммита, который в будущем опубликует
+`.github/workflows/p8c-portal-release.yml` (и seed-аналог), на момент подготовки НЕ существует
+и будет определён только отдельным решением о публикации workflow. Следовательно, `blob`
+шаблона **не равен** и **не предсказывает** SHA будущего коммита публикации workflow.
+
+### 1.2.2 Согласование source checkout и runtime SHA (обязательное условие до dispatch)
+
+Проблема: после публикации workflow новым коммитом в `main`, для `workflow_dispatch`
+значение `github.sha` = HEAD `main` = коммит публикации, а **не** pinned source `d22aa8f…`.
+Закреплённые шаблоны сейчас используют `ref: ${{ github.sha }}` (release template: строки
+48/114; seed template: строки 35/77) и `SOURCE_SHA=${{ github.sha }}`.
+
+Требование до исполнения:
+
+- source checkout в jobs `test`/`release`/`seed` должен быть pinned на литерал
+  `d22aa8f1170deaf09580518916ea02c7c4d8bfba` (фиксированный вход), а НЕ на `github.sha`/HEAD main;
+- gate связывает `source_sha` с этим литералом, а не с runtime `github.sha`.
+
+Проверка идентичности опубликованных байтов (реальная проверка): перед выдачей gate
+сверяются байты опубликованного `.github/workflows/p8c-portal-release.yml` с pinned template
+из §1.2, т.е. `sha256(опубликованный файл) == sha256(template)`. Выполняется доверенной
+сверкой (`verify-pins.py` или эквивалентной) ДО dispatch.
+
+Ответственный: Архитектор/Owner — единственный, кто выдаёт gate, и только после
+подтверждения (а) побайтового совпадения опубликованного workflow с pinned template и
+(б) закрепления checkout на литерал `d22aa8f…`.
+
+STOP: если опубликованные байты workflow ≠ sha256 pinned template, ИЛИ checkout/SOURCE_SHA
+≠ `d22aa8f…`, ИЛИ любой pinned файл изменился — STOP (gate не выдаётся, dispatch не выполняется).
+Если для закрепления checkout на литерал потребуется изменить шаблон — новый blob/sha256
+подлежит перезакреплению (§3, инвалидация) и повторному утверждению Архитектором до dispatch.
 
 ### 1.3 Внешние pins (pins.lock.json, sha256; tag→SHA не утверждается)
 
@@ -86,18 +137,22 @@ source binding:    cosign verify -a ref=<source_sha>; provenance.configSource.di
 
 Workflow SHA на момент исполнения — это `GITHUB_WORKFLOW_SHA` опубликованной копии
 `.github/workflows/p8c-portal-release.yml`, которая обязана побайтово совпадать с pinned
-template (sha256 из §1.2); gate-документ связывается с этим runtime SHA.
+template (sha256 из §1.2); gate-документ связывается с этим runtime SHA. Runtime SHA
+workflow ≠ SHA коммита публикации (см. §1.2.1).
 
 ---
 
 ## 2. Разрешённые операции в рамках gate
 
 Scope gate ограничен CI-маршрутом release/seed: сборка → проверки → private-реестр →
-SBOM/scan/sign/attest → артефакты. Разрешено строго следующее (A→B→C, без расширения):
+SBOM/scan/sign/attest → артефакты. **Release и seed — независимые scope с независимыми
+допусками** (release-gate и seed first-creation gate выдаются отдельно). Seed —
+**необязательный** scope: релиз может выполняться без seed, а seed — только при отдельно
+выданном first-creation gate.
 
 ### 2.1 Job `test` (permissions: только `contents: read`)
 
-1. `actions/checkout` по pinned SHA, `persist-credentials: false`, `ref=${{ github.sha }}`.
+1. `actions/checkout` по pinned SHA, `persist-credentials: false`, `ref=<литерал d22aa8f…>`.
 2. Установка проверенного Go-архива (`install-verified-go.sh`, pinned sha256).
 3. `go vet ./...`, `go test -count=1 ./...`, `go test -race -count=1 ./...`.
 4. DB integration: `go test -tags integration ./internal/store/` против `postgres:17.10-bookworm`
@@ -130,42 +185,79 @@ SBOM/scan/sign/attest → артефакты. Разрешено строго с
 13. `actions/upload-artifact` (SBOM/signature/provenance).
 14. Cleanup buildkit-демона `if: always()`.
 
-### 2.3 Job `seed` (отдельный one-shot bootstrap; seed ≠ release, НЕ deployable)
+### 2.3 Job `seed` (независимый НЕОБЯЗАТЕЛЬНЫЙ one-shot bootstrap; seed ≠ release, НЕ deployable)
+
+Seed — отдельный scope с собственным допуском (first-creation gate, §5). Необязателен:
+отсутствие seed-допуска означает «seed не выполняется» (bootstrap НЕ разрешён) и НЕ блокирует
+release-scope.
 
 1. Типизированный precheck `private` → REUSE | CREATE_ALLOWED | STOP (typed job output).
 2. REUSE и STOP выполняют НОЛЬ build/push.
 3. CREATE_ALLOWED только по корректному first-creation gate (см. §5) + `GITHUB_RUN_ATTEMPT=1`.
 4. Минимальный not-deployable seed (`Seed.Containerfile`) → `seed-<sha>` тег; digest отличен от
-   application digest (иначе STOP).
+   application digest (если application digest известен — см. §4.4).
 
-### 2.4 Явно ЗАПРЕЩЕНО (не входит в scope gate)
+Ответственный за scope-разделение: gate-проверки `release-check.py` (release-gate vs
+first-creation) + ревью Архитектора/Owner-а. STOP: если seed-допуск отсутствует, а bootstrap
+пытается выполниться, либо seed-scope затрагивает release-scope (или наоборот) — STOP.
 
-- Deployment / promote / любая публикация, кроме `candidate`-тега в PRIVATE GHCR.
+### 2.4 Scope-границы и явные запреты
+
+Публикация разрешена ТОЛЬКО в PRIVATE GHCR и только двумя тегами, каждый в своём независимом scope:
+
+- release scope → тег `candidate` (immutable digest из `build-metadata.json`);
+- seed scope → тег `seed-<sha>` (только при CREATE_ALLOWED по first-creation gate).
+
+Любой иной тег/публикация запрещены. Явно ЗАПРЕЩЕНО:
+
+- Deployment / promote / публикация любым тегом, кроме двух выше, и вне PRIVATE GHCR.
 - NetworkPolicy apply, live-readiness, любые reads/writes в кластер ПАК.
 - Public package / публичный реестр; любые PAK-секреты или kubeconfig.
 - Automatic retry / повторный run / force-push / изменение pinned source после issued gate.
+- Bootstrap seed при отсутствии отдельного seed-допуска (first-creation gate).
 
 ---
 
 ## 3. Одноразовый бюджет (scope + лимиты запуска)
 
-Запуск — однократный, ручной, без авто-повторов. Числа ниже — лимиты gate; enforcement
-реализован в закреплённом workflow/source, исполнение — после отдельного допуска.
+Запуск — однократный, ручной, без авто-повторов. Лимиты разделены на **ОБЕСПЕЧЕННЫЕ**
+(реально закреплены в pinned workflow/source) и **ПРЕДЛОЖЕННЫЕ** (заявлены в спецификации,
+но механизм enforcement ещё не доказан и требует отдельного решения/доработки до dispatch).
 
-| Параметр | Значение |
-|---|---|
-| job `test` timeout | 20m (hard) |
-| job `release` timeout | 30m (hard) |
-| job `seed` precheck timeout | 5m (hard) |
-| job `seed` timeout | 15m (hard) |
-| max runs | 1 (manual `workflow_dispatch`) |
-| run attempt | `run_attempt = 1` и gate `attempt = 1` (integer) — иначе reject |
-| auto-retry | НЕТ |
-| gate expiry | 24 часа (`expiry_hours` int, `0 < expiry_hours <= 24`) от `issued_at_utc` (не будущее, уже наступившее) |
-| инвалидация | байтовое изменение любого pinned source/workflow файла → pin недействителен |
+### 3.1 Обеспеченные лимиты (закреплены в pinned шаблонах/коде)
 
-Условие допуска: gate-документ issued Архитектором/Owner-ом (никогда не материализуется
-«сам собой»; доставляется как `workflow_dispatch.inputs.release_gate` → файл через env).
+| Параметр | Значение | Где закреплено |
+|---|---|---|
+| job `test` timeout | 20m (hard) | release template L33 |
+| job `release` timeout | 30m (hard) | release template L102 |
+| job `seed` precheck timeout | 5m (hard) | seed template L28 |
+| job `seed` timeout | 15m (hard) | seed template L69 |
+| auto-retry | НЕТ (retry/concurrency-повтор в шаблонах отсутствует) | шаблоны |
+| gate expiry | 24h, `0 < expiry_hours <= 24`, `issued_at_utc` не будущее и не истёкшее | release-check.py (release-gate и first-creation) |
+| инвалидация | байтовое изменение любого pinned файла → pin недействителен | определение (§1) |
+
+### 3.2 Предложенные лимиты (требуют доказательства одноразовости ДО dispatch)
+
+| Параметр | Заявленное значение | Статус enforcement |
+|---|---|---|
+| единица бюджета | ровно 1 (один) авторизованный `workflow_dispatch` = один issued gate-документ | ПРЕДЛОЖЕНО — механизм не реализован |
+| max runs | 1 | ПРЕДЛОЖЕНО |
+| run_attempt / attempt | `run_attempt = 1` И `attempt = 1` (строгий тип: int, не bool, ==1) | ЧАСТИЧНО: seed (first-creation) строго; release — НЕТ строгой проверки типа (см. §5) |
+| погашение при любом исходе | единица расходуется на dispatch, включая неудачу | ПРЕДЛОЖЕНО — не реализовано (нет внешнего учёта) |
+
+### 3.3 Единица бюджета и владелец учёта/погашения
+
+- **Единица бюджета**: ровно один авторизованный `workflow_dispatch` (один issued gate-документ
+  = одна единица).
+- **Расходование**: единица считается израсходованной в момент dispatch, НЕЗАВИСИМО от исхода —
+  успех ИЛИ неудача (неудачный run НЕ возвращает единицу).
+- **Владелец учёта/погашения**: Архитектор/Owner (единственный issuer gate). Владелец фиксирует
+  выдачу единицы ДО dispatch и отмечает её погашенной при любом исходе.
+- **Ответственный за фиксацию**: Архитектор/Owner.
+
+STOP: до доказательства одноразовости — пока (а) не определён владелец учёта/погашения,
+(б) не подтверждена строгая проверка attempt для release (выравнена с seed: int, не bool, ==1,
+см. §5) и (в) не обеспечено погашение единицы при любом исходе — dispatch НЕ выдаётся (STOP).
 
 ---
 
@@ -203,12 +295,25 @@ image/digest binding) + `private` (visibility=private, repository binding).
 - `signature.json` / `attestation-*.jsonl` — cosign verify/verify-attestation с identity,
   OIDC issuer и `-a ref=<source_sha>`.
 
-### 4.4 Artifact `portal-seed-evidence` (job seed)
+### 4.4 Artifact `portal-seed-evidence` (job seed) — состав зависит от исхода
 
-`seed-evidence.json`, `seed-registry.json`, `private.json`, `private-after.json`,
-`seed-metadata.json`, `seed-digest.txt`, `first-creation-gate.json`, `MANIFEST.txt`.
-Проверка: `seed_digest` зафиксирован, `not_deployable=true`, `seed_digest != application_digest`,
-registry/private binding (аналогично §4.3).
+Состав пакета НЕ единый: seed template (строки 173–177) собирает только СУЩЕСТВУЮЩИЕ файлы
+(`if [ -f … ]`), поэтому набор артефактов определяется исходом seed:
+
+| Исход seed | Фактически собираемые файлы | Проверка |
+|---|---|---|
+| CREATE_ALLOWED (bootstrap выполнен) | `seed-evidence.json`, `seed-registry.json`, `private.json`, `private-after.json`, `seed-metadata.json`, `seed-digest.txt`, `first-creation-gate.json` (+ `MANIFEST.txt`) | `seed_digest` зафиксирован; `not_deployable=true`; registry/private binding (аналогично §4.3); `seed_digest != application_digest` ТОЛЬКО если application digest известен |
+| REUSE (существующий seed переиспользован, НОЛЬ build/push) | reuse-решение + ссылка на существующий digest + registry/private binding; НЕТ нового digest/metadata | новый digest отсутствует (не требуется); НЕ трактуется как доказательство различия |
+| STOP (gate отклонён / нет допуска) | только причина STOP (вывод отклонения + nonzero exit); НОЛЬ build/push | фиксируется причина отклонения; артефактов сборки нет |
+
+Уточнение `seed_digest != application_digest`: сравнение доказуемо ТОЛЬКО когда application
+digest известен (release уже выполнен и вернул digest). Если application digest
+неизвестен/отсутствует — это отдельное состояние «неприменимо/неизвестно», а НЕ доказательство
+различия; отсутствие известного application digest НЕ трактуется как прохождение проверки.
+
+Ответственный: `release-check.py` (first-creation/seed-проверки) + ревью Архитектора/Owner-а
+итогового пакета. STOP: при CREATE_ALLOWED, если `seed_digest` зафиксировать не удалось, ИЛИ
+(при известном application digest) `seed_digest == application_digest` — STOP.
 
 ---
 
@@ -219,19 +324,32 @@ registry/private binding (аналогично §4.3).
 
 ```text
 release-gate {
-  source_sha    == <runtime github.sha>                     (40 hex)
+  source_sha    == <pinned литерал d22aa8f…>                     (40 hex; НЕ runtime github.sha — см. §1.2.2)
   repository    == dedvmedved-dot/otus-diplom
   package       == ghcr.io/dedvmedved-dot/otus-diplom-portal
   workflow_sha  == <GITHUB_WORKFLOW_SHA> (40 hex, actual)   (недостаток runtime binding = НЕ авторизация)
   mode          == LIVE                                     (TEST_ONLY rejected)
   issued_at_utc == уже наступившее, не будущее, не истёкшее
   expiry_hours  : int, 0 < expiry_hours <= 24
-  attempt       == 1 (integer)  И  run_attempt == 1         (missing/null/bool/2 rejected)
+  attempt       == 1  И  run_attempt == 1
 }
 ```
 
-Seed first-creation gate — тот же набор обязательных полей + binding к `GITHUB_SHA` /
-repository / package / workflow_sha; только `mode=LIVE`, `GITHUB_RUN_ATTEMPT=1`.
+Точное поведение enforcement (по фактическому коду `release-check.py`):
+
+- **release-gate** (строки 148–151): проверка `g['attempt'] != 1 or str(run_attempt) != '1'` —
+  отклоняет отсутствие/2/строку, НО НЕ отклоняет строго не-int типы (`True`/`1.0` проходят как
+  `== 1`). Строгая проверка «int, не bool, ==1» для release НЕ обеспечена.
+- **seed first-creation**: `isinstance(attempt, int) and not bool and attempt == 1` +
+  `GITHUB_RUN_ATTEMPT == '1'` — строго; отсутствие/строка/bool/2 отклоняются.
+
+Следовательно, строгий attempt-тип для release — ПРЕДЛОЖЕННЫЙ лимит (hardening
+`release-check.py` release-gate), НЕ обеспеченный; до его внедрения и подтверждения — STOP
+(см. §3.3).
+
+Seed first-creation gate — отдельный, независимый от release-gate документ: тот же набор
+обязательных полей + строгая привязка attempt (`int`, не bool, ==1) и `GITHUB_RUN_ATTEMPT=1`;
+только `mode=LIVE`.
 
 ---
 
@@ -242,5 +360,8 @@ PREPARATION = COMPLETE (REVIEW_READY, offline)
 EXECUTION    = NOT_AUTHORIZED
 ```
 
-Подготовка спецификации завершена; допуск на исполнение gate НЕ выдан. Жду решения
-Архитектора (STAGE P8C: PASSED + PROCEED) перед публикацией workflow и любым CI-run.
+Подготовка спецификации завершена (R1 — исправления по четырём пунктам вердикта #2).
+Допуск на исполнение gate НЕ выдан. Жду решения Архитектора (STAGE P8C: PASSED + PROCEED)
+перед публикацией workflow и любым CI-run. Source-этап не переоткрывается; публикация/dispatch
+workflow, build/push/sign/attest, live-readiness, NetworkPolicy apply, deployment и P8D+ —
+НЕ выполняются. P8C = NOT_FINAL_ACCEPTED.
