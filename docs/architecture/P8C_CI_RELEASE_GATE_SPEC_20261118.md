@@ -445,6 +445,17 @@ runner'е job `seed`. Job `precheck` выполняется на ДРУГОМ ru
   доказывает различие; отсутствие известного application digest — это состояние
   «неприменимо/неизвестно», а НЕ прохождение проверки.
 
+**REQUIREMENT — контракт будущей реализации helper'а.** Поле `seed_not_application_digest`
+обязано быть трёхзначным, а не булевым. Helper обязан записывать:
+
+- `true` — оба digest известны и различаются;
+- `false` — оба digest известны и совпадают (STOP);
+- `unknown` — хотя бы один digest неизвестен. В частности, при отсутствующем или пустом
+  application digest обязательно `unknown`, а не `true`. Это не доказательство различия.
+
+Это требование к будущей реализации, не описание поведения L158 и не допуск к исполнению.
+Изменение helper'а и pins отложено до фазы исполнения gate.
+
 Ответственный: `release-check.py` (first-creation/seed-проверки) + ревью Архитектора/Owner-а
 итогового пакета. STOP: при CREATE_ALLOWED, если `seed_digest` зафиксировать не удалось, ИЛИ
 (при известном application digest) `seed_digest == application_digest` — STOP.
