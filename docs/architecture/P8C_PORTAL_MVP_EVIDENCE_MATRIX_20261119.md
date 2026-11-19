@@ -16,6 +16,10 @@ LIVE_READINESS / NETWORKPOLICY_APPLY / DEPLOYMENT = FORBIDDEN
 P8C = NOT_FINAL_ACCEPTED   (переход к P8D не разрешён)
 ```
 
+## Актуализация #29 — после решения владельца А
+
+Блок выше и §§1–4 ниже — историческая статическая оценка. Действующие границы и preflight: [наряд #29](P8C_RUNTIME_29.md). Ограниченный тестовый deployment/live-readiness разрешён; фактический rollout пока не начат. PORTAL_UI, PORTAL_API, PORTAL_DB и PLATFORM_STATUS остаются STATIC_ONLY / RUNTIME_NOT_OBSERVED. Наличие допуска не является evidence. P8C = NOT_FINAL_ACCEPTED; P8D закрыт.
+
 ## 1. Метод и соглашения
 
 1. **Static-only.** Настоящий документ составлен ТОЛЬКО чтением исходников на принятом
