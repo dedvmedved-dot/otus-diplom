@@ -25,28 +25,37 @@ helper/pins не менялись.
 на стороне инженера его подтверждает и дополнительно снимает пункт «доступ к
 контуру» — см. ниже.
 
-## 1. Доступ к контуру OTUS — ПОДТВЕРЖДЁН (read-only)
+## 1. Доступ и идентичность контура OTUS (read-only)
 
 Идентификация контура выполнена не по имени current-context, а сверкой с доверенной
-инвентаризацией (`inventory/hosts.yaml`, `docs/p0/infrastructure-passport.md`).
+инвентаризацией. Доступ и идентичность — разные проверки; совпадение имени узла и
+версии kubectl само по себе не идентифицирует кластер.
 
-| Параметр | Наблюдаемое | Сверка |
+Доступ подтверждён: узел входа совпадает с инвентаризацией
+`inventory/hosts.yaml` @ `82e20a2ea997c0f046a0c76600e99a6ecd97f66e`; kubectl
+v1.36.2 совпадает с `versions.lock` @ `edb9ef8a5ca4fe21ee397cabbd008befcf177e17`.
+
+Идентичность — сверка endpoint / CA / UID с независимым доверенным эталоном:
+
+| Параметр | Статус | Независимый доверенный эталон (ревизия, без значения) |
 |---|---|---|
-| Узел входа | node-01 (по инвентаризации `pak_portal`) | hostname совпадает |
-| kubectl | v1.36.2 | `versions.lock` kubernetes 1.36.2 — совпадает |
-| API endpoint | server конфигурации = API VIP из паспорта | совпадает |
-| CA (обезличено) | SHA-256 fingerprint `BF:1E:36:EC:3B:1F:A6:AC:C8:8E:8D:C3:2D:83:46:6A:EA:3F:31:A3:7E:22:83:65:D2:71:E6:8C:6E:23:14:D9` | записан для сверки |
-| UID кластера (обезличенный идентификатор) | kube-system UID `83a6fdee-dc2a-4441-b7fd-bb76bf6327ad` | записан (обезличенный id) |
-| subject / разрешения | root@node-01, `KUBECONFIG=/etc/kubernetes/admin.conf`, context `kubernetes-admin@pak-portal` (cluster-admin) | фактическая учётка инженера; НЕ роль приложения |
+| API endpoint | **проверено** | совпадает с VIP из `docs/p0/infrastructure-passport.md` @ `9c894af2dda4695489905df801904b9d04f02d93` |
+| CA | **не проверено** | эталон отсутствует — в названных источниках (`inventory/hosts.yaml`, `docs/p0/infrastructure-passport.md`) значение CA не найдено |
+| UID кластера (kube-system) | **не проверено** | эталон отсутствует — в названных источниках значение UID не найдено |
 
-Namespace `portal` существует (UID `396158dc-cc86-4f4e-b248-0b8832732b7f`,
-создан 2026-10-19T22:05:56Z). В нём — только объекты CNPG/БД (`portal-db` 3/3,
-primary `portal-db-2`; Services `portal-db-r/ro/rw`; secrets `portal-db-*`,
-`portal-barman-s3-*`). Объектов Portal-приложения (Deployment/Job/Service
-`portal`/`portal-db-metrics`, Gateway, HTTPRoute, Issuer, Certificate) НЕТ —
-baseline подтверждает, что rollout Портала ранее не выполнялся.
+Блокеры (остаются): для CA и UID независимого доверенного эталона нет, поэтому
+«записано» ≠ «проверено»; сверка идентичности по CA/UID не закрыта. Значения
+CA/UID и их производные не публикуются.
 
-Полный kubeconfig, CA-сертификат и значения секретов не публикуются.
+Роль учётки контроля: cluster-admin (инженер, read-only); это роль контроля, а НЕ
+роль приложения. Kubeconfig, CA-сертификат, отпечаток и значения секретов не
+публикуются.
+
+Namespace `portal` существует (создан 2026-10-19T22:05:56Z). В нём — только
+объекты CNPG/БД (`portal-db` 3/3, primary `portal-db-2`; Services `portal-db-r/ro/rw`;
+secrets `portal-db-*`, `portal-barman-s3-*`). Объектов Portal-приложения
+(Deployment/Job/Service `portal`/`portal-db-metrics`, Gateway, HTTPRoute, Issuer,
+Certificate) НЕТ — baseline подтверждает, что rollout Портала ранее не выполнялся.
 
 ## 2. Application digest + provenance — ОТСУТСТВУЮТ (блокер)
 
@@ -55,7 +64,7 @@ baseline подтверждает, что rollout Портала ранее не
 | Поле образа Deployment | `ghcr.io/dedvmedved-dot/otus-diplom-portal@sha256:REPLACE_WITH_VERIFIED_DIGEST` (placeholder, строка 33) |
 | Поле образа Job (migrate) | тот же placeholder (строка 173) — образы Job и Deployment формально одинаковы, но оба НЕ подтверждены |
 | История git по `deployment.yaml` | реальный digest никогда не закреплялся (только placeholder) |
-| Release/dispatch | не выполнялся (матрица §3: workflow не опубликован, dispatch не выполнен) |
+| Release/dispatch (область наблюдения = Forgejo) | releases/tags/Actions runs пусты; workflow не опубликован; dispatch по наряду не выполнялся |
 | Provenance/SBOM/cosign для Portal-образа | отсутствуют в репозитории (имеющиеся provenance-артефакты относятся к CNPG/Barman/cert-manager/SeaweedFS и др., НЕ к Portal) |
 | GHCR `dedvmedved-dot/otus-diplom-portal` | анонимный доступ 401 UNAUTHORIZED (приватный или отсутствует — различить без авторизации нельзя) |
 | GitHub-токен инженера | `Bad credentials` — pull-доступ и существование digest проверить невозможно |
@@ -66,6 +75,10 @@ baseline подтверждает, что rollout Портала ранее не
 подписанный/проверенный application digest с привязкой к source, pull-доступ»
 не выполнено.
 
+Ограничение вывода о release: наблюдение ограничено Forgejo
+(releases/tags/Actions runs). Внешний GitHub/GHCR не является предметом аудита —
+HTTP 401 не доказывает ни отсутствия пакета, ни отсутствия запуска release.
+
 ## 3. Соответствие наряду и STOP
 
 - «Нет … непроверенный target/digest … — остановка до записи» — выполнено: остановка
@@ -73,7 +86,8 @@ baseline подтверждает, что rollout Портала ранее не
 - «Не применять теги или placeholder» — применять нечего и нельзя; placeholder не
   применялся.
 - «Без доказанного пути отката миграции не запускать Job» — Job миграции не запускался.
-- «Без … сборки/публикации release» — release не собирался и не публиковался.
+- «Без … сборки/публикации release» — release не собирался и не публиковался
+  (в области наблюдения Forgejo; внешние registry не аудировались).
 - Никакого blanket apply, cluster-wide RBAC/Gateway/NetworkPolicy/Metrics Server/
   CNPG/operator не трогались.
 
@@ -101,5 +115,3 @@ NO-GO. Остаточных изменений в кластере нет (вс�
 - GHCR anonymous tags: HTTP 401 `UNAUTHORIZED`.
 - GitHub token check: HTTP 401 `Bad credentials`.
 - `kubectl get secret portal-registry-pull -n portal`: NotFound.
-- cluster UID: `83a6fdee-dc2a-4441-b7fd-bb76bf6327ad`.
-- CA SHA-256 fingerprint: `BF:1E:36:EC:3B:1F:A6:AC:C8:8E:8D:C3:2D:83:46:6A:EA:3F:31:A3:7E:22:83:65:D2:71:E6:8C:6E:23:14:D9`.
