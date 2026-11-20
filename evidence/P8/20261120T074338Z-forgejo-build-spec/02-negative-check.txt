@@ -2,6 +2,9 @@ test_apply_missing_provenance_leaves_lock_untouched (test_forgejo_lock_gate.Test
 test_apply_source_mismatch_leaves_lock_untouched (test_forgejo_lock_gate.TestApplyLockUpdate.test_apply_source_mismatch_leaves_lock_untouched) ... ok
 test_apply_tag_instead_of_digest_leaves_lock_untouched (test_forgejo_lock_gate.TestApplyLockUpdate.test_apply_tag_instead_of_digest_leaves_lock_untouched) ... ok
 test_apply_writes_only_when_allowed (test_forgejo_lock_gate.TestApplyLockUpdate.test_apply_writes_only_when_allowed) ... ok
+test_check_missing_provenance_exit_nonzero (test_forgejo_lock_gate.TestCliCheckMode.test_check_missing_provenance_exit_nonzero) ... ok
+test_check_source_mismatch_exit_nonzero (test_forgejo_lock_gate.TestCliCheckMode.test_check_source_mismatch_exit_nonzero) ... ok
+test_check_valid_bindings_exit_zero (test_forgejo_lock_gate.TestCliCheckMode.test_check_valid_bindings_exit_zero) ... ok
 test_missing_provenance_not_allowed (test_forgejo_lock_gate.TestDecideLockUpdate.test_missing_provenance_not_allowed) ... ok
 test_provenance_binds_wrong_digest_not_allowed (test_forgejo_lock_gate.TestDecideLockUpdate.test_provenance_binds_wrong_digest_not_allowed) ... ok
 test_provenance_binds_wrong_source_not_allowed (test_forgejo_lock_gate.TestDecideLockUpdate.test_provenance_binds_wrong_source_not_allowed) ... ok
@@ -11,6 +14,6 @@ test_tag_instead_of_digest_not_allowed (test_forgejo_lock_gate.TestDecideLockUpd
 test_valid_bindings_allowed (test_forgejo_lock_gate.TestDecideLockUpdate.test_valid_bindings_allowed) ... ok
 
 ----------------------------------------------------------------------
-Ran 11 tests in 0.230s
+Ran 14 tests in 0.355s
 
 OK

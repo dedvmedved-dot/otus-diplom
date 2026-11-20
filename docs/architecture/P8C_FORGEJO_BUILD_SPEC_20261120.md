@@ -192,7 +192,10 @@ test_apply_writes_only_when_allowed                  PASS
 test_apply_source_mismatch_leaves_lock_untouched     PASS   (файл байтово идентичен)
 test_apply_missing_provenance_leaves_lock_untouched  PASS   (файл байтово идентичен)
 test_apply_tag_instead_of_digest_leaves_lock_untouched PASS
-TESTS_TOTAL=11  TESTS_FAILED=0  HARNESS_EXIT=0
+test_check_valid_bindings_exit_zero                  PASS   (CLI check-режим)
+test_check_source_mismatch_exit_nonzero              PASS   (CLI check-режим)
+test_check_missing_provenance_exit_nonzero           PASS   (CLI check-режим)
+TESTS_TOTAL=14  TESTS_FAILED=0  HARNESS_EXIT=0
 ```
 
 Вывод: **несовпадение SHA или отсутствие provenance не разрешает обновление lock** —

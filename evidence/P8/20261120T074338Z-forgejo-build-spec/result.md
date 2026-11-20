@@ -27,7 +27,7 @@ LOCK_UPDATE = NOT_PERFORMED
 
 ```text
 01 SYNTAX      = VERIFIED   (YAML well-formed; 3 jobs; 22 expressions balanced)
-02 NEGATIVE    = 11/11 PASS (HARNESS_EXIT=0): несовпадение SHA / отсутствие
+02 NEGATIVE    = 14/14 PASS (HARNESS_EXIT=0): несовпадение SHA / отсутствие
                  provenance / тег вместо digest => lock update НЕ разрешён
 03 OIDC issuer = https://git.aiopslab.online (HTTP 200, read-only)
 04 PINS        = зафиксированы (см. файл)

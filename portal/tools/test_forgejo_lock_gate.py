@@ -137,5 +137,37 @@ class TestApplyLockUpdate(unittest.TestCase):
         self.assertIn("NOT ALLOWED", r.stderr)
 
 
+class TestCliCheckMode(unittest.TestCase):
+    """CLI `check` mode (no --apply): valid bindings exit 0, mismatch exit nonzero.
+
+    Regression guard for the no-apply argument path of forgejo_lock_gate.main().
+    """
+
+    def _run(self, source, prov, digest=DIGEST):
+        with tempfile.TemporaryDirectory() as td:
+            prov_path = Path(td) / "provenance.json"
+            prov_path.write_text(json.dumps(prov))
+            r = subprocess.run(
+                [sys.executable, str(Path(__file__).parent / "forgejo_lock_gate.py"),
+                 PINNED, source, digest, IMAGE, str(prov_path)],
+                capture_output=True, text=True)
+            return r
+
+    def test_check_valid_bindings_exit_zero(self):
+        r = self._run(PINNED, make_provenance())
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn('"allowed": true', r.stdout)
+
+    def test_check_source_mismatch_exit_nonzero(self):
+        r = self._run(OTHER_SHA, make_provenance(source=PINNED))
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("NOT ALLOWED", r.stderr)
+
+    def test_check_missing_provenance_exit_nonzero(self):
+        r = self._run(PINNED, {})
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("NOT ALLOWED", r.stderr)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

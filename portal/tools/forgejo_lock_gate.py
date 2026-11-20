@@ -118,7 +118,7 @@ def apply_digest_to_lock(lock_path, new_digest):
 
 
 def main(argv):
-    if len(argv) < 7:
+    if len(argv) < 6:
         print("usage: forgejo_lock_gate.py <pinned_sha> <source_sha> <digest> <image_ref> "
               "<provenance.json> [--apply <lock_file>]", file=sys.stderr)
         return 2
