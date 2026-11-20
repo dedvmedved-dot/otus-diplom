@@ -1,0 +1,7 @@
+name: p8c-portal-forgejo-release
+trigger key: True(bool; PyYAML 1.1 coercion of bare `on`)
+jobs (2): test, release
+  - test: runs-on='<SELF_HOSTED_RUNNER_LABEL>', 8 steps
+  - release: runs-on='<SELF_HOSTED_RUNNER_LABEL>', 21 steps
+41 expressions balanced
+SYNTAX = VERIFIED (YAML well-formed; structure + expressions OK)

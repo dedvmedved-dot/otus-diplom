@@ -1,0 +1,42 @@
+test_rejects_registry_pair_mismatch (__main__.TestApplyLockPair.test_rejects_registry_pair_mismatch) ... ok
+test_writes_pair (__main__.TestApplyLockPair.test_writes_pair) ... ok
+test_missing_source_file (__main__.TestFileInventory.test_missing_source_file) ... ok
+test_missing_tools_file (__main__.TestFileInventory.test_missing_tools_file) ... ok
+test_same_pins_rejected (__main__.TestFileInventory.test_same_pins_rejected) ... ok
+test_tools_smuggled_into_source (__main__.TestFileInventory.test_tools_smuggled_into_source) ... ok
+test_valid (__main__.TestFileInventory.test_valid) ... ok
+test_attempt_not_one (__main__.TestOwnerGate.test_attempt_not_one) ... ok
+test_expired (__main__.TestOwnerGate.test_expired) ... ok
+test_foreign_owner (__main__.TestOwnerGate.test_foreign_owner) ... ok
+test_future (__main__.TestOwnerGate.test_future) ... ok
+test_missing_gate (__main__.TestOwnerGate.test_missing_gate) ... ok
+test_run_attempt_not_one (__main__.TestOwnerGate.test_run_attempt_not_one) ... ok
+test_valid (__main__.TestOwnerGate.test_valid) ... ok
+test_wrong_mode (__main__.TestOwnerGate.test_wrong_mode) ... ok
+test_wrong_package (__main__.TestOwnerGate.test_wrong_package) ... ok
+test_wrong_repository (__main__.TestOwnerGate.test_wrong_repository) ... ok
+test_wrong_source_sha (__main__.TestOwnerGate.test_wrong_source_sha) ... ok
+test_wrong_workflow_sha (__main__.TestOwnerGate.test_wrong_workflow_sha) ... ok
+test_fetch_allowed_host_calls_transport (__main__.TestRegistry.test_fetch_allowed_host_calls_transport) ... ok
+test_fetch_refuses_foreign_host_before_transport (__main__.TestRegistry.test_fetch_refuses_foreign_host_before_transport) ... ok
+test_verify_manifest_bytes_mismatch (__main__.TestRegistry.test_verify_manifest_bytes_mismatch) ... ok
+test_verify_manifest_dcd_mismatch (__main__.TestRegistry.test_verify_manifest_dcd_mismatch) ... ok
+test_verify_manifest_image_ref_foreign (__main__.TestRegistry.test_verify_manifest_image_ref_foreign) ... ok
+test_verify_manifest_valid (__main__.TestRegistry.test_verify_manifest_valid) ... ok
+test_verify_manifest_wrong_registry (__main__.TestRegistry.test_verify_manifest_wrong_registry) ... ok
+test_parse_dsse_envelope (__main__.TestVerifiedStatement.test_parse_dsse_envelope) ... ok
+test_parse_raw_statement (__main__.TestVerifiedStatement.test_parse_raw_statement) ... ok
+test_valid (__main__.TestVerifiedStatement.test_valid) ... ok
+test_wrong_build_type (__main__.TestVerifiedStatement.test_wrong_build_type) ... ok
+test_wrong_builder (__main__.TestVerifiedStatement.test_wrong_builder) ... ok
+test_wrong_predicate_type (__main__.TestVerifiedStatement.test_wrong_predicate_type) ... ok
+test_wrong_run_id (__main__.TestVerifiedStatement.test_wrong_run_id) ... ok
+test_wrong_source_material (__main__.TestVerifiedStatement.test_wrong_source_material) ... ok
+test_wrong_subject_digest (__main__.TestVerifiedStatement.test_wrong_subject_digest) ... ok
+test_wrong_subject_image (__main__.TestVerifiedStatement.test_wrong_subject_image) ... ok
+test_wrong_workflow_sha (__main__.TestVerifiedStatement.test_wrong_workflow_sha) ... ok
+
+----------------------------------------------------------------------
+Ran 37 tests in 0.016s
+
+OK

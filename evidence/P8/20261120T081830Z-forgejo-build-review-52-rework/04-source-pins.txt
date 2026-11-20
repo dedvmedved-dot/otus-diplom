@@ -1,0 +1,90 @@
+SOURCE PIN (unchanged): d22aa8f1170deaf09580518916ea02c7c4d8bfba
+SOURCE TREE: 72fbe02838850c1ed9576ef73c263481fe607322
+TOOLS PIN (P0 placeholder, fixed at publication): <FORGEJO_TOOLS_SHA>
+REWORK HEAD (this branch, source commit): 97577abca70bae67f5a0f3430ac1ae76cb6ab775
+
+=== SOURCE TREE (d22aa8f…, the accepted source) — blob/sha256/size ===
+
+portal/Containerfile	Dockerfile (Containerfile)
+  blob=e158e2f77d76a0e775b853c0968b38167fc02078
+  sha256=54d86c2bdf2641c8a2e9b390542087eea20ae2e74b6251d96dfc931f4760b551
+  size=338
+portal/Makefile	Makefile
+  blob=252ff9456112e2f0b68f47e64defba8a6f48c708
+  sha256=47dee8b29e140840d7c61d71a114909a1780c03689ccd501b9a86cae46600b8f
+  size=769
+portal/go.mod	Go modules
+  blob=55e30c3b24f40aea195311f1bb53c236d2d7e064
+  sha256=0ebed832998ecea5461152da2efb21384b0f31c1654c1a3d0942d4d3b4a65d2d
+  size=2233
+portal/go.sum	Go sums
+  blob=1447b6716fd77a3c3db1baedffd7b0ab111acd5a
+  sha256=195a860ff4d3c1bb9affd622e7e0d3a47546b7dfa4b2605b9099ead33ca21a26
+  size=11624
+portal/package.json	npm manifest
+  blob=13cdf96e90e44ff445e135490ddda729746534d5
+  sha256=288fad7a8259810e2fe375261ace1179ddd47dbfd3d2decff142a87b37ab79be
+  size=249
+portal/package-lock.json	npm lock
+  blob=3eb710ab24253dec425e079579b7c8e76661dd4a
+  sha256=2953d17729f79b9eac6ca6ee25ae030acdf919c7fc3e6aca2d98e45b95bb4b8e
+  size=29194
+portal/versions.lock	app+toolchain lock
+  blob=5a5853bcfd682858ce20c47c9004afa0a3411ccd
+  sha256=0aa324294f405a8d70c72113b4b934f4e3f406fe3709809f2f941c7bfa153198
+  size=2194
+portal/tools/pins.lock.json	tool/action pins
+  blob=4fb6f3531247c016d1d4d414eb7729988967e254
+  sha256=b4f60edaae78aef79d6cfb3a2b47211a37315a6b579c6d0b10fcd542e2f13989
+  size=2021
+images.lock	platform images lock
+  blob=9f723bc7633aa38148bb2ca4f1aff3fce31919f9
+  sha256=9d9985065febad81fcc77c4c3776a90e516fe850a06ac2d171d941b8a802231e
+  size=8158
+versions.lock	platform versions lock
+  blob=05beed6b083b0dc5f80a7ff5bcd3a429383012e6
+  sha256=ee7361406b8bcac034753fcc3ed001accb41bb48c8597c2d21940e46034f1341
+  size=1803
+portal/manifests/deployment.yaml	deployment manifest
+  blob=2cb27165330fe4b6772af3a06a1940d661efc72f
+  sha256=a0a86c21f37dc1257d3169a32834777d9dc12754b73eafd474c342f1aa7981cb
+  size=5275
+portal/tools/p8c-portal-release.yml.template	GitHub release template
+  blob=a86521accc76f94dca9380e3b8805a319aa2668f
+  sha256=8021503a01dd23e420cc1609a883bd21de7b974d32f38ef0828154c98342ecd6
+  size=14137
+portal/tools/p8c-portal-seed.yml.template	GitHub seed template
+  blob=b631ed64ce543e0619e75cc2f95626a02ec87a75
+  sha256=7dc6acab5cce91b7e31ea62a39e6e8acfd8036bf354d242deb84442b141c3f71
+  size=9015
+portal/tools/release-check.py	gate helper (GitHub; Forgejo workflow does NOT use it for registry)
+  blob=ad49113c36eb7369fb3c6bfb25e1f6f0db2e150f
+  sha256=d21e75f138d3f66caf7be448d702740ea836911ee03da6a420d3fc4ea56b4a69
+  size=16389
+
+=== TOOLS TREE (Forgejo tooling introduced by this rework; pin <FORGEJO_TOOLS_SHA>) ===
+
+portal/tools/forgejo_lock_gate.py	Forgejo admission-chain gate (single validation implementation)
+  blob=64c538b4072b6183b1ce8db538396034596b7b15
+  sha256=64c538b4072b6183b1ce8db538396034596b7b15
+  size=32296
+portal/tools/test_forgejo_lock_gate.py	unit tests (owner gate / inventory / registry / statement / lock pair)
+  blob=68402242f3f5041d021d58bb0cfc181c92154497
+  sha256=68402242f3f5041d021d58bb0cfc181c92154497
+  size=12622
+portal/tools/test_forgejo_offline_integration.py	offline integration harness (positive + 4 discrepancy classes)
+  blob=de8d3580d19cb38dcca09166a907bac9e34e0fb9
+  sha256=de8d3580d19cb38dcca09166a907bac9e34e0fb9
+  size=13939
+portal/tools/check_forgejo_workflow_syntax.py	offline workflow syntax check
+  blob=782b26722b4f7cc2ec50e7ea8b00186cc9bc4128
+  sha256=782b26722b4f7cc2ec50e7ea8b00186cc9bc4128
+  size=3071
+portal/tools/p8c-portal-forgejo-release.yml.template	INACTIVE Forgejo workflow (2 jobs: test, release)
+  blob=6f21afdbe42bce25931db8db5d0b9b94447f65c3
+  sha256=6f21afdbe42bce25931db8db5d0b9b94447f65c3
+  size=19067
+docs/architecture/P8C_FORGEJO_BUILD_SPEC_20261120.md	spec (updated for review #52 rework)
+  blob=26fb62823bd5b3714b46de624956568e429e61b2
+  sha256=26fb62823bd5b3714b46de624956568e429e61b2
+  size=18058

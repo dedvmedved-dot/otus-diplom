@@ -1,0 +1,28 @@
+test_check_mode_positive_exit_zero_no_write (__main__.TestCliApplyScratchLock.test_check_mode_positive_exit_zero_no_write) ... ok
+test_manifest_tamper_leaves_lock_untouched (__main__.TestCliApplyScratchLock.test_manifest_tamper_leaves_lock_untouched) ... ok
+test_no_attestation_leaves_lock_untouched (__main__.TestCliApplyScratchLock.test_no_attestation_leaves_lock_untouched) ... ok
+test_owner_gate_foreign_leaves_lock_untouched (__main__.TestCliApplyScratchLock.test_owner_gate_foreign_leaves_lock_untouched) ... ok
+test_positive_writes_scratch_lock_pair (__main__.TestCliApplyScratchLock.test_positive_writes_scratch_lock_pair) ... ok
+test_another_registry_not_allowed (__main__.TestFullChain.test_another_registry_not_allowed) ... ok
+test_another_run_not_allowed (__main__.TestFullChain.test_another_run_not_allowed) ... ok
+test_certificate_identity_mismatch_not_allowed (__main__.TestFullChain.test_certificate_identity_mismatch_not_allowed) ... ok
+test_certificate_issuer_mismatch_not_allowed (__main__.TestFullChain.test_certificate_issuer_mismatch_not_allowed) ... ok
+test_foreign_registry_not_allowed_before_network (__main__.TestFullChain.test_foreign_registry_not_allowed_before_network) ... ok
+test_manifest_bytes_tampered_not_allowed (__main__.TestFullChain.test_manifest_bytes_tampered_not_allowed) ... ok
+test_no_verified_attestation_not_allowed (__main__.TestFullChain.test_no_verified_attestation_not_allowed) ... ok
+test_owner_gate_expired_not_allowed (__main__.TestFullChain.test_owner_gate_expired_not_allowed) ... ok
+test_owner_gate_foreign_not_allowed (__main__.TestFullChain.test_owner_gate_foreign_not_allowed) ... ok
+test_owner_gate_missing_not_allowed (__main__.TestFullChain.test_owner_gate_missing_not_allowed) ... ok
+test_positive_allowed (__main__.TestFullChain.test_positive_allowed) ... ok
+test_predicate_substitution_not_allowed (__main__.TestFullChain.test_predicate_substitution_not_allowed) ... ok
+test_registry_host_mismatch_not_allowed (__main__.TestFullChain.test_registry_host_mismatch_not_allowed) ... ok
+test_source_substituted_new_head_not_allowed (__main__.TestFullChain.test_source_substituted_new_head_not_allowed) ... ok
+test_tools_smuggled_into_source_not_allowed (__main__.TestFullChain.test_tools_smuggled_into_source_not_allowed) ... ok
+test_unbound_subject_not_allowed (__main__.TestFullChain.test_unbound_subject_not_allowed) ... ok
+test_owner_gate_input_required (__main__.TestWorkflowStructuralOrder.test_owner_gate_input_required) ... ok
+test_owner_gate_precedes_login_build (__main__.TestWorkflowStructuralOrder.test_owner_gate_precedes_login_build) ... ok
+
+----------------------------------------------------------------------
+Ran 23 tests in 0.511s
+
+OK
