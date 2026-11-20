@@ -3,7 +3,7 @@
 
 Enforces the FULL admission chain required by review #52, tightened by review #55
 and re-tightened by review #58 before a verified application digest may be
-written into ``portal/versions.lock:image``:
+written into the Portal entry of ``images.lock``:
 
     owner gate  ->  trusted registry  ->  verified signed statement  ->  lock pair
 
@@ -18,7 +18,7 @@ written into ``portal/versions.lock:image``:
      now TRIPLE-checked — the policy-ALLOWED value, the OBSERVED runtime context
      (github.repository / github.ref / GITHUB_WORKFLOW_SHA) and the owner document
      must all agree, and the workflow SHA is verified BEFORE any release rights.
-  2. SOURCE / TOOLS / WORKFLOW SEPARATION: the pinned source tree (d22aa8f…), the
+  2. SOURCE / TOOLS / WORKFLOW SEPARATION: the pinned source tree (4c09d6b…), the
      separately-pinned tools tree and the pinned workflow definition are distinct
      immutable pins. Every file the build invokes must be present in its OWN tree,
      the tools files must NOT be smuggled into the source tree, and the source
@@ -65,6 +65,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.parse
@@ -98,7 +99,7 @@ IN_TOTO_TYPES = ("https://in-toto.io/Statement/v0.1", "https://in-toto.io/Statem
 EXPECTED_OWNER = "<OWNER_IDENTITY_P0>"
 TRUSTED_REGISTRY = "<REGISTRY_HOST_OWNER_SUPPLIED>"
 # THREE separate immutable pins (review #55 item 4):
-#  - PINNED_SOURCE_SHA   : the accepted source tree (accepted at d22aa8f…).
+#  - PINNED_SOURCE_SHA   : the accepted source tree (accepted at 4c09d6b…).
 #  - PINNED_TOOLS_SHA    : the commit that carries the Forgejo tooling (this file
 #                          + its tests + the workflow template); fixed at
 #                          publication time.
@@ -106,7 +107,7 @@ TRUSTED_REGISTRY = "<REGISTRY_HOST_OWNER_SUPPLIED>"
 #                          (when published under .forgejo/workflows/). This is a
 #                          DIFFERENT entity from the tools pin and is fixed at
 #                          publication time, never derived from the tools checkout.
-PINNED_SOURCE_SHA = "d22aa8f1170deaf09580518916ea02c7c4d8bfba"
+PINNED_SOURCE_SHA = "4c09d6b4a85e2d021516244988f48b92eade7acf"
 PINNED_TOOLS_SHA = "<FORGEJO_TOOLS_SHA>"
 PINNED_WORKFLOW_SHA = "<FORGEJO_WORKFLOW_SHA>"
 # Full-tree completeness pin (review #58 item 2): sha256 over the SORTED
@@ -114,8 +115,8 @@ PINNED_WORKFLOW_SHA = "<FORGEJO_WORKFLOW_SHA>"
 # `git ls-tree -r --name-only <PINNED_SOURCE_SHA>` output, newline-joined with a
 # trailing newline. This is the COMPLETE input tree of the pinned source — any
 # missing, extra or substituted file changes the hash, so a curated list can no
-# longer hide an omission. Computed from d22aa8f… (4574 files). Reproduce offline:
-#   python3 -c "import hashlib,subprocess; t=subprocess.run(['git','ls-tree','-r','--name-only','d22aa8f1170deaf09580518916ea02c7c4d8bfba'],capture_output=True,text=True,check=True).stdout.splitlines(); print(hashlib.sha256(('\n'.join(sorted(t))+'\n').encode()).hexdigest())"
+# longer hide an omission. Computed from 4c09d6b… (4574 files). Reproduce offline:
+#   python3 -c "import hashlib,subprocess; t=subprocess.run(['git','ls-tree','-r','--name-only','4c09d6b4a85e2d021516244988f48b92eade7acf'],capture_output=True,text=True,check=True).stdout.splitlines(); print(hashlib.sha256(('\n'.join(sorted(t))+'\n').encode()).hexdigest())"
 PINNED_SOURCE_TREE_SHA256 = "e273368f01ef242d1fe267647d0c8c1c18f84cfc52e99f9d3974a51bccc13e01"
 
 # Files the build invokes, split by which tree owns them. The source tree
@@ -837,95 +838,62 @@ def _line_content(raw, start, end):
 
 
 def apply_lock_pair(lock_path, image_ref, digest):
-    """Write the verified digest next to the FULL image name in a
-    portal/versions.lock style file, atomically (tmp + os.replace).
-
-    The lock's existing ``image.registry:`` value (the FULL image name) MUST
-    equal the verified ``image_ref`` — a digest from one image is never recorded
-    against another, and a foreign image is never rewritten automatically. Only
-    the ``image.digest`` line (which must still be ``NOT_VERIFIED``) is changed;
-    every OTHER byte is preserved byte-for-byte, including each line's original
-    terminator (LF / CRLF / mixed) and an absent trailing newline. Called only
-    after ``decide_lock_update()`` returns allowed.
-
-    review #61 item 2: the write is performed on the RAW bytes and the new digest
-    line is spliced into the original byte stream at the exact span of the old
-    digest line, reusing the old line's own terminator. ``read_text()``'s newline
-    normalization (which silently converted CRLF -> LF and thus rewrote every
-    line) can no longer corrupt the rest of the file; a defensive byte-range +
-    line-count check refuses the write if ANY byte outside the digest line would
-    change.
-    """
-    raw = Path(lock_path).read_bytes()
-    spans = _line_spans(raw)
-
-    def content(i):
-        s, e = spans[i]
-        return _line_content(raw, s, e).decode("utf-8")
-
-    # Locate the `image:` section header and scan only its children (more
-    # indented than the header), so unrelated sections are never touched.
-    img_idx = None
-    for i in range(len(spans)):
-        if content(i).strip() == "image:":
-            img_idx = i
-            break
-    if img_idx is None:
-        raise RuntimeError("lock image: section not found")
-    base_indent = len(content(img_idx)) - len(content(img_idx).lstrip())
-    reg_idx = dg_idx = None
-    for i in range(img_idx + 1, len(spans)):
-        ln = content(i)
-        if ln.strip() == "":
+    """Update only the canonical Portal record in the platform inventory."""
+    path = Path(lock_path)
+    if path.name != "images.lock" or path.is_symlink():
+        raise RuntimeError("expected a regular images.lock")
+    if not re.fullmatch(r"sha256:[0-9a-f]{64}", digest):
+        raise RuntimeError("invalid digest")
+    raw = path.read_bytes()
+    lines = raw.splitlines(keepends=True)
+    in_images = False
+    seen = False
+    records = []
+    for i, line in enumerate(lines):
+        text = line.rstrip(b"\r\n")
+        if not text.strip() or text.lstrip().startswith(b"#"):
             continue
-        indent = len(ln) - len(ln.lstrip())
-        if indent <= base_indent:
-            break  # left the image: section
-        stripped = ln.strip()
-        if stripped.startswith("registry:"):
-            reg_idx = i
-        elif stripped.startswith("digest:"):
-            dg_idx = i
-    if reg_idx is None or dg_idx is None:
-        raise RuntimeError("lock image registry/digest markers not found")
-
-    cur_reg = content(reg_idx).split(":", 1)[1].strip().strip('"')
-    if cur_reg != image_ref:
-        raise RuntimeError(
-            "lock image registry %r != verified image %r (pair mismatch; foreign image not rewritten)"
-            % (cur_reg, image_ref))
-    if "NOT_VERIFIED" not in content(dg_idx):
-        raise RuntimeError("lock digest already set (no NOT_VERIFIED marker)")
-
-    dg_start, dg_end = spans[dg_idx]
-    dg_content_bytes = _line_content(raw, dg_start, dg_end)
-    # The digest line's ORIGINAL terminator bytes (b"\\n", b"\\r\\n", b"\\r", or
-    # b"" for a final line with no trailing newline) are reused verbatim.
-    ending = raw[dg_start + len(dg_content_bytes):dg_end]
-    indent = dg_content_bytes[:len(dg_content_bytes) - len(dg_content_bytes.lstrip())].decode("utf-8")
-    new_dg_line = ('%sdigest: "%s"   # verified digest written by forgejo_lock_gate'
-                   % (indent, digest)).encode("utf-8") + ending
-
-    # Splice the new digest line into the ORIGINAL bytes: everything outside
-    # [dg_start, dg_end) is byte-identical by construction.
-    new_raw = raw[:dg_start] + new_dg_line + raw[dg_end:]
-
-    # Defensive byte-range + line-count checks (refuse instead of writing a
-    # partially-mutated lock). Everything BEFORE the digest line and everything
-    # AFTER it must be byte-identical to the original; the digest line's own
-    # terminator is preserved because ``new_dg_line`` ends with the reused
-    # ``ending`` bytes.
-    if new_raw[:dg_start] != raw[:dg_start]:
-        raise RuntimeError("lock apply would modify bytes before the digest line; refusing")
-    if new_raw[dg_start + len(new_dg_line):] != raw[dg_end:]:
-        raise RuntimeError("lock apply would modify bytes after the digest line; refusing")
-    if len(_line_spans(new_raw)) != len(spans):
-        raise RuntimeError("lock apply would change the line count; refusing")
-
-    tmp = str(lock_path) + ".tmp"
-    with open(tmp, "wb") as f:
-        f.write(new_raw)
-    os.replace(tmp, lock_path)
+        if text == b"images:":
+            if seen:
+                raise RuntimeError("duplicate images section")
+            in_images = seen = True
+        elif not text.startswith(b" "):
+            in_images = False
+        elif in_images:
+            # Fail closed on noncanonical YAML (aliases, duplicate keys, etc.).
+            m = re.fullmatch(rb"  - component: ([a-z0-9-]+)", text)
+            if m:
+                records.append((m[1], {}))
+                continue
+            m = re.fullmatch(rb'    ([a-z_]+): (?:"([^"\\]*)"|([A-Za-z0-9_./:-]+))', text)
+            if not m or not records or m[1] in records[-1][1]:
+                raise RuntimeError("ambiguous images.lock record")
+            fields = records[-1][1]
+            fields[m[1]] = (m[2] if m[2] is not None else m[3], i)
+    targets = [fields for name, fields in records if name == b"otus-diplom-portal"]
+    if len(targets) != 1:
+        raise RuntimeError("expected exactly one Portal record")
+    fields = targets[0]
+    expected = image_ref.encode()
+    if (fields.get(b"image", (None,))[0] != expected or
+            sum(f.get(b"image", (None,))[0] == expected for _, f in records) != 1):
+        raise RuntimeError("pair mismatch or duplicate image")
+    for key, marker, replacement in ((b"digest", b"NOT_VERIFIED", digest.encode()),
+                                     (b"verified", b"false", b"true")):
+        if fields.get(key, (None,))[0] != marker:
+            raise RuntimeError("lock digest already set or invalid verification state")
+        i = fields[key][1]
+        if key == b"verified" and lines[i].rstrip(b"\r\n") != b"    verified: false":
+            raise RuntimeError("invalid verified boolean")
+        lines[i] = lines[i].replace(marker, replacement, 1)
+    with tempfile.NamedTemporaryFile(dir=path.parent, delete=False) as tmp:
+        try:
+            tmp.write(b"".join(lines))
+            tmp.flush()
+            os.fchmod(tmp.fileno(), path.stat().st_mode & 0o777)
+            os.replace(tmp.name, path)
+        finally:
+            Path(tmp.name).unlink(missing_ok=True)
     return 1
 
 

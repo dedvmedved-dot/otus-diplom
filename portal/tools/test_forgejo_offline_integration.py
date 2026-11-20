@@ -34,7 +34,7 @@ from pathlib import Path
 
 import forgejo_lock_gate as gate
 
-PINNED = "d22aa8f1170deaf09580518916ea02c7c4d8bfba"
+PINNED = "4c09d6b4a85e2d021516244988f48b92eade7acf"
 TOOLS = "a" * 40
 WORKFLOW = "c" * 40
 OWNER = "owner-otus@example"
@@ -60,22 +60,8 @@ BINDINGS = {
 
 # A real-format lock: `image.registry` holds the FULL image name (review #55
 # item 5), surrounded by sections that must survive the write untouched.
-LOCK_TEMPLATE = (
-    'baseline: "P8C-R1"\n'
-    'verification_status: NOT_VERIFIED\n'
-    '\n'
-    'application:\n'
-    '  go: "1.27.3"\n'
-    '\n'
-    'image:\n'
-    '  registry: "%s"\n'
-    '  digest: "NOT_VERIFIED"   # final digest only after reproducible build (G2)\n'
-    '  base: "scratch"\n'
-    '  base_digest: "NOT_APPLICABLE_EMPTY_BASE"\n'
-    '\n'
-    'notes:\n'
-    '  - "tool release metadata recorded from source-verification.json."\n'
-) % IMAGE
+LOCK_TEMPLATE = ('images:\n  - component: otus-diplom-portal\n    image: %s\n'
+    '    digest: "NOT_VERIFIED"\n    verified: false\n') % IMAGE
 
 
 def iso(epoch):
@@ -374,7 +360,7 @@ class TestCliApplyScratchLock(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             td = Path(td)
             (td / "manifest.bin").write_bytes(ev["manifest_bytes"])
-            lock = td / "versions.lock"
+            lock = td / "images.lock"
             lock.write_text(LOCK_TEMPLATE)
             ev.pop("manifest_bytes", None)
             ev["manifest_file"] = str(td / "manifest.bin")
@@ -395,12 +381,12 @@ class TestCliApplyScratchLock(unittest.TestCase):
     def test_positive_writes_scratch_lock_pair(self):
         r, text = self._run(baseline())
         self.assertEqual(r.returncode, 0, r.stderr)
-        self.assertIn('registry: "%s"' % IMAGE, text)
+        self.assertIn('image: %s' % IMAGE, text)
         self.assertIn('digest: "%s"' % DIGEST, text)
         self.assertNotIn('digest: "NOT_VERIFIED"', text)
         # other sections preserved
-        self.assertIn('go: "1.27.3"', text)
-        self.assertIn('base: "scratch"', text)
+        self.assertIn("verified: true", text)
+        self.assertIn("component: otus-diplom-portal", text)
 
     def test_apply_without_apply_lock_authorization_refused(self):
         r, text = self._run(baseline(), apply=True, apply_lock=False)
@@ -501,7 +487,7 @@ class TestWorkflowStructuralOrder(unittest.TestCase):
         jobs = doc["jobs"]
         apply_step = next(s for s in jobs["release"]["steps"] if isinstance(s, dict)
                           and (s.get("name") or "").startswith("Apply verified digest"))
-        self.assertIn("--apply src/portal/versions.lock", apply_step["run"])
+        self.assertIn("--apply tools/images.lock", apply_step["run"])
         self.assertIn("--apply-lock true", apply_step["run"])
         self.assertEqual(apply_step["if"], "inputs.apply_lock == true")
 

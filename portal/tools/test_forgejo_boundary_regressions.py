@@ -28,15 +28,15 @@ from pathlib import Path
 import forgejo_lock_gate as gate
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-PINNED = "d22aa8f1170deaf09580518916ea02c7c4d8bfba"
+PINNED = "4c09d6b4a85e2d021516244988f48b92eade7acf"
 TOOLS = "a" * 40
 WORKFLOW = "c" * 40
 OWNER = "owner-otus@example"
 RUN_ID = "1234567890"
 
 # REAL image identity from the actual portal/versions.lock.
-REAL_REGISTRY_HOST = "ghcr.io"
-REAL_IMAGE = "ghcr.io/dedvmedved-dot/otus-diplom-portal"
+REAL_REGISTRY_HOST = "git.aiopslab.online"
+REAL_IMAGE = "git.aiopslab.online/aiopslab/otus-diplom-portal"
 
 
 def iso(epoch):
@@ -248,9 +248,9 @@ class TestWorkspaceRealLock(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             td = Path(td)
             # same workspace layout: src/portal/versions.lock
-            (td / "src" / "portal").mkdir(parents=True)
-            lock = td / "src" / "portal" / "versions.lock"
-            original = self.REAL_LOCK.read_text()
+            (td / "tools").mkdir(parents=True)
+            lock = td / "tools" / "images.lock"
+            original = (REPO_ROOT / "images.lock").read_text()
             lock.write_text(original)
             (td / "manifest.bin").write_bytes(manifest)
             ev.pop("manifest_bytes", None)
@@ -261,11 +261,7 @@ class TestWorkspaceRealLock(unittest.TestCase):
             text = lock.read_text()
             self.assertIn('digest: "%s"' % digest, text)
             self.assertNotIn('digest: "NOT_VERIFIED"', text)
-            # every OTHER section survives byte-for-byte
-            for marker in ('baseline: "P8C-R1"', 'go: "1.27.3"',
-                           'rootlesskit: "v2.3.1"', 'base: "scratch"',
-                           'postgres_image:', 'checkout: "11bd71901bbe5b1630ceea73d27597364c9af683"'):
-                self.assertIn(marker, text, marker)
+            self.assertEqual(text, original.replace('digest: "NOT_VERIFIED"', 'digest: "%s"' % digest).replace('verified: false\n', 'verified: true\n'))
 
     def test_real_lock_foreign_image_not_rewritten(self):
         manifest = b'{"schemaVersion":2}'
@@ -273,13 +269,13 @@ class TestWorkspaceRealLock(unittest.TestCase):
         # A fully-valid chain for a DIFFERENT image than the real lock's
         # registry value: the chain passes, but apply_lock_pair must refuse to
         # rewrite the foreign image automatically.
-        foreign_image = "ghcr.io/dedvmedved-dot/OTHER-image"
+        foreign_image = "git.aiopslab.online/aiopslab/OTHER-image"
         ev = _evidence(foreign_image, REAL_REGISTRY_HOST, digest, manifest)
         with tempfile.TemporaryDirectory() as td:
             td = Path(td)
-            (td / "src" / "portal").mkdir(parents=True)
-            lock = td / "src" / "portal" / "versions.lock"
-            original = self.REAL_LOCK.read_text()
+            (td / "tools").mkdir(parents=True)
+            lock = td / "tools" / "images.lock"
+            original = (REPO_ROOT / "images.lock").read_text()
             lock.write_text(original)
             (td / "manifest.bin").write_bytes(manifest)
             ev.pop("manifest_bytes", None)
@@ -296,9 +292,9 @@ class TestWorkspaceRealLock(unittest.TestCase):
         ev = _evidence(REAL_IMAGE, REAL_REGISTRY_HOST, digest, manifest)
         with tempfile.TemporaryDirectory() as td:
             td = Path(td)
-            (td / "src" / "portal").mkdir(parents=True)
-            lock = td / "src" / "portal" / "versions.lock"
-            original = self.REAL_LOCK.read_text()
+            (td / "tools").mkdir(parents=True)
+            lock = td / "tools" / "images.lock"
+            original = (REPO_ROOT / "images.lock").read_text()
             lock.write_text(original)
             (td / "manifest.bin").write_bytes(manifest)
             ev.pop("manifest_bytes", None)
@@ -332,7 +328,7 @@ class TestWorkspaceRealLock(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             lock = Path(td) / "versions.lock"
             lock.write_text(self.REAL_LOCK.read_text())
-            wrong = REAL_REGISTRY_HOST + "/aiopslab/otus-diplom-portal"
+            wrong = REAL_REGISTRY_HOST + "/other/otus-diplom-portal"
             r = self._run_lock_image_check(lock, wrong)
             self.assertNotEqual(r.returncode, 0)
             self.assertIn("pair mismatch", r.stderr)

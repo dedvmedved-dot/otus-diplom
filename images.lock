@@ -230,3 +230,11 @@ images:
     source_registry: registry.k8s.io
     internal_registry: NOT_VERIFIED
     verified: true
+
+  - component: otus-diplom-portal
+    image: git.aiopslab.online/aiopslab/otus-diplom-portal
+    tag: "candidate"
+    digest: "NOT_VERIFIED"
+    source_registry: git.aiopslab.online
+    internal_registry: git.aiopslab.online
+    verified: false

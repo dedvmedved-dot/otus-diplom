@@ -21,7 +21,7 @@ from unittest import mock
 
 import forgejo_lock_gate as gate
 
-PINNED = "d22aa8f1170deaf09580518916ea02c7c4d8bfba"
+PINNED = "4c09d6b4a85e2d021516244988f48b92eade7acf"
 TOOLS = "a" * 40
 WORKFLOW = "c" * 40
 OWNER = "owner-otus@example"
@@ -650,30 +650,30 @@ REAL_LOCK = (
 ) % IMAGE
 
 
+DEST_LOCK = ('images:\n  - component: otus-diplom-portal\n    image: %s\n'
+    '    digest: "NOT_VERIFIED"\n    verified: false\n') % IMAGE
+
+
 class TestApplyLockPair(unittest.TestCase):
     def test_writes_pair_preserving_other_sections(self):
         import tempfile
         from pathlib import Path
         with tempfile.TemporaryDirectory() as td:
-            lock = Path(td) / "versions.lock"
-            lock.write_text(REAL_LOCK)
+            lock = Path(td) / "images.lock"
+            lock.write_text(DEST_LOCK)
             gate.apply_lock_pair(lock, IMAGE, DIGEST)
             text = lock.read_text()
-            self.assertIn('registry: "%s"' % IMAGE, text)
+            self.assertIn('image: %s' % IMAGE, text)
             self.assertIn('digest: "%s"' % DIGEST, text)
             self.assertNotIn('digest: "NOT_VERIFIED"', text)
-            # other sections preserved
-            self.assertIn('baseline: "P8C-R1"', text)
-            self.assertIn('go: "1.27.3"', text)
-            self.assertIn('base: "scratch"', text)
-            self.assertIn('checkout: "11bd71901bbe5b1630ceea73d27597364c9af683"', text)
+            self.assertEqual(text, DEST_LOCK.replace('"NOT_VERIFIED"', '"%s"' % DIGEST).replace('verified: false', 'verified: true'))
 
     def test_rejects_foreign_image_not_rewritten(self):
         import tempfile
         from pathlib import Path
         with tempfile.TemporaryDirectory() as td:
-            lock = Path(td) / "versions.lock"
-            lock.write_text(REAL_LOCK.replace(IMAGE, "ghcr.io/other/image"))
+            lock = Path(td) / "images.lock"
+            lock.write_text(DEST_LOCK.replace(IMAGE, "ghcr.io/other/image"))
             before = lock.read_text()
             with self.assertRaises(RuntimeError) as cm:
                 gate.apply_lock_pair(lock, IMAGE, DIGEST)
@@ -686,8 +686,8 @@ class TestApplyLockPair(unittest.TestCase):
         import tempfile
         from pathlib import Path
         with tempfile.TemporaryDirectory() as td:
-            lock = Path(td) / "versions.lock"
-            lock.write_text(REAL_LOCK)
+            lock = Path(td) / "images.lock"
+            lock.write_text(DEST_LOCK)
             with self.assertRaises(RuntimeError) as cm:
                 gate.apply_lock_pair(lock, REGISTRY, DIGEST)  # bare host
             self.assertIn("pair mismatch", str(cm.exception))
@@ -696,8 +696,8 @@ class TestApplyLockPair(unittest.TestCase):
         import tempfile
         from pathlib import Path
         with tempfile.TemporaryDirectory() as td:
-            lock = Path(td) / "versions.lock"
-            lock.write_text(REAL_LOCK.replace("NOT_VERIFIED", 'sha256:' + 'd' * 64))
+            lock = Path(td) / "images.lock"
+            lock.write_text(DEST_LOCK.replace("NOT_VERIFIED", 'sha256:' + 'd' * 64))
             with self.assertRaises(RuntimeError) as cm:
                 gate.apply_lock_pair(lock, IMAGE, DIGEST)
             self.assertIn("already set", str(cm.exception))
@@ -710,14 +710,14 @@ class TestApplyLockPair(unittest.TestCase):
         import tempfile
         from pathlib import Path
         with tempfile.TemporaryDirectory() as td:
-            lock = Path(td) / "versions.lock"
-            lock.write_text(REAL_LOCK)
+            lock = Path(td) / "images.lock"
+            lock.write_text(DEST_LOCK)
             gate.apply_lock_pair(lock, IMAGE, DIGEST)
-            before = REAL_LOCK.split("\n")
+            before = DEST_LOCK.split("\n")
             after = lock.read_text().split("\n")
             self.assertEqual(len(before), len(after))
             diffs = [i for i in range(len(before)) if before[i] != after[i]]
-            self.assertEqual(len(diffs), 1, "expected exactly one changed line, got %r" % diffs)
+            self.assertEqual(len(diffs), 2, "expected exactly one changed line, got %r" % diffs)
             self.assertIn("digest:", before[diffs[0]])
             self.assertIn(DIGEST, after[diffs[0]])
 
@@ -730,57 +730,57 @@ class TestApplyLockPair(unittest.TestCase):
         import tempfile
         from pathlib import Path
         with tempfile.TemporaryDirectory() as td:
-            lock = Path(td) / "versions.lock"
-            crlf = REAL_LOCK.replace("\n", "\r\n")
+            lock = Path(td) / "images.lock"
+            crlf = DEST_LOCK.replace("\n", "\r\n")
             lock.write_bytes(crlf.encode())
             gate.apply_lock_pair(lock, IMAGE, DIGEST)
             before = crlf.encode().splitlines(keepends=True)
             after = lock.read_bytes().splitlines(keepends=True)
             self.assertEqual(len(before), len(after))
             diffs = [i for i in range(len(before)) if before[i] != after[i]]
-            self.assertEqual(len(diffs), 1, "expected 1 changed line, got %r" % diffs)
+            self.assertEqual(len(diffs), 2, "expected 1 changed line, got %r" % diffs)
             self.assertIn(b"digest:", before[diffs[0]])
             self.assertIn(DIGEST.encode(), after[diffs[0]])
             # CRLF terminators survive byte-for-byte (the review saw 47 -> 0).
-            self.assertEqual(after.count(b"\r\n"), before.count(b"\r\n"))
-            self.assertGreater(after.count(b"\r\n"), 0)
-            self.assertEqual(before.count(b"\n"), after.count(b"\n"))
+            self.assertEqual(sum(x.endswith(b"\r\n") for x in after), sum(x.endswith(b"\r\n") for x in before))
+            self.assertGreater(sum(x.endswith(b"\r\n") for x in after), 0)
+            self.assertEqual(sum(x.endswith(b"\n") for x in before), sum(x.endswith(b"\n") for x in after))
 
     def test_apply_preserves_mixed_line_endings(self):
         # Some lines CRLF, some LF (digest line stays LF): only the digest line's
         # CONTENT changes; every line keeps its own original terminator.
         import tempfile
         from pathlib import Path
-        lines = REAL_LOCK.rstrip("\n").split("\n")
+        lines = DEST_LOCK.rstrip("\n").split("\n")
         mixed = []
         for i, ln in enumerate(lines):
-            ending = "\r\n" if i in (2, 5) else "\n"  # digest line (11) stays LF
+            ending = "\r\n" if i in (0, 2) else "\n"  # digest line (11) stays LF
             mixed.append(ln + ending)
         raw = "".join(mixed)
         with tempfile.TemporaryDirectory() as td:
-            lock = Path(td) / "versions.lock"
+            lock = Path(td) / "images.lock"
             lock.write_bytes(raw.encode())
             gate.apply_lock_pair(lock, IMAGE, DIGEST)
             before = raw.encode().splitlines(keepends=True)
             after = lock.read_bytes().splitlines(keepends=True)
             self.assertEqual(len(before), len(after))
             diffs = [i for i in range(len(before)) if before[i] != after[i]]
-            self.assertEqual(len(diffs), 1, diffs)
+            self.assertEqual(len(diffs), 2, diffs)
             self.assertIn(b"digest:", before[diffs[0]])
             # the digest line's OWN terminator is unchanged (still LF, not CRLF)
             self.assertTrue(after[diffs[0]].endswith(b"\n"))
             self.assertFalse(after[diffs[0]].endswith(b"\r\n"))
             # CRLF lines keep CRLF
-            self.assertEqual(after.count(b"\r\n"), before.count(b"\r\n"))
+            self.assertEqual(sum(x.endswith(b"\r\n") for x in after), sum(x.endswith(b"\r\n") for x in before))
 
     def test_apply_preserves_absent_trailing_newline(self):
         # A lock with NO trailing newline must keep the final line unterminated;
         # only the digest line changes.
         import tempfile
         from pathlib import Path
-        body = REAL_LOCK.rstrip("\n")
+        body = DEST_LOCK.rstrip("\n")
         with tempfile.TemporaryDirectory() as td:
-            lock = Path(td) / "versions.lock"
+            lock = Path(td) / "images.lock"
             lock.write_bytes(body.encode())
             gate.apply_lock_pair(lock, IMAGE, DIGEST)
             after = lock.read_bytes()
@@ -790,9 +790,25 @@ class TestApplyLockPair(unittest.TestCase):
             after_lines = after.splitlines(keepends=True)
             self.assertEqual(len(before), len(after_lines))
             diffs = [i for i in range(len(before)) if before[i] != after_lines[i]]
-            self.assertEqual(len(diffs), 1, diffs)
+            self.assertEqual(len(diffs), 2, diffs)
             self.assertIn(b"digest:", before[diffs[0]])
             self.assertIn(DIGEST.encode(), after_lines[diffs[0]])
+
+    def test_ambiguous_or_wrong_destination_is_unchanged(self):
+        from pathlib import Path
+        import tempfile
+        with tempfile.TemporaryDirectory() as td:
+            for name, body in (("versions.lock", DEST_LOCK),
+                               ("images.lock", DEST_LOCK + DEST_LOCK),
+                               ("images.lock", DEST_LOCK + DEST_LOCK.split("\n", 1)[1]),
+                               ("images.lock", DEST_LOCK + "    digest: NOT_VERIFIED\n"),
+                               ("images.lock", DEST_LOCK.replace("verified: false", "verified: true"))):
+                with self.subTest(name=name, body=body):
+                    lock = Path(td) / name
+                    lock.write_text(body)
+                    with self.assertRaises(RuntimeError):
+                        gate.apply_lock_pair(lock, IMAGE, DIGEST)
+                    self.assertEqual(lock.read_text(), body)
 
     def test_lock_image_agreement_matches(self):
         import tempfile
