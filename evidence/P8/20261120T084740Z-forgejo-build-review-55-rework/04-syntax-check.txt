@@ -1,0 +1,12 @@
+UTC_START=2026-11-20T08:48:05Z
+SOURCE_SHA=d6421f6f213619bd6eb8705cc4d820a4a1fde1c2
+name: p8c-portal-forgejo-release
+trigger key: True(bool; PyYAML 1.1 coercion of bare `on`)
+jobs (3): test, preflight, release
+  - test: runs-on='<SELF_HOSTED_RUNNER_LABEL>', 8 steps
+  - preflight: runs-on='<SELF_HOSTED_RUNNER_LABEL>', 7 steps
+  - release: runs-on='<SELF_HOSTED_RUNNER_LABEL>', 20 steps
+56 expressions balanced
+SYNTAX = VERIFIED (YAML well-formed; structure + expressions OK)
+exit=0
+UTC_END=2026-11-20T08:48:05Z

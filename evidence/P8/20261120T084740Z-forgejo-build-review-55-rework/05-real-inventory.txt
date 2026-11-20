@@ -1,0 +1,8 @@
+UTC_START=2026-11-20T08:48:05Z
+SOURCE_SHA=d6421f6f213619bd6eb8705cc4d820a4a1fde1c2
+src_files=101 tools_files=33
+{"inventory": true, "reason": "file inventory verified"}
+exit=0
+--- REQUIRED_SOURCE_FILES vs real source tree ---
+required_source=19 missing_in_real_tree=none
+UTC_END=2026-11-20T08:48:05Z
