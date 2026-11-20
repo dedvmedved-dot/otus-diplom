@@ -18,10 +18,15 @@ offline-приёмка не подтверждает digest/provenance.
 | Роль | Значение | Ссылка |
 |---|---|---|
 | Source pin (неизменный) — исходники приложения + `Containerfile` + `install-verified-go.sh` | `d22aa8f1170deaf09580518916ea02c7c4d8bfba` | https://git.aiopslab.online/aiopslab/otus-diplom/commit/d22aa8f1170deaf09580518916ea02c7c4d8bfba |
-| Полнота дерева source (sha256 отсортированного `git ls-tree -r`) | `e273368f01ef242d1fe267647d0c8c1c18f84cfc52e99f9d3974a51bccc13e01` | (константа в шаблоне) |
+| Полнота дерева source — sha256 отсортированного **перечня путей** (`git ls-tree -r --name-only`), контроль путей, не содержимого | `e273368f01ef242d1fe267647d0c8c1c18f84cfc52e99f9d3974a51bccc13e01` | [шаблон `PINNED_SOURCE_TREE_SHA256` (L73)](https://git.aiopslab.online/aiopslab/otus-diplom/src/commit/4f691ea675c6a0e0dc769ad3847dd4e705c4dc93/portal/tools/p8c-portal-forgejo-release.yml.template#L73) |
 | Head шаблона/workflow (PR #51, принят offline) | `4f691ea675c6a0e0dc769ad3847dd4e705c4dc93` | https://git.aiopslab.online/aiopslab/otus-diplom/commit/4f691ea675c6a0e0dc769ad3847dd4e705c4dc93 |
 | Заключение offline-приёмки (PR #65) | `f76f59b03e3ca85ab2ae275522e5c02498ce2a64` | https://git.aiopslab.online/aiopslab/otus-diplom/commit/f76f59b03e3ca85ab2ae275522e5c02498ce2a64 |
 | Решение архитектора (этот наряд #66/#67) | `2a04ee27e516a8d7d5871a9632fdba0b10f418a1` | https://git.aiopslab.online/aiopslab/otus-diplom/commit/2a04ee27e516a8d7d5871a9632fdba0b10f418a1 |
+
+> Контрольный хеш дерева source — это sha256 **перечня путей**, не содержимого:
+> `git ls-tree -r --name-only d22aa8f1170deaf09580518916ea02c7c4d8bfba | LC_ALL=C sort | sha256sum`
+> = `e273368f01ef242d1fe267647d0c8c1c18f84cfc52e99f9d3974a51bccc13e01`. Без `--name-only`
+> результат иной (хешировались бы полные записи `ls-tree` — mode/type/blob-SHA, а не только пути).
 
 Закреплённые toolchain-версии (уже в шаблоне / `portal/versions.lock` / `pins.lock.json`):
 Go `1.27.3` (`65efbc80…`), BuildKit `v0.34.0`, rootlesskit `v2.3.1`, syft `v1.55.0`,
@@ -31,9 +36,15 @@ trivy `v0.76.0`, cosign `v3.1.3`. GitHub action-форки (SHA не перен�
 `actions/upload-artifact` `65462800fd760344b1a7b4382951275a0abb4808`.
 
 **Tools SHA НЕ известен** — `PINNED_TOOLS_SHA = <FORGEJO_TOOLS_SHA>` (плейсхолдер),
-см. §2 п.1. OIDC-параметры подтверждены read-only discovery:
-issuer `https://git.aiopslab.online`, identity
-`https://git.aiopslab.online/aiopslab/otus-diplom/.forgejo/workflows/p8c-portal-forgejo-release.yml@refs/heads/main`.
+см. §2 п.1. OIDC-параметры (шаблон `4f691ea`, строки 94–97):
+- **Обнаруженный issuer** (подтверждён read-only discovery): `https://git.aiopslab.online` —
+  это `OIDC_ISSUER`.
+- **Ожидаемая certificate identity** (`WORKFLOW_IDENTITY`, **ещё НЕ проверена** — до первого
+  реального подписанного запуска):
+  `https://git.aiopslab.online/aiopslab/otus-diplom/.forgejo/workflows/p8c-portal-forgejo-release.yml@refs/heads/main`.
+  Discovery доказывает существование issuer, но **не** identity будущей подписи — её подтвердит
+  только `cosign verify --certificate-identity` / `--certificate-oidc-issuer` на первом
+  подписанном запуске.
 
 ---
 
@@ -53,7 +64,7 @@ issuer `https://git.aiopslab.online`, identity
 | 10 | Домашнее место digest: `images.lock` (нет записи `portal`) vs `portal/versions.lock:image.digest` | Владелец / Архитектор (решение GAP §1.5.1) | запись lock (`apply_lock=true`) |
 | 11 | Registry-путь: `ghcr.io/dedvmedved-dot/otus-diplom-portal` vs Forgejo/self-hosted доверенный канал | Владелец (P0) | push |
 | 12 | Публикация workflow в `.forgejo/workflows/` + gate-документ / бюджет dispatch | Архитектор (решение) | любой запуск |
-| 13 | `GITHUB_WORKFLOW_SHA` / `github.*` на self-hosted Forgejo runner | наблюдается в первом запуске (gate fail-closed) | preflight / verify |
+| 13 | `GITHUB_WORKFLOW_SHA` / `github.*` (runtime-контекст) на self-hosted Forgejo runner | Архитектор — подтверждает наблюдаемый runtime-контекст (`github.actor` / `github.repository` / `github.ref` / `GITHUB_WORKFLOW_SHA`) при первом разрешённом запуске (gate fail-closed) | preflight / verify; **без успешной проверки переход к release запрещён** |
 | 14 | Независимая ревизия CA/UID + подтверждение pull владельцем OTUS | Владелец OTUS | открытие окна |
 
 ---
