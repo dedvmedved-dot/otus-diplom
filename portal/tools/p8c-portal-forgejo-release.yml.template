@@ -1,0 +1,260 @@
+# P8C Portal release workflow for Forgejo Actions on a SELF-HOSTED runner.
+#
+# TEMPLATE — INACTIVE BY CONSTRUCTION. This file lives in portal/tools/ and is
+# deliberately NOT placed under .forgejo/workflows/ (or .gitea/workflows/), so
+# Forgejo will NOT auto-run it. Publication into .forgejo/workflows/ requires a
+# separate Architect/Owner decision (same rule as the GitHub release template).
+#
+# Owner decision (issue #29#1680): trusted build channel = Forgejo
+# aiopslab/otus-diplom, branch main, pinned commit d22aa8f1170deaf09580518916ea02c7c4d8bfba,
+# CI = Forgejo Actions on a self-hosted runner. Verified application digest +
+# SLSA provenance are produced AT BUILD TIME and fixed in images.lock /
+# portal/versions.lock; until the actual build, the lock value is NOT_VERIFIED.
+#
+# Forgejo adaptation of portal/tools/p8c-portal-release.yml.template (GitHub
+# Actions). Every P0 parameter the Owner passes OUT-OF-BAND is marked with a
+# literal <PLACEHOLDER> below and MUST be substituted before first run — no
+# placeholder value is a real value, and none is invented here.
+name: p8c-portal-forgejo-release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_gate:
+        description: 'Typed release gate JSON {source_sha, repository, package, workflow_sha, mode=LIVE, issued_at_utc, expiry_hours, attempt=1}; Owner supplies it. Absent => gate fails.'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  # Source + toolchain pins are IDENTICAL to the GitHub template / pins.lock.json.
+  PINNED_SOURCE_SHA: "d22aa8f1170deaf09580518916ea02c7c4d8bfba"
+  GO_VERSION: "1.27.3"
+  GO_SHA256: "65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40"
+  BUILDKIT_VERSION: "v0.34.0"
+  ROOTLESSKIT_VERSION: "v2.3.1"
+  SYFT_VERSION: "v1.55.0"
+  TRIVY_VERSION: "v0.76.0"
+  COSIGN_VERSION: "v3.1.3"
+  # Registry destination is an Owner-supplied P0 parameter (Forgejo package
+  # registry OR trusted internal registry per issue #29#1680). Never hardcoded.
+  REGISTRY: "<REGISTRY_HOST_OWNER_SUPPLIED>"
+  IMAGE: "<REGISTRY_HOST_OWNER_SUPPLIED>/aiopslab/otus-diplom-portal"
+  # Forgejo OIDC issuer confirmed by read-only discovery (git.aiopslab.online);
+  # workflow identity pattern follows Forgejo Actions OIDC convention.
+  OIDC_ISSUER: "https://git.aiopslab.online"
+  WORKFLOW_IDENTITY: "https://git.aiopslab.online/aiopslab/otus-diplom/.forgejo/workflows/p8c-portal-forgejo-release.yml@refs/heads/main"
+
+jobs:
+  test:
+    # Self-hosted: runs-on label must match the runner the Owner registers (P0).
+    runs-on: <SELF_HOSTED_RUNNER_LABEL>
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17.10-bookworm@sha256:9b18b78397054fce88a9552e9d5a3ad5bb7fd258c5b3cc1c5028e46373d6ea8f
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: portal_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 10s
+          --health-timeout 5s --health-retries 5
+    steps:
+      # Forgejo resolves actions/* from its own registry; the GitHub SHA in
+      # pins.lock.json does NOT transfer — pin the Forgejo fork SHA at first run.
+      - uses: actions/checkout@<FORGEJO_CHECKOUT_SHA>
+        with:
+          persist-credentials: false
+          ref: ${{ env.PINNED_SOURCE_SHA }}
+
+      # 1) Exact source SHA is the pinned literal, not runtime github.sha/HEAD main.
+      - name: Verify checkout is exactly the pinned source SHA
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ env.PINNED_SOURCE_SHA }}" || { echo "STOP: checkout != pinned source"; exit 1; }
+          git diff --exit-code
+          git status --short
+
+      - name: Install verified Go archive
+        run: bash portal/tools/install-verified-go.sh
+
+      - name: Go vet + test + race
+        working-directory: portal
+        run: |
+          set -euo pipefail
+          go mod download && go mod verify
+          go vet ./... && go test -count=1 ./... && go test -race -count=1 ./...
+
+      - name: DB integration tests (FAIL if unset)
+        working-directory: portal
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/portal_test
+        run: |
+          set -euo pipefail
+          test -n "$TEST_DATABASE_URL" || { echo "TEST_DATABASE_URL unset"; exit 1; }
+          go test -tags integration -count=1 ./internal/store/ -v
+
+      - name: Helper mock + JS fixture smoke
+        working-directory: portal
+        run: |
+          set -euo pipefail
+          python3 tools/test_helpers.py -v
+          python3 tools/test_release.py -v
+          python3 tools/test_forgejo_lock_gate.py -v
+          npm ci --ignore-scripts
+          node web/renderer-smoke.test.mjs
+          node web/fixture-smoke.test.mjs
+
+  release:
+    needs: test
+    runs-on: <SELF_HOSTED_RUNNER_LABEL>
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@<FORGEJO_CHECKOUT_SHA>
+        with:
+          persist-credentials: false
+          ref: ${{ env.PINNED_SOURCE_SHA }}
+
+      - name: Verify checkout is exactly the pinned source SHA
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ env.PINNED_SOURCE_SHA }}" || { echo "STOP"; exit 1; }
+
+      - name: Deliver typed release gate (data via env, never shell)
+        if: github.event.inputs.release_gate != ''
+        env:
+          RELEASE_GATE: ${{ github.event.inputs.release_gate }}
+        run: printf '%s' "$RELEASE_GATE" > "$RUNNER_TEMP/release-gate.json"
+
+      - name: Install verified Go archive
+        run: bash portal/tools/install-verified-go.sh
+
+      - name: Build binary (reproducible, sourceRevision = pinned SHA)
+        working-directory: portal
+        run: |
+          set -euo pipefail
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath \
+            -ldflags "-s -w -X main.sourceRevision=${{ env.PINNED_SOURCE_SHA }} -X main.buildTime=1970-01-01T00:00:00Z" \
+            -o portal ./cmd/portal
+
+      - name: Install rootlesskit + BuildKit (pinned, verified)
+        run: |
+          set -euo pipefail
+          curl -sSfL "https://github.com/rootless-containers/rootlesskit/releases/download/v${ROOTLESSKIT_VERSION}/rootlesskit-x86_64.tar.gz" -o rootlesskit.tar.gz
+          echo "caafdce18e0959f078b4b478d4f352ebf3d556e373265fc7831f1a6d70219ee0  rootlesskit.tar.gz" | sha256sum -c
+          tar -xzf rootlesskit.tar.gz && install -m 0755 rootlesskit rootlessctl /usr/local/bin/
+          curl -sSfL "https://github.com/moby/buildkit/releases/download/${BUILDKIT_VERSION}/buildkit-${BUILDKIT_VERSION}.linux-amd64.tar.gz" -o buildkit.tar.gz
+          echo "14813b1fb2a40082114e6d386c6fc5e7dd5298176ce7ee1a18bc33e73e109ac3  buildkit.tar.gz" | sha256sum -c
+          tar -xzf buildkit.tar.gz && install -m 0755 bin/buildctl bin/buildkitd /usr/local/bin/
+
+      - name: Login to registry (owner-supplied read/push credential, never in git)
+        run: |
+          set -euo pipefail
+          echo "${REGISTRY_TOKEN}" | docker login "${{ env.REGISTRY }}" --username "${REGISTRY_USERNAME}" --password-stdin
+        env:
+          REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+          REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
+
+      - name: Build OCI image (rootless buildctl) + immutable digest from metadata
+        working-directory: portal
+        env:
+          BUILDKIT_HOST: unix:///tmp/buildkit.sock
+        run: |
+          set -euo pipefail
+          rootlesskit --net=slirp4netns buildkitd --addr unix:///tmp/buildkit.sock > /tmp/buildkitd.log 2>&1 &
+          BK_PID=$!; echo "$BK_PID" > /tmp/buildkitd.pid
+          for i in $(seq 1 30); do timeout 5 buildctl debug workers >/dev/null 2>&1 && break; sleep 1; done
+          buildctl build --frontend=dockerfile.v0 --opt filename=Containerfile \
+            --local context=. --local dockerfile=. \
+            --output type=image,name=${IMAGE}:candidate,push=true \
+            --metadata-file "$RUNNER_TEMP/build-metadata.json"
+          python3 tools/release-check.py digest "$RUNNER_TEMP/build-metadata.json" > "$RUNNER_TEMP/IMAGE_DIGEST"
+          echo "IMAGE_DIGEST=$(cat "$RUNNER_TEMP/IMAGE_DIGEST")" >> "$GITHUB_ENV"
+
+      # 2) Digest is re-obtained FROM THE REGISTRY by manifest pull and verified
+      #    against Docker-Content-Digest — never taken from the `candidate` tag.
+      - name: Verify registry digest bytes (manifest, not tag)
+        env:
+          REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+          REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 portal/tools/release-check.py registry "$IMAGE_DIGEST" > "$RUNNER_TEMP/registry.json"
+
+      - name: SBOM + vuln scan (syft + trivy, pinned)
+        run: |
+          set -euo pipefail
+          curl -sSfL "https://github.com/anchore/syft/releases/download/v${SYFT_VERSION}/syft_${SYFT_VERSION}_linux_amd64.tar.gz" -o syft.tar.gz
+          echo "bb65249542db5fedeeb4d3f9b018b75e7264dbfbbb10486f044581a92f90490d  syft.tar.gz" | sha256sum -c
+          tar -xzf syft.tar.gz && install -m 0755 syft /usr/local/bin/
+          syft "${IMAGE}@${IMAGE_DIGEST}" -o spdx-json="$RUNNER_TEMP/sbom.spdx.json"
+          curl -sSfL "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz" -o trivy.tar.gz
+          echo "e24b1c51293c1b15e4ba8d45bbc7891ba053f90278ec2698f3562c993e145fe7  trivy.tar.gz" | sha256sum -c
+          tar -xzf trivy.tar.gz && install -m 0755 trivy /usr/local/bin/
+          trivy image --exit-code 1 --severity HIGH,CRITICAL --no-progress "${IMAGE}@${IMAGE_DIGEST}"
+
+      - name: Install Cosign (exact pinned version)
+        run: |
+          set -euo pipefail
+          curl -sSfL "https://github.com/sigstore/cosign/releases/download/v${COSIGN_VERSION}/cosign-linux-amd64" -o cosign
+          echo "4629c757b7618056f8ddd7e2625ae9fdd94c0372a65049520bc7d9df9efc7f71  cosign" | sha256sum -c
+          chmod +x cosign && install -m 0755 cosign /usr/local/bin/
+
+      # 3) Bind digest to the trusted run + SLSA provenance (keyless, Forgejo OIDC).
+      - name: Sign keyless + verify exact identity/issuer/source
+        run: |
+          set -euo pipefail
+          cosign sign --yes -a repo=${{ github.repository }} -a workflow=${{ github.workflow }} \
+            -a ref=${{ env.PINNED_SOURCE_SHA }} "${IMAGE}@${IMAGE_DIGEST}"
+          cosign verify --certificate-identity "${{ env.WORKFLOW_IDENTITY }}" \
+            --certificate-oidc-issuer "${{ env.OIDC_ISSUER }}" \
+            -a ref=${{ env.PINNED_SOURCE_SHA }} "${IMAGE}@${IMAGE_DIGEST}"
+
+      - name: SBOM + provenance attestation (generate + verify both)
+        run: |
+          set -euo pipefail
+          python3 portal/tools/release-check.py predicate "${{ env.PINNED_SOURCE_SHA }}" > "$RUNNER_TEMP/provenance.json"
+          cosign attest --yes --type spdxjson --predicate "$RUNNER_TEMP/sbom.spdx.json" "${IMAGE}@${IMAGE_DIGEST}"
+          cosign attest --yes --type slsaprovenance --predicate "$RUNNER_TEMP/provenance.json" "${IMAGE}@${IMAGE_DIGEST}"
+          cosign verify-attestation --type slsaprovenance \
+            --certificate-identity "${{ env.WORKFLOW_IDENTITY }}" \
+            --certificate-oidc-issuer "${{ env.OIDC_ISSUER }}" \
+            "${IMAGE}@${IMAGE_DIGEST}" > "$RUNNER_TEMP/attestation-provenance.jsonl"
+
+      - name: Cleanup buildkit daemon (always)
+        if: always()
+        run: |
+          if [ -f /tmp/buildkitd.pid ]; then kill "$(cat /tmp/buildkitd.pid)" 2>/dev/null || true; fi
+
+  update-lock:
+    needs: release
+    runs-on: <SELF_HOSTED_RUNNER_LABEL>
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@<FORGEJO_CHECKOUT_SHA>
+        with:
+          persist-credentials: false
+          ref: ${{ env.PINNED_SOURCE_SHA }}
+
+      # 4) Lock update is gated: SHA == pinned literal AND digest from registry
+      #    AND provenance binds workflow/source/digest — else NO write. The gate
+      #    is the SAME module the negative harness tests (forgejo_lock_gate.py).
+      - name: Gate lock update (SHA + digest + provenance binding)
+        run: |
+          set -euo pipefail
+          python3 portal/tools/forgejo_lock_gate.py \
+            "${{ env.PINNED_SOURCE_SHA }}" \
+            "$(git rev-parse HEAD)" \
+            "$IMAGE_DIGEST" \
+            "${IMAGE}" \
+            "$RUNNER_TEMP/provenance.json" \
+            --apply portal/versions.lock

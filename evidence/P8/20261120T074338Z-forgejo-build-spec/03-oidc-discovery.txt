@@ -1,0 +1,4 @@
+URL: https://git.aiopslab.online/.well-known/openid-configuration HTTP 200
+issuer: https://git.aiopslab.online
+jwks_uri: https://git.aiopslab.online/login/oauth/keys
+token_endpoint: https://git.aiopslab.online/login/oauth/access_token
