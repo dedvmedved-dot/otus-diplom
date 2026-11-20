@@ -1,0 +1,15 @@
+UTC_START=2026-11-20T09:18:04Z
+SOURCE_SHA=f4b05854b6d0715a44adf4d609277bf71540c91d
+src_files=4574 tools_files=33
+--- positive: full pinned tree + full-tree sha ---
+{"inventory": true, "reason": "file inventory verified"}
+exit=0 (expect 0)
+--- negative: omit README.md from source tree ---
+{"inventory": false, "reason": "inventory: source tree is not the complete pinned tree (missing/extra/substituted files)"}
+exit=1 (expect 1)
+--- lock-image-check: real lock pre-agreement ---
+{"lock_image_agreed": true, "reason": "lock image pre-agreed (full image matches policy)"}
+exit=0 (expect 0)
+LOCK IMAGE NOT AGREED: lock image registry 'ghcr.io/dedvmedved-dot/otus-diplom-portal' != agreed full image 'ghcr.io/aiopslab/otus-diplom-portal' (pair mismatch; refuse before push)
+(path mismatch refused before push)
+UTC_END=2026-11-20T09:18:05Z

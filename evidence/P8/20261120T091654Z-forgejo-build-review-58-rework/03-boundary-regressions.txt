@@ -1,0 +1,23 @@
+UTC_START=2026-11-20T09:17:46Z
+SOURCE_SHA=f4b05854b6d0715a44adf4d609277bf71540c91d
+cwd=/root/otus-diplom/portal/tools
+test_bearer_realm_foreign_origin_refused (test_forgejo_boundary_regressions.TestHttpTransportNextOrigin.test_bearer_realm_foreign_origin_refused) ... ok
+test_real_opener_refuses_implicit_redirect (test_forgejo_boundary_regressions.TestHttpTransportNextOrigin.test_real_opener_refuses_implicit_redirect) ... ok
+test_runtime_source_sha_checked_against_policy (test_forgejo_boundary_regressions.TestRuntimeToPolicy.test_runtime_source_sha_checked_against_policy) ... ok
+test_stale_self_reported_pins_ignored (test_forgejo_boundary_regressions.TestRuntimeToPolicy.test_stale_self_reported_pins_ignored) ... ok
+test_workflow_sha_flag_drives_decision_not_evidence (test_forgejo_boundary_regressions.TestRuntimeToPolicy.test_workflow_sha_flag_drives_decision_not_evidence) ... ok
+test_gate_json_not_interpolated_into_run (test_forgejo_boundary_regressions.TestTemplateToShell.test_gate_json_not_interpolated_into_run) ... ok
+test_no_repeated_cd_in_test_job (test_forgejo_boundary_regressions.TestTemplateToShell.test_no_repeated_cd_in_test_job) ... ok
+test_preflight_checkout_before_gate_and_no_release_perms (test_forgejo_boundary_regressions.TestTemplateToShell.test_preflight_checkout_before_gate_and_no_release_perms) ... ok
+test_lock_image_check_agrees_with_real_lock (test_forgejo_boundary_regressions.TestWorkspaceRealLock.test_lock_image_check_agrees_with_real_lock) ... ok
+test_lock_image_check_refuses_template_path_mismatch_before_push (test_forgejo_boundary_regressions.TestWorkspaceRealLock.test_lock_image_check_refuses_template_path_mismatch_before_push) ... ok
+test_real_lock_apply_preserves_sections (test_forgejo_boundary_regressions.TestWorkspaceRealLock.test_real_lock_apply_preserves_sections) ... ok
+test_real_lock_foreign_image_not_rewritten (test_forgejo_boundary_regressions.TestWorkspaceRealLock.test_real_lock_foreign_image_not_rewritten) ... ok
+test_real_lock_refused_without_authorization (test_forgejo_boundary_regressions.TestWorkspaceRealLock.test_real_lock_refused_without_authorization) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.862s
+
+OK
+exit=0
+UTC_END=2026-11-20T09:17:47Z
