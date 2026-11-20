@@ -26,7 +26,7 @@ tools:
   cosign_asset_sha256: "4629c757b7618056f8ddd7e2625ae9fdd94c0372a65049520bc7d9df9efc7f71"
 
 image:
-  registry: "ghcr.io/dedvmedved-dot/otus-diplom-portal"
+  registry: "git.aiopslab.online/aiopslab/otus-diplom-portal"
   digest: "NOT_VERIFIED"   # final digest only after reproducible build (G2)
   base: "scratch"
   base_digest: "NOT_APPLICABLE_EMPTY_BASE"
