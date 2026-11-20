@@ -52,6 +52,13 @@ def _statement(image, digest, run_id=RUN_ID):
     }
 
 
+def full_source_tree():
+    import subprocess
+    return subprocess.run(
+        ["git", "ls-tree", "-r", "--name-only", PINNED],
+        capture_output=True, text=True, check=True, cwd=str(REPO_ROOT)).stdout.splitlines()
+
+
 def _evidence(image, registry_host, digest, manifest, run_id=RUN_ID, actor=OWNER):
     return {
         "owner_gate": {
@@ -64,7 +71,7 @@ def _evidence(image, registry_host, digest, manifest, run_id=RUN_ID, actor=OWNER
         "source_sha": PINNED,
         "tools_sha": TOOLS,
         "workflow_sha": WORKFLOW,
-        "source_inventory": list(gate.REQUIRED_SOURCE_FILES),
+        "source_inventory": full_source_tree(),
         "tools_inventory": list(gate.REQUIRED_TOOLS_FILES),
         "registry_host": registry_host,
         "image_ref": image,
@@ -77,6 +84,9 @@ def _evidence(image, registry_host, digest, manifest, run_id=RUN_ID, actor=OWNER
         "actor": actor,
         "run_id": run_id,
         "run_attempt": "1",
+        "observed_repository": "aiopslab/otus-diplom",
+        "observed_ref": "refs/heads/main",
+        "observed_workflow_sha": WORKFLOW,
     }
 
 
@@ -298,6 +308,34 @@ class TestWorkspaceRealLock(unittest.TestCase):
             self.assertNotEqual(r.returncode, 0)
             self.assertIn("apply-lock", r.stderr)
             self.assertEqual(lock.read_text(), original)
+
+    # --- review #58 item 5: pre-push lock-image agreement (CLI) --------------
+
+    def _run_lock_image_check(self, lock_path, image_ref):
+        return subprocess.run(
+            [sys.executable, str(self.GATE_PY), "lock-image-check",
+             "--lock", str(lock_path), "--image", image_ref],
+            capture_output=True, text=True)
+
+    def test_lock_image_check_agrees_with_real_lock(self):
+        with tempfile.TemporaryDirectory() as td:
+            lock = Path(td) / "versions.lock"
+            lock.write_text(self.REAL_LOCK.read_text())
+            r = self._run_lock_image_check(lock, REAL_IMAGE)
+            self.assertEqual(r.returncode, 0, r.stderr)
+            self.assertIn('"lock_image_agreed": true', r.stdout)
+
+    def test_lock_image_check_refuses_template_path_mismatch_before_push(self):
+        # The OLD template IMAGE path /aiopslab/... does NOT equal the real lock's
+        # /dedvmedved-dot/... — the pre-push check must refuse (host substitution
+        # alone does not make them equal).
+        with tempfile.TemporaryDirectory() as td:
+            lock = Path(td) / "versions.lock"
+            lock.write_text(self.REAL_LOCK.read_text())
+            wrong = REAL_REGISTRY_HOST + "/aiopslab/otus-diplom-portal"
+            r = self._run_lock_image_check(lock, wrong)
+            self.assertNotEqual(r.returncode, 0)
+            self.assertIn("pair mismatch", r.stderr)
 
 
 if __name__ == "__main__":

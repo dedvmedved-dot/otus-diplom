@@ -47,13 +47,15 @@ MANIFEST = b'{"schemaVersion":2,"mediaType":"application/vnd.oci.image.manifest.
 DIGEST = "sha256:" + hashlib.sha256(MANIFEST).hexdigest()
 
 # Independent policy bindings (what the workflow CLI passes via --owner /
-# --trusted-registry / --pinned-source / --pinned-tools / --workflow-sha).
+# --trusted-registry / --pinned-source / --pinned-tools / --workflow-sha /
+# --source-tree-sha256).
 BINDINGS = {
     "owner": OWNER,
     "trusted_registry": REGISTRY,
     "source_sha": PINNED,
     "tools_sha": TOOLS,
     "workflow_sha": WORKFLOW,
+    "source_tree_sha256": gate.PINNED_SOURCE_TREE_SHA256,
 }
 
 # A real-format lock: `image.registry` holds the FULL image name (review #55
@@ -96,6 +98,17 @@ def make_statement(digest=DIGEST, image=IMAGE, source=PINNED, workflow=WORKFLOW,
     }
 
 
+def full_source_tree():
+    """The COMPLETE pinned source tree (review #58 item 2) — used so the positive
+    chain genuinely exercises the full-tree completeness check, not a curated
+    subset."""
+    import subprocess
+    repo_root = Path(__file__).resolve().parents[2]
+    return subprocess.run(
+        ["git", "ls-tree", "-r", "--name-only", PINNED],
+        capture_output=True, text=True, check=True, cwd=str(repo_root)).stdout.splitlines()
+
+
 def baseline():
     """A fully-valid evidence bundle (correct digests/identity/inventory)."""
     return {
@@ -108,7 +121,7 @@ def baseline():
         "source_sha": PINNED,
         "tools_sha": TOOLS,
         "workflow_sha": WORKFLOW,
-        "source_inventory": list(gate.REQUIRED_SOURCE_FILES),
+        "source_inventory": full_source_tree(),
         "tools_inventory": list(gate.REQUIRED_TOOLS_FILES),
         "registry_host": REGISTRY,
         "image_ref": IMAGE,
@@ -121,6 +134,9 @@ def baseline():
         "actor": OWNER,
         "run_id": RUN_ID,
         "run_attempt": "1",
+        "observed_repository": "aiopslab/otus-diplom",
+        "observed_ref": "refs/heads/main",
+        "observed_workflow_sha": WORKFLOW,
     }
 
 
@@ -197,6 +213,55 @@ class TestFullChain(unittest.TestCase):
         allowed, reason = gate.decide_lock_update(ev, BINDINGS, now=NOW)
         self.assertFalse(allowed)
         self.assertIn("workflow_sha", reason)
+
+    # --- review #58 item 1/4: observed runtime context (triple check) --------
+
+    def test_observed_repository_mismatch_not_allowed(self):
+        ev = baseline()
+        ev["observed_repository"] = "evil.example/repo"
+        allowed, reason = gate.decide_lock_update(ev, BINDINGS, now=NOW)
+        self.assertFalse(allowed)
+        self.assertIn("observed repository", reason)
+
+    def test_observed_ref_mismatch_not_allowed(self):
+        ev = baseline()
+        ev["observed_ref"] = "refs/heads/dev"
+        allowed, reason = gate.decide_lock_update(ev, BINDINGS, now=NOW)
+        self.assertFalse(allowed)
+        self.assertIn("observed ref", reason)
+
+    def test_observed_workflow_sha_mismatch_not_allowed(self):
+        ev = baseline()
+        ev["observed_workflow_sha"] = "b" * 40
+        allowed, reason = gate.decide_lock_update(ev, BINDINGS, now=NOW)
+        self.assertFalse(allowed)
+        self.assertIn("observed workflow SHA", reason)
+
+    def test_observed_workflow_sha_absent_not_allowed(self):
+        ev = baseline()
+        del ev["observed_workflow_sha"]
+        allowed, reason = gate.decide_lock_update(ev, BINDINGS, now=NOW)
+        self.assertFalse(allowed)
+        self.assertIn("observed workflow SHA", reason)
+
+    # --- review #58 item 2: full-tree completeness ---------------------------
+
+    def test_full_tree_omission_not_allowed(self):
+        # Omit a file NOT in the curated list — only the full-tree hash catches it.
+        ev = baseline()
+        ev["source_inventory"] = [p for p in ev["source_inventory"] if p != "README.md"]
+        allowed, reason = gate.decide_lock_update(ev, BINDINGS, now=NOW)
+        self.assertFalse(allowed)
+        self.assertIn("complete pinned tree", reason)
+
+    def test_full_tree_extra_file_not_allowed(self):
+        ev = baseline()
+        # An EXTRA file that is neither a required source nor a tools file — only
+        # the full-tree hash catches it (the named-list + smuggling checks pass).
+        ev["source_inventory"] = ev["source_inventory"] + ["extra/evil-injected.txt"]
+        allowed, reason = gate.decide_lock_update(ev, BINDINGS, now=NOW)
+        self.assertFalse(allowed)
+        self.assertIn("complete pinned tree", reason)
 
     # --- Blocking discrepancy 3: trusted registry --------------------------
 
@@ -412,10 +477,17 @@ class TestWorkflowStructuralOrder(unittest.TestCase):
         self.assertEqual(gate_step["env"]["OWNER_GATE"], "${{ secrets.OWNER_GATE }}")
         run = gate_step["run"]
         self.assertNotIn("inputs.release_gate", run)
-        # owner confirmed against the trusted runtime actor + actual repo/ref + run id
+        # review #58 item 1/4: the POLICY-ALLOWED repository/ref (env.POLICY_*) is
+        # passed as the expected value; the OBSERVED runtime context
+        # (github.repository / github.ref / GITHUB_WORKFLOW_SHA) is passed as the
+        # observed value; the owner is confirmed against the trusted runtime actor
+        # + run id.
+        self.assertIn("--repository \"${{ env.POLICY_REPOSITORY }}\"", run)
+        self.assertIn("--ref \"${{ env.POLICY_REF }}\"", run)
+        self.assertIn("--observed-repository \"${{ github.repository }}\"", run)
+        self.assertIn("--observed-ref \"${{ github.ref }}\"", run)
+        self.assertIn("--observed-workflow-sha \"$GITHUB_WORKFLOW_SHA\"", run)
         self.assertIn("--actor \"${{ github.actor }}\"", run)
-        self.assertIn("--repository \"${{ github.repository }}\"", run)
-        self.assertIn("--ref \"${{ github.ref }}\"", run)
         self.assertIn("--run-id \"${{ github.run_id }}\"", run)
         self.assertIn("--run-attempt \"${{ github.run_attempt }}\"", run)
 

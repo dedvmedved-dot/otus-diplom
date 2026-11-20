@@ -79,7 +79,10 @@ class TestOwnerGate(unittest.TestCase):
                       expected_tools_sha=TOOLS, expected_workflow_sha=WORKFLOW,
                       expected_repository="aiopslab/otus-diplom", expected_package=IMAGE,
                       expected_ref="refs/heads/main", actor=OWNER, run_id=RUN_ID,
-                      run_attempt="1", now=NOW)
+                      run_attempt="1", now=NOW,
+                      observed_repository="aiopslab/otus-diplom",
+                      observed_ref="refs/heads/main",
+                      observed_workflow_sha=WORKFLOW)
         params.update(kw)
         return gate.verify_owner_gate(gate_doc, **params)
 
@@ -167,6 +170,53 @@ class TestOwnerGate(unittest.TestCase):
         self.assertFalse(ok)
         self.assertIn("attempt", reason)
 
+    # --- review #58 item 1/4: TRIPLE check (policy allowed == owner document
+    #     == observed runtime context) -----------------------------------------
+
+    def test_observed_repository_mismatch(self):
+        # Document and policy agree on the repository, but the OBSERVED runtime
+        # context (github.repository) differs -> refused.
+        ok, reason = self._verify(make_gate(), observed_repository="evil.example/repo")
+        self.assertFalse(ok)
+        self.assertIn("observed repository", reason)
+
+    def test_observed_ref_mismatch(self):
+        ok, reason = self._verify(make_gate(), observed_ref="refs/heads/dev")
+        self.assertFalse(ok)
+        self.assertIn("observed ref", reason)
+
+    def test_observed_workflow_sha_mismatch(self):
+        # The owner document binds workflow SHA == policy, but the observed
+        # runtime GITHUB_WORKFLOW_SHA differs -> refused BEFORE release.
+        ok, reason = self._verify(make_gate(), observed_workflow_sha="b" * 40)
+        self.assertFalse(ok)
+        self.assertIn("observed workflow SHA", reason)
+
+    def test_document_repository_vs_observed_mismatch(self):
+        # Document repo == policy, but observed context differs from BOTH the
+        # policy and the document -> refused.
+        ok, reason = self._verify(make_gate(repository="aiopslab/otus-diplom"),
+                                  observed_repository="other.example/repo")
+        self.assertFalse(ok)
+        self.assertIn("observed repository", reason)
+
+    def test_observed_workflow_sha_absent(self):
+        # Absent runtime workflow SHA (cannot confirm the executed revision) ->
+        # refused before release rights (fail-closed, never skipped).
+        ok, reason = self._verify(make_gate(), observed_workflow_sha=None)
+        self.assertFalse(ok)
+        self.assertIn("observed workflow SHA", reason)
+
+    def test_observed_repository_absent(self):
+        ok, reason = self._verify(make_gate(), observed_repository=None)
+        self.assertFalse(ok)
+        self.assertIn("observed repository", reason)
+
+    def test_observed_ref_absent(self):
+        ok, reason = self._verify(make_gate(), observed_ref=None)
+        self.assertFalse(ok)
+        self.assertIn("observed ref", reason)
+
 
 class TestFileInventory(unittest.TestCase):
     def test_valid(self):
@@ -176,12 +226,13 @@ class TestFileInventory(unittest.TestCase):
         self.assertTrue(ok, reason)
 
     def test_all_required_source_files_are_real_source_tree_files(self):
-        # The expanded list (review #55 item 2) must name files that actually
-        # exist in the pinned source tree, not invent new ones.
+        # The expanded list (review #55 item 2 / #58 item 2) must name files that
+        # actually exist in the FULL pinned source tree (inputs outside portal/
+        # included), not invent new ones.
         import subprocess
         repo_root = Path(__file__).resolve().parents[2]
         tree = subprocess.run(
-            ["git", "ls-tree", "-r", "--name-only", PINNED, "--", "portal/"],
+            ["git", "ls-tree", "-r", "--name-only", PINNED],
             capture_output=True, text=True, check=True, cwd=str(repo_root)).stdout.splitlines()
         missing = [f for f in gate.REQUIRED_SOURCE_FILES if f not in tree]
         self.assertEqual(missing, [], "REQUIRED_SOURCE_FILES names files not in the source tree: %s" % missing)
@@ -213,6 +264,65 @@ class TestFileInventory(unittest.TestCase):
             source_pin=PINNED, tools_pin=PINNED)
         self.assertFalse(ok)
         self.assertIn("differ", reason)
+
+    # --- review #58 item 2: FULL-tree completeness ---------------------------
+
+    def _full_tree(self):
+        import subprocess
+        repo_root = Path(__file__).resolve().parents[2]
+        return subprocess.run(
+            ["git", "ls-tree", "-r", "--name-only", PINNED],
+            capture_output=True, text=True, check=True, cwd=str(repo_root)).stdout.splitlines()
+
+    def test_source_tree_complete(self):
+        tree = self._full_tree()
+        ok, reason = gate.verify_source_tree_complete(tree, gate.PINNED_SOURCE_TREE_SHA256)
+        self.assertTrue(ok, reason)
+
+    def test_source_tree_omission_rejected(self):
+        # Omit ONE file (e.g. the out-of-portal openapi.json) -> the full-tree
+        # hash no longer matches -> refused (a curated list would miss this).
+        tree = [p for p in self._full_tree() if p != "docs/architecture/p8c/openapi.json"]
+        ok, reason = gate.verify_source_tree_complete(tree, gate.PINNED_SOURCE_TREE_SHA256)
+        self.assertFalse(ok)
+        self.assertIn("complete pinned tree", reason)
+
+    def test_source_tree_extra_file_rejected(self):
+        tree = self._full_tree() + ["portal/tools/forgejo_lock_gate.py"]
+        ok, reason = gate.verify_source_tree_complete(tree, gate.PINNED_SOURCE_TREE_SHA256)
+        self.assertFalse(ok)
+        self.assertIn("complete pinned tree", reason)
+
+    def test_full_tree_enforced_in_inventory(self):
+        tree = self._full_tree()
+        ok, reason = gate.verify_file_inventory(
+            tree, list(gate.REQUIRED_TOOLS_FILES),
+            source_pin=PINNED, tools_pin=TOOLS,
+            source_tree_sha256=gate.PINNED_SOURCE_TREE_SHA256)
+        self.assertTrue(ok, reason)
+
+    def test_full_tree_omission_rejected_in_inventory(self):
+        # Omit a file that is NOT in the curated required list (README.md) — the
+        # named-list check passes, so the FULL-tree hash check is what catches it.
+        tree = [p for p in self._full_tree() if p != "README.md"]
+        ok, reason = gate.verify_file_inventory(
+            tree, list(gate.REQUIRED_TOOLS_FILES),
+            source_pin=PINNED, tools_pin=TOOLS,
+            source_tree_sha256=gate.PINNED_SOURCE_TREE_SHA256)
+        self.assertFalse(ok)
+        self.assertIn("complete pinned tree", reason)
+
+    def test_out_of_portal_inputs_in_required_list(self):
+        # The curated list now names the out-of-portal inputs the go tests read
+        # (review #58 item 2) — they must all exist in the real source tree.
+        tree = self._full_tree()
+        for f in ("docs/architecture/p8c/openapi.json",
+                  "portal/migrations/migrations.go",
+                  "portal/migrations/0001_portal_observations.sql",
+                  "portal/manifests/networkpolicy.yaml",
+                  "portal/manifests/deployment.yaml",
+                  "portal/networkpolicy/testdata/accepted-policy-contract.json"):
+            self.assertIn(f, tree, f)
 
 
 class _FakeResp:
@@ -356,6 +466,74 @@ class TestRegistry(unittest.TestCase):
         # Basic only ever sent to the trusted host; Bearer only to the trusted host.
         for url, headers in calls:
             self.assertTrue(gate._trusted_origin_ok(url, REGISTRY), url)
+
+    # --- review #58 item 3: Basic vs issued-Bearer are SEPARATE schemes -------
+
+    def test_generic_transport_basic_accepted_uses_basic_for_manifest(self):
+        # When /v2/ returns 200 (Basic accepted directly), the manifest fetch MUST
+        # keep using Basic — never the raw Basic credential mislabeled as Bearer.
+        calls = []
+
+        def fake_urlopen(url, headers=None, timeout=30):
+            calls.append((url, headers))
+            if url == "https://registry.example/v2/":
+                return _FakeResp(b"{}")
+            if "/manifests/" in url:
+                auth = headers.get("Authorization", "")
+                self.assertTrue(auth.startswith("Basic "), auth)
+                self.assertNotIn("Bearer", auth)
+                return _FakeResp(MANIFEST, DIGEST)
+            raise AssertionError("unexpected url: " + url)
+
+        with mock.patch.dict("os.environ", {"REGISTRY_USERNAME": "u", "REGISTRY_TOKEN": "t"}):
+            body, dcd = gate._generic_oci_transport(REGISTRY, "a/otus-diplom-portal", DIGEST, urlopen=fake_urlopen)
+        self.assertEqual(body, MANIFEST)
+        self.assertEqual(dcd, DIGEST)
+
+    def test_generic_transport_bearer_never_sends_basic_as_bearer(self):
+        # The manifest fetch after a bearer exchange must use the ISSUED token as
+        # Bearer, never the Basic base64 credential.
+        basic_cred = base64.b64encode(b"u:t").decode()
+        calls = []
+
+        def fake_urlopen(url, headers=None, timeout=30):
+            calls.append((url, headers))
+            if url == "https://registry.example/v2/":
+                raise urllib.error.HTTPError(
+                    url, 401, "Unauthorized",
+                    {"WWW-Authenticate": 'Bearer realm="https://registry.example/token",service="x"'},
+                    None)
+            if url.startswith("https://registry.example/token"):
+                return _FakeResp(b'{"token":"issued-token"}')
+            if "/manifests/" in url:
+                auth = headers.get("Authorization", "")
+                self.assertEqual(auth, "Bearer issued-token")
+                self.assertNotIn(basic_cred, auth)
+                return _FakeResp(MANIFEST, DIGEST)
+            raise AssertionError("unexpected url: " + url)
+
+        with mock.patch.dict("os.environ", {"REGISTRY_USERNAME": "u", "REGISTRY_TOKEN": "t"}):
+            body, dcd = gate._generic_oci_transport(REGISTRY, "a/otus-diplom-portal", DIGEST, urlopen=fake_urlopen)
+        self.assertEqual(body, MANIFEST)
+        self.assertEqual(dcd, DIGEST)
+
+    def test_generic_transport_missing_bearer_token_rejected(self):
+        # Token endpoint returns no token -> the manifest fetch must NOT fall back
+        # to the Basic credential as a Bearer token.
+        def fake_urlopen(url, headers=None, timeout=30):
+            if url == "https://registry.example/v2/":
+                raise urllib.error.HTTPError(
+                    url, 401, "Unauthorized",
+                    {"WWW-Authenticate": 'Bearer realm="https://registry.example/token",service="x"'},
+                    None)
+            if url.startswith("https://registry.example/token"):
+                return _FakeResp(b'{}')
+            raise AssertionError("unexpected url: " + url)
+
+        with mock.patch.dict("os.environ", {"REGISTRY_USERNAME": "u", "REGISTRY_TOKEN": "t"}):
+            with self.assertRaises(ValueError) as cm:
+                gate._generic_oci_transport(REGISTRY, "a/otus-diplom-portal", DIGEST, urlopen=fake_urlopen)
+        self.assertIn("no bearer token", str(cm.exception))
 
 
 class TestVerifiedStatement(unittest.TestCase):
@@ -512,6 +690,57 @@ class TestApplyLockPair(unittest.TestCase):
             with self.assertRaises(RuntimeError) as cm:
                 gate.apply_lock_pair(lock, IMAGE, DIGEST)
             self.assertIn("already set", str(cm.exception))
+
+    # --- review #58 item 5: byte-level immutability + lock-image pre-agreement --
+
+    def test_apply_changes_only_the_digest_line(self):
+        # ALL bytes outside the changed digest line must be preserved — not just
+        # the section markers. Verify the exact per-line diff is ONLY the digest.
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as td:
+            lock = Path(td) / "versions.lock"
+            lock.write_text(REAL_LOCK)
+            gate.apply_lock_pair(lock, IMAGE, DIGEST)
+            before = REAL_LOCK.split("\n")
+            after = lock.read_text().split("\n")
+            self.assertEqual(len(before), len(after))
+            diffs = [i for i in range(len(before)) if before[i] != after[i]]
+            self.assertEqual(len(diffs), 1, "expected exactly one changed line, got %r" % diffs)
+            self.assertIn("digest:", before[diffs[0]])
+            self.assertIn(DIGEST, after[diffs[0]])
+
+    def test_lock_image_agreement_matches(self):
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as td:
+            lock = Path(td) / "versions.lock"
+            lock.write_text(REAL_LOCK)
+            ok, reason = gate.verify_lock_image_agreement(lock, IMAGE)
+            self.assertTrue(ok, reason)
+
+    def test_lock_image_agreement_path_mismatch(self):
+        # Same registry host but a DIFFERENT path (/aiopslab/… vs /dedvmedved-dot/…)
+        # must be refused (host substitution alone does not make them equal).
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as td:
+            lock = Path(td) / "versions.lock"
+            lock.write_text(REAL_LOCK)
+            other = REGISTRY + "/dedvmedved-dot/otus-diplom-portal"
+            ok, reason = gate.verify_lock_image_agreement(lock, other)
+            self.assertFalse(ok)
+            self.assertIn("pair mismatch", reason)
+
+    def test_lock_image_agreement_foreign_registry(self):
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as td:
+            lock = Path(td) / "versions.lock"
+            lock.write_text(REAL_LOCK)
+            ok, reason = gate.verify_lock_image_agreement(lock, "evil.example/dedvmedved-dot/otus-diplom-portal")
+            self.assertFalse(ok)
+            self.assertIn("pair mismatch", reason)
 
 
 if __name__ == "__main__":

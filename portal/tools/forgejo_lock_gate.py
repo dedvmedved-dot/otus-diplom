@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Forgejo Actions release/lock-update gate (fail-closed, offline-verifiable).
 
-Enforces the FULL admission chain required by review #52 and tightened by
-review #55 before a verified application digest may be written into
-``portal/versions.lock:image``:
+Enforces the FULL admission chain required by review #52, tightened by review #55
+and re-tightened by review #58 before a verified application digest may be
+written into ``portal/versions.lock:image``:
 
     owner gate  ->  trusted registry  ->  verified signed statement  ->  lock pair
 
@@ -14,25 +14,38 @@ review #55 before a verified application digest may be written into
      expiry window. The gate's owner is CONFIRMED against the trusted runtime
      actor (github.actor) — never the self-asserted name alone — and the gate is
      bound to exactly one run, so re-dispatching the same gate within its expiry
-     window is refused.
+     window is refused. review #58 items 1/4: repository, ref and workflow SHA are
+     now TRIPLE-checked — the policy-ALLOWED value, the OBSERVED runtime context
+     (github.repository / github.ref / GITHUB_WORKFLOW_SHA) and the owner document
+     must all agree, and the workflow SHA is verified BEFORE any release rights.
   2. SOURCE / TOOLS / WORKFLOW SEPARATION: the pinned source tree (d22aa8f…), the
      separately-pinned tools tree and the pinned workflow definition are distinct
      immutable pins. Every file the build invokes must be present in its OWN tree,
      the tools files must NOT be smuggled into the source tree, and the source
-     must not be substituted with a new HEAD.
+     must not be substituted with a new HEAD. review #58 item 2: the source tree
+     is additionally verified to be the COMPLETE pinned tree (full-tree sha256),
+     so omissions/extra files outside the curated list — including inputs outside
+     ``portal/`` — are caught.
   3. TRUSTED REGISTRY: manifest bytes are verified ONLY against the owner-supplied
      trusted registry. Every HTTP transition (the /v2/ ping, the bearer-token
      exchange AND the manifest fetch) is restricted to the SAME trusted HTTPS
      origin before any I/O; implicit redirects are refused; Basic credentials are
      never offered to a realm/token host that is not the trusted registry; and the
      manifest bytes + Docker-Content-Digest are verified at FETCH time (before any
-     sign/attest), not deferred to just before the lock.
+     sign/attest), not deferred to just before the lock. review #58 item 3: Basic
+     and issued-Bearer are SEPARATE schemes — the manifest fetch uses the Basic
+     credential only when the registry accepted Basic directly, otherwise an
+     ISSUED Bearer token, never the raw Basic credential mislabeled as Bearer.
   4. VERIFIED STATEMENT: the gate reads the SIGNED AND VERIFIED in-toto statement
      (``cosign verify-attestation`` output) of the SAME run — subject, builder,
      source material, tools material, workflow SHA and run id all come from that
      statement, never from a locally-built predicate. The pinned SHAs are taken
      from the INDEPENDENT policy bindings (module constants / CLI flags), never
-     from the self-reported evidence bundle.
+     from the self-reported evidence bundle. review #58 item 4: the expected
+     workflow SHA is stored OUTSIDE the pinned revision (carried out-of-band by
+     the owner document, not embedded in the workflow file), cross-checked against
+     the runtime GITHUB_WORKFLOW_SHA in preflight, and the predicate is built from
+     already-verified values.
 
 Every function returns ``(ok: bool, reason: str)``; any missing/mismatched binding
 is a rejection, never a pass. The module does NO network I/O of its own: the
@@ -94,6 +107,14 @@ TRUSTED_REGISTRY = "<REGISTRY_HOST_OWNER_SUPPLIED>"
 PINNED_SOURCE_SHA = "d22aa8f1170deaf09580518916ea02c7c4d8bfba"
 PINNED_TOOLS_SHA = "<FORGEJO_TOOLS_SHA>"
 PINNED_WORKFLOW_SHA = "<FORGEJO_WORKFLOW_SHA>"
+# Full-tree completeness pin (review #58 item 2): sha256 over the SORTED
+# (Unicode codepoint order — Python ``sorted()``, NOT locale ``sort``) list of
+# `git ls-tree -r --name-only <PINNED_SOURCE_SHA>` output, newline-joined with a
+# trailing newline. This is the COMPLETE input tree of the pinned source — any
+# missing, extra or substituted file changes the hash, so a curated list can no
+# longer hide an omission. Computed from d22aa8f… (4574 files). Reproduce offline:
+#   python3 -c "import hashlib,subprocess; t=subprocess.run(['git','ls-tree','-r','--name-only','d22aa8f1170deaf09580518916ea02c7c4d8bfba'],capture_output=True,text=True,check=True).stdout.splitlines(); print(hashlib.sha256(('\n'.join(sorted(t))+'\n').encode()).hexdigest())"
+PINNED_SOURCE_TREE_SHA256 = "e273368f01ef242d1fe267647d0c8c1c18f84cfc52e99f9d3974a51bccc13e01"
 
 # Files the build invokes, split by which tree owns them. The source tree
 # (pinned source SHA) owns the application source + Containerfile + the go
@@ -124,6 +145,14 @@ REQUIRED_SOURCE_FILES = (
     "portal/package-lock.json",
     "portal/web/renderer-smoke.test.mjs",
     "portal/web/fixture-smoke.test.mjs",
+    # inputs OUTSIDE portal/ (review #58 item 2) — read by go tests at build time
+    "docs/architecture/p8c/openapi.json",
+    # go:embed'd + test-read inputs inside portal/ (review #58 item 2)
+    "portal/migrations/migrations.go",
+    "portal/migrations/0001_portal_observations.sql",
+    "portal/manifests/networkpolicy.yaml",
+    "portal/manifests/deployment.yaml",
+    "portal/networkpolicy/testdata/accepted-policy-contract.json",
 )
 REQUIRED_TOOLS_FILES = (
     "portal/tools/forgejo_lock_gate.py",
@@ -150,6 +179,7 @@ BINDINGS = {
     "source_sha": PINNED_SOURCE_SHA,
     "tools_sha": PINNED_TOOLS_SHA,
     "workflow_sha": PINNED_WORKFLOW_SHA,
+    "source_tree_sha256": PINNED_SOURCE_TREE_SHA256,
 }
 
 
@@ -172,7 +202,8 @@ def _parse_epoch(issued):
 def verify_owner_gate(gate, *, expected_owner, expected_source_sha,
                       expected_tools_sha, expected_workflow_sha, expected_repository,
                       expected_package, expected_ref, actor=None, run_id=None,
-                      run_attempt="1", now=None):
+                      run_attempt="1", observed_repository=None, observed_ref=None,
+                      observed_workflow_sha=None, now=None):
     """(ok, reason). Mandatory typed owner gate, verified BEFORE any release action.
 
     The gate must bind the owner identity, the pinned source/tools/workflow SHAs,
@@ -182,6 +213,13 @@ def verify_owner_gate(gate, *, expected_owner, expected_source_sha,
     and the gate is bound to exactly one run (``run_id``), so a re-dispatch of the
     same gate is refused. Missing / expired / foreign / replay admission are all
     refusals.
+
+    review #58 item 1/4: repository, ref and workflow SHA are now TRIPLE-checked —
+    the policy-ALLOWED value (``expected_*``), the OBSERVED runtime context
+    (``observed_*``) and the owner document must all agree. This closes the gap
+    where the document was compared only to the runtime context but never to the
+    policy-allowed repository/ref, and adds the workflow-SHA check that was
+    previously absent before release rights were granted.
     """
     if not isinstance(gate, dict):
         return False, "owner gate: not an object"
@@ -198,12 +236,36 @@ def verify_owner_gate(gate, *, expected_owner, expected_source_sha,
     wf = gate.get("workflow_sha")
     if not valid_sha(wf) or wf != expected_workflow_sha:
         return False, "owner gate: workflow_sha not bound"
+    # repository/ref/workflow SHA: TRIPLE check (policy allowed == owner document
+    # == observed runtime context). The observed context is the trusted runtime
+    # value (github.repository / github.ref / GITHUB_WORKFLOW_SHA); it must equal
+    # BOTH the policy-allowed value and the owner-documented value. Absence of any
+    # observed value is a REJECTION (fail-closed) — the runtime context must be
+    # bound, never skipped (review #58 items 1 & 4).
     if gate.get("repository") != expected_repository:
-        return False, "owner gate: repository not bound"
+        return False, "owner gate: repository not bound to policy"
+    if not isinstance(observed_repository, str) or not observed_repository:
+        return False, "owner gate: observed repository (runtime context) missing"
+    if observed_repository != expected_repository:
+        return False, "owner gate: observed repository != policy-allowed repository"
+    if gate.get("repository") != observed_repository:
+        return False, "owner gate: document repository != observed runtime context"
     if gate.get("package") != expected_package:
         return False, "owner gate: package not bound"
     if gate.get("ref") != expected_ref:
-        return False, "owner gate: ref not bound"
+        return False, "owner gate: ref not bound to policy"
+    if not isinstance(observed_ref, str) or not observed_ref:
+        return False, "owner gate: observed ref (runtime context) missing"
+    if observed_ref != expected_ref:
+        return False, "owner gate: observed ref != policy-allowed ref"
+    if gate.get("ref") != observed_ref:
+        return False, "owner gate: document ref != observed runtime context"
+    if not isinstance(observed_workflow_sha, str) or not observed_workflow_sha:
+        return False, "owner gate: observed workflow SHA (runtime context) missing"
+    if observed_workflow_sha != wf:
+        return False, "owner gate: observed workflow SHA != owner-documented workflow SHA"
+    if observed_workflow_sha != expected_workflow_sha:
+        return False, "owner gate: observed workflow SHA != policy-pinned workflow SHA"
     if gate.get("mode") != "LIVE":
         return False, "owner gate: mode must be LIVE"
     issued = gate.get("issued_at_utc")
@@ -238,11 +300,18 @@ def verify_owner_gate(gate, *, expected_owner, expected_source_sha,
 
 def verify_file_inventory(source_inventory, tools_inventory, *, source_pin,
                           tools_pin, required_source=REQUIRED_SOURCE_FILES,
-                          required_tools=REQUIRED_TOOLS_FILES):
+                          required_tools=REQUIRED_TOOLS_FILES,
+                          source_tree_sha256=None):
     """(ok, reason). Every used file present in its OWN tree; no cross-tree mixing.
 
     source_inventory / tools_inventory are iterables of repo-relative paths (as
     produced by ``git ls-tree -r --name-only`` in each checkout directory).
+
+    review #58 item 2: when ``source_tree_sha256`` is given, the SOURCE tree is
+    additionally verified to be the COMPLETE pinned tree — the sha256 of the
+    sorted, newline-joined inventory must equal the pinned value, so any missing /
+    extra / substituted file (including inputs outside ``portal/``) is caught, not
+    just the curated ``required_source`` list.
     """
     if not valid_sha(source_pin):
         return False, "inventory: source pin invalid (must be 40-hex)"
@@ -265,7 +334,31 @@ def verify_file_inventory(source_inventory, tools_inventory, *, source_pin,
     crossed = sorted(f for f in required_tools if f in src)
     if crossed:
         return False, "inventory: tools files smuggled into source tree: " + ", ".join(crossed)
+    if source_tree_sha256 is not None:
+        ok, reason = verify_source_tree_complete(source_inventory, source_tree_sha256)
+        if not ok:
+            return False, reason
     return True, "file inventory verified"
+
+
+def verify_source_tree_complete(source_inventory, expected_tree_sha256):
+    """(ok, reason). The source tree is the COMPLETE pinned tree (review #58 item 2).
+
+    Hashes the SORTED, newline-joined inventory and compares it to the pinned
+    full-tree sha256 (``PINNED_SOURCE_TREE_SHA256``). A curated list of "required"
+    files only proves those paths exist; this proves the ENTIRE tree — including
+    inputs outside ``portal/`` — is present and unmodified, and catches any
+    omission, extra file or substitution.
+    """
+    if not isinstance(source_inventory, (list, tuple, set, frozenset)):
+        return False, "inventory: source entries not a list"
+    if not isinstance(expected_tree_sha256, str) or len(expected_tree_sha256) != 64:
+        return False, "inventory: expected source-tree sha256 invalid"
+    entries = sorted(str(p) for p in source_inventory)
+    actual = hashlib.sha256(("\n".join(entries) + "\n").encode()).hexdigest()
+    if actual != expected_tree_sha256:
+        return False, "inventory: source tree is not the complete pinned tree (missing/extra/substituted files)"
+    return True, "source tree completeness verified"
 
 
 # ---------------------------------------------------------------------------
@@ -363,28 +456,41 @@ def _generic_oci_transport(registry_host, repository, digest, urlopen=None):
     SAME trusted origin — so Basic credentials are never offered to any other
     host and Bearer/Basic are never mixed across origins. Returns
     (manifest_bytes, docker_content_digest). ``urlopen`` is injectable for tests.
+
+    review #58 item 3: Basic and issued-Bearer are now SEPARATE schemes. The Basic
+    credential is used only for the /v2/ ping and the token exchange; the manifest
+    fetch uses EITHER the Basic credential (only when the registry accepted Basic
+    directly on /v2/) OR a Bearer token ISSUED by the token endpoint — never the
+    raw Basic credential mislabeled as a Bearer token (the previous ``token = cred``
+    on a 200 then ``Bearer <cred>`` bug).
     """
     urlopen = urlopen or _strict_urlopen
     base = "https://" + registry_host
     cred = base64.b64encode(
         ("%s:%s" % (os.environ["REGISTRY_USERNAME"], os.environ["REGISTRY_TOKEN"])).encode()
     ).decode()
-    token = None
+    basic = "Basic " + cred
+    # auth_header is decided by which scheme the registry actually granted:
+    #   - Basic accepted directly on /v2/ (200)      -> continue with Basic
+    #   - 401 + Bearer challenge -> exchange Basic for a Bearer token -> Bearer
+    auth_header = basic
     try:
-        urlopen(base + "/v2/", headers={"Authorization": "Basic " + cred})
-        token = cred
+        urlopen(base + "/v2/", headers={"Authorization": basic})
+        # 200: registry accepted Basic directly. Keep Basic for the manifest fetch
+        # (do NOT reuse the Basic credential as a Bearer token).
     except urllib.error.HTTPError as exc:
         if exc.code != 401:
             raise
         token_url = _bearer_token_url(exc.headers.get("WWW-Authenticate", ""), registry_host)
-        data = urlopen(token_url, headers={"Authorization": "Basic " + cred}).read()
+        data = urlopen(token_url, headers={"Authorization": basic}).read()
         payload = json.loads(data)
         token = payload.get("token") or payload.get("access_token")
-    if not token:
-        raise ValueError("registry authentication failed")
+        if not token or not isinstance(token, str):
+            raise ValueError("registry authentication failed (no bearer token issued)")
+        auth_header = "Bearer " + token
     resp = urlopen(
         base + "/v2/%s/manifests/%s" % (repository, digest),
-        headers={"Authorization": "Bearer " + token,
+        headers={"Authorization": auth_header,
                  "Accept": "application/vnd.oci.image.manifest.v1+json, "
                            "application/vnd.oci.image.index.v1+json, "
                            "application/vnd.docker.distribution.manifest.v2+json"})
@@ -548,6 +654,9 @@ def decide_lock_update(evidence, bindings=None, now=None):
         actor                  str    github.actor (trusted runtime context)
         run_id                 str    runtime run id
         run_attempt            str    runtime run attempt (must be "1")
+        observed_repository    str    github.repository (runtime, triple-checked vs policy+doc)
+        observed_ref           str    github.ref (runtime, triple-checked vs policy+doc)
+        observed_workflow_sha  str    GITHUB_WORKFLOW_SHA (runtime, triple-checked vs policy+doc)
     """
     b = dict(BINDINGS)
     if bindings:
@@ -569,6 +678,9 @@ def decide_lock_update(evidence, bindings=None, now=None):
         actor=evidence.get("actor"),
         run_id=str(evidence.get("run_id", "")),
         run_attempt=str(evidence.get("run_attempt", "1")),
+        observed_repository=evidence.get("observed_repository"),
+        observed_ref=evidence.get("observed_ref"),
+        observed_workflow_sha=evidence.get("observed_workflow_sha"),
         now=now,
     )
     if not ok:
@@ -589,6 +701,7 @@ def decide_lock_update(evidence, bindings=None, now=None):
         evidence.get("source_inventory"), evidence.get("tools_inventory"),
         source_pin=b["source_sha"],
         tools_pin=b["tools_sha"],
+        source_tree_sha256=b.get("source_tree_sha256"),
     )
     if not ok:
         return False, reason
@@ -637,6 +750,46 @@ def decide_lock_update(evidence, bindings=None, now=None):
 # Lock write (full image + digest as ONE pair, section-aware, preserving the
 # rest of the file byte-for-byte)
 # ---------------------------------------------------------------------------
+
+def verify_lock_image_agreement(lock_path, image_ref):
+    """(ok, reason). The lock's ``image.registry`` (FULL image name) must already
+    equal the FULL ``image_ref`` the gate was authorized to release — WITHOUT
+    writing anything.
+
+    review #58 item 5: this is the PRE-PUSH pre-agreement check. It is run in the
+    release job BEFORE any build/push, so an image/path mismatch (e.g. a template
+    IMAGE of ``…/aiopslab/otus-diplom-portal`` against a pinned lock of
+    ``ghcr.io/dedvmedved-dot/otus-diplom-portal``) is refused before credentials
+    are used, instead of only at apply time. The full image is agreed from the
+    policy; the real lock is never modified by this check.
+    """
+    text = Path(lock_path).read_text()
+    lines = text.split("\n")
+    img_idx = None
+    for i, ln in enumerate(lines):
+        if ln.strip() == "image:":
+            img_idx = i
+            break
+    if img_idx is None:
+        return False, "lock image: section not found"
+    base_indent = len(lines[img_idx]) - len(lines[img_idx].lstrip())
+    for i in range(img_idx + 1, len(lines)):
+        ln = lines[i]
+        if ln.strip() == "":
+            continue
+        indent = len(ln) - len(ln.lstrip())
+        if indent <= base_indent:
+            break
+        stripped = ln.strip()
+        if stripped.startswith("registry:"):
+            cur_reg = stripped.split(":", 1)[1].strip().strip('"')
+            if cur_reg != image_ref:
+                return False, (
+                    "lock image registry %r != agreed full image %r "
+                    "(pair mismatch; refuse before push)" % (cur_reg, image_ref))
+            return True, "lock image pre-agreed (full image matches policy)"
+    return False, "lock image registry marker not found"
+
 
 def apply_lock_pair(lock_path, image_ref, digest):
     """Write the verified digest next to the FULL image name in a
@@ -688,9 +841,24 @@ def apply_lock_pair(lock_path, image_ref, digest):
 
     indent = lines[dg_idx][:len(lines[dg_idx]) - len(lines[dg_idx].lstrip())]
     lines[dg_idx] = '%sdigest: "%s"   # verified digest written by forgejo_lock_gate' % (indent, digest)
+    new_text = "\n".join(lines)
+
+    # review #58 item 5: verify ALL bytes outside the changed digest line are
+    # unchanged — not just the section markers. If any other line differs (or the
+    # line count changes), refuse instead of writing a partially-mutated lock.
+    before_lines = text.split("\n")
+    after_lines = new_text.split("\n")
+    if len(before_lines) != len(after_lines):
+        raise RuntimeError("lock apply would change the line count; refusing")
+    diffs = [i for i in range(len(before_lines)) if before_lines[i] != after_lines[i]]
+    if diffs != [dg_idx]:
+        raise RuntimeError(
+            "lock apply would modify bytes outside the digest line (diff at lines %r); refusing"
+            % diffs)
+
     tmp = str(lock_path) + ".tmp"
     with open(tmp, "w") as f:
-        f.write("\n".join(lines))
+        f.write(new_text)
     os.replace(tmp, lock_path)
     return 1
 
@@ -700,12 +868,14 @@ def apply_lock_pair(lock_path, image_ref, digest):
 # ---------------------------------------------------------------------------
 
 USAGE = """usage:
-  forgejo_lock_gate.py owner-gate <gate.json> --pinned-source <sha> --pinned-tools <sha> \\
-      --pinned-workflow <sha> --package <image_ref> [--owner O --repository R --ref F \\
-      --actor A --run-id RID --run-attempt 1]
-  forgejo_lock_gate.py inventory --source-inventory <paths.txt> --tools-inventory <paths.txt> \\
-      --pinned-source <sha> --pinned-tools <sha>
-  forgejo_lock_gate.py registry-fetch --allowed-registry <host> --image-ref <ref> --digest <sha256:..> \\
+  forgejo_lock_gate.py owner-gate <gate.json> --pinned-source <sha> --pinned-tools <sha>
+      --pinned-workflow <sha> --package <image_ref> [--owner O --repository R --ref F
+      --actor A --run-id RID --run-attempt 1
+      --observed-repository R --observed-ref F --observed-workflow-sha W]
+  forgejo_lock_gate.py inventory --source-inventory <paths.txt> --tools-inventory <paths.txt>
+      --pinned-source <sha> --pinned-tools <sha> [--source-tree-sha256 <64hex>]
+  forgejo_lock_gate.py lock-image-check --lock <versions.lock> --image <full_image_ref>
+  forgejo_lock_gate.py registry-fetch --allowed-registry <host> --image-ref <ref> --digest <sha256:..>
       --manifest-out <file> --dcd-out <file>
   forgejo_lock_gate.py digest <build-metadata.json>
   forgejo_lock_gate.py predicate <source_sha> <workflow_sha> <tools_sha> <run_id>
@@ -741,18 +911,29 @@ def main(argv):
         except Exception:
             print("OWNER GATE NOT VERIFIED: unreadable", file=sys.stderr)
             return 1
+        # review #58 item 4: the workflow SHA pin is carried OUT-OF-BAND by the
+        # owner gate document (it cannot be embedded in the workflow file itself —
+        # that would be circular). When --pinned-workflow is omitted, the policy
+        # pin is the document's own workflow_sha; the preflight still cross-checks
+        # it against the observed runtime GITHUB_WORKFLOW_SHA.
+        pinned_workflow = flag("--pinned-workflow")
+        if pinned_workflow is None:
+            pinned_workflow = gate.get("workflow_sha", "") if isinstance(gate, dict) else ""
         ok, reason = verify_owner_gate(
             gate,
             expected_owner=flag("--owner", EXPECTED_OWNER),
             expected_source_sha=flag("--pinned-source", ""),
             expected_tools_sha=flag("--pinned-tools", ""),
-            expected_workflow_sha=flag("--pinned-workflow", ""),
+            expected_workflow_sha=pinned_workflow,
             expected_repository=flag("--repository", FORGEJO_REPO),
             expected_package=flag("--package", ""),
             expected_ref=flag("--ref", REF),
             actor=flag("--actor"),
             run_id=flag("--run-id"),
             run_attempt=flag("--run-attempt", "1"),
+            observed_repository=flag("--observed-repository"),
+            observed_ref=flag("--observed-ref"),
+            observed_workflow_sha=flag("--observed-workflow-sha"),
         )
         print(json.dumps({"owner_gate": ok, "reason": reason}))
         if not ok:
@@ -767,9 +948,23 @@ def main(argv):
             src, tls,
             source_pin=flag("--pinned-source", ""),
             tools_pin=flag("--pinned-tools", ""),
+            source_tree_sha256=flag("--source-tree-sha256"),
         )
         print(json.dumps({"inventory": ok, "reason": reason}))
         return 0 if ok else 1
+
+    if mode == "lock-image-check":
+        lock_path = flag("--lock")
+        image_ref = flag("--image")
+        if not lock_path or not image_ref:
+            print(USAGE, file=sys.stderr)
+            return 2
+        ok, reason = verify_lock_image_agreement(lock_path, image_ref)
+        print(json.dumps({"lock_image_agreed": ok, "reason": reason}))
+        if not ok:
+            print("LOCK IMAGE NOT AGREED: " + reason, file=sys.stderr)
+            return 1
+        return 0
 
     if mode == "digest":
         meta = json.loads(Path(args[0]).read_text())
@@ -827,7 +1022,8 @@ def main(argv):
                               ("build_type", "--build-type"),
                               ("source_sha", "--pinned-source"),
                               ("tools_sha", "--pinned-tools"),
-                              ("workflow_sha", "--workflow-sha")):
+                              ("workflow_sha", "--workflow-sha"),
+                              ("source_tree_sha256", "--source-tree-sha256")):
             val = flag(flagname)
             if val is not None:
                 bindings[key] = val
