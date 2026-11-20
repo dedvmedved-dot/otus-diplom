@@ -1,32 +1,45 @@
 #!/usr/bin/env python3
 """Forgejo Actions release/lock-update gate (fail-closed, offline-verifiable).
 
-Enforces the FULL admission chain required by review #52 before a verified
-application digest may be written into ``portal/versions.lock:image``:
+Enforces the FULL admission chain required by review #52 and tightened by
+review #55 before a verified application digest may be written into
+``portal/versions.lock:image``:
 
     owner gate  ->  trusted registry  ->  verified signed statement  ->  lock pair
 
-  1. OWNER GATE (mandatory, checked BEFORE any credential access / build / push):
-     a typed gate document binds the owner identity, the pinned SOURCE SHA, the
-     WORKFLOW SHA (the tools pin), repository, package, ref, expiry window and a
-     single-attempt budget. Absent / expired / foreign admission => reject.
-  2. SOURCE / TOOLS SEPARATION: the pinned source tree (d22aa8f…) and the
-     separately-pinned tools tree are checked out into independent directories;
-     every file the build uses must be present in its OWN tree, the tools files
-     must NOT be smuggled into the source tree, and the source must not be
-     substituted with a new HEAD.
+  1. OWNER GATE (mandatory, checked BEFORE any credential access / build / push).
+     A typed gate document binds the owner identity, the pinned SOURCE SHA, the
+     pinned TOOLS SHA and the pinned WORKFLOW SHA (three separate immutable pins),
+     repository, package, ref, a single-run binding (run_id + attempt) and a live
+     expiry window. The gate's owner is CONFIRMED against the trusted runtime
+     actor (github.actor) — never the self-asserted name alone — and the gate is
+     bound to exactly one run, so re-dispatching the same gate within its expiry
+     window is refused.
+  2. SOURCE / TOOLS / WORKFLOW SEPARATION: the pinned source tree (d22aa8f…), the
+     separately-pinned tools tree and the pinned workflow definition are distinct
+     immutable pins. Every file the build invokes must be present in its OWN tree,
+     the tools files must NOT be smuggled into the source tree, and the source
+     must not be substituted with a new HEAD.
   3. TRUSTED REGISTRY: manifest bytes are verified ONLY against the owner-supplied
-     trusted registry; credentials are never offered to any other host, and an
-     unknown destination is refused BEFORE any network request.
+     trusted registry. Every HTTP transition (the /v2/ ping, the bearer-token
+     exchange AND the manifest fetch) is restricted to the SAME trusted HTTPS
+     origin before any I/O; implicit redirects are refused; Basic credentials are
+     never offered to a realm/token host that is not the trusted registry; and the
+     manifest bytes + Docker-Content-Digest are verified at FETCH time (before any
+     sign/attest), not deferred to just before the lock.
   4. VERIFIED STATEMENT: the gate reads the SIGNED AND VERIFIED in-toto statement
-     (``cosign verify-attestation`` output) of the SAME run — subject, builder and
-     source come from that statement, never from a locally-built predicate.
+     (``cosign verify-attestation`` output) of the SAME run — subject, builder,
+     source material, tools material, workflow SHA and run id all come from that
+     statement, never from a locally-built predicate. The pinned SHAs are taken
+     from the INDEPENDENT policy bindings (module constants / CLI flags), never
+     from the self-reported evidence bundle.
 
 Every function returns ``(ok: bool, reason: str)``; any missing/mismatched binding
 is a rejection, never a pass. The module does NO network I/O of its own: the
-registry transport is injected by the caller so it can be mocked offline. The
-inactive Forgejo workflow and the offline harness import this SAME module, so
-there is exactly one validation implementation.
+registry transport is injected by the caller so it can be mocked offline, and the
+execution-time OCI transport's origin/redirect policy is covered by its own unit
+tests. The inactive Forgejo workflow and the offline harness import this SAME
+module, so there is exactly one validation implementation.
 """
 from __future__ import annotations
 
@@ -69,32 +82,62 @@ IN_TOTO_TYPES = ("https://in-toto.io/Statement/v0.1", "https://in-toto.io/Statem
 # synthetic values to prove the fail-closed branches.
 EXPECTED_OWNER = "<OWNER_IDENTITY_P0>"
 TRUSTED_REGISTRY = "<REGISTRY_HOST_OWNER_SUPPLIED>"
-# The tools pin is a SEPARATE immutable pin from the source pin. It is fixed to
-# the commit that carries the Forgejo tooling (this file + its tests + the
-# workflow template); its literal value is recorded at publication time.
+# THREE separate immutable pins (review #55 item 4):
+#  - PINNED_SOURCE_SHA   : the accepted source tree (accepted at d22aa8f…).
+#  - PINNED_TOOLS_SHA    : the commit that carries the Forgejo tooling (this file
+#                          + its tests + the workflow template); fixed at
+#                          publication time.
+#  - PINNED_WORKFLOW_SHA : the commit/blob of the EXECUTED workflow definition
+#                          (when published under .forgejo/workflows/). This is a
+#                          DIFFERENT entity from the tools pin and is fixed at
+#                          publication time, never derived from the tools checkout.
+PINNED_SOURCE_SHA = "d22aa8f1170deaf09580518916ea02c7c4d8bfba"
 PINNED_TOOLS_SHA = "<FORGEJO_TOOLS_SHA>"
+PINNED_WORKFLOW_SHA = "<FORGEJO_WORKFLOW_SHA>"
 
-# Files the build consumes, split by which tree owns them. The source tree
+# Files the build invokes, split by which tree owns them. The source tree
 # (pinned source SHA) owns the application source + Containerfile + the go
-# installer it already ships; the tools tree (separate tools pin) owns the
+# installer it already ships + the Python/JS test files the workflow actually
+# invokes (review #55 item 2); the tools tree (separate tools pin) owns the
 # Forgejo-specific gate/tests/workflow-template introduced by this PR.
 REQUIRED_SOURCE_FILES = (
+    # build entry points
     "portal/Containerfile",
     "portal/Makefile",
     "portal/go.mod",
     "portal/go.sum",
     "portal/cmd/portal/main.go",
     "portal/tools/install-verified-go.sh",
+    # web assets embedded by the go build (portal/web/embed.go)
+    "portal/web/embed.go",
+    "portal/web/app.js",
+    "portal/web/index.html",
+    "portal/web/style.css",
+    # workflow test step (python tests + their local imports)
+    "portal/tools/test_helpers.py",
+    "portal/tools/test_release.py",
+    "portal/tools/release-check.py",
+    "portal/tools/provision-ui-auth.py",
+    "portal/tools/provision-registry-pull.py",
+    # npm ci + JS fixture/smoke tests
+    "portal/package.json",
+    "portal/package-lock.json",
+    "portal/web/renderer-smoke.test.mjs",
+    "portal/web/fixture-smoke.test.mjs",
 )
 REQUIRED_TOOLS_FILES = (
     "portal/tools/forgejo_lock_gate.py",
     "portal/tools/test_forgejo_lock_gate.py",
+    "portal/tools/test_forgejo_offline_integration.py",
     "portal/tools/check_forgejo_workflow_syntax.py",
     "portal/tools/p8c-portal-forgejo-release.yml.template",
 )
 
-# Expected binding values for the decision. Values that are owner-supplied P0
-# placeholders are overridden by the workflow CLI / harness.
+# Independent policy bindings. These are the ONLY authority for the pinned
+# SHAs and identities: the evidence bundle is treated as untrusted self-report
+# and is only ever COMPARED against these values (review #55 items 1 & 4).
+# Values that are owner-supplied P0 placeholders are overridden by the workflow
+# CLI / harness.
 BINDINGS = {
     "owner": EXPECTED_OWNER,
     "trusted_registry": TRUSTED_REGISTRY,
@@ -104,7 +147,9 @@ BINDINGS = {
     "ref": REF,
     "workflow_file": WORKFLOW_FILE,
     "build_type": BUILD_TYPE,
-    "workflow_sha": PINNED_TOOLS_SHA,
+    "source_sha": PINNED_SOURCE_SHA,
+    "tools_sha": PINNED_TOOLS_SHA,
+    "workflow_sha": PINNED_WORKFLOW_SHA,
 }
 
 
@@ -125,20 +170,31 @@ def _parse_epoch(issued):
 # ---------------------------------------------------------------------------
 
 def verify_owner_gate(gate, *, expected_owner, expected_source_sha,
-                      expected_workflow_sha, expected_repository, expected_package,
-                      expected_ref, run_attempt="1", now=None):
+                      expected_tools_sha, expected_workflow_sha, expected_repository,
+                      expected_package, expected_ref, actor=None, run_id=None,
+                      run_attempt="1", now=None):
     """(ok, reason). Mandatory typed owner gate, verified BEFORE any release action.
 
-    The gate must bind the owner identity, the pinned source SHA, the workflow
-    SHA, repo, package, ref, and a single-attempt budget with a live expiry
-    window. Missing / expired / foreign admission are all refusals.
+    The gate must bind the owner identity, the pinned source/tools/workflow SHAs,
+    repo, package, ref, a single-run binding (run_id) and a single-attempt budget
+    with a live expiry window. The owner is CONFIRMED against the trusted runtime
+    ``actor`` (github.actor) — a self-asserted name in the document is not enough —
+    and the gate is bound to exactly one run (``run_id``), so a re-dispatch of the
+    same gate is refused. Missing / expired / foreign / replay admission are all
+    refusals.
     """
     if not isinstance(gate, dict):
         return False, "owner gate: not an object"
     if gate.get("owner") != expected_owner:
         return False, "owner gate: unknown/foreign owner admission"
+    if not isinstance(actor, str) or not actor:
+        return False, "owner gate: trusted actor (github.actor) missing"
+    if actor != expected_owner:
+        return False, "owner gate: actor does not confirm the owner"
     if not valid_sha(gate.get("source_sha")) or gate.get("source_sha") != expected_source_sha:
         return False, "owner gate: source_sha not bound to pinned source"
+    if not valid_sha(gate.get("tools_sha")) or gate.get("tools_sha") != expected_tools_sha:
+        return False, "owner gate: tools_sha not bound to pinned tools"
     wf = gate.get("workflow_sha")
     if not valid_sha(wf) or wf != expected_workflow_sha:
         return False, "owner gate: workflow_sha not bound"
@@ -169,6 +225,10 @@ def verify_owner_gate(gate, *, expected_owner, expected_source_sha,
     if (not isinstance(attempt, int) or isinstance(attempt, bool) or attempt != 1
             or str(run_attempt) != "1"):
         return False, "owner gate: single-attempt budget violated (attempt/run_attempt must be 1)"
+    if not isinstance(run_id, str) or not run_id:
+        return False, "owner gate: run id missing (cannot bind to the run)"
+    if gate.get("run_id") != run_id:
+        return False, "owner gate: run_id not bound to this run (replay refused)"
     return True, "owner gate verified"
 
 
@@ -248,49 +308,86 @@ def verify_registry_manifest(allowed_registry, registry_host, image_ref, digest,
     return True, "registry manifest verified"
 
 
-def _generic_oci_transport(registry_host, repository, digest):
+def _trusted_origin_ok(url, trusted_host):
+    """True only for a same-host HTTPS origin (no implicit scheme/host change)."""
+    parts = urllib.parse.urlsplit(url)
+    return (parts.scheme == "https"
+            and parts.hostname == trusted_host
+            and parts.port in (None, 443))
+
+
+class _RefuseRedirect(urllib.request.HTTPRedirectHandler):
+    """Refuse EVERY implicit redirect: the gate only ever talks to the trusted
+    registry origin, and any redirect is a potential credential-leak vector."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise urllib.error.HTTPError(
+            req.full_url, code, "redirect refused (trusted-origin-only transport)",
+            headers, fp)
+
+
+def _strict_urlopen(url, headers=None, timeout=30):
+    """Open ``url`` with a redirect-refusing opener (trusted-origin only)."""
+    opener = urllib.request.build_opener(_RefuseRedirect)
+    return opener.open(
+        urllib.request.Request(url, headers=headers if headers is not None else {}),
+        timeout=timeout)
+
+
+def _bearer_token_url(challenge, trusted_host):
+    """Resolve the bearer-token URL from a WWW-Authenticate challenge, refusing
+    (BEFORE any I/O / Basic-credential use) any realm that is not the trusted
+    HTTPS origin."""
+    realm = re.search(r'realm="([^"]+)"', challenge or "")
+    if not realm:
+        raise ValueError("registry did not offer a bearer challenge")
+    realm_url = realm.group(1)
+    if not _trusted_origin_ok(realm_url, trusted_host):
+        raise ValueError(
+            "registry bearer realm %r is not the trusted HTTPS origin %r" % (realm_url, trusted_host))
+    params = {}
+    for part in (challenge or "").split(","):
+        key, _, value = part.strip().partition("=")
+        if key in ("service", "scope"):
+            params[key] = value.strip('"')
+    sep = "&" if "?" in realm_url else "?"
+    return realm_url + sep + "&".join(
+        "%s=%s" % (k, urllib.parse.quote(v)) for k, v in params.items())
+
+
+def _generic_oci_transport(registry_host, repository, digest, urlopen=None):
     """Execution-time transport (generic OCI bearer flow). Reads credentials from
-    REGISTRY_USERNAME / REGISTRY_TOKEN. Only ever contacts ``registry_host``, which
-    ``fetch_registry_manifest`` has already validated == the trusted registry, so
-    credentials are never offered to any other host. Returns (manifest_bytes,
-    docker_content_digest)."""
+    REGISTRY_USERNAME / REGISTRY_TOKEN. Only ever contacts ``registry_host``
+    (already validated == the trusted registry by ``fetch_registry_manifest``),
+    over HTTPS, with redirects refused and the bearer realm restricted to the
+    SAME trusted origin — so Basic credentials are never offered to any other
+    host and Bearer/Basic are never mixed across origins. Returns
+    (manifest_bytes, docker_content_digest). ``urlopen`` is injectable for tests.
+    """
+    urlopen = urlopen or _strict_urlopen
     base = "https://" + registry_host
     cred = base64.b64encode(
         ("%s:%s" % (os.environ["REGISTRY_USERNAME"], os.environ["REGISTRY_TOKEN"])).encode()
     ).decode()
     token = None
     try:
-        urllib.request.urlopen(
-            urllib.request.Request(base + "/v2/", headers={"Authorization": "Basic " + cred}),
-            timeout=30)
+        urlopen(base + "/v2/", headers={"Authorization": "Basic " + cred})
         token = cred
     except urllib.error.HTTPError as exc:
-        challenge = exc.headers.get("WWW-Authenticate", "")
-        realm = re.search(r'realm="([^"]+)"', challenge)
-        if not realm:
-            raise ValueError("registry did not offer a bearer challenge")
-        params = {}
-        for part in challenge.split(","):
-            key, _, value = part.strip().partition("=")
-            if key in ("service", "scope"):
-                params[key] = value.strip('"')
-        sep = "&" if "?" in realm.group(1) else "?"
-        token_url = realm.group(1) + sep + "&".join(
-            "%s=%s" % (k, urllib.parse.quote(v)) for k, v in params.items())
-        data = urllib.request.urlopen(
-            urllib.request.Request(token_url, headers={"Authorization": "Basic " + cred}),
-            timeout=30).read()
+        if exc.code != 401:
+            raise
+        token_url = _bearer_token_url(exc.headers.get("WWW-Authenticate", ""), registry_host)
+        data = urlopen(token_url, headers={"Authorization": "Basic " + cred}).read()
         payload = json.loads(data)
         token = payload.get("token") or payload.get("access_token")
     if not token:
         raise ValueError("registry authentication failed")
-    req = urllib.request.Request(
+    resp = urlopen(
         base + "/v2/%s/manifests/%s" % (repository, digest),
         headers={"Authorization": "Bearer " + token,
                  "Accept": "application/vnd.oci.image.manifest.v1+json, "
                            "application/vnd.oci.image.index.v1+json, "
                            "application/vnd.docker.distribution.manifest.v2+json"})
-    resp = urllib.request.urlopen(req, timeout=30)
     return resp.read(), resp.headers.get("Docker-Content-Digest")
 
 
@@ -332,11 +429,11 @@ def parse_verified_attestation(text):
 
 
 def check_verified_statement(statement, *, expected_image_ref, expected_digest,
-                             expected_source_sha, expected_workflow_sha,
+                             expected_source_sha, expected_tools_sha, expected_workflow_sha,
                              expected_run_id, expected_identity, expected_repository,
                              expected_ref, expected_workflow_file, expected_build_type):
     """(ok, reason). The VERIFIED in-toto statement must bind subject, type,
-    builder identity, source material, workflow SHA and run id."""
+    builder identity, source material, tools material, workflow SHA and run id."""
     if not isinstance(statement, dict):
         return False, "statement: not an object"
     if statement.get("_type") not in IN_TOTO_TYPES:
@@ -377,9 +474,14 @@ def check_verified_statement(statement, *, expected_image_ref, expected_digest,
     materials = pred.get("materials")
     if not isinstance(materials, list):
         return False, "statement: materials missing"
-    if not any(isinstance(m, dict) and (m.get("digest") or {}).get("sha1") == expected_source_sha
-               for m in materials):
+    mat_sha1s = set()
+    for m in materials:
+        if isinstance(m, dict) and isinstance((m.get("digest") or {}).get("sha1"), str):
+            mat_sha1s.add(m["digest"]["sha1"])
+    if expected_source_sha not in mat_sha1s:
         return False, "statement: materials do not bind pinned source SHA"
+    if expected_tools_sha not in mat_sha1s:
+        return False, "statement: materials do not bind pinned tools SHA"
     meta = pred.get("metadata")
     if (not isinstance(meta, dict) or not isinstance(meta.get("buildInvocationId"), str)
             or meta["buildInvocationId"] != expected_run_id):
@@ -391,11 +493,12 @@ def check_verified_statement(statement, *, expected_image_ref, expected_digest,
 # Predicate generator (Forgejo SLSA body; cosign fills the subject)
 # ---------------------------------------------------------------------------
 
-def build_predicate(source_sha, workflow_sha, run_id):
+def build_predicate(source_sha, workflow_sha, tools_sha, run_id):
     """SLSA v0.2 predicate BODY (no subject — cosign attest fills it from the
-    image). Binds the workflow identity, the workflow SHA (configSource) and the
-    source SHA (materials). This predicate is ATTESTED, then re-read back from the
-    verified statement; it is never itself the authority for the lock decision."""
+    image). Binds the workflow identity, the WORKFLOW SHA (configSource) and the
+    SOURCE + TOOLS SHAs (materials) as three separate pins. This predicate is
+    ATTESTED, then re-read back from the verified statement; it is never itself
+    the authority for the lock decision."""
     return {
         "builder": {"id": WORKFLOW_IDENTITY},
         "buildType": BUILD_TYPE,
@@ -408,7 +511,9 @@ def build_predicate(source_sha, workflow_sha, run_id):
         },
         "materials": [
             {"uri": "git+https://git.aiopslab.online/%s@%s" % (FORGEJO_REPO, REF),
-             "digest": {"sha1": source_sha}}
+             "digest": {"sha1": source_sha}},
+            {"uri": "git+https://git.aiopslab.online/%s@%s" % (FORGEJO_REPO, REF),
+             "digest": {"sha1": tools_sha}},
         ],
         "metadata": {"buildInvocationId": run_id},
     }
@@ -424,12 +529,12 @@ def decide_lock_update(evidence, bindings=None, now=None):
     ``now`` is an injectable clock for offline tests only; the production CLI
     always gates on ``time.time()``.
 
-    ``evidence`` keys:
+    ``evidence`` keys (all untrusted self-reports, compared against the
+    INDEPENDENT policy bindings):
         owner_gate             dict   typed owner gate document
         source_sha             str    candidate source SHA (git rev-parse in src)
-        pinned_source_sha      str    pinned source literal (d22aa8f…)
-        workflow_sha           str    candidate workflow/tools SHA (git rev-parse in tools)
-        pinned_workflow_sha    str    pinned tools literal
+        tools_sha              str    candidate tools SHA (git rev-parse in tools)
+        workflow_sha           str    candidate workflow SHA (runtime context)
         source_inventory       list   repo-relative paths in the source tree
         tools_inventory        list   repo-relative paths in the tools tree
         registry_host          str    registry host the manifest was pulled from
@@ -440,6 +545,7 @@ def decide_lock_update(evidence, bindings=None, now=None):
         verified_attestation   str    cosign verify-attestation JSONL
         certificate_identity   str    --certificate-identity passed to cosign
         certificate_issuer     str    --certificate-oidc-issuer passed to cosign
+        actor                  str    github.actor (trusted runtime context)
         run_id                 str    runtime run id
         run_attempt            str    runtime run attempt (must be "1")
     """
@@ -454,29 +560,35 @@ def decide_lock_update(evidence, bindings=None, now=None):
     ok, reason = verify_owner_gate(
         gate,
         expected_owner=b["owner"],
-        expected_source_sha=evidence.get("pinned_source_sha", ""),
-        expected_workflow_sha=evidence.get("pinned_workflow_sha", ""),
+        expected_source_sha=b["source_sha"],
+        expected_tools_sha=b["tools_sha"],
+        expected_workflow_sha=b["workflow_sha"],
         expected_repository=b["repository"],
         expected_package=evidence.get("image_ref", ""),
         expected_ref=b["ref"],
+        actor=evidence.get("actor"),
+        run_id=str(evidence.get("run_id", "")),
         run_attempt=str(evidence.get("run_attempt", "1")),
         now=now,
     )
     if not ok:
         return False, reason
 
-    # Stage 2 — source/tools separation.
+    # Stage 2 — source/tools/workflow separation, checked against the
+    # INDEPENDENT policy pins (NOT the self-reported evidence).
     source_sha = evidence.get("source_sha")
-    if not valid_sha(source_sha) or source_sha != evidence.get("pinned_source_sha"):
+    if not valid_sha(source_sha) or source_sha != b["source_sha"]:
         return False, "source_sha mismatch vs pinned source"
-    pinned_ws = evidence.get("pinned_workflow_sha")
-    actual_ws = evidence.get("workflow_sha")
-    if not valid_sha(pinned_ws) or not valid_sha(actual_ws) or actual_ws != pinned_ws:
-        return False, "workflow_sha not bound to pinned tools"
+    tools_sha = evidence.get("tools_sha")
+    if not valid_sha(tools_sha) or tools_sha != b["tools_sha"]:
+        return False, "tools_sha not bound to pinned tools"
+    workflow_sha = evidence.get("workflow_sha")
+    if not valid_sha(workflow_sha) or workflow_sha != b["workflow_sha"]:
+        return False, "workflow_sha not bound to pinned workflow"
     ok, reason = verify_file_inventory(
         evidence.get("source_inventory"), evidence.get("tools_inventory"),
-        source_pin=evidence.get("pinned_source_sha"),
-        tools_pin=pinned_ws,
+        source_pin=b["source_sha"],
+        tools_pin=b["tools_sha"],
     )
     if not ok:
         return False, reason
@@ -504,8 +616,9 @@ def decide_lock_update(evidence, bindings=None, now=None):
             st,
             expected_image_ref=evidence.get("image_ref"),
             expected_digest=evidence.get("digest"),
-            expected_source_sha=evidence.get("pinned_source_sha"),
-            expected_workflow_sha=pinned_ws,
+            expected_source_sha=b["source_sha"],
+            expected_tools_sha=b["tools_sha"],
+            expected_workflow_sha=b["workflow_sha"],
             expected_run_id=str(evidence.get("run_id", "")),
             expected_identity=b["identity"],
             expected_repository=b["repository"],
@@ -521,30 +634,60 @@ def decide_lock_update(evidence, bindings=None, now=None):
 
 
 # ---------------------------------------------------------------------------
-# Lock write (registry + digest as ONE pair)
+# Lock write (full image + digest as ONE pair, section-aware, preserving the
+# rest of the file byte-for-byte)
 # ---------------------------------------------------------------------------
 
-def apply_lock_pair(lock_path, registry, digest):
-    """Write ``registry`` and ``digest`` as ONE pair into a portal/versions.lock
-    style file, atomically (tmp + os.replace).
+def apply_lock_pair(lock_path, image_ref, digest):
+    """Write the verified digest next to the FULL image name in a
+    portal/versions.lock style file, atomically (tmp + os.replace).
 
-    The lock's existing ``registry:`` value MUST equal the verified registry —
-    a digest from one registry is never recorded against another. Called only
-    after ``decide_lock_update()`` returns allowed."""
+    The lock's existing ``image.registry:`` value (the FULL image name) MUST
+    equal the verified ``image_ref`` — a digest from one image is never recorded
+    against another, and a foreign image is never rewritten automatically. Only
+    the ``image.digest`` line (which must still be ``NOT_VERIFIED``) is changed;
+    every other section is preserved byte-for-byte. Called only after
+    ``decide_lock_update()`` returns allowed.
+    """
     text = Path(lock_path).read_text()
     lines = text.split("\n")
-    reg_idx = [i for i, ln in enumerate(lines) if ln.strip().startswith("registry:")]
-    dg_idx = [i for i, ln in enumerate(lines) if ln.strip().startswith("digest:")]
-    if len(reg_idx) != 1:
-        raise RuntimeError("lock registry marker not found or ambiguous (%d)" % len(reg_idx))
-    if len(dg_idx) != 1 or "NOT_VERIFIED" not in lines[dg_idx[0]]:
-        raise RuntimeError("lock digest marker not found or already set (%d)" % len(dg_idx))
-    indent = lines[reg_idx[0]][:len(lines[reg_idx[0]]) - len(lines[reg_idx[0]].lstrip())]
-    cur_reg = lines[reg_idx[0]].split(":", 1)[1].strip().strip('"')
-    if cur_reg != registry:
-        raise RuntimeError("lock registry %r != verified registry %r (pair mismatch)" % (cur_reg, registry))
-    lines[reg_idx[0]] = '%sregistry: "%s"' % (indent, registry)
-    lines[dg_idx[0]] = '%sdigest: "%s"   # verified digest written by forgejo_lock_gate' % (indent, digest)
+
+    # Locate the `image:` section header and scan only its children (more
+    # indented than the header), so unrelated sections are never touched.
+    img_idx = None
+    for i, ln in enumerate(lines):
+        if ln.strip() == "image:":
+            img_idx = i
+            break
+    if img_idx is None:
+        raise RuntimeError("lock image: section not found")
+    base_indent = len(lines[img_idx]) - len(lines[img_idx].lstrip())
+    reg_idx = dg_idx = None
+    for i in range(img_idx + 1, len(lines)):
+        ln = lines[i]
+        if ln.strip() == "":
+            continue
+        indent = len(ln) - len(ln.lstrip())
+        if indent <= base_indent:
+            break  # left the image: section
+        stripped = ln.strip()
+        if stripped.startswith("registry:"):
+            reg_idx = i
+        elif stripped.startswith("digest:"):
+            dg_idx = i
+    if reg_idx is None or dg_idx is None:
+        raise RuntimeError("lock image registry/digest markers not found")
+
+    cur_reg = lines[reg_idx].split(":", 1)[1].strip().strip('"')
+    if cur_reg != image_ref:
+        raise RuntimeError(
+            "lock image registry %r != verified image %r (pair mismatch; foreign image not rewritten)"
+            % (cur_reg, image_ref))
+    if "NOT_VERIFIED" not in lines[dg_idx]:
+        raise RuntimeError("lock digest already set (no NOT_VERIFIED marker)")
+
+    indent = lines[dg_idx][:len(lines[dg_idx]) - len(lines[dg_idx].lstrip())]
+    lines[dg_idx] = '%sdigest: "%s"   # verified digest written by forgejo_lock_gate' % (indent, digest)
     tmp = str(lock_path) + ".tmp"
     with open(tmp, "w") as f:
         f.write("\n".join(lines))
@@ -557,15 +700,16 @@ def apply_lock_pair(lock_path, registry, digest):
 # ---------------------------------------------------------------------------
 
 USAGE = """usage:
-  forgejo_lock_gate.py owner-gate <gate.json> --pinned-source <sha> --pinned-workflow <sha> \\
-      --package <image_ref> [--owner O --repository R --ref F --run-attempt 1]
+  forgejo_lock_gate.py owner-gate <gate.json> --pinned-source <sha> --pinned-tools <sha> \\
+      --pinned-workflow <sha> --package <image_ref> [--owner O --repository R --ref F \\
+      --actor A --run-id RID --run-attempt 1]
   forgejo_lock_gate.py inventory --source-inventory <paths.txt> --tools-inventory <paths.txt> \\
-      --pinned-source <sha> --pinned-workflow <sha>
+      --pinned-source <sha> --pinned-tools <sha>
   forgejo_lock_gate.py registry-fetch --allowed-registry <host> --image-ref <ref> --digest <sha256:..> \\
       --manifest-out <file> --dcd-out <file>
   forgejo_lock_gate.py digest <build-metadata.json>
-  forgejo_lock_gate.py predicate <source_sha> <workflow_sha> <run_id>
-  forgejo_lock_gate.py verify <evidence.json> [--apply <lock_file>]"""
+  forgejo_lock_gate.py predicate <source_sha> <workflow_sha> <tools_sha> <run_id>
+  forgejo_lock_gate.py verify <evidence.json> [--apply <lock_file> --apply-lock true]"""
 
 
 def _load_evidence(path):
@@ -601,10 +745,13 @@ def main(argv):
             gate,
             expected_owner=flag("--owner", EXPECTED_OWNER),
             expected_source_sha=flag("--pinned-source", ""),
+            expected_tools_sha=flag("--pinned-tools", ""),
             expected_workflow_sha=flag("--pinned-workflow", ""),
             expected_repository=flag("--repository", FORGEJO_REPO),
             expected_package=flag("--package", ""),
             expected_ref=flag("--ref", REF),
+            actor=flag("--actor"),
+            run_id=flag("--run-id"),
             run_attempt=flag("--run-attempt", "1"),
         )
         print(json.dumps({"owner_gate": ok, "reason": reason}))
@@ -619,7 +766,7 @@ def main(argv):
         ok, reason = verify_file_inventory(
             src, tls,
             source_pin=flag("--pinned-source", ""),
-            tools_pin=flag("--pinned-workflow", ""),
+            tools_pin=flag("--pinned-tools", ""),
         )
         print(json.dumps({"inventory": ok, "reason": reason}))
         return 0 if ok else 1
@@ -647,6 +794,12 @@ def main(argv):
         except Exception as exc:
             print("REGISTRY NOT VERIFIED: %s" % exc, file=sys.stderr)
             return 1
+        # Verify bytes + Docker-Content-Digest at FETCH time (BEFORE any
+        # sign/attest or lock), not deferred to just before the lock.
+        ok, reason = verify_registry_manifest(allowed, allowed, image_ref, digest, body, dcd)
+        if not ok:
+            print("REGISTRY NOT VERIFIED: %s" % reason, file=sys.stderr)
+            return 1
         Path(flag("--manifest-out", "")).write_bytes(body)
         Path(flag("--dcd-out", "")).write_text(dcd or "")
         print(json.dumps({"registry": allowed, "digest": digest,
@@ -654,10 +807,10 @@ def main(argv):
         return 0
 
     if mode == "predicate":
-        if len(args) != 3:
+        if len(args) != 4:
             print(USAGE, file=sys.stderr)
             return 2
-        print(json.dumps(build_predicate(args[0], args[1], args[2]), sort_keys=True))
+        print(json.dumps(build_predicate(args[0], args[1], args[2], args[3]), sort_keys=True))
         return 0
 
     if mode == "verify":
@@ -671,7 +824,10 @@ def main(argv):
                               ("identity", "--identity"), ("issuer", "--issuer"),
                               ("repository", "--repository"), ("ref", "--ref"),
                               ("workflow_file", "--workflow-file"),
-                              ("build_type", "--build-type"), ("workflow_sha", "--workflow-sha")):
+                              ("build_type", "--build-type"),
+                              ("source_sha", "--pinned-source"),
+                              ("tools_sha", "--pinned-tools"),
+                              ("workflow_sha", "--workflow-sha")):
             val = flag(flagname)
             if val is not None:
                 bindings[key] = val
@@ -682,10 +838,16 @@ def main(argv):
             return 1
         apply_path = flag("--apply")
         if apply_path:
+            # Writing the lock requires an EXPLICIT owner authorization
+            # (--apply-lock true == inputs.apply_lock == true). Without it the
+            # check-only result is emitted but nothing is written.
+            if flag("--apply-lock") != "true":
+                print("LOCK UPDATE NOT ALLOWED: --apply requires --apply-lock true", file=sys.stderr)
+                return 1
             try:
-                apply_lock_pair(apply_path, evidence["registry_host"], evidence["digest"])
-                print("LOCK UPDATED: %s -> registry=%s digest=%s" % (
-                    apply_path, evidence["registry_host"], evidence["digest"]))
+                apply_lock_pair(apply_path, evidence["image_ref"], evidence["digest"])
+                print("LOCK UPDATED: %s -> image=%s digest=%s" % (
+                    apply_path, evidence["image_ref"], evidence["digest"]))
             except Exception as exc:
                 print("LOCK UPDATE NOT ALLOWED: apply failed: %s" % exc, file=sys.stderr)
                 return 1

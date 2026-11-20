@@ -6,12 +6,12 @@ secrets, no stand access, no change to the real locks), that the FULL chain
 
     owner gate -> trusted registry -> verified signed statement -> lock pair
 
-behaves exactly as review #52 requires:
+behaves exactly as review #52 (and the review #55 tightenings) require:
 
   * POSITIVE: a fully-valid evidence bundle is ALLOWED and the CLI writes the
-    (registry, digest) pair into a SCRATCH lock only; the real lock is untouched.
-  * BLOCKING DISCREPANCY 1 (owner gate): missing / expired / foreign admission
-    => NOT allowed, scratch lock byte-identical.
+    (full image, digest) pair into a SCRATCH lock only; the real lock is untouched.
+  * BLOCKING DISCREPANCY 1 (owner gate): missing / expired / foreign admission /
+    unconfirmed actor / run replay => NOT allowed, scratch lock byte-identical.
   * BLOCKING DISCREPANCY 2 (source/tools): tools smuggled into the source tree,
     source substituted with a new HEAD => NOT allowed.
   * BLOCKING DISCREPANCY 3 (registry): foreign destination refused BEFORE any
@@ -36,6 +36,7 @@ import forgejo_lock_gate as gate
 
 PINNED = "d22aa8f1170deaf09580518916ea02c7c4d8bfba"
 TOOLS = "a" * 40
+WORKFLOW = "c" * 40
 OWNER = "owner-otus@example"
 REGISTRY = "registry.example"
 IMAGE = REGISTRY + "/aiopslab/otus-diplom-portal"
@@ -45,24 +46,44 @@ NOW = 2000000000  # 2033-05-18T03:33:20Z
 MANIFEST = b'{"schemaVersion":2,"mediaType":"application/vnd.oci.image.manifest.v1+json"}'
 DIGEST = "sha256:" + hashlib.sha256(MANIFEST).hexdigest()
 
-BINDINGS = {"owner": OWNER, "trusted_registry": REGISTRY, "workflow_sha": TOOLS}
+# Independent policy bindings (what the workflow CLI passes via --owner /
+# --trusted-registry / --pinned-source / --pinned-tools / --workflow-sha).
+BINDINGS = {
+    "owner": OWNER,
+    "trusted_registry": REGISTRY,
+    "source_sha": PINNED,
+    "tools_sha": TOOLS,
+    "workflow_sha": WORKFLOW,
+}
 
+# A real-format lock: `image.registry` holds the FULL image name (review #55
+# item 5), surrounded by sections that must survive the write untouched.
 LOCK_TEMPLATE = (
+    'baseline: "P8C-R1"\n'
+    'verification_status: NOT_VERIFIED\n'
+    '\n'
+    'application:\n'
+    '  go: "1.27.3"\n'
+    '\n'
     'image:\n'
     '  registry: "%s"\n'
     '  digest: "NOT_VERIFIED"   # final digest only after reproducible build (G2)\n'
     '  base: "scratch"\n'
     '  base_digest: "NOT_APPLICABLE_EMPTY_BASE"\n'
-) % REGISTRY
+    '\n'
+    'notes:\n'
+    '  - "tool release metadata recorded from source-verification.json."\n'
+) % IMAGE
 
 
 def iso(epoch):
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(epoch))
 
 
-def make_statement(digest=DIGEST, image=IMAGE, source=PINNED, workflow=TOOLS,
-                   run_id=RUN_ID, builder=None, predicate_type=None, build_type=None):
-    pred = gate.build_predicate(source, workflow, run_id)
+def make_statement(digest=DIGEST, image=IMAGE, source=PINNED, workflow=WORKFLOW,
+                   tools=TOOLS, run_id=RUN_ID, builder=None, predicate_type=None,
+                   build_type=None):
+    pred = gate.build_predicate(source, workflow, tools, run_id)
     if builder is not None:
         pred["builder"]["id"] = builder
     if build_type is not None:
@@ -79,15 +100,14 @@ def baseline():
     """A fully-valid evidence bundle (correct digests/identity/inventory)."""
     return {
         "owner_gate": {
-            "owner": OWNER, "source_sha": PINNED, "workflow_sha": TOOLS,
+            "owner": OWNER, "source_sha": PINNED, "tools_sha": TOOLS, "workflow_sha": WORKFLOW,
             "repository": "aiopslab/otus-diplom", "package": IMAGE,
             "ref": "refs/heads/main", "mode": "LIVE",
-            "issued_at_utc": iso(NOW - 60), "expiry_hours": 1, "attempt": 1,
+            "issued_at_utc": iso(NOW - 60), "expiry_hours": 1, "attempt": 1, "run_id": RUN_ID,
         },
         "source_sha": PINNED,
-        "pinned_source_sha": PINNED,
-        "workflow_sha": TOOLS,
-        "pinned_workflow_sha": TOOLS,
+        "tools_sha": TOOLS,
+        "workflow_sha": WORKFLOW,
         "source_inventory": list(gate.REQUIRED_SOURCE_FILES),
         "tools_inventory": list(gate.REQUIRED_TOOLS_FILES),
         "registry_host": REGISTRY,
@@ -98,6 +118,7 @@ def baseline():
         "verified_attestation": json.dumps(make_statement()) + "\n",
         "certificate_identity": gate.WORKFLOW_IDENTITY,
         "certificate_issuer": gate.FORGEJO_OIDC_ISSUER,
+        "actor": OWNER,
         "run_id": RUN_ID,
         "run_attempt": "1",
     }
@@ -133,6 +154,20 @@ class TestFullChain(unittest.TestCase):
         self.assertFalse(allowed)
         self.assertIn("foreign owner", reason)
 
+    def test_owner_gate_unconfirmed_actor_not_allowed(self):
+        ev = baseline()
+        ev["actor"] = "intruder@evil.example"  # trusted runtime actor != owner
+        allowed, reason = gate.decide_lock_update(ev, BINDINGS, now=NOW)
+        self.assertFalse(allowed)
+        self.assertIn("actor", reason)
+
+    def test_owner_gate_run_replay_not_allowed(self):
+        ev = baseline()
+        ev["owner_gate"]["run_id"] = "a-different-run"  # gate bound to another run
+        allowed, reason = gate.decide_lock_update(ev, BINDINGS, now=NOW)
+        self.assertFalse(allowed)
+        self.assertIn("run_id", reason)
+
     # --- Blocking discrepancy 2: source/tools separation -------------------
 
     def test_tools_smuggled_into_source_not_allowed(self):
@@ -148,6 +183,20 @@ class TestFullChain(unittest.TestCase):
         allowed, reason = gate.decide_lock_update(ev, BINDINGS, now=NOW)
         self.assertFalse(allowed)
         self.assertIn("mismatch", reason)
+
+    def test_tools_sha_not_bound_not_allowed(self):
+        ev = baseline()
+        ev["tools_sha"] = "b" * 40
+        allowed, reason = gate.decide_lock_update(ev, BINDINGS, now=NOW)
+        self.assertFalse(allowed)
+        self.assertIn("tools_sha", reason)
+
+    def test_workflow_sha_not_bound_not_allowed(self):
+        ev = baseline()
+        ev["workflow_sha"] = "b" * 40
+        allowed, reason = gate.decide_lock_update(ev, BINDINGS, now=NOW)
+        self.assertFalse(allowed)
+        self.assertIn("workflow_sha", reason)
 
     # --- Blocking discrepancy 3: trusted registry --------------------------
 
@@ -205,6 +254,14 @@ class TestFullChain(unittest.TestCase):
         self.assertFalse(allowed)
         self.assertIn("materials", reason)
 
+    def test_tools_material_swap_not_allowed(self):
+        ev = baseline()
+        st = make_statement(tools="b" * 40)
+        ev["verified_attestation"] = json.dumps(st) + "\n"
+        allowed, reason = gate.decide_lock_update(ev, BINDINGS, now=NOW)
+        self.assertFalse(allowed)
+        self.assertIn("tools SHA", reason)
+
     def test_another_run_not_allowed(self):
         ev = baseline()
         st = make_statement(run_id="different-run-id")
@@ -237,13 +294,13 @@ class TestFullChain(unittest.TestCase):
 
 
 class TestCliApplyScratchLock(unittest.TestCase):
-    """End-to-end CLI: positive writes the (registry, digest) pair into a SCRATCH
+    """End-to-end CLI: positive writes the (full image, digest) pair into a SCRATCH
     lock; every discrepancy leaves it byte-identical. The REAL portal/versions.lock
-    is never touched."""
+    is never touched. Writing additionally requires --apply-lock true."""
 
     GATE_PY = Path(__file__).parent / "forgejo_lock_gate.py"
 
-    def _run(self, evidence, apply=True):
+    def _run(self, evidence, apply=True, apply_lock=True):
         # The subprocess gates on the REAL clock, so rebase the gate's issued_at
         # to now (offline harness keeps the gate live without a --now bypass).
         ev = dict(evidence)
@@ -261,18 +318,30 @@ class TestCliApplyScratchLock(unittest.TestCase):
             ev_path.write_text(json.dumps(ev))
             cmd = [sys.executable, str(self.GATE_PY), "verify", str(ev_path),
                    "--owner", OWNER, "--trusted-registry", REGISTRY,
-                   "--workflow-sha", TOOLS]
+                   "--pinned-source", PINNED, "--pinned-tools", TOOLS,
+                   "--workflow-sha", WORKFLOW]
             if apply:
                 cmd += ["--apply", str(lock)]
+                if apply_lock:
+                    cmd += ["--apply-lock", "true"]
             r = subprocess.run(cmd, capture_output=True, text=True)
             return r, lock.read_text()
 
     def test_positive_writes_scratch_lock_pair(self):
         r, text = self._run(baseline())
         self.assertEqual(r.returncode, 0, r.stderr)
-        self.assertIn('registry: "%s"' % REGISTRY, text)
+        self.assertIn('registry: "%s"' % IMAGE, text)
         self.assertIn('digest: "%s"' % DIGEST, text)
-        self.assertNotIn("NOT_VERIFIED", text)
+        self.assertNotIn('digest: "NOT_VERIFIED"', text)
+        # other sections preserved
+        self.assertIn('go: "1.27.3"', text)
+        self.assertIn('base: "scratch"', text)
+
+    def test_apply_without_apply_lock_authorization_refused(self):
+        r, text = self._run(baseline(), apply=True, apply_lock=False)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertEqual(text, LOCK_TEMPLATE)  # byte-identical (no authorization)
+        self.assertIn("apply-lock", r.stderr)
 
     def test_owner_gate_foreign_leaves_lock_untouched(self):
         ev = baseline()
@@ -305,30 +374,59 @@ class TestCliApplyScratchLock(unittest.TestCase):
 
 
 class TestWorkflowStructuralOrder(unittest.TestCase):
-    """The owner gate must be the FIRST release-job check, before the login/build/
-    push/sign steps — verified structurally on the (inactive) template."""
+    """The owner gate must run in an UNPRIVILEGED preflight job that has NO release
+    credentials, and the release job must depend on it — verified structurally on
+    the (inactive) template."""
 
-    def test_owner_gate_precedes_login_build(self):
+    def _doc(self):
         import yaml
         template = Path(__file__).parent / "p8c-portal-forgejo-release.yml.template"
-        doc = yaml.safe_load(template.read_text())
+        return yaml.safe_load(template.read_text())
+
+    def test_owner_gate_lives_in_unprivileged_preflight(self):
+        doc = self._doc()
+        jobs = doc["jobs"]
+        self.assertIn("preflight", jobs)
+        pf = jobs["preflight"]
+        perms = pf.get("permissions", {})
+        # preflight MUST NOT carry release credentials
+        self.assertEqual(perms.get("packages"), None)
+        self.assertEqual(perms.get("id-token"), None)
+        names = [(s.get("name") or "") for s in pf["steps"] if isinstance(s, dict)]
+        self.assertTrue(any(n.startswith("Verify owner gate") for n in names),
+                        "owner gate step must live in the preflight job")
+
+    def test_release_job_needs_preflight(self):
+        doc = self._doc()
         jobs = doc["jobs"]
         self.assertIn("release", jobs)
-        names = [s["name"] for s in jobs["release"]["steps"] if isinstance(s, dict) and "name" in s]
-        gate_idx = next(i for i, n in enumerate(names) if n.startswith("Verify owner gate"))
-        login_idx = next(i for i, n in enumerate(names) if n.startswith("Login to registry"))
-        build_idx = next(i for i, n in enumerate(names) if n.startswith("Build OCI image"))
-        self.assertLess(gate_idx, login_idx)
-        self.assertLess(gate_idx, build_idx)
+        self.assertEqual(jobs["release"]["needs"], "preflight")
 
-    def test_owner_gate_input_required(self):
-        import yaml
-        template = Path(__file__).parent / "p8c-portal-forgejo-release.yml.template"
-        doc = yaml.safe_load(template.read_text())
-        # PyYAML 1.1 coerces bare `on` to True; read the trigger through either key.
-        on = doc.get("on", doc.get(True, {}))
-        inputs = on.get("workflow_dispatch", {}).get("inputs", {})
-        self.assertTrue(inputs.get("release_gate", {}).get("required"))
+    def test_owner_gate_step_uses_env_secret_not_shell_interpolation(self):
+        doc = self._doc()
+        jobs = doc["jobs"]
+        pf_steps = jobs["preflight"]["steps"]
+        gate_step = next(s for s in pf_steps if isinstance(s, dict)
+                         and (s.get("name") or "").startswith("Verify owner gate"))
+        # Gate JSON must arrive via env (secret), never interpolated into `run:`.
+        self.assertEqual(gate_step["env"]["OWNER_GATE"], "${{ secrets.OWNER_GATE }}")
+        run = gate_step["run"]
+        self.assertNotIn("inputs.release_gate", run)
+        # owner confirmed against the trusted runtime actor + actual repo/ref + run id
+        self.assertIn("--actor \"${{ github.actor }}\"", run)
+        self.assertIn("--repository \"${{ github.repository }}\"", run)
+        self.assertIn("--ref \"${{ github.ref }}\"", run)
+        self.assertIn("--run-id \"${{ github.run_id }}\"", run)
+        self.assertIn("--run-attempt \"${{ github.run_attempt }}\"", run)
+
+    def test_apply_lock_targets_source_tree_real_lock(self):
+        doc = self._doc()
+        jobs = doc["jobs"]
+        apply_step = next(s for s in jobs["release"]["steps"] if isinstance(s, dict)
+                          and (s.get("name") or "").startswith("Apply verified digest"))
+        self.assertIn("--apply src/portal/versions.lock", apply_step["run"])
+        self.assertIn("--apply-lock true", apply_step["run"])
+        self.assertEqual(apply_step["if"], "inputs.apply_lock == true")
 
 
 if __name__ == "__main__":
