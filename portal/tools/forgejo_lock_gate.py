@@ -41,11 +41,13 @@ written into ``portal/versions.lock:image``:
      source material, tools material, workflow SHA and run id all come from that
      statement, never from a locally-built predicate. The pinned SHAs are taken
      from the INDEPENDENT policy bindings (module constants / CLI flags), never
-     from the self-reported evidence bundle. review #58 item 4: the expected
-     workflow SHA is stored OUTSIDE the pinned revision (carried out-of-band by
-     the owner document, not embedded in the workflow file), cross-checked against
-     the runtime GITHUB_WORKFLOW_SHA in preflight, and the predicate is built from
-     already-verified values.
+     from the self-reported evidence bundle. review #61 item 1: the workflow SHA
+     is a THIRD independent quantity — the policy pin is a SEPARATE protected
+     out-of-band value (a repo secret supplied by the Owner), NOT the owner gate
+     document's own ``workflow_sha``. The CLI REQUIRES ``--pinned-workflow`` (no
+     document fallback) and the preflight triple-checks policy pin == owner
+     document == observed runtime GITHUB_WORKFLOW_SHA before any release rights;
+     an absent / mismatched pin stops the preflight fail-closed.
 
 Every function returns ``(ok: bool, reason: str)``; any missing/mismatched binding
 is a rejection, never a pass. The module does NO network I/O of its own: the
@@ -214,12 +216,17 @@ def verify_owner_gate(gate, *, expected_owner, expected_source_sha,
     same gate is refused. Missing / expired / foreign / replay admission are all
     refusals.
 
-    review #58 item 1/4: repository, ref and workflow SHA are now TRIPLE-checked —
-    the policy-ALLOWED value (``expected_*``), the OBSERVED runtime context
-    (``observed_*``) and the owner document must all agree. This closes the gap
-    where the document was compared only to the runtime context but never to the
-    policy-allowed repository/ref, and adds the workflow-SHA check that was
-    previously absent before release rights were granted.
+    review #58 item 1/4 + review #61 item 1: repository, ref and workflow SHA
+    are now TRIPLE-checked — the policy-ALLOWED value (``expected_*``), the
+    OBSERVED runtime context (``observed_*``) and the owner document must all
+    agree. For the workflow SHA specifically the ``expected_workflow_sha`` is the
+    INDEPENDENT protected out-of-band policy pin (never the document's own
+    ``workflow_sha``), so the check is over THREE distinct quantities and a
+    document+observed agreement that contradicts the policy pin is still refused.
+    This closes the gap where the document was compared only to the runtime
+    context but never to the policy-allowed repository/ref, and adds the
+    workflow-SHA check that was previously absent before release rights were
+    granted.
     """
     if not isinstance(gate, dict):
         return False, "owner gate: not an object"
@@ -791,6 +798,44 @@ def verify_lock_image_agreement(lock_path, image_ref):
     return False, "lock image registry marker not found"
 
 
+def _line_spans(raw):
+    """Split ``raw`` into ``(start, end)`` byte spans, one per line.
+
+    ``end`` includes the line terminator (``\\n``, ``\\r\\n`` or a lone ``\\r``),
+    or equals ``len(raw)`` for a final line that has NO trailing newline. Each
+    line's exact original terminator is preserved so mixed / CRLF endings and an
+    absent trailing newline are never normalized away.
+    """
+    spans = []
+    i = 0
+    n = len(raw)
+    while i < n:
+        start = i
+        while i < n and raw[i:i + 1] not in (b"\n", b"\r"):
+            i += 1
+        if i < n:
+            if raw[i:i + 1] == b"\r":
+                i += 1
+                if i < n and raw[i:i + 1] == b"\n":
+                    i += 1
+            else:
+                i += 1
+        spans.append((start, i))
+    return spans
+
+
+def _line_content(raw, start, end):
+    """The line's CONTENT bytes (its terminator stripped)."""
+    e = end
+    if e > start and raw[e - 1:e] == b"\n":
+        e -= 1
+        if e > start and raw[e - 1:e] == b"\r":
+            e -= 1
+    elif e > start and raw[e - 1:e] == b"\r":
+        e -= 1
+    return raw[start:e]
+
+
 def apply_lock_pair(lock_path, image_ref, digest):
     """Write the verified digest next to the FULL image name in a
     portal/versions.lock style file, atomically (tmp + os.replace).
@@ -799,25 +844,38 @@ def apply_lock_pair(lock_path, image_ref, digest):
     equal the verified ``image_ref`` — a digest from one image is never recorded
     against another, and a foreign image is never rewritten automatically. Only
     the ``image.digest`` line (which must still be ``NOT_VERIFIED``) is changed;
-    every other section is preserved byte-for-byte. Called only after
-    ``decide_lock_update()`` returns allowed.
+    every OTHER byte is preserved byte-for-byte, including each line's original
+    terminator (LF / CRLF / mixed) and an absent trailing newline. Called only
+    after ``decide_lock_update()`` returns allowed.
+
+    review #61 item 2: the write is performed on the RAW bytes and the new digest
+    line is spliced into the original byte stream at the exact span of the old
+    digest line, reusing the old line's own terminator. ``read_text()``'s newline
+    normalization (which silently converted CRLF -> LF and thus rewrote every
+    line) can no longer corrupt the rest of the file; a defensive byte-range +
+    line-count check refuses the write if ANY byte outside the digest line would
+    change.
     """
-    text = Path(lock_path).read_text()
-    lines = text.split("\n")
+    raw = Path(lock_path).read_bytes()
+    spans = _line_spans(raw)
+
+    def content(i):
+        s, e = spans[i]
+        return _line_content(raw, s, e).decode("utf-8")
 
     # Locate the `image:` section header and scan only its children (more
     # indented than the header), so unrelated sections are never touched.
     img_idx = None
-    for i, ln in enumerate(lines):
-        if ln.strip() == "image:":
+    for i in range(len(spans)):
+        if content(i).strip() == "image:":
             img_idx = i
             break
     if img_idx is None:
         raise RuntimeError("lock image: section not found")
-    base_indent = len(lines[img_idx]) - len(lines[img_idx].lstrip())
+    base_indent = len(content(img_idx)) - len(content(img_idx).lstrip())
     reg_idx = dg_idx = None
-    for i in range(img_idx + 1, len(lines)):
-        ln = lines[i]
+    for i in range(img_idx + 1, len(spans)):
+        ln = content(i)
         if ln.strip() == "":
             continue
         indent = len(ln) - len(ln.lstrip())
@@ -831,34 +889,42 @@ def apply_lock_pair(lock_path, image_ref, digest):
     if reg_idx is None or dg_idx is None:
         raise RuntimeError("lock image registry/digest markers not found")
 
-    cur_reg = lines[reg_idx].split(":", 1)[1].strip().strip('"')
+    cur_reg = content(reg_idx).split(":", 1)[1].strip().strip('"')
     if cur_reg != image_ref:
         raise RuntimeError(
             "lock image registry %r != verified image %r (pair mismatch; foreign image not rewritten)"
             % (cur_reg, image_ref))
-    if "NOT_VERIFIED" not in lines[dg_idx]:
+    if "NOT_VERIFIED" not in content(dg_idx):
         raise RuntimeError("lock digest already set (no NOT_VERIFIED marker)")
 
-    indent = lines[dg_idx][:len(lines[dg_idx]) - len(lines[dg_idx].lstrip())]
-    lines[dg_idx] = '%sdigest: "%s"   # verified digest written by forgejo_lock_gate' % (indent, digest)
-    new_text = "\n".join(lines)
+    dg_start, dg_end = spans[dg_idx]
+    dg_content_bytes = _line_content(raw, dg_start, dg_end)
+    # The digest line's ORIGINAL terminator bytes (b"\\n", b"\\r\\n", b"\\r", or
+    # b"" for a final line with no trailing newline) are reused verbatim.
+    ending = raw[dg_start + len(dg_content_bytes):dg_end]
+    indent = dg_content_bytes[:len(dg_content_bytes) - len(dg_content_bytes.lstrip())].decode("utf-8")
+    new_dg_line = ('%sdigest: "%s"   # verified digest written by forgejo_lock_gate'
+                   % (indent, digest)).encode("utf-8") + ending
 
-    # review #58 item 5: verify ALL bytes outside the changed digest line are
-    # unchanged — not just the section markers. If any other line differs (or the
-    # line count changes), refuse instead of writing a partially-mutated lock.
-    before_lines = text.split("\n")
-    after_lines = new_text.split("\n")
-    if len(before_lines) != len(after_lines):
+    # Splice the new digest line into the ORIGINAL bytes: everything outside
+    # [dg_start, dg_end) is byte-identical by construction.
+    new_raw = raw[:dg_start] + new_dg_line + raw[dg_end:]
+
+    # Defensive byte-range + line-count checks (refuse instead of writing a
+    # partially-mutated lock). Everything BEFORE the digest line and everything
+    # AFTER it must be byte-identical to the original; the digest line's own
+    # terminator is preserved because ``new_dg_line`` ends with the reused
+    # ``ending`` bytes.
+    if new_raw[:dg_start] != raw[:dg_start]:
+        raise RuntimeError("lock apply would modify bytes before the digest line; refusing")
+    if new_raw[dg_start + len(new_dg_line):] != raw[dg_end:]:
+        raise RuntimeError("lock apply would modify bytes after the digest line; refusing")
+    if len(_line_spans(new_raw)) != len(spans):
         raise RuntimeError("lock apply would change the line count; refusing")
-    diffs = [i for i in range(len(before_lines)) if before_lines[i] != after_lines[i]]
-    if diffs != [dg_idx]:
-        raise RuntimeError(
-            "lock apply would modify bytes outside the digest line (diff at lines %r); refusing"
-            % diffs)
 
     tmp = str(lock_path) + ".tmp"
-    with open(tmp, "w") as f:
-        f.write(new_text)
+    with open(tmp, "wb") as f:
+        f.write(new_raw)
     os.replace(tmp, lock_path)
     return 1
 
@@ -911,14 +977,18 @@ def main(argv):
         except Exception:
             print("OWNER GATE NOT VERIFIED: unreadable", file=sys.stderr)
             return 1
-        # review #58 item 4: the workflow SHA pin is carried OUT-OF-BAND by the
-        # owner gate document (it cannot be embedded in the workflow file itself —
-        # that would be circular). When --pinned-workflow is omitted, the policy
-        # pin is the document's own workflow_sha; the preflight still cross-checks
-        # it against the observed runtime GITHUB_WORKFLOW_SHA.
+        # review #61 item 1: --pinned-workflow is REQUIRED and must be the
+        # INDEPENDENT protected out-of-band policy pin (a repo secret supplied by
+        # the Owner, SEPARATE from the owner gate document). There is NO fallback
+        # to the document's own workflow_sha — that would collapse the policy pin
+        # and the document into one quantity and reduce the check to two values
+        # (document vs runtime) instead of three. An absent/invalid pin stops the
+        # preflight fail-closed BEFORE any release rights are granted.
         pinned_workflow = flag("--pinned-workflow")
-        if pinned_workflow is None:
-            pinned_workflow = gate.get("workflow_sha", "") if isinstance(gate, dict) else ""
+        if not valid_sha(pinned_workflow):
+            print("OWNER GATE NOT VERIFIED: --pinned-workflow (independent workflow "
+                  "SHA policy pin) missing/invalid", file=sys.stderr)
+            return 1
         ok, reason = verify_owner_gate(
             gate,
             expected_owner=flag("--owner", EXPECTED_OWNER),

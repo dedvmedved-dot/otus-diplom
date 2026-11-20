@@ -217,6 +217,17 @@ class TestOwnerGate(unittest.TestCase):
         self.assertFalse(ok)
         self.assertIn("observed ref", reason)
 
+    def test_policy_workflow_sha_differs_from_agreeing_doc_and_runtime(self):
+        # review #61 item 1: the owner document and the observed runtime AGREE on
+        # the workflow SHA, but the INDEPENDENT policy pin differs -> refused. The
+        # check is over THREE distinct quantities (policy pin / document /
+        # runtime), so a document+observed agreement cannot paper over a wrong
+        # policy pin (previously the policy pin was the document's own value).
+        ok, reason = self._verify(make_gate(workflow=WORKFLOW),   # doc == runtime
+                                  expected_workflow_sha="b" * 40)  # policy differs
+        self.assertFalse(ok)
+        self.assertIn("workflow_sha", reason)
+
 
 class TestFileInventory(unittest.TestCase):
     def test_valid(self):
@@ -709,6 +720,79 @@ class TestApplyLockPair(unittest.TestCase):
             self.assertEqual(len(diffs), 1, "expected exactly one changed line, got %r" % diffs)
             self.assertIn("digest:", before[diffs[0]])
             self.assertIn(DIGEST, after[diffs[0]])
+
+    # --- review #61 item 2: byte-level line-ending preservation --------------
+
+    def test_apply_preserves_crlf_line_endings(self):
+        # The review's exact failure: read_text() normalized CRLF -> LF so a CRLF
+        # lock came out with all 47 line endings rewritten. Now the raw bytes are
+        # preserved — every CRLF survives, and ONLY the digest line changes.
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as td:
+            lock = Path(td) / "versions.lock"
+            crlf = REAL_LOCK.replace("\n", "\r\n")
+            lock.write_bytes(crlf.encode())
+            gate.apply_lock_pair(lock, IMAGE, DIGEST)
+            before = crlf.encode().splitlines(keepends=True)
+            after = lock.read_bytes().splitlines(keepends=True)
+            self.assertEqual(len(before), len(after))
+            diffs = [i for i in range(len(before)) if before[i] != after[i]]
+            self.assertEqual(len(diffs), 1, "expected 1 changed line, got %r" % diffs)
+            self.assertIn(b"digest:", before[diffs[0]])
+            self.assertIn(DIGEST.encode(), after[diffs[0]])
+            # CRLF terminators survive byte-for-byte (the review saw 47 -> 0).
+            self.assertEqual(after.count(b"\r\n"), before.count(b"\r\n"))
+            self.assertGreater(after.count(b"\r\n"), 0)
+            self.assertEqual(before.count(b"\n"), after.count(b"\n"))
+
+    def test_apply_preserves_mixed_line_endings(self):
+        # Some lines CRLF, some LF (digest line stays LF): only the digest line's
+        # CONTENT changes; every line keeps its own original terminator.
+        import tempfile
+        from pathlib import Path
+        lines = REAL_LOCK.rstrip("\n").split("\n")
+        mixed = []
+        for i, ln in enumerate(lines):
+            ending = "\r\n" if i in (2, 5) else "\n"  # digest line (11) stays LF
+            mixed.append(ln + ending)
+        raw = "".join(mixed)
+        with tempfile.TemporaryDirectory() as td:
+            lock = Path(td) / "versions.lock"
+            lock.write_bytes(raw.encode())
+            gate.apply_lock_pair(lock, IMAGE, DIGEST)
+            before = raw.encode().splitlines(keepends=True)
+            after = lock.read_bytes().splitlines(keepends=True)
+            self.assertEqual(len(before), len(after))
+            diffs = [i for i in range(len(before)) if before[i] != after[i]]
+            self.assertEqual(len(diffs), 1, diffs)
+            self.assertIn(b"digest:", before[diffs[0]])
+            # the digest line's OWN terminator is unchanged (still LF, not CRLF)
+            self.assertTrue(after[diffs[0]].endswith(b"\n"))
+            self.assertFalse(after[diffs[0]].endswith(b"\r\n"))
+            # CRLF lines keep CRLF
+            self.assertEqual(after.count(b"\r\n"), before.count(b"\r\n"))
+
+    def test_apply_preserves_absent_trailing_newline(self):
+        # A lock with NO trailing newline must keep the final line unterminated;
+        # only the digest line changes.
+        import tempfile
+        from pathlib import Path
+        body = REAL_LOCK.rstrip("\n")
+        with tempfile.TemporaryDirectory() as td:
+            lock = Path(td) / "versions.lock"
+            lock.write_bytes(body.encode())
+            gate.apply_lock_pair(lock, IMAGE, DIGEST)
+            after = lock.read_bytes()
+            self.assertFalse(after.endswith(b"\n"), "trailing newline must stay absent")
+            self.assertFalse(after.endswith(b"\r\n"))
+            before = body.encode().splitlines(keepends=True)
+            after_lines = after.splitlines(keepends=True)
+            self.assertEqual(len(before), len(after_lines))
+            diffs = [i for i in range(len(before)) if before[i] != after_lines[i]]
+            self.assertEqual(len(diffs), 1, diffs)
+            self.assertIn(b"digest:", before[diffs[0]])
+            self.assertIn(DIGEST.encode(), after_lines[diffs[0]])
 
     def test_lock_image_agreement_matches(self):
         import tempfile

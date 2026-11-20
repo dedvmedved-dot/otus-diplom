@@ -475,6 +475,10 @@ class TestWorkflowStructuralOrder(unittest.TestCase):
                          and (s.get("name") or "").startswith("Verify owner gate"))
         # Gate JSON must arrive via env (secret), never interpolated into `run:`.
         self.assertEqual(gate_step["env"]["OWNER_GATE"], "${{ secrets.OWNER_GATE }}")
+        # review #61 item 1: the workflow SHA policy pin is a SEPARATE protected
+        # out-of-band secret (not the owner document), passed as --pinned-workflow.
+        self.assertEqual(gate_step["env"]["POLICY_WORKFLOW_SHA"],
+                         "${{ secrets.POLICY_WORKFLOW_SHA }}")
         run = gate_step["run"]
         self.assertNotIn("inputs.release_gate", run)
         # review #58 item 1/4: the POLICY-ALLOWED repository/ref (env.POLICY_*) is
@@ -484,6 +488,7 @@ class TestWorkflowStructuralOrder(unittest.TestCase):
         # + run id.
         self.assertIn("--repository \"${{ env.POLICY_REPOSITORY }}\"", run)
         self.assertIn("--ref \"${{ env.POLICY_REF }}\"", run)
+        self.assertIn("--pinned-workflow \"$POLICY_WORKFLOW_SHA\"", run)
         self.assertIn("--observed-repository \"${{ github.repository }}\"", run)
         self.assertIn("--observed-ref \"${{ github.ref }}\"", run)
         self.assertIn("--observed-workflow-sha \"$GITHUB_WORKFLOW_SHA\"", run)

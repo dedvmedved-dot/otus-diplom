@@ -1,0 +1,25 @@
+[LF]
+  before: lines=20 CRLF=0 LF=20 trailing_newline=True
+  after : lines=20 CRLF=0 LF=20 trailing_newline=True
+  changed_line_indices=[11] (must be exactly one, the digest line)
+  OK: exactly one line changed; CRLF count + trailing-newline preserved
+
+[CRLF]
+  before: lines=20 CRLF=20 LF=20 trailing_newline=True
+  after : lines=20 CRLF=20 LF=20 trailing_newline=True
+  changed_line_indices=[11] (must be exactly one, the digest line)
+  OK: exactly one line changed; CRLF count + trailing-newline preserved
+
+[MIXED]
+  before: lines=20 CRLF=2 LF=20 trailing_newline=True
+  after : lines=20 CRLF=2 LF=20 trailing_newline=True
+  changed_line_indices=[11] (must be exactly one, the digest line)
+  OK: exactly one line changed; CRLF count + trailing-newline preserved
+
+[NO_TRAILING_NEWLINE]
+  before: lines=20 CRLF=0 LF=19 trailing_newline=False
+  after : lines=20 CRLF=0 LF=19 trailing_newline=False
+  changed_line_indices=[11] (must be exactly one, the digest line)
+  OK: exactly one line changed; CRLF count + trailing-newline preserved
+
+BYTE_PRESERVATION = VERIFIED (LF / CRLF / mixed / no-trailing-newline)

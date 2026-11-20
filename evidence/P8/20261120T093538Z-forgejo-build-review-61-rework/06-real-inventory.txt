@@ -1,0 +1,30 @@
+# Real-layout inventory + boundary facts (review #61 rework, offline)
+
+Run id: 20261120T093538Z-forgejo-build-review-61-rework
+Commit (this rework, will be the new head): see result.md (NEW SHA recorded post-commit).
+Branch: engineer/49-forgejo-build-spec.
+
+## Source pin (UNCHANGED)
+d22aa8f1170deaf09580518916ea02c7c4d8bfba
+
+## Full-tree completeness pin (UNCHANGED, re-derived)
+PINNED_SOURCE_TREE_SHA256 = e273368f01ef242d1fe267647d0c8c1c18f84cfc52e99f9d3974a51bccc13e01
+(command: sha256 of the SORTED `git ls-tree -r --name-only d22aa8f…` list, 4574 files)
+
+## Real locks NOT modified
+git diff -- portal/versions.lock portal/tools/pins.lock.json  ->  (empty)
+(apply_lock_pair is exercised only on SCRATCH copies in temp dirs; the real
+portal/versions.lock and portal/tools/pins.lock.json are byte-identical to HEAD.)
+
+## Files changed by this rework (all under portal/tools/, plus evidence/)
+  M portal/tools/forgejo_lock_gate.py
+  M portal/tools/p8c-portal-forgejo-release.yml.template
+  M portal/tools/test_forgejo_lock_gate.py
+  M portal/tools/test_forgejo_offline_integration.py
+  M portal/tools/test_forgejo_boundary_regressions.py
+  ?? evidence/P8/20261120T093538Z-forgejo-build-review-61-rework/
+
+## Boundaries respected
+CI not run; no build/push of the image; no sign/attest; no workflow publication;
+no change to the real portal/versions.lock or portal/tools/pins.lock.json
+(only scratch copies exercised). Digest/provenance remain NOT_VERIFIED.

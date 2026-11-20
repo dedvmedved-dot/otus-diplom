@@ -338,5 +338,95 @@ class TestWorkspaceRealLock(unittest.TestCase):
             self.assertIn("pair mismatch", r.stderr)
 
 
+class TestOwnerGateCliPolicyPin(unittest.TestCase):
+    """review #61 item 1: the owner-gate CLI REQUIRES --pinned-workflow (the
+    INDEPENDENT protected out-of-band policy pin). Omitting it must fail-closed,
+    and a policy pin that contradicts an agreeing document+runtime must be
+    refused — proving the real CLI/template boundary, not just the pure
+    function."""
+
+    GATE_PY = Path(__file__).parent / "forgejo_lock_gate.py"
+    PKG = "registry.example/aiopslab/otus-diplom-portal"
+
+    def _gate_json(self, workflow=WORKFLOW):
+        return json.dumps({
+            "owner": OWNER, "source_sha": PINNED, "tools_sha": TOOLS,
+            "workflow_sha": workflow,
+            "repository": "aiopslab/otus-diplom",
+            "package": self.PKG, "ref": "refs/heads/main", "mode": "LIVE",
+            "issued_at_utc": iso(time.time() - 60), "expiry_hours": 1,
+            "attempt": 1, "run_id": RUN_ID,
+        })
+
+    def _run(self, gate_text, pinned_workflow):
+        with tempfile.TemporaryDirectory() as td:
+            td = Path(td)
+            gate_file = td / "gate.json"
+            gate_file.write_text(gate_text)
+            cmd = [sys.executable, str(self.GATE_PY), "owner-gate", str(gate_file),
+                   "--owner", OWNER, "--pinned-source", PINNED, "--pinned-tools", TOOLS,
+                   "--package", self.PKG, "--repository", "aiopslab/otus-diplom",
+                   "--ref", "refs/heads/main", "--actor", OWNER, "--run-id", RUN_ID,
+                   "--run-attempt", "1",
+                   "--observed-repository", "aiopslab/otus-diplom",
+                   "--observed-ref", "refs/heads/main",
+                   "--observed-workflow-sha", WORKFLOW]
+            if pinned_workflow is not None:
+                cmd += ["--pinned-workflow", pinned_workflow]
+            return subprocess.run(cmd, capture_output=True, text=True)
+
+    def test_missing_pinned_workflow_fails_closed(self):
+        r = self._run(self._gate_json(), pinned_workflow=None)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("--pinned-workflow", r.stderr)
+
+    def test_invalid_pinned_workflow_fails_closed(self):
+        r = self._run(self._gate_json(), pinned_workflow="not-a-sha")
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("--pinned-workflow", r.stderr)
+
+    def test_policy_differs_from_agreeing_doc_and_runtime_fails(self):
+        # Document and observed runtime AGREE (both == WORKFLOW), but the
+        # independent policy pin differs -> refused. This is the case the review
+        # flagged: two quantities (document + runtime) must not pass without the
+        # third (policy pin).
+        r = self._run(self._gate_json(workflow=WORKFLOW), pinned_workflow="b" * 40)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("workflow_sha", r.stderr)
+
+    def test_matching_policy_allows(self):
+        r = self._run(self._gate_json(workflow=WORKFLOW), pinned_workflow=WORKFLOW)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn('"owner_gate": true', r.stdout)
+
+
+class TestTemplatePolicyWorkflowPin(unittest.TestCase):
+    """review #61 item 1/4: the template wires the INDEPENDENT policy pin through
+    preflight AND the final verify/apply steps — never using the runtime
+    GITHUB_WORKFLOW_SHA as its own policy pin."""
+
+    def _doc(self):
+        import yaml
+        return yaml.safe_load((Path(__file__).parent / "p8c-portal-forgejo-release.yml.template").read_text())
+
+    def test_release_verify_steps_use_policy_pin_not_runtime(self):
+        doc = self._doc()
+        for name_prefix in ("Gate lock update", "Apply verified digest"):
+            step = next(s for s in doc["jobs"]["release"]["steps"]
+                        if isinstance(s, dict) and (s.get("name") or "").startswith(name_prefix))
+            run = step["run"]
+            self.assertIn("--workflow-sha \"${{ secrets.POLICY_WORKFLOW_SHA }}\"", run)
+            self.assertNotIn("--workflow-sha \"$GITHUB_WORKFLOW_SHA\"", run)
+
+    def test_predicate_still_binds_runtime_workflow_sha(self):
+        # The predicate (SLSA configSource) must bind the ACTUAL executed workflow
+        # SHA (runtime), which preflight already cross-checked against the policy
+        # pin — not a placeholder.
+        doc = self._doc()
+        step = next(s for s in doc["jobs"]["release"]["steps"]
+                    if isinstance(s, dict) and (s.get("name") or "").startswith("SBOM + provenance"))
+        self.assertIn("$GITHUB_WORKFLOW_SHA", step["run"])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
