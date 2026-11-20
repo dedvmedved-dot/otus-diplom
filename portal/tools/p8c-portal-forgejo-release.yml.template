@@ -8,29 +8,50 @@
 # Owner decision (issue #29#1680): trusted build channel = Forgejo
 # aiopslab/otus-diplom, branch main, pinned commit d22aa8f1170deaf09580518916ea02c7c4d8bfba,
 # CI = Forgejo Actions on a self-hosted runner. Verified application digest +
-# SLSA provenance are produced AT BUILD TIME and fixed in images.lock /
-# portal/versions.lock; until the actual build, the lock value is NOT_VERIFIED.
+# SLSA provenance are produced AT BUILD TIME and fixed in portal/versions.lock;
+# until the actual build, the lock value is NOT_VERIFIED.
 #
-# Forgejo adaptation of portal/tools/p8c-portal-release.yml.template (GitHub
-# Actions). Every P0 parameter the Owner passes OUT-OF-BAND is marked with a
-# literal <PLACEHOLDER> below and MUST be substituted before first run — no
-# placeholder value is a real value, and none is invented here.
+# ADMISSION CHAIN (review #52 rework). The release job enforces, in order, before
+# any credential access / build / push / sign:
+#   (1) a MANDATORY verified owner gate (typed document, checked first);
+#   (2) SOURCE and TOOLS are pinned SEPARATELY and checked out into independent
+#       directories; every file the build uses is verified present in its own tree;
+#   (3) the manifest is verified byte-for-byte from the TRUSTED registry only
+#       (credentials are never offered to any other host; unknown destination is
+#       refused before any network request);
+#   (4) the lock gate reads the SIGNED AND VERIFIED in-toto statement of the SAME
+#       run (cosign verify-attestation output), never a locally-built predicate,
+#       and writes the (registry, digest) pair into portal/versions.lock:image only
+#       on explicit owner authorization (inputs.apply_lock == true).
+#
+# Every P0 parameter the Owner passes OUT-OF-BAND is marked with a literal
+# <PLACEHOLDER> below and MUST be substituted before first run — no placeholder
+# value is a real value, and none is invented here.
 name: p8c-portal-forgejo-release
 
 on:
   workflow_dispatch:
     inputs:
       release_gate:
-        description: 'Typed release gate JSON {source_sha, repository, package, workflow_sha, mode=LIVE, issued_at_utc, expiry_hours, attempt=1}; Owner supplies it. Absent => gate fails.'
-        required: false
+        description: 'Typed release gate JSON {owner, source_sha, workflow_sha, repository, package, ref, mode=LIVE, issued_at_utc, expiry_hours, attempt}; Owner supplies it. REQUIRED — absent => gate fails before any release action.'
+        required: true
         type: string
+      apply_lock:
+        description: 'Owner authorization to write the verified digest into portal/versions.lock:image (registry+digest pair). Default false (check-only).'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
 
 env:
-  # Source + toolchain pins are IDENTICAL to the GitHub template / pins.lock.json.
+  # Source and TOOLS are two SEPARATE immutable pins (review #52 item 2). The
+  # source pin is the accepted source tree; the tools pin is the commit that
+  # carries the Forgejo tooling (this gate + tests + workflow template) and is
+  # fixed to its literal at publication time.
   PINNED_SOURCE_SHA: "d22aa8f1170deaf09580518916ea02c7c4d8bfba"
+  PINNED_TOOLS_SHA: "<FORGEJO_TOOLS_SHA>"
   GO_VERSION: "1.27.3"
   GO_SHA256: "65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40"
   BUILDKIT_VERSION: "v0.34.0"
@@ -38,9 +59,11 @@ env:
   SYFT_VERSION: "v1.55.0"
   TRIVY_VERSION: "v0.76.0"
   COSIGN_VERSION: "v3.1.3"
-  # Registry destination is an Owner-supplied P0 parameter (Forgejo package
-  # registry OR trusted internal registry per issue #29#1680). Never hardcoded.
+  # Registry destination + owner identity are Owner-supplied P0 parameters
+  # (Forgejo package registry OR trusted internal registry per issue #29#1680).
+  # Never hardcoded.
   REGISTRY: "<REGISTRY_HOST_OWNER_SUPPLIED>"
+  OWNER_IDENTITY: "<OWNER_IDENTITY_P0>"
   IMAGE: "<REGISTRY_HOST_OWNER_SUPPLIED>/aiopslab/otus-diplom-portal"
   # Forgejo OIDC issuer confirmed by read-only discovery (git.aiopslab.online);
   # workflow identity pattern follows Forgejo Actions OIDC convention.
@@ -63,50 +86,60 @@ jobs:
           --health-cmd "pg_isready -U postgres" --health-interval 10s
           --health-timeout 5s --health-retries 5
     steps:
-      # Forgejo resolves actions/* from its own registry; the GitHub SHA in
-      # pins.lock.json does NOT transfer — pin the Forgejo fork SHA at first run.
+      # SOURCE tree (pinned source SHA) and TOOLS tree (pinned tools SHA) are
+      # checked out into INDEPENDENT directories so the source is never
+      # substituted with a new HEAD.
       - uses: actions/checkout@<FORGEJO_CHECKOUT_SHA>
         with:
           persist-credentials: false
           ref: ${{ env.PINNED_SOURCE_SHA }}
+          path: src
+      - uses: actions/checkout@<FORGEJO_CHECKOUT_SHA>
+        with:
+          persist-credentials: false
+          ref: ${{ env.PINNED_TOOLS_SHA }}
+          path: tools
 
-      # 1) Exact source SHA is the pinned literal, not runtime github.sha/HEAD main.
-      - name: Verify checkout is exactly the pinned source SHA
+      - name: Verify source checkout is exactly the pinned source SHA
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "${{ env.PINNED_SOURCE_SHA }}" || { echo "STOP: checkout != pinned source"; exit 1; }
-          git diff --exit-code
-          git status --short
+          test "$(git -C src rev-parse HEAD)" = "${{ env.PINNED_SOURCE_SHA }}" || { echo "STOP: source != pinned source"; exit 1; }
+          git -C src diff --exit-code
 
-      - name: Install verified Go archive
-        run: bash portal/tools/install-verified-go.sh
+      - name: Verify tools checkout is exactly the pinned tools SHA
+        run: |
+          set -euo pipefail
+          test "$(git -C tools rev-parse HEAD)" = "${{ env.PINNED_TOOLS_SHA }}" || { echo "STOP: tools != pinned tools"; exit 1; }
 
-      - name: Go vet + test + race
-        working-directory: portal
+      - name: Install verified Go archive (from pinned source tree)
+        run: |
+          cd src && bash portal/tools/install-verified-go.sh
+
+      - name: Go vet + test + race (pinned source)
+        working-directory: src/portal
         run: |
           set -euo pipefail
           go mod download && go mod verify
           go vet ./... && go test -count=1 ./... && go test -race -count=1 ./...
 
       - name: DB integration tests (FAIL if unset)
-        working-directory: portal
+        working-directory: src/portal
         env:
-          TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/portal_test
+          TEST_DATABASE_URL: postgres://postgres:***@localhost:5432/portal_test
         run: |
           set -euo pipefail
           test -n "$TEST_DATABASE_URL" || { echo "TEST_DATABASE_URL unset"; exit 1; }
           go test -tags integration -count=1 ./internal/store/ -v
 
-      - name: Helper mock + JS fixture smoke
-        working-directory: portal
+      - name: Helper mock + JS fixture + Forgejo gate tests
         run: |
           set -euo pipefail
-          python3 tools/test_helpers.py -v
-          python3 tools/test_release.py -v
-          python3 tools/test_forgejo_lock_gate.py -v
-          npm ci --ignore-scripts
-          node web/renderer-smoke.test.mjs
-          node web/fixture-smoke.test.mjs
+          python3 src/portal/tools/test_helpers.py -v
+          python3 src/portal/tools/test_release.py -v
+          python3 tools/portal/tools/test_forgejo_lock_gate.py -v
+          cd src/portal && npm ci --ignore-scripts
+          cd src/portal && node web/renderer-smoke.test.mjs
+          cd src/portal && node web/fixture-smoke.test.mjs
 
   release:
     needs: test
@@ -121,23 +154,63 @@ jobs:
         with:
           persist-credentials: false
           ref: ${{ env.PINNED_SOURCE_SHA }}
+          path: src
+      - uses: actions/checkout@<FORGEJO_CHECKOUT_SHA>
+        with:
+          persist-credentials: false
+          ref: ${{ env.PINNED_TOOLS_SHA }}
+          path: tools
 
-      - name: Verify checkout is exactly the pinned source SHA
+      - name: Verify source checkout is exactly the pinned source SHA
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "${{ env.PINNED_SOURCE_SHA }}" || { echo "STOP"; exit 1; }
+          test "$(git -C src rev-parse HEAD)" = "${{ env.PINNED_SOURCE_SHA }}" || { echo "STOP: source != pinned source"; exit 1; }
+          git -C src diff --exit-code
 
-      - name: Deliver typed release gate (data via env, never shell)
-        if: github.event.inputs.release_gate != ''
-        env:
-          RELEASE_GATE: ${{ github.event.inputs.release_gate }}
-        run: printf '%s' "$RELEASE_GATE" > "$RUNNER_TEMP/release-gate.json"
+      - name: Verify tools checkout is exactly the pinned tools SHA
+        run: |
+          set -euo pipefail
+          test "$(git -C tools rev-parse HEAD)" = "${{ env.PINNED_TOOLS_SHA }}" || { echo "STOP: tools != pinned tools"; exit 1; }
 
-      - name: Install verified Go archive
-        run: bash portal/tools/install-verified-go.sh
+      - name: Build per-tree file inventories (git ls-tree)
+        run: |
+          set -euo pipefail
+          git -C src ls-tree -r --name-only HEAD > "$RUNNER_TEMP/src-inventory.txt"
+          git -C tools ls-tree -r --name-only HEAD > "$RUNNER_TEMP/tools-inventory.txt"
+
+      # (1) MANDATORY owner gate — the FIRST release check, BEFORE any credential
+      #     access, build, push, sign or attest. Absent / expired / foreign
+      #     admission => the run stops here.
+      - name: Verify owner gate (mandatory, before any release action)
+        run: |
+          set -euo pipefail
+          printf '%s' "${{ inputs.release_gate }}" > "$RUNNER_TEMP/release-gate.json"
+          python3 tools/portal/tools/forgejo_lock_gate.py owner-gate "$RUNNER_TEMP/release-gate.json" \
+            --owner "${{ env.OWNER_IDENTITY }}" \
+            --pinned-source "${{ env.PINNED_SOURCE_SHA }}" \
+            --pinned-workflow "${{ env.PINNED_TOOLS_SHA }}" \
+            --package "${{ env.IMAGE }}" \
+            --repository "aiopslab/otus-diplom" \
+            --ref "refs/heads/main" \
+            --run-attempt "${{ github.run_attempt }}"
+
+      # (2) Every file the build uses is present in its OWN tree; the tools files
+      #     are not smuggled into the source tree.
+      - name: Verify source/tools file inventory (separate trees)
+        run: |
+          set -euo pipefail
+          python3 tools/portal/tools/forgejo_lock_gate.py inventory \
+            --source-inventory "$RUNNER_TEMP/src-inventory.txt" \
+            --tools-inventory "$RUNNER_TEMP/tools-inventory.txt" \
+            --pinned-source "${{ env.PINNED_SOURCE_SHA }}" \
+            --pinned-workflow "${{ env.PINNED_TOOLS_SHA }}"
+
+      - name: Install verified Go archive (from pinned source tree)
+        run: |
+          cd src && bash portal/tools/install-verified-go.sh
 
       - name: Build binary (reproducible, sourceRevision = pinned SHA)
-        working-directory: portal
+        working-directory: src/portal
         run: |
           set -euo pipefail
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath \
@@ -154,6 +227,7 @@ jobs:
           echo "14813b1fb2a40082114e6d386c6fc5e7dd5298176ce7ee1a18bc33e73e109ac3  buildkit.tar.gz" | sha256sum -c
           tar -xzf buildkit.tar.gz && install -m 0755 bin/buildctl bin/buildkitd /usr/local/bin/
 
+      # Credentials are only accessed AFTER the owner gate has passed.
       - name: Login to registry (owner-supplied read/push credential, never in git)
         run: |
           set -euo pipefail
@@ -163,7 +237,7 @@ jobs:
           REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
 
       - name: Build OCI image (rootless buildctl) + immutable digest from metadata
-        working-directory: portal
+        working-directory: src/portal
         env:
           BUILDKIT_HOST: unix:///tmp/buildkit.sock
         run: |
@@ -175,18 +249,26 @@ jobs:
             --local context=. --local dockerfile=. \
             --output type=image,name=${IMAGE}:candidate,push=true \
             --metadata-file "$RUNNER_TEMP/build-metadata.json"
-          python3 tools/release-check.py digest "$RUNNER_TEMP/build-metadata.json" > "$RUNNER_TEMP/IMAGE_DIGEST"
+          python3 "$GITHUB_WORKSPACE/tools/portal/tools/forgejo_lock_gate.py" digest "$RUNNER_TEMP/build-metadata.json" > "$RUNNER_TEMP/IMAGE_DIGEST"
           echo "IMAGE_DIGEST=$(cat "$RUNNER_TEMP/IMAGE_DIGEST")" >> "$GITHUB_ENV"
 
-      # 2) Digest is re-obtained FROM THE REGISTRY by manifest pull and verified
-      #    against Docker-Content-Digest — never taken from the `candidate` tag.
-      - name: Verify registry digest bytes (manifest, not tag)
+      # (3) Digest is re-obtained FROM THE TRUSTED REGISTRY by manifest pull and
+      #     verified byte-for-byte against Docker-Content-Digest. The fetch is
+      #     host-gated by forgejo_lock_gate.fetch_registry_manifest: any host !=
+      #     the trusted registry is refused BEFORE any network/credential use
+      #     (proven by the offline mock-transport test).
+      - name: Verify registry manifest bytes (trusted registry, not tag)
         env:
           REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
           REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
         run: |
           set -euo pipefail
-          python3 portal/tools/release-check.py registry "$IMAGE_DIGEST" > "$RUNNER_TEMP/registry.json"
+          python3 tools/portal/tools/forgejo_lock_gate.py registry-fetch \
+            --allowed-registry "${{ env.REGISTRY }}" \
+            --image-ref "${{ env.IMAGE }}" \
+            --digest "$IMAGE_DIGEST" \
+            --manifest-out "$RUNNER_TEMP/manifest.bin" \
+            --dcd-out "$RUNNER_TEMP/dcd.txt"
 
       - name: SBOM + vuln scan (syft + trivy, pinned)
         run: |
@@ -207,7 +289,6 @@ jobs:
           echo "4629c757b7618056f8ddd7e2625ae9fdd94c0372a65049520bc7d9df9efc7f71  cosign" | sha256sum -c
           chmod +x cosign && install -m 0755 cosign /usr/local/bin/
 
-      # 3) Bind digest to the trusted run + SLSA provenance (keyless, Forgejo OIDC).
       - name: Sign keyless + verify exact identity/issuer/source
         run: |
           set -euo pipefail
@@ -217,10 +298,15 @@ jobs:
             --certificate-oidc-issuer "${{ env.OIDC_ISSUER }}" \
             -a ref=${{ env.PINNED_SOURCE_SHA }} "${IMAGE}@${IMAGE_DIGEST}"
 
+      # (4) Attest SLSA provenance, then VERIFY it back. The verified statement
+      #     (attestation-provenance.jsonl) is the ONLY provenance authority for
+      #     the lock gate — never the locally-built predicate.
       - name: SBOM + provenance attestation (generate + verify both)
         run: |
           set -euo pipefail
-          python3 portal/tools/release-check.py predicate "${{ env.PINNED_SOURCE_SHA }}" > "$RUNNER_TEMP/provenance.json"
+          python3 tools/portal/tools/forgejo_lock_gate.py predicate \
+            "${{ env.PINNED_SOURCE_SHA }}" "${{ env.PINNED_TOOLS_SHA }}" "${{ github.run_id }}" \
+            > "$RUNNER_TEMP/provenance.json"
           cosign attest --yes --type spdxjson --predicate "$RUNNER_TEMP/sbom.spdx.json" "${IMAGE}@${IMAGE_DIGEST}"
           cosign attest --yes --type slsaprovenance --predicate "$RUNNER_TEMP/provenance.json" "${IMAGE}@${IMAGE_DIGEST}"
           cosign verify-attestation --type slsaprovenance \
@@ -228,33 +314,61 @@ jobs:
             --certificate-oidc-issuer "${{ env.OIDC_ISSUER }}" \
             "${IMAGE}@${IMAGE_DIGEST}" > "$RUNNER_TEMP/attestation-provenance.jsonl"
 
+      - name: Assemble evidence bundle (explicit, single job)
+        run: |
+          set -euo pipefail
+          export SRC_HEAD="$(git -C src rev-parse HEAD)"
+          export TOOLS_HEAD="$(git -C tools rev-parse HEAD)"
+          python3 - <<'PY'
+          import json, os
+          t = os.environ["RUNNER_TEMP"]
+          gate = json.loads(open(t + "/release-gate.json").read())
+          ev = {
+            "owner_gate": gate,
+            "source_sha": os.environ["SRC_HEAD"],
+            "pinned_source_sha": os.environ["PINNED_SOURCE_SHA"],
+            "workflow_sha": os.environ["TOOLS_HEAD"],
+            "pinned_workflow_sha": os.environ["PINNED_TOOLS_SHA"],
+            "source_inventory": [l for l in open(t + "/src-inventory.txt").read().splitlines() if l],
+            "tools_inventory": [l for l in open(t + "/tools-inventory.txt").read().splitlines() if l],
+            "registry_host": os.environ["REGISTRY"],
+            "image_ref": os.environ["IMAGE"],
+            "digest": os.environ["IMAGE_DIGEST"],
+            "manifest_file": t + "/manifest.bin",
+            "docker_content_digest": open(t + "/dcd.txt").read().strip(),
+            "verified_attestation_file": t + "/attestation-provenance.jsonl",
+            "certificate_identity": os.environ["WORKFLOW_IDENTITY"],
+            "certificate_issuer": os.environ["OIDC_ISSUER"],
+            "run_id": os.environ["GITHUB_RUN_ID"],
+            "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+          }
+          json.dump(ev, open(t + "/evidence.json", "w"))
+          PY
+
+      # Final gate: the SAME module the offline harness imports reads the verified
+      # statement (subject/builder/source from it) and the registry/digest pair,
+      # and decides whether the lock may be written. Check-only by default.
+      - name: Gate lock update (verified statement + registry/digest pair)
+        run: |
+          set -euo pipefail
+          python3 tools/portal/tools/forgejo_lock_gate.py verify "$RUNNER_TEMP/evidence.json" \
+            --owner "${{ env.OWNER_IDENTITY }}" \
+            --trusted-registry "${{ env.REGISTRY }}" \
+            --workflow-sha "${{ env.PINNED_TOOLS_SHA }}"
+
+      # Lock write happens ONLY on explicit owner authorization (apply_lock=true)
+      # AND a passing gate; it writes registry+digest as ONE pair.
+      - name: Apply verified digest to lock (owner-authorized)
+        if: inputs.apply_lock == true
+        run: |
+          set -euo pipefail
+          python3 tools/portal/tools/forgejo_lock_gate.py verify "$RUNNER_TEMP/evidence.json" \
+            --owner "${{ env.OWNER_IDENTITY }}" \
+            --trusted-registry "${{ env.REGISTRY }}" \
+            --workflow-sha "${{ env.PINNED_TOOLS_SHA }}" \
+            --apply portal/versions.lock
+
       - name: Cleanup buildkit daemon (always)
         if: always()
         run: |
           if [ -f /tmp/buildkitd.pid ]; then kill "$(cat /tmp/buildkitd.pid)" 2>/dev/null || true; fi
-
-  update-lock:
-    needs: release
-    runs-on: <SELF_HOSTED_RUNNER_LABEL>
-    timeout-minutes: 5
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@<FORGEJO_CHECKOUT_SHA>
-        with:
-          persist-credentials: false
-          ref: ${{ env.PINNED_SOURCE_SHA }}
-
-      # 4) Lock update is gated: SHA == pinned literal AND digest from registry
-      #    AND provenance binds workflow/source/digest — else NO write. The gate
-      #    is the SAME module the negative harness tests (forgejo_lock_gate.py).
-      - name: Gate lock update (SHA + digest + provenance binding)
-        run: |
-          set -euo pipefail
-          python3 portal/tools/forgejo_lock_gate.py \
-            "${{ env.PINNED_SOURCE_SHA }}" \
-            "$(git rev-parse HEAD)" \
-            "$IMAGE_DIGEST" \
-            "${IMAGE}" \
-            "$RUNNER_TEMP/provenance.json" \
-            --apply portal/versions.lock
