@@ -875,6 +875,65 @@ class TestApplyLockPair(unittest.TestCase):
             self.assertIn("symlink", str(cm.exception))
             self.assertEqual(real_lock.read_text(), DEST_LOCK)  # untouched
 
+    # --- review #79: the REFERENCE path (root/images.lock) must also be checked ---
+
+    def test_refuses_symlinked_reference_lock_file(self):
+        # The REFERENCE <root>/images.lock is itself a symlink; the INPUT path is
+        # the symlink's real target (symlink-free). The OLD `.resolve()` equality
+        # would resolve both to the target and let the write land on it even though
+        # the reference is not an ordinary root file. Refuse, bytes unchanged.
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            real = root / "real-images.lock"
+            real.write_text(DEST_LOCK)
+            (root / "images.lock").symlink_to(real.name)
+            with self.assertRaises(RuntimeError) as cm:
+                gate.apply_lock_pair(real, IMAGE, DIGEST, tools_root=root)
+            self.assertIn("symlink", str(cm.exception))
+            self.assertEqual(real.read_text(), DEST_LOCK)  # target untouched
+
+    def test_refuses_symlinked_tools_root(self):
+        # The TRUSTED root (tools_root) is itself a symlink, so the reference
+        # <root>/images.lock resolves through it. Refuse BEFORE any dereference;
+        # the real file behind the link stays byte-identical.
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as td:
+            td = Path(td)
+            outside = td / "outside"
+            outside.mkdir()
+            real_lock = outside / "images.lock"
+            real_lock.write_text(DEST_LOCK)
+            link = td / "tools-link"
+            link.symlink_to(outside)
+            with self.assertRaises(RuntimeError) as cm:
+                gate.apply_lock_pair(real_lock, IMAGE, DIGEST, tools_root=link)
+            self.assertIn("symlink", str(cm.exception))
+            self.assertEqual(real_lock.read_text(), DEST_LOCK)  # untouched
+
+    def test_refuses_dotdot_through_symlink_component(self):
+        # `abspath` collapses `..` lexically, hiding a symlink in the skipped
+        # component (root/escape/../images.lock). The component walk must check
+        # `escape` BEFORE `..` is applied. Refuse, bytes unchanged.
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as td:
+            td = Path(td)
+            root = td / "root"
+            root.mkdir()
+            (root / "images.lock").write_text(DEST_LOCK)
+            outside = td / "outside"
+            outside.mkdir()
+            (outside / "images.lock").write_text(DEST_LOCK)
+            (root / "escape").symlink_to(outside)
+            tricky = root / "escape" / ".." / "images.lock"
+            with self.assertRaises(RuntimeError) as cm:
+                gate.apply_lock_pair(tricky, IMAGE, DIGEST, tools_root=root)
+            self.assertIn("symlink", str(cm.exception))
+            self.assertEqual((root / "images.lock").read_text(), DEST_LOCK)
+
     def test_lock_image_agreement_matches(self):
         import tempfile
         from pathlib import Path

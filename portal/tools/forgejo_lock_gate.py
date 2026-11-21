@@ -64,6 +64,7 @@ import hashlib
 import json
 import os
 import re
+import stat
 import sys
 import tempfile
 import time
@@ -849,21 +850,37 @@ TRUSTED_TOOLS_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _has_symlink_component(path):
-    """True if ``path`` or any ancestor directory is a symlink.
+    """True if ``path`` traverses a symlink in ANY component (file or directory).
 
-    A symlinked parent is a path substitution: writing through it would land
-    outside the trusted checkout even though the lexical path looks correct.
-    Walks the lexical (non-resolved) absolute path up to the filesystem root.
+    Walks the path component-by-component WITHOUT pre-collapsing ``..``/``.``.
+    ``os.path.abspath`` (like ``Path.resolve``) folds ``..`` lexically, which drops
+    a symlinked ancestor from the component list BEFORE it is checked — e.g.
+    ``root/sub/../images.lock`` where ``sub`` is a symlink is rewritten to
+    ``root/images.lock`` and the ``sub`` symlink is never seen. Here ``..`` is
+    applied against the path accumulated so far (symlink-free by induction), so a
+    symlink is always detected BEFORE a ``..`` could traverse through it. ``.`` is
+    a no-op. A component that does not exist yet cannot be a symlink, so a missing
+    tail is treated as symlink-free.
     """
-    p = Path(os.path.abspath(str(path)))
-    cur = p
-    while True:
-        if cur.is_symlink():
-            return True
-        parent = cur.parent
-        if parent == cur:
+    p = Path(path)
+    if not p.is_absolute():
+        p = Path.cwd() / p
+    cur = Path(p.parts[0])
+    for part in p.parts[1:]:
+        if part in (".", ""):
+            continue
+        if part == "..":
+            cur = cur.parent
+            continue
+        nxt = cur / part
+        try:
+            st = os.lstat(nxt)
+        except OSError:
             return False
-        cur = parent
+        if stat.S_ISLNK(st.st_mode):
+            return True
+        cur = nxt
+    return False
 
 
 def apply_lock_pair(lock_path, image_ref, digest, tools_root=None):
@@ -875,14 +892,39 @@ def apply_lock_pair(lock_path, image_ref, digest, tools_root=None):
     against it. A file outside the root, a nested same-named file, or a path
     substituted through a symlink (the file or any ancestor) is refused BEFORE
     any write.
+
+    review #79: the reference path itself is now also verified — the trusted
+    root, the trusted ``<root>/images.lock`` reference, and the input path are
+    each checked component-by-component (no ``..`` pre-collapse) BEFORE any
+    dereference, and the input must be the SAME inode as the ordinary regular
+    ``<root>/images.lock``. Only that verified file is read and written.
     """
     root = Path(tools_root) if tools_root is not None else TRUSTED_TOOLS_ROOT
     path = Path(lock_path)
+    # review #79: the TRUSTED reference path and the INPUT path are each verified
+    # INDEPENDENTLY, BEFORE dereferencing, without losing components. A
+    # ``.resolve()`` equality proves nothing about which symlink the reference
+    # itself crossed: if <root>/images.lock (or <root> itself) is a symlink,
+    # resolving BOTH paths to the same target would let the write land on the
+    # symlink's target instead of the ordinary root file. Check the root, then
+    # the reference, then the input — each must be symlink-free — and only then
+    # prove (by inode identity, not resolved-string equality) that the input IS
+    # that ordinary regular root file.
+    if _has_symlink_component(root):
+        raise RuntimeError("tools checkout root must not traverse a symlink")
+    trusted = root / "images.lock"
+    if _has_symlink_component(trusted):
+        raise RuntimeError("images.lock reference path must not traverse a symlink")
     if _has_symlink_component(path):
         raise RuntimeError("images.lock path must not traverse a symlink")
-    expected = (root / "images.lock").resolve()
-    if path.resolve() != expected:
+    try:
+        same = os.path.samefile(str(path), str(trusted))
+    except OSError:
+        same = False
+    if not same:
         raise RuntimeError("images.lock is not the trusted tools checkout root images.lock")
+    if not trusted.is_file():
+        raise RuntimeError("images.lock is not an ordinary regular file in the checkout root")
     if not re.fullmatch(r"sha256:[0-9a-f]{64}", digest):
         raise RuntimeError("invalid digest")
     raw = path.read_bytes()

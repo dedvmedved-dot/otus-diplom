@@ -1,0 +1,10 @@
+go             VERIFIED
+buildkit       VERIFIED
+rootlesskit    VERIFIED
+syft           VERIFIED
+trivy          VERIFIED
+cosign         VERIFIED
+checkout       VERIFIED
+upload-artifact VERIFIED
+login-action   VERIFIED
+postgres       VERIFIED
