@@ -898,6 +898,14 @@ def apply_lock_pair(lock_path, image_ref, digest, tools_root=None):
     each checked component-by-component (no ``..`` pre-collapse) BEFORE any
     dereference, and the input must be the SAME inode as the ordinary regular
     ``<root>/images.lock``. Only that verified file is read and written.
+
+    review #82: ``os.path.samefile`` proves inode identity, NOT the directory
+    entry name. A different name for the same inode (e.g. a hardlink alias)
+    still passes ``samefile``, so the read, temp-file directory, ``stat`` and
+    ``os.replace`` must all operate on the VERIFIED reference ``trusted``
+    (``<root>/images.lock``) — NOT on the caller-supplied ``path``. Operating on
+    ``path`` would ``os.replace`` the alias entry and leave the canonical root
+    ``images.lock`` unchanged.
     """
     root = Path(tools_root) if tools_root is not None else TRUSTED_TOOLS_ROOT
     path = Path(lock_path)
@@ -927,7 +935,11 @@ def apply_lock_pair(lock_path, image_ref, digest, tools_root=None):
         raise RuntimeError("images.lock is not an ordinary regular file in the checkout root")
     if not re.fullmatch(r"sha256:[0-9a-f]{64}", digest):
         raise RuntimeError("invalid digest")
-    raw = path.read_bytes()
+    # review #82: from here on, every file operation targets the VERIFIED
+    # reference `trusted`, never the caller-supplied `path` (samefile identity is
+    # not a directory-entry-name guarantee — a hardlink alias shares the inode but
+    # is a different name, and replacing THAT name leaves root images.lock stale).
+    raw = trusted.read_bytes()
     lines = raw.splitlines(keepends=True)
     in_images = False
     seen = False
@@ -969,12 +981,12 @@ def apply_lock_pair(lock_path, image_ref, digest, tools_root=None):
         if key == b"verified" and lines[i].rstrip(b"\r\n") != b"    verified: false":
             raise RuntimeError("invalid verified boolean")
         lines[i] = lines[i].replace(marker, replacement, 1)
-    with tempfile.NamedTemporaryFile(dir=path.parent, delete=False) as tmp:
+    with tempfile.NamedTemporaryFile(dir=trusted.parent, delete=False) as tmp:
         try:
             tmp.write(b"".join(lines))
             tmp.flush()
-            os.fchmod(tmp.fileno(), path.stat().st_mode & 0o777)
-            os.replace(tmp.name, path)
+            os.fchmod(tmp.fileno(), trusted.stat().st_mode & 0o777)
+            os.replace(tmp.name, trusted)
         finally:
             Path(tmp.name).unlink(missing_ok=True)
     return 1

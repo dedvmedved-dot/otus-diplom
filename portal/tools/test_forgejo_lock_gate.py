@@ -934,6 +934,44 @@ class TestApplyLockPair(unittest.TestCase):
             self.assertIn("symlink", str(cm.exception))
             self.assertEqual((root / "images.lock").read_text(), DEST_LOCK)
 
+    # --- review #82: samefile proves inode, NOT the directory-entry name -----
+
+    def test_replace_targets_verified_reference_not_input_alias(self):
+        # A hardlink alias names the SAME inode as <root>/images.lock, so
+        # os.path.samefile(alias, trusted) is True — but the alias is a different
+        # directory entry. os.replace onto the alias would leave the canonical
+        # root images.lock unchanged. After verification, the read/temp/stat/
+        # replace must all target the verified reference, so the ROOT images.lock
+        # is the entry that is atomically replaced and the alias stays
+        # byte-identical. Bytes are compared via read_bytes (no newline/text
+        # normalization).
+        import os
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            lock = root / "images.lock"
+            lock.write_bytes(DEST_LOCK.encode())
+            alias = root / "images.lock.alias"
+            os.link(lock, alias)  # same inode, different directory entry
+            before = lock.read_bytes()
+            self.assertTrue(os.path.samefile(str(alias), str(lock)))
+            gate.apply_lock_pair(alias, IMAGE, DIGEST, tools_root=root)
+            # the canonical root images.lock WAS the replacement destination
+            after_root = lock.read_bytes()
+            self.assertNotIn(b"NOT_VERIFIED", after_root)
+            self.assertIn(DIGEST.encode(), after_root)
+            self.assertIn(b"verified: true", after_root)
+            self.assertEqual(
+                after_root,
+                DEST_LOCK.replace('"NOT_VERIFIED"', '"%s"' % DIGEST)
+                         .replace("verified: false", "verified: true").encode(),
+            )
+            # the alias directory entry still names the OLD inode/content
+            self.assertEqual(alias.read_bytes(), before)
+            self.assertIn(b"NOT_VERIFIED", alias.read_bytes())
+            self.assertNotIn(DIGEST.encode(), alias.read_bytes())
+
     def test_lock_image_agreement_matches(self):
         import tempfile
         from pathlib import Path
