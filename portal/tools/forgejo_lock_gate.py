@@ -837,11 +837,52 @@ def _line_content(raw, start, end):
     return raw[start:e]
 
 
-def apply_lock_pair(lock_path, image_ref, digest):
-    """Update only the canonical Portal record in the platform inventory."""
+# Trusted tools checkout root (review #76): the directory holding the pinned
+# tools tree — its ROOT images.lock alongside portal/tools/forgejo_lock_gate.py.
+# This module lives at <root>/portal/tools/forgejo_lock_gate.py, so the root is
+# three levels up from __file__. apply_lock_pair may write ONLY to
+# <root>/images.lock; a caller-supplied path is never trusted, only VALIDATED
+# against this root (a file outside it, a nested same-named file, or a path
+# substituted through a symlink is refused). Offline tests and the workflow may
+# pass an explicit tools_root (--tools-root) to point at a scratch checkout.
+TRUSTED_TOOLS_ROOT = Path(__file__).resolve().parents[2]
+
+
+def _has_symlink_component(path):
+    """True if ``path`` or any ancestor directory is a symlink.
+
+    A symlinked parent is a path substitution: writing through it would land
+    outside the trusted checkout even though the lexical path looks correct.
+    Walks the lexical (non-resolved) absolute path up to the filesystem root.
+    """
+    p = Path(os.path.abspath(str(path)))
+    cur = p
+    while True:
+        if cur.is_symlink():
+            return True
+        parent = cur.parent
+        if parent == cur:
+            return False
+        cur = parent
+
+
+def apply_lock_pair(lock_path, image_ref, digest, tools_root=None):
+    """Update only the canonical Portal record in the platform inventory.
+
+    review #76: the write target is the TRUSTED tools checkout root images.lock,
+    NOT the caller-supplied path. ``tools_root`` defaults to this module's own
+    checkout root (TRUSTED_TOOLS_ROOT); the lock path is only ever VALIDATED
+    against it. A file outside the root, a nested same-named file, or a path
+    substituted through a symlink (the file or any ancestor) is refused BEFORE
+    any write.
+    """
+    root = Path(tools_root) if tools_root is not None else TRUSTED_TOOLS_ROOT
     path = Path(lock_path)
-    if path.name != "images.lock" or path.is_symlink():
-        raise RuntimeError("expected a regular images.lock")
+    if _has_symlink_component(path):
+        raise RuntimeError("images.lock path must not traverse a symlink")
+    expected = (root / "images.lock").resolve()
+    if path.resolve() != expected:
+        raise RuntimeError("images.lock is not the trusted tools checkout root images.lock")
     if not re.fullmatch(r"sha256:[0-9a-f]{64}", digest):
         raise RuntimeError("invalid digest")
     raw = path.read_bytes()
@@ -913,7 +954,8 @@ USAGE = """usage:
       --manifest-out <file> --dcd-out <file>
   forgejo_lock_gate.py digest <build-metadata.json>
   forgejo_lock_gate.py predicate <source_sha> <workflow_sha> <tools_sha> <run_id>
-  forgejo_lock_gate.py verify <evidence.json> [--apply <lock_file> --apply-lock true]"""
+  forgejo_lock_gate.py verify <evidence.json> [--apply <lock_file> --apply-lock true
+      --tools-root <dir>]"""
 
 
 def _load_evidence(path):
@@ -1079,7 +1121,12 @@ def main(argv):
                 print("LOCK UPDATE NOT ALLOWED: --apply requires --apply-lock true", file=sys.stderr)
                 return 1
             try:
-                apply_lock_pair(apply_path, evidence["image_ref"], evidence["digest"])
+                # review #76: the write is bound to the TRUSTED tools checkout
+                # root (--tools-root), never to the caller-supplied --apply path
+                # alone. Without --tools-root the module's own checkout root is
+                # used (fail-closed for any --apply path outside it).
+                apply_lock_pair(apply_path, evidence["image_ref"], evidence["digest"],
+                                tools_root=flag("--tools-root"))
                 print("LOCK UPDATED: %s -> image=%s digest=%s" % (
                     apply_path, evidence["image_ref"], evidence["digest"]))
             except Exception as exc:

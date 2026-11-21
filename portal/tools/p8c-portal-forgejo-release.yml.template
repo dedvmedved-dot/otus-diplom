@@ -502,7 +502,9 @@ jobs:
       # Lock write happens ONLY on explicit owner authorization (apply_lock=true)
       # AND a passing gate; it writes the (full image, digest) pair into the
       # reviewed tools checkout's root images.lock. The CLI additionally
-      # requires --apply-lock true so a bare --apply can never write.
+      # requires --apply-lock true so a bare --apply can never write, and binds
+      # the write to the trusted tools checkout root (--tools-root tools), never
+      # to the caller-supplied --apply path alone (review #76).
       - name: Apply verified digest to lock (owner-authorized)
         if: inputs.apply_lock == true
         env:
@@ -517,7 +519,7 @@ jobs:
             --pinned-tools "${{ env.PINNED_TOOLS_SHA }}" \
             --workflow-sha "${{ secrets.POLICY_WORKFLOW_SHA }}" \
             --source-tree-sha256 "${{ env.PINNED_SOURCE_TREE_SHA256 }}" \
-            --apply tools/images.lock --apply-lock true
+            --apply tools/images.lock --apply-lock true --tools-root tools
 
       - name: Retain reviewed lock for a separate PR (no repository write)
         if: inputs.apply_lock == true

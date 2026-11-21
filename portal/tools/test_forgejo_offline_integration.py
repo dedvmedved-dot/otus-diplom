@@ -372,7 +372,7 @@ class TestCliApplyScratchLock(unittest.TestCase):
                    "--pinned-source", PINNED, "--pinned-tools", TOOLS,
                    "--workflow-sha", WORKFLOW]
             if apply:
-                cmd += ["--apply", str(lock)]
+                cmd += ["--apply", str(lock), "--tools-root", str(td)]
                 if apply_lock:
                     cmd += ["--apply-lock", "true"]
             r = subprocess.run(cmd, capture_output=True, text=True)
@@ -489,6 +489,7 @@ class TestWorkflowStructuralOrder(unittest.TestCase):
                           and (s.get("name") or "").startswith("Apply verified digest"))
         self.assertIn("--apply tools/images.lock", apply_step["run"])
         self.assertIn("--apply-lock true", apply_step["run"])
+        self.assertIn("--tools-root tools", apply_step["run"])
         self.assertEqual(apply_step["if"], "inputs.apply_lock == true")
 
 

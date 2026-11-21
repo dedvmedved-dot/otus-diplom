@@ -672,7 +672,7 @@ class TestApplyLockPair(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             lock = Path(td) / "images.lock"
             lock.write_text(DEST_LOCK)
-            gate.apply_lock_pair(lock, IMAGE, DIGEST)
+            gate.apply_lock_pair(lock, IMAGE, DIGEST, tools_root=td)
             text = lock.read_text()
             self.assertIn('image: %s' % IMAGE, text)
             self.assertIn('digest: "%s"' % DIGEST, text)
@@ -687,7 +687,7 @@ class TestApplyLockPair(unittest.TestCase):
             lock.write_text(DEST_LOCK.replace(IMAGE, "ghcr.io/other/image"))
             before = lock.read_text()
             with self.assertRaises(RuntimeError) as cm:
-                gate.apply_lock_pair(lock, IMAGE, DIGEST)
+                gate.apply_lock_pair(lock, IMAGE, DIGEST, tools_root=td)
             self.assertIn("pair mismatch", str(cm.exception))
             self.assertEqual(lock.read_text(), before)  # foreign image NOT rewritten
 
@@ -700,7 +700,7 @@ class TestApplyLockPair(unittest.TestCase):
             lock = Path(td) / "images.lock"
             lock.write_text(DEST_LOCK)
             with self.assertRaises(RuntimeError) as cm:
-                gate.apply_lock_pair(lock, REGISTRY, DIGEST)  # bare host
+                gate.apply_lock_pair(lock, REGISTRY, DIGEST, tools_root=td)  # bare host
             self.assertIn("pair mismatch", str(cm.exception))
 
     def test_rejects_already_set_digest(self):
@@ -710,7 +710,7 @@ class TestApplyLockPair(unittest.TestCase):
             lock = Path(td) / "images.lock"
             lock.write_text(DEST_LOCK.replace("NOT_VERIFIED", 'sha256:' + 'd' * 64))
             with self.assertRaises(RuntimeError) as cm:
-                gate.apply_lock_pair(lock, IMAGE, DIGEST)
+                gate.apply_lock_pair(lock, IMAGE, DIGEST, tools_root=td)
             self.assertIn("already set", str(cm.exception))
 
     # --- review #58 item 5: byte-level immutability + lock-image pre-agreement --
@@ -723,7 +723,7 @@ class TestApplyLockPair(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             lock = Path(td) / "images.lock"
             lock.write_text(DEST_LOCK)
-            gate.apply_lock_pair(lock, IMAGE, DIGEST)
+            gate.apply_lock_pair(lock, IMAGE, DIGEST, tools_root=td)
             before = DEST_LOCK.split("\n")
             after = lock.read_text().split("\n")
             self.assertEqual(len(before), len(after))
@@ -744,7 +744,7 @@ class TestApplyLockPair(unittest.TestCase):
             lock = Path(td) / "images.lock"
             crlf = DEST_LOCK.replace("\n", "\r\n")
             lock.write_bytes(crlf.encode())
-            gate.apply_lock_pair(lock, IMAGE, DIGEST)
+            gate.apply_lock_pair(lock, IMAGE, DIGEST, tools_root=td)
             before = crlf.encode().splitlines(keepends=True)
             after = lock.read_bytes().splitlines(keepends=True)
             self.assertEqual(len(before), len(after))
@@ -771,7 +771,7 @@ class TestApplyLockPair(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             lock = Path(td) / "images.lock"
             lock.write_bytes(raw.encode())
-            gate.apply_lock_pair(lock, IMAGE, DIGEST)
+            gate.apply_lock_pair(lock, IMAGE, DIGEST, tools_root=td)
             before = raw.encode().splitlines(keepends=True)
             after = lock.read_bytes().splitlines(keepends=True)
             self.assertEqual(len(before), len(after))
@@ -793,7 +793,7 @@ class TestApplyLockPair(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             lock = Path(td) / "images.lock"
             lock.write_bytes(body.encode())
-            gate.apply_lock_pair(lock, IMAGE, DIGEST)
+            gate.apply_lock_pair(lock, IMAGE, DIGEST, tools_root=td)
             after = lock.read_bytes()
             self.assertFalse(after.endswith(b"\n"), "trailing newline must stay absent")
             self.assertFalse(after.endswith(b"\r\n"))
@@ -818,8 +818,62 @@ class TestApplyLockPair(unittest.TestCase):
                     lock = Path(td) / name
                     lock.write_text(body)
                     with self.assertRaises(RuntimeError):
-                        gate.apply_lock_pair(lock, IMAGE, DIGEST)
+                        gate.apply_lock_pair(lock, IMAGE, DIGEST, tools_root=td)
                     self.assertEqual(lock.read_text(), body)
+
+
+    # --- review #76: root binding (outside / nested / symlink substitution) ---
+
+    def test_refuses_nested_images_lock(self):
+        # A nested same-named file (tools/sub/images.lock) is NOT the checkout
+        # root lock and must be refused without writing.
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            nested = root / "sub" / "images.lock"
+            nested.parent.mkdir(parents=True)
+            nested.write_text(DEST_LOCK)
+            with self.assertRaises(RuntimeError) as cm:
+                gate.apply_lock_pair(nested, IMAGE, DIGEST, tools_root=root)
+            self.assertIn("not the trusted tools checkout root", str(cm.exception))
+            self.assertEqual(nested.read_text(), DEST_LOCK)  # untouched
+
+    def test_refuses_symlink_lock_file(self):
+        # A symlink at the root name that points elsewhere is a substitution and
+        # must be refused without writing (even if it resolves inside the root).
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            real = root / "real-images.lock"
+            real.write_text(DEST_LOCK)
+            link = root / "images.lock"
+            link.symlink_to(real.name)
+            with self.assertRaises(RuntimeError) as cm:
+                gate.apply_lock_pair(link, IMAGE, DIGEST, tools_root=root)
+            self.assertIn("symlink", str(cm.exception))
+            self.assertEqual(real.read_text(), DEST_LOCK)  # target untouched
+
+    def test_refuses_symlink_parent_directory(self):
+        # A symlinked PARENT directory is a path substitution: writing through
+        # it lands outside the trusted checkout. Refuse without writing.
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as td:
+            td = Path(td)
+            outside = td / "outside"
+            outside.mkdir()
+            real_lock = outside / "images.lock"
+            real_lock.write_text(DEST_LOCK)
+            root = td / "root"
+            root.mkdir()
+            (root / "tools").symlink_to(outside)
+            link_path = root / "tools" / "images.lock"
+            with self.assertRaises(RuntimeError) as cm:
+                gate.apply_lock_pair(link_path, IMAGE, DIGEST, tools_root=root)
+            self.assertIn("symlink", str(cm.exception))
+            self.assertEqual(real_lock.read_text(), DEST_LOCK)  # untouched
 
     def test_lock_image_agreement_matches(self):
         import tempfile

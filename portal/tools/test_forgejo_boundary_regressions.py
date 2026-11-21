@@ -236,7 +236,8 @@ class TestWorkspaceRealLock(unittest.TestCase):
                "--owner", OWNER, "--trusted-registry", REAL_REGISTRY_HOST,
                "--pinned-source", PINNED, "--pinned-tools", TOOLS,
                "--workflow-sha", WORKFLOW,
-               "--apply", str(lock_path)]
+               "--apply", str(lock_path),
+               "--tools-root", str(Path(lock_path).parent)]
         if apply_lock:
             cmd += ["--apply-lock", "true"]
         return subprocess.run(cmd, capture_output=True, text=True)
