@@ -655,6 +655,17 @@ DEST_LOCK = ('images:\n  - component: otus-diplom-portal\n    image: %s\n'
 
 
 class TestApplyLockPair(unittest.TestCase):
+    def test_refuses_images_lock_outside_tools_checkout(self):
+        from pathlib import Path
+        import tempfile
+        with tempfile.TemporaryDirectory() as td:
+            lock = Path(td) / "images.lock"
+            original = DEST_LOCK.encode()
+            lock.write_bytes(original)
+            with self.assertRaises(RuntimeError):
+                gate.apply_lock_pair(lock, IMAGE, DIGEST)
+            self.assertEqual(lock.read_bytes(), original)
+
     def test_writes_pair_preserving_other_sections(self):
         import tempfile
         from pathlib import Path
