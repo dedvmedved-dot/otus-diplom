@@ -1,0 +1,46 @@
+UTC=2026-11-21T00:35:10Z
+SOURCE_SHA=c523eb825d726383546dc4e07b62d6bb5455fe51
+command: python3 -m unittest -v test_forgejo_offline_integration (cwd portal/tools)
+
+test_apply_without_apply_lock_authorization_refused (test_forgejo_offline_integration.TestCliApplyScratchLock.test_apply_without_apply_lock_authorization_refused) ... ok
+test_check_mode_positive_exit_zero_no_write (test_forgejo_offline_integration.TestCliApplyScratchLock.test_check_mode_positive_exit_zero_no_write) ... ok
+test_manifest_tamper_leaves_lock_untouched (test_forgejo_offline_integration.TestCliApplyScratchLock.test_manifest_tamper_leaves_lock_untouched) ... ok
+test_no_attestation_leaves_lock_untouched (test_forgejo_offline_integration.TestCliApplyScratchLock.test_no_attestation_leaves_lock_untouched) ... ok
+test_owner_gate_foreign_leaves_lock_untouched (test_forgejo_offline_integration.TestCliApplyScratchLock.test_owner_gate_foreign_leaves_lock_untouched) ... ok
+test_positive_writes_scratch_lock_pair (test_forgejo_offline_integration.TestCliApplyScratchLock.test_positive_writes_scratch_lock_pair) ... ok
+test_another_registry_not_allowed (test_forgejo_offline_integration.TestFullChain.test_another_registry_not_allowed) ... ok
+test_another_run_not_allowed (test_forgejo_offline_integration.TestFullChain.test_another_run_not_allowed) ... ok
+test_certificate_identity_mismatch_not_allowed (test_forgejo_offline_integration.TestFullChain.test_certificate_identity_mismatch_not_allowed) ... ok
+test_certificate_issuer_mismatch_not_allowed (test_forgejo_offline_integration.TestFullChain.test_certificate_issuer_mismatch_not_allowed) ... ok
+test_foreign_registry_not_allowed_before_network (test_forgejo_offline_integration.TestFullChain.test_foreign_registry_not_allowed_before_network) ... ok
+test_full_tree_extra_file_not_allowed (test_forgejo_offline_integration.TestFullChain.test_full_tree_extra_file_not_allowed) ... ok
+test_full_tree_omission_not_allowed (test_forgejo_offline_integration.TestFullChain.test_full_tree_omission_not_allowed) ... ok
+test_manifest_bytes_tampered_not_allowed (test_forgejo_offline_integration.TestFullChain.test_manifest_bytes_tampered_not_allowed) ... ok
+test_no_verified_attestation_not_allowed (test_forgejo_offline_integration.TestFullChain.test_no_verified_attestation_not_allowed) ... ok
+test_observed_ref_mismatch_not_allowed (test_forgejo_offline_integration.TestFullChain.test_observed_ref_mismatch_not_allowed) ... ok
+test_observed_repository_mismatch_not_allowed (test_forgejo_offline_integration.TestFullChain.test_observed_repository_mismatch_not_allowed) ... ok
+test_observed_workflow_sha_absent_not_allowed (test_forgejo_offline_integration.TestFullChain.test_observed_workflow_sha_absent_not_allowed) ... ok
+test_observed_workflow_sha_mismatch_not_allowed (test_forgejo_offline_integration.TestFullChain.test_observed_workflow_sha_mismatch_not_allowed) ... ok
+test_owner_gate_expired_not_allowed (test_forgejo_offline_integration.TestFullChain.test_owner_gate_expired_not_allowed) ... ok
+test_owner_gate_foreign_not_allowed (test_forgejo_offline_integration.TestFullChain.test_owner_gate_foreign_not_allowed) ... ok
+test_owner_gate_missing_not_allowed (test_forgejo_offline_integration.TestFullChain.test_owner_gate_missing_not_allowed) ... ok
+test_owner_gate_run_replay_not_allowed (test_forgejo_offline_integration.TestFullChain.test_owner_gate_run_replay_not_allowed) ... ok
+test_owner_gate_unconfirmed_actor_not_allowed (test_forgejo_offline_integration.TestFullChain.test_owner_gate_unconfirmed_actor_not_allowed) ... ok
+test_positive_allowed (test_forgejo_offline_integration.TestFullChain.test_positive_allowed) ... ok
+test_predicate_substitution_not_allowed (test_forgejo_offline_integration.TestFullChain.test_predicate_substitution_not_allowed) ... ok
+test_registry_host_mismatch_not_allowed (test_forgejo_offline_integration.TestFullChain.test_registry_host_mismatch_not_allowed) ... ok
+test_source_substituted_new_head_not_allowed (test_forgejo_offline_integration.TestFullChain.test_source_substituted_new_head_not_allowed) ... ok
+test_tools_material_swap_not_allowed (test_forgejo_offline_integration.TestFullChain.test_tools_material_swap_not_allowed) ... ok
+test_tools_sha_not_bound_not_allowed (test_forgejo_offline_integration.TestFullChain.test_tools_sha_not_bound_not_allowed) ... ok
+test_tools_smuggled_into_source_not_allowed (test_forgejo_offline_integration.TestFullChain.test_tools_smuggled_into_source_not_allowed) ... ok
+test_unbound_subject_not_allowed (test_forgejo_offline_integration.TestFullChain.test_unbound_subject_not_allowed) ... ok
+test_workflow_sha_not_bound_not_allowed (test_forgejo_offline_integration.TestFullChain.test_workflow_sha_not_bound_not_allowed) ... ok
+test_apply_lock_targets_source_tree_real_lock (test_forgejo_offline_integration.TestWorkflowStructuralOrder.test_apply_lock_targets_source_tree_real_lock) ... ok
+test_owner_gate_lives_in_unprivileged_preflight (test_forgejo_offline_integration.TestWorkflowStructuralOrder.test_owner_gate_lives_in_unprivileged_preflight) ... ok
+test_owner_gate_step_uses_env_secret_not_shell_interpolation (test_forgejo_offline_integration.TestWorkflowStructuralOrder.test_owner_gate_step_uses_env_secret_not_shell_interpolation) ... ok
+test_release_job_needs_preflight (test_forgejo_offline_integration.TestWorkflowStructuralOrder.test_release_job_needs_preflight) ... ok
+
+----------------------------------------------------------------------
+Ran 37 tests in 1.050s
+
+OK

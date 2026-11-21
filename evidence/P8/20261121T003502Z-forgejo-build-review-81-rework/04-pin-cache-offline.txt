@@ -1,0 +1,14 @@
+UTC=2026-11-21T00:35:13Z
+SOURCE_SHA=c523eb825d726383546dc4e07b62d6bb5455fe51
+command: python3 verify-pins.py --offline (cwd portal/tools)
+
+go             VERIFIED
+buildkit       VERIFIED
+rootlesskit    VERIFIED
+syft           VERIFIED
+trivy          VERIFIED
+cosign         VERIFIED
+checkout       VERIFIED
+upload-artifact VERIFIED
+login-action   VERIFIED
+postgres       VERIFIED
