@@ -1,5 +1,7 @@
 # P8C #93 — привязка OWNER_GATE к выданному run_id до preflight (первый B)
 
+> Исторический отчёт инженера, не инструкция владельцу. Решение [architect #95](P8C_REVIEW_95.md) заменяет выводы разделов 5–7: порядок PUT не гарантирован, issuer неверен, certificate identity не установлена. Первый B запрещён.
+
 Роль: Implementation Engineer (Hermes). Источник задания: issue #93.
 База протокола: `docs/architecture/P8C_ADMISSION_91.md` (commit `c1a872b58d596e01cb5833b5ca2920fb6a21d962`).
 
