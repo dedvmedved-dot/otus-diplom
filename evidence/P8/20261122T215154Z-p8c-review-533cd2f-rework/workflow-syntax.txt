@@ -1,0 +1,9 @@
+name: p8c-portal-forgejo-release
+trigger key: True(bool; PyYAML 1.1 coercion of bare `on`)
+jobs (4): admission, test, preflight, release
+  - admission: runs-on='otus-diplom-admission', 1 steps
+  - test: runs-on='otus-diplom', 9 steps
+  - preflight: runs-on='otus-diplom', 10 steps
+  - release: runs-on='otus-diplom', 28 steps
+93 expressions balanced
+SYNTAX = VERIFIED (YAML well-formed; structure + expressions OK)

@@ -1,0 +1,12 @@
+spdx valid (syft shape)          gate=ACCEPT  want=ACCEPT  OK
+spdx wrong predicateType         gate=REJECT  want=REJECT  OK
+spdx wrong spdxVersion (foreign) gate=REJECT  want=REJECT  OK
+spdx wrong SPDXID (foreign)      gate=REJECT  want=REJECT  OK
+spdx empty packages (foreign)    gate=REJECT  want=REJECT  OK
+spdx missing predicate           gate=REJECT  want=REJECT  OK
+spdx empty predicate {}          gate=REJECT  want=REJECT  OK
+spdx missing name                gate=REJECT  want=REJECT  OK
+spdx missing documentNamespace   gate=REJECT  want=REJECT  OK
+spdx missing packages            gate=REJECT  want=REJECT  OK
+
+GATE LAYER MATRIX: ALL CASES MATCHED EXPECTATION

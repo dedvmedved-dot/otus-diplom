@@ -1,0 +1,50 @@
+SPDX per-layer matrix (review #106 item 2)
+==========================================
+
+Two layers enforce the "signed non-empty SPDX document of the expected shape"
+requirement, with DIFFERENT zones of responsibility:
+
+  CUE  = cosign `verify-attestation --policy` -> cuejson.Validate (cue.Final()).
+         Rejects CONTRADICTIONS on PRESENT fields only; does NOT require ABSENT
+         fields. This is a SHAPE check, not a full SPDX validator.
+  GATE = check_verified_spdx_statement() in forgejo_lock_gate.py, over the SIGNED
+         statement. Rejects ABSENCE/EMPTINESS (predicate/name/documentNamespace/
+         packages) and re-checks the present-field contradictions (defense in
+         depth). The final gate refusal is NOT weakened.
+
+Each outcome below is a REAL execution result: the CUE column comes from
+`cue-validation/main.go` (cuelang.org/go v0.9.2, the same engine cosign uses —
+see cue-layer.txt), the GATE column from `spdx_gate_matrix.py` (see
+gate-layer.txt).
+
+SPDX cases
+
+  case                               CUE layer   GATE layer
+  ---------------------------------- ----------- -----------
+  spdx valid (syft shape)            ACCEPT      ACCEPT
+  spdx wrong predicateType           REJECT      REJECT
+  spdx wrong spdxVersion (foreign)   REJECT      REJECT
+  spdx wrong SPDXID (foreign)        REJECT      REJECT
+  spdx empty packages (foreign)      REJECT      REJECT
+  spdx missing predicate             ACCEPT      REJECT     <- per-layer split
+  spdx empty predicate {}            ACCEPT      REJECT     <- per-layer split
+  spdx missing name                  ACCEPT      REJECT     <- per-layer split
+  spdx missing documentNamespace     ACCEPT      REJECT     <- per-layer split
+  spdx missing packages              ACCEPT      REJECT     <- per-layer split
+
+  For the missing/empty predicate the two layers DISAGREE by design: the CUE
+  layer accepts (cue.Final() does not require the absent `predicate`), the GATE
+  rejects. The final verdict is the GATE's REJECT — the CUE accept is not a
+  weakening, it is exactly why the gate re-checks the signed statement.
+
+SLSA provenance cases (CUE layer only; the SLSA binding is enforced by
+check_verified_statement, a separate gate function — out of scope here)
+
+  case                               CUE layer
+  ---------------------------------- -----------
+  slsa valid (source bound)          ACCEPT
+  slsa wrong source material         REJECT
+  slsa wrong predicateType           REJECT
+
+Raw per-layer outputs: cue-layer.txt (13 CUE cases, all matched expectation),
+gate-layer.txt (10 SPDX gate cases, all matched expectation).
