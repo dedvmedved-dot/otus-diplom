@@ -91,9 +91,19 @@ ISO_RE = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z\Z")
 FORGEJO_OIDC_ISSUER = "https://git.aiopslab.online/api/actions"
 FORGEJO_REPO = "aiopslab/otus-diplom"
 WORKFLOW_FILE = ".forgejo/workflows/p8c-portal-forgejo-release.yml"
-WORKFLOW_IDENTITY = "<FORGEJO_OIDC_IDENTITY_UNCONFIRMED>"
+# review #99 item 2 (B): the exact certificate identity (Forgejo id-token `sub` /
+# SAN) is NOT confirmed from source evidence — the dispatch `sub` does not prove
+# the certificate SAN. It stays an EXPLICIT placeholder; an unconfirmed identity
+# is a REJECTION before any push/sign (see identity_is_confirmed +
+# decide_lock_update Stage 4), never a guess.
+WORKFLOW_IDENTITY_PLACEHOLDER = "<FORGEJO_OIDC_IDENTITY_UNCONFIRMED>"
+WORKFLOW_IDENTITY = WORKFLOW_IDENTITY_PLACEHOLDER
 REF = "refs/heads/main"
 SLSA = "https://slsa.dev/provenance/v0.2"
+# predicateType of the SPDX JSON attestation (cosign --type spdxjson) — the SBOM
+# document describes the exact image it is attached to, so its source binding IS
+# the signed subject (image@digest), asserted by check_verified_spdx_statement.
+SPDX = "https://spdx.dev/Document"
 # buildType shared by the predicate generator and the verifier. This is a
 # locally-pinned constant (Forgejo has no registered SLSA buildType URI yet);
 # both sides pin the SAME value, which is what the binding check requires.
@@ -168,8 +178,12 @@ REQUIRED_TOOLS_FILES = (
     "portal/tools/forgejo_lock_gate.py",
     "portal/tools/test_forgejo_lock_gate.py",
     "portal/tools/test_forgejo_offline_integration.py",
+    "portal/tools/test_owner_gate_barrier.py",
+    "portal/tools/test_cosign_cli_flags.py",
     "portal/tools/check_forgejo_workflow_syntax.py",
     "portal/tools/p8c-portal-forgejo-release.yml.template",
+    "portal/tools/cosign-slsa-policy.cue",
+    "portal/tools/cosign-spdx-policy.cue",
 )
 
 # review #95 item 2 (B): keyless (OIDC) verification is BLOCKED by default. The
@@ -208,6 +222,18 @@ def valid_sha(value):
 
 def valid_digest(value):
     return isinstance(value, str) and bool(DIGEST_RE.match(value))
+
+
+def identity_is_confirmed(identity):
+    """True only for a non-empty, non-placeholder (owner-confirmed) identity.
+
+    review #99 item 2 (B): an unconfirmed identity — the explicit placeholder
+    SAN — must be rejected BEFORE any push/sign, even when oidc_trust_confirmed
+    is true. The identity is never guessed: it must be the exact owner-confirmed
+    certificate identity (Forgejo id-token `sub` / SAN) substituted out-of-band.
+    """
+    return (isinstance(identity, str) and bool(identity.strip())
+            and identity != WORKFLOW_IDENTITY_PLACEHOLDER)
 
 
 def _parse_epoch(issued):
@@ -258,6 +284,43 @@ def observe_workflow_blob(workflow_dir, commit, workflow_file):
     if typ.returncode != 0 or typ.stdout.strip() != "blob":
         return None, "workflow blob: object is not a blob (type=%r)" % typ.stdout.strip()
     return blob, "workflow blob observed"
+
+
+# ---------------------------------------------------------------------------
+# Exact tools-pin check (review #99 item 3)
+# ---------------------------------------------------------------------------
+
+# Every gate mode the workflow invokes. A stale tools pin (e.g. one predating
+# the workflow-blob command) is a fail-closed REJECTION — the pinned tools
+# checkout must actually implement what the workflow drives.
+GATE_MODES = (
+    "owner-gate",
+    "inventory",
+    "lock-image-check",
+    "digest",
+    "registry-fetch",
+    "predicate",
+    "workflow-blob",
+    "verify",
+)
+
+
+def verify_tools_pin(tools_dir, required_modes=GATE_MODES):
+    """(ok, reason). The pinned tools checkout must implement every gate mode the
+    workflow invokes. Reads the gate SOURCE from the ACTUAL tools checkout (never
+    from the importing module), so a stale/mismatched PINNED_TOOLS_SHA is caught
+    before any release action (review #99 item 3)."""
+    gate_path = Path(tools_dir) / "portal" / "tools" / "forgejo_lock_gate.py"
+    if not gate_path.is_file():
+        return False, "tools pin: forgejo_lock_gate.py missing at %s" % gate_path
+    try:
+        text = gate_path.read_text()
+    except OSError as exc:
+        return False, "tools pin: gate unreadable: %s" % exc
+    missing = [m for m in required_modes if ('mode == "%s"' % m) not in text]
+    if missing:
+        return False, "tools pin: gate missing modes: %s" % ", ".join(missing)
+    return True, "tools pin implements all required gate modes"
 
 
 # ---------------------------------------------------------------------------
@@ -665,6 +728,28 @@ def check_verified_statement(statement, *, expected_image_ref, expected_digest,
     return True, "verified statement bound"
 
 
+def check_verified_spdx_statement(statement, *, expected_image_ref, expected_digest):
+    """(ok, reason). The VERIFIED SPDX attestation must bind its subject to the
+    image/digest and carry the SPDX predicateType (review #99 item 1: the spdxjson
+    attestation is verified for its SIGNED subject/type — the source binding of an
+    SPDX SBOM IS the subject digest, since the document describes that exact image)."""
+    if not isinstance(statement, dict):
+        return False, "spdx statement: not an object"
+    if statement.get("_type") not in IN_TOTO_TYPES:
+        return False, "spdx statement: not an in-toto statement"
+    if statement.get("predicateType") != SPDX:
+        return False, "spdx statement: predicateType is not SPDX"
+    subjects = statement.get("subject")
+    if not isinstance(subjects, list) or len(subjects) == 0:
+        return False, "spdx statement: subject missing"
+    want_hex = expected_digest[len("sha256:"):]
+    for sub in subjects:
+        if (isinstance(sub, dict) and sub.get("name") == expected_image_ref
+                and (sub.get("digest") or {}).get("sha256") == want_hex):
+            return True, "spdx statement bound to image/digest"
+    return False, "spdx statement: subject does not bind image/digest"
+
+
 # ---------------------------------------------------------------------------
 # Predicate generator (Forgejo SLSA body; cosign fills the subject)
 # ---------------------------------------------------------------------------
@@ -795,6 +880,13 @@ def decide_lock_update(evidence, bindings=None, now=None):
     if not b.get("oidc_trust_confirmed"):
         return False, ("OIDC trust not confirmed (issuer/SAN/audience/trust roots) "
                        "— keyless verification BLOCKED")
+    # review #99 item 2 (B): oidc_trust_confirmed=true with a PLACEHOLDER SAN must
+    # NOT be allowed to reach push/sign. The identity is rejected until it is the
+    # exact owner-confirmed value — never guessed.
+    if not identity_is_confirmed(b["identity"]):
+        return False, "workflow identity not confirmed (placeholder SAN) — keyless release BLOCKED"
+    if not identity_is_confirmed(evidence.get("certificate_identity")):
+        return False, "certificate identity not confirmed (placeholder SAN) in evidence"
     if evidence.get("certificate_identity") != b["identity"]:
         return False, "certificate identity != expected workflow identity"
     if evidence.get("certificate_issuer") != b["issuer"]:
@@ -822,6 +914,23 @@ def decide_lock_update(evidence, bindings=None, now=None):
             break
     if not ok:
         return False, reason
+    # review #99 item 1: the SPDX attestation is verified for the SAME digest
+    # (subject/type) — an unverified SBOM must not slip through while only the
+    # SLSA provenance is checked.
+    spdx_statements = parse_verified_attestation(evidence.get("spdx_attestation") or "")
+    if not spdx_statements:
+        return False, "no verified SPDX attestation result (discovery alone is not trust)"
+    spdx_ok, spdx_reason = False, "SPDX attestation does not bind image/digest"
+    for st in spdx_statements:
+        spdx_ok, spdx_reason = check_verified_spdx_statement(
+            st,
+            expected_image_ref=evidence.get("image_ref"),
+            expected_digest=evidence.get("digest"),
+        )
+        if spdx_ok:
+            break
+    if not spdx_ok:
+        return False, spdx_reason
     return True, "all bindings verified"
 
 
@@ -1079,18 +1188,22 @@ USAGE = """usage:
   forgejo_lock_gate.py digest <build-metadata.json>
   forgejo_lock_gate.py predicate <source_sha> <workflow_sha> <tools_sha> <run_id>
   forgejo_lock_gate.py workflow-blob --workflow-dir <dir> --commit <sha> --path <workflow_file>
+  forgejo_lock_gate.py tools-pin-check --tools-dir <dir>
   forgejo_lock_gate.py verify <evidence.json> [--apply <lock_file> --apply-lock true
       --tools-root <dir>] [--oidc-trust-confirmed true]"""
 
 
 def _load_evidence(path):
-    """Load an evidence bundle; ``manifest_file`` / ``verified_attestation_file``
-    (paths) are read into ``manifest_bytes`` / ``verified_attestation``."""
+    """Load an evidence bundle; ``manifest_file`` / ``verified_attestation_file`` /
+    ``spdx_attestation_file`` (paths) are read into ``manifest_bytes`` /
+    ``verified_attestation`` / ``spdx_attestation``."""
     ev = json.loads(Path(path).read_text())
     if "manifest_file" in ev:
         ev["manifest_bytes"] = Path(ev.pop("manifest_file")).read_bytes()
     if "verified_attestation_file" in ev:
         ev["verified_attestation"] = Path(ev.pop("verified_attestation_file")).read_text()
+    if "spdx_attestation_file" in ev:
+        ev["spdx_attestation"] = Path(ev.pop("spdx_attestation_file")).read_text()
     return ev
 
 
@@ -1220,6 +1333,14 @@ def main(argv):
             print("WORKFLOW BLOB NOT OBSERVED: " + reason, file=sys.stderr)
             return 1
         print(blob)
+        return 0
+
+    if mode == "tools-pin-check":
+        ok, reason = verify_tools_pin(flag("--tools-dir", ""))
+        print(json.dumps({"tools_pin": ok, "reason": reason}))
+        if not ok:
+            print("TOOLS PIN NOT VERIFIED: " + reason, file=sys.stderr)
+            return 1
         return 0
 
     if mode == "verify":

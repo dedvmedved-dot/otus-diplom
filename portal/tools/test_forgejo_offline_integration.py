@@ -42,6 +42,9 @@ REGISTRY = "registry.example"
 IMAGE = REGISTRY + "/aiopslab/otus-diplom-portal"
 RUN_ID = "1234567890"
 NOW = 2000000000  # 2033-05-18T03:33:20Z
+# review #99 item 2: a CONFIRMED (owner-substituted) certificate identity — the
+# positive flow uses this, not the placeholder (which is a REJECTION).
+CONFIRMED_IDENTITY = "repo:aiopslab/otus-diplom:ref:refs/heads/main"
 
 MANIFEST = b'{"schemaVersion":2,"mediaType":"application/vnd.oci.image.manifest.v1+json"}'
 DIGEST = "sha256:" + hashlib.sha256(MANIFEST).hexdigest()
@@ -52,6 +55,7 @@ DIGEST = "sha256:" + hashlib.sha256(MANIFEST).hexdigest()
 BINDINGS = {
     "owner": OWNER,
     "trusted_registry": REGISTRY,
+    "identity": CONFIRMED_IDENTITY,
     "source_sha": PINNED,
     "tools_sha": TOOLS,
     "workflow_sha": WORKFLOW,
@@ -77,8 +81,7 @@ def make_statement(digest=DIGEST, image=IMAGE, source=PINNED, workflow=WORKFLOW,
                    tools=TOOLS, run_id=RUN_ID, builder=None, predicate_type=None,
                    build_type=None):
     pred = gate.build_predicate(source, workflow, tools, run_id)
-    if builder is not None:
-        pred["builder"]["id"] = builder
+    pred["builder"]["id"] = builder if builder is not None else CONFIRMED_IDENTITY
     if build_type is not None:
         pred["buildType"] = build_type
     return {
@@ -86,6 +89,17 @@ def make_statement(digest=DIGEST, image=IMAGE, source=PINNED, workflow=WORKFLOW,
         "subject": [{"name": image, "digest": {"sha256": digest[len("sha256:"):]}}],
         "predicateType": predicate_type or gate.SLSA,
         "predicate": pred,
+    }
+
+
+def make_spdx_statement(digest=DIGEST, image=IMAGE, predicate_type=None):
+    """A valid SPDX (spdxjson) attestation statement (review #99 item 1)."""
+    return {
+        "_type": "https://in-toto.io/Statement/v1",
+        "subject": [{"name": image, "digest": {"sha256": digest[len("sha256:"):]}}],
+        "predicateType": predicate_type or gate.SPDX,
+        "predicate": {"spdxVersion": "SPDX-2.3", "name": "otus-diplom-portal",
+                      "documentNamespace": "https://example/spdx"},
     }
 
 
@@ -120,7 +134,8 @@ def baseline():
         "manifest_bytes": MANIFEST,
         "docker_content_digest": DIGEST,
         "verified_attestation": json.dumps(make_statement()) + "\n",
-        "certificate_identity": gate.WORKFLOW_IDENTITY,
+        "spdx_attestation": json.dumps(make_spdx_statement()) + "\n",
+        "certificate_identity": CONFIRMED_IDENTITY,
         "certificate_issuer": gate.FORGEJO_OIDC_ISSUER,
         "actor": OWNER,
         "run_id": RUN_ID,
@@ -374,6 +389,9 @@ class TestCliApplyScratchLock(unittest.TestCase):
             ev_path.write_text(json.dumps(ev))
             cmd = [sys.executable, str(self.GATE_PY), "verify", str(ev_path),
                    "--owner", OWNER, "--trusted-registry", REGISTRY,
+                   # review #99 item 2: the workflow CLI passes the CONFIRMED
+                   # identity/issuer from env (a placeholder is rejected fail-closed).
+                   "--identity", CONFIRMED_IDENTITY, "--issuer", gate.FORGEJO_OIDC_ISSUER,
                    "--pinned-source", PINNED, "--pinned-tools", TOOLS,
                    "--workflow-sha", WORKFLOW,
                    # review #95 item 2 (B): keyless verification requires the

@@ -42,15 +42,21 @@ REGISTRY = "registry.example"
 IMAGE = REGISTRY + "/aiopslab/otus-diplom-portal"
 RUN_ID = "1234567890"
 NOW = 2000000000  # 2033-05-18T03:33:20Z
+# review #99 item 2: a CONFIRMED (owner-substituted) certificate identity. The
+# POSITIVE flow uses this — the placeholder (gate.WORKFLOW_IDENTITY) is a
+# REJECTION even at oidc_trust_confirmed=true.
+CONFIRMED_IDENTITY = "repo:aiopslab/otus-diplom:ref:refs/heads/main"
 
 MANIFEST = b'{"schemaVersion":2,"mediaType":"application/vnd.oci.image.manifest.v1+json"}'
 DIGEST = "sha256:" + hashlib.sha256(MANIFEST).hexdigest()
 
 # Independent policy bindings (what the workflow CLI passes via flags), plus the
-# review #95 OIDC-trust confirmation (true only for the POSITIVE flow).
+# review #95 OIDC-trust confirmation and the review #99 CONFIRMED identity (both
+# true only for the POSITIVE flow).
 BINDINGS = {
     "owner": OWNER,
     "trusted_registry": REGISTRY,
+    "identity": CONFIRMED_IDENTITY,
     "source_sha": PINNED,
     "tools_sha": TOOLS,
     "workflow_sha": WORKFLOW,
@@ -84,15 +90,26 @@ def make_gate(**kw):
 
 def make_statement(**kw):
     pred = gate.build_predicate(PINNED, WORKFLOW, TOOLS, RUN_ID)
-    if kw.get("builder") is not None:
-        pred["builder"]["id"] = kw["builder"]
+    pred["builder"]["id"] = kw.get("builder", CONFIRMED_IDENTITY)
     if kw.get("build_type") is not None:
         pred["buildType"] = kw["build_type"]
     return {
         "_type": "https://in-toto.io/Statement/v1",
         "subject": [{"name": IMAGE, "digest": {"sha256": DIGEST[len("sha256:"):]}}],
-        "predicateType": gate.SLSA,
+        "predicateType": kw.get("predicate_type", gate.SLSA),
         "predicate": pred,
+    }
+
+
+def make_spdx_statement(**kw):
+    """A valid SPDX (spdxjson) attestation statement (review #99 item 1)."""
+    return {
+        "_type": "https://in-toto.io/Statement/v1",
+        "subject": [{"name": kw.get("image", IMAGE),
+                     "digest": {"sha256": kw.get("digest", DIGEST)[len("sha256:"):]}}],
+        "predicateType": kw.get("predicate_type", gate.SPDX),
+        "predicate": {"spdxVersion": "SPDX-2.3", "name": "otus-diplom-portal",
+                      "documentNamespace": "https://example/spdx"},
     }
 
 
@@ -119,7 +136,8 @@ def baseline():
         "manifest_bytes": MANIFEST,
         "docker_content_digest": DIGEST,
         "verified_attestation": json.dumps(make_statement()) + "\n",
-        "certificate_identity": gate.WORKFLOW_IDENTITY,
+        "spdx_attestation": json.dumps(make_spdx_statement()) + "\n",
+        "certificate_identity": CONFIRMED_IDENTITY,
         "certificate_issuer": gate.FORGEJO_OIDC_ISSUER,
         "actor": OWNER,
         "run_id": RUN_ID,
@@ -264,6 +282,137 @@ class TestOIDCTrust(unittest.TestCase):
         allowed, reason = gate.decide_lock_update(ev, BINDINGS, now=NOW)
         self.assertTrue(allowed, reason)
 
+    def test_placeholder_identity_rejected_even_with_confirmed_trust(self):
+        # review #99 item 2: oidc_trust_confirmed=true with a PLACEHOLDER SAN must
+        # NOT reach push/sign. Both the expected binding and the evidence carry the
+        # placeholder — the release is BLOCKED until the owner substitutes the exact
+        # SAN (never guessed).
+        ev = baseline()
+        ev["certificate_identity"] = gate.WORKFLOW_IDENTITY
+        allowed, reason = gate.decide_lock_update(
+            ev, dict(BINDINGS, identity=gate.WORKFLOW_IDENTITY), now=NOW)
+        self.assertFalse(allowed)
+        self.assertIn("identity not confirmed", reason)
+
+    def test_evidence_placeholder_identity_rejected(self):
+        # The binding is confirmed but the evidence still carries the placeholder
+        # (the YAML env WORKFLOW_IDENTITY was not substituted) — rejected.
+        ev = baseline()
+        ev["certificate_identity"] = gate.WORKFLOW_IDENTITY
+        allowed, reason = gate.decide_lock_update(ev, BINDINGS, now=NOW)
+        self.assertFalse(allowed)
+        self.assertIn("identity not confirmed", reason)
+
+
+class TestSpdxAttestation(unittest.TestCase):
+    """review #99 item 1: the SPDX (spdxjson) attestation is verified for its
+    SIGNED subject/type — independent negative fixtures for the SPDX type."""
+
+    def _verify(self, spdx_stmt):
+        ev = baseline()
+        ev["spdx_attestation"] = json.dumps(spdx_stmt) + "\n"
+        return gate.decide_lock_update(ev, BINDINGS, now=NOW)
+
+    def test_valid_spdx_allowed(self):
+        allowed, reason = self._verify(make_spdx_statement())
+        self.assertTrue(allowed, reason)
+
+    def test_spdx_wrong_predicate_type_rejected(self):
+        allowed, reason = self._verify(make_spdx_statement(predicate_type=gate.SLSA))
+        self.assertFalse(allowed)
+        self.assertIn("SPDX", reason)
+
+    def test_spdx_wrong_subject_digest_rejected(self):
+        allowed, reason = self._verify(
+            make_spdx_statement(digest="sha256:" + "b" * 64))
+        self.assertFalse(allowed)
+        self.assertIn("subject", reason)
+
+    def test_spdx_missing_subject_rejected(self):
+        stmt = make_spdx_statement()
+        stmt["subject"] = []
+        allowed, reason = self._verify(stmt)
+        self.assertFalse(allowed)
+        self.assertIn("subject", reason)
+
+    def test_spdx_missing_attestation_rejected(self):
+        ev = baseline()
+        ev.pop("spdx_attestation")
+        allowed, reason = gate.decide_lock_update(ev, BINDINGS, now=NOW)
+        self.assertFalse(allowed)
+        self.assertIn("SPDX", reason)
+
+
+class TestGateChangedBetweenJobs(unittest.TestCase):
+    """review #99 item 2: the release re-checks the gate against the POLICY pin +
+    THIS job's observed blob; a gate that changed between preflight and release is
+    refused BEFORE build/push."""
+
+    def _verify(self, gate_doc, **kw):
+        params = dict(expected_owner=OWNER, expected_source_sha=PINNED,
+                      expected_tools_sha=TOOLS, expected_workflow_sha=WORKFLOW,
+                      expected_repository="aiopslab/otus-diplom", expected_package=IMAGE,
+                      expected_ref="refs/heads/main", actor=OWNER, run_id=RUN_ID,
+                      run_attempt="1", now=NOW,
+                      observed_repository="aiopslab/otus-diplom",
+                      observed_ref="refs/heads/main",
+                      observed_workflow_sha=WORKFLOW)
+        params.update(kw)
+        return gate.verify_owner_gate(gate_doc, **params)
+
+    def test_valid_gate_accepted(self):
+        ok, reason = self._verify(make_gate())
+        self.assertTrue(ok, reason)
+
+    def test_gate_workflow_sha_changed_between_jobs_rejected(self):
+        # The OWNER_GATE secret was swapped between preflight and release: the gate
+        # now documents a DIFFERENT workflow_sha. Re-verification must refuse it
+        # even though the observed blob (WORKFLOW) is unchanged.
+        ok, reason = self._verify(make_gate(workflow_sha="d" * 40))
+        self.assertFalse(ok)
+        self.assertIn("workflow_sha", reason)
+
+    def test_gate_source_sha_changed_between_jobs_rejected(self):
+        ok, reason = self._verify(make_gate(source_sha="e" * 40))
+        self.assertFalse(ok)
+        self.assertIn("source_sha", reason)
+
+
+class TestToolsPin(unittest.TestCase):
+    """review #99 item 3: the EXACT pinned tools checkout must implement every gate
+    mode the workflow drives — a stale tools pin (predating workflow-blob) is
+    refused."""
+
+    def _tools_dir(self, gate_text):
+        import tempfile
+        d = tempfile.mkdtemp()
+        p = Path(d) / "portal" / "tools"
+        p.mkdir(parents=True)
+        (p / "forgejo_lock_gate.py").write_text(gate_text)
+        return d
+
+    def test_complete_gate_accepted(self):
+        d = self._tools_dir(Path(gate.__file__).read_text())
+        ok, reason = gate.verify_tools_pin(d)
+        self.assertTrue(ok, reason)
+
+    def test_stale_gate_missing_workflow_blob_rejected(self):
+        # A gate predating workflow-blob (like the stale PINNED_TOOLS_SHA 32a38ea)
+        # is missing the workflow-blob mode and must be refused.
+        stale = Path(gate.__file__).read_text().replace(
+            'if mode == "workflow-blob":', 'if mode == "workflow-blob-REMOVED":')
+        d = self._tools_dir(stale)
+        ok, reason = gate.verify_tools_pin(d)
+        self.assertFalse(ok)
+        self.assertIn("workflow-blob", reason)
+
+    def test_missing_gate_file_rejected(self):
+        import tempfile
+        d = tempfile.mkdtemp()
+        ok, reason = gate.verify_tools_pin(d)
+        self.assertFalse(ok)
+        self.assertIn("missing", reason)
+
 
 class TestWorkflowStructure(unittest.TestCase):
     """The workflow template encodes the barrier + release-only OIDC + fixed URL."""
@@ -302,6 +451,44 @@ class TestWorkflowStructure(unittest.TestCase):
     def test_cosign_version_has_no_double_v(self):
         doc = self._doc()
         self.assertEqual(doc["env"]["COSIGN_VERSION"], "3.1.3")
+
+    def test_tool_versions_have_no_double_v(self):
+        # review #99 item 3: rootlesskit/syft/trivy VERSION vars hold the bare tag
+        # (buildkit keeps the "v" because its asset name includes it).
+        doc = self._doc()
+        self.assertEqual(doc["env"]["ROOTLESSKIT_VERSION"], "2.3.1")
+        self.assertEqual(doc["env"]["SYFT_VERSION"], "1.55.0")
+        self.assertEqual(doc["env"]["TRIVY_VERSION"], "0.76.0")
+
+    def test_verify_attestation_uses_policy_not_annotations(self):
+        # review #99 item 1: cosign verify-attestation has NO -a flag; the source
+        # binding is enforced via --policy (CUE). The image-signature verify/sign
+        # keep the bare -a ref=… (supported there).
+        text = (Path(__file__).parent / "p8c-portal-forgejo-release.yml.template").read_text()
+        self.assertIn("--policy tools/portal/tools/cosign-slsa-policy.cue", text)
+        self.assertIn("--policy tools/portal/tools/cosign-spdx-policy.cue", text)
+        self.assertNotIn('-a ref="${{', text)
+
+    def test_release_rechecks_owner_gate(self):
+        # review #99 item 2: the release job re-verifies the gate (policy pin +
+        # observed blob) BEFORE build/push.
+        doc = self._doc()
+        steps = [s.get("name", "") for s in doc["jobs"]["release"]["steps"]]
+        self.assertIn("Re-verify owner gate in release (before build/push/sign)", steps)
+
+    def test_release_identity_placeholder_rejected(self):
+        # review #99 item 2: the release job rejects a placeholder identity before
+        # push/sign.
+        text = (Path(__file__).parent / "p8c-portal-forgejo-release.yml.template").read_text()
+        self.assertIn('WORKFLOW_IDENTITY: "<FORGEJO_OIDC_IDENTITY_UNCONFIRMED>"', text)
+        self.assertIn("workflow identity not confirmed (placeholder SAN)", text)
+
+    def test_tools_pin_check_step_present(self):
+        # review #99 item 3: the exact tools-pin check runs in every job.
+        doc = self._doc()
+        for job in ("test", "preflight", "release"):
+            steps = [s.get("name", "") for s in doc["jobs"][job]["steps"]]
+            self.assertIn("Verify pinned tools implement every gate mode (exact tools pin)", steps)
 
 
 if __name__ == "__main__":

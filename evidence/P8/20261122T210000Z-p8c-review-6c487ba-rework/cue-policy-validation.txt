@@ -1,0 +1,6 @@
+slsa valid (source bound)    want=true got=true PASS
+slsa wrong source material   want=false got=false PASS
+slsa wrong predicateType     want=false got=false PASS
+spdx valid                   want=true got=true PASS
+spdx wrong predicateType     want=false got=false PASS
+CUE POLICY VALIDATION: ALL CASES MATCHED EXPECTATION

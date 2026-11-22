@@ -101,13 +101,19 @@ env:
   GO_VERSION: "1.27.3"
   GO_SHA256: "65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40"
   BUILDKIT_VERSION: "v0.34.0"
-  ROOTLESSKIT_VERSION: "v2.3.1"
-  SYFT_VERSION: "v1.55.0"
-  TRIVY_VERSION: "v0.76.0"
-  # review #95 item 3: COSIGN_VERSION holds the bare tag (no leading "v"); the
-  # download URL below prepends "v", so the resolved URL is .../v3.1.3/... (the
-  # previous "v${COSIGN_VERSION}" produced "vv3.1.3"). SHA-256 verification is
-  # kept unchanged.
+  # review #99 item 3: VERSION vars hold the BARE tag (no leading "v") for
+  # rootlesskit/syft/trivy/cosign; the download URL prepends "v" for the release
+  # path and the asset name uses the bare tag (upstream asset names carry no "v":
+  # rootlesskit-x86_64.tar.gz, syft_1.55.0_linux_amd64.tar.gz,
+  # trivy_0.76.0_Linux-64bit.tar.gz, cosign-linux-amd64). buildkit is the
+  # exception — its asset name INCLUDES the "v" (buildkit-v0.34.0…), so
+  # BUILDKIT_VERSION keeps it. The previous "v${…_VERSION}" produced "vv…"
+  # (double-v) URLs for rootlesskit/syft/trivy. SHA-256 verification is unchanged
+  # and was re-verified against the real assets (see evidence/).
+  ROOTLESSKIT_VERSION: "2.3.1"
+  SYFT_VERSION: "1.55.0"
+  TRIVY_VERSION: "0.76.0"
+  # COSIGN_VERSION already holds the bare tag (review #95 item 3); kept unchanged.
   COSIGN_VERSION: "3.1.3"
   # Registry destination + owner identity are Owner-supplied P0 parameters
   # (Forgejo package registry OR trusted internal registry per issue #29#1680).
@@ -192,6 +198,15 @@ jobs:
           set -euo pipefail
           test "$(git -C tools rev-parse HEAD)" = "${{ env.PINNED_TOOLS_SHA }}" || { echo "STOP: tools != pinned tools"; exit 1; }
 
+      # review #99 item 3: the EXACT pinned tools checkout must implement every
+      # gate mode this workflow drives (owner-gate/inventory/…/workflow-blob/
+      # verify). A stale tools pin (e.g. one predating workflow-blob) is refused
+      # fail-closed before any release action.
+      - name: Verify pinned tools implement every gate mode (exact tools pin)
+        run: |
+          set -euo pipefail
+          python3 tools/portal/tools/forgejo_lock_gate.py tools-pin-check --tools-dir tools
+
       - name: Install verified Go archive (from pinned source tree)
         run: |
           cd src && bash portal/tools/install-verified-go.sh
@@ -259,6 +274,15 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git -C tools rev-parse HEAD)" = "${{ env.PINNED_TOOLS_SHA }}" || { echo "STOP: tools != pinned tools"; exit 1; }
+
+      # review #99 item 3: the EXACT pinned tools checkout must implement every
+      # gate mode this workflow drives (owner-gate/inventory/…/workflow-blob/
+      # verify). A stale tools pin (e.g. one predating workflow-blob) is refused
+      # fail-closed before any release action.
+      - name: Verify pinned tools implement every gate mode (exact tools pin)
+        run: |
+          set -euo pipefail
+          python3 tools/portal/tools/forgejo_lock_gate.py tools-pin-check --tools-dir tools
 
       - name: Build per-tree file inventories (git ls-tree)
         run: |
@@ -370,6 +394,15 @@ jobs:
           set -euo pipefail
           test "$(git -C tools rev-parse HEAD)" = "${{ env.PINNED_TOOLS_SHA }}" || { echo "STOP: tools != pinned tools"; exit 1; }
 
+      # review #99 item 3: the EXACT pinned tools checkout must implement every
+      # gate mode this workflow drives (owner-gate/inventory/…/workflow-blob/
+      # verify). A stale tools pin (e.g. one predating workflow-blob) is refused
+      # fail-closed before any release action.
+      - name: Verify pinned tools implement every gate mode (exact tools pin)
+        run: |
+          set -euo pipefail
+          python3 tools/portal/tools/forgejo_lock_gate.py tools-pin-check --tools-dir tools
+
       - name: Build per-tree file inventories (git ls-tree)
         run: |
           set -euo pipefail
@@ -397,14 +430,18 @@ jobs:
           printf '%s' "$OBSERVED_WORKFLOW_SHA" > "$RUNNER_TEMP/observed-workflow-sha.txt"
           echo "OBSERVED_WORKFLOW_SHA=$OBSERVED_WORKFLOW_SHA" >> "$GITHUB_ENV"
 
-      # review #95 item 2 (B): fail-closed BEFORE any build/push/sign unless the
-      # owner has confirmed the OIDC trust chain (CA trust to issuer+audience,
-      # exact SAN, workflow binding, trust roots for sign/verify/verify-
-      # attestation). Without that confirmation the keyless release is BLOCKED.
-      - name: Verify OIDC trust confirmation (release-only keyless)
+      # review #95 item 2 (B) + review #99 item 2 (B): fail-closed BEFORE any
+      # build/push/sign unless the owner has confirmed the OIDC trust chain (CA
+      # trust to issuer+audience, exact SAN, workflow binding, trust roots for
+      # sign/verify/verify-attestation) AND the identity is no longer the
+      # placeholder. Even at oidc_trust_confirmed=true a PLACEHOLDER SAN must not
+      # reach push/sign — the identity is rejected until it is the exact
+      # owner-confirmed value, never guessed.
+      - name: Verify OIDC trust + identity confirmation (release-only keyless)
         run: |
           set -euo pipefail
           [[ "${{ inputs.oidc_trust_confirmed }}" == "true" ]] || { echo "STOP: OIDC trust not confirmed (issuer/SAN/audience/trust roots) — keyless release BLOCKED"; exit 1; }
+          [[ "${{ env.WORKFLOW_IDENTITY }}" != "<FORGEJO_OIDC_IDENTITY_UNCONFIRMED>" ]] || { echo "STOP: workflow identity not confirmed (placeholder SAN) — keyless release BLOCKED"; exit 1; }
 
       - name: Write owner gate from secret (env, not shell source)
         env:
@@ -412,6 +449,32 @@ jobs:
         run: |
           set -euo pipefail
           printf '%s' "$OWNER_GATE" > "$RUNNER_TEMP/release-gate.json"
+
+      # review #99 item 2: the release job RE-CHECKS the gate against the POLICY
+      # pin and the OBSERVED workflow blob of THIS job, BEFORE any build/push/
+      # sign. The preflight check ran in a DIFFERENT job snapshot; a gate that
+      # changed between jobs (or a workflow blob that drifted) is refused here,
+      # not after the push. Uses the SAME owner-gate command + the SAME three-way
+      # compare as preflight (policy pin == owner document == observed blob).
+      - name: Re-verify owner gate in release (before build/push/sign)
+        env:
+          POLICY_WORKFLOW_SHA: ${{ secrets.POLICY_WORKFLOW_SHA }}
+        run: |
+          set -euo pipefail
+          python3 tools/portal/tools/forgejo_lock_gate.py owner-gate "$RUNNER_TEMP/release-gate.json" \
+            --owner "${{ env.OWNER_IDENTITY }}" \
+            --pinned-source "${{ env.PINNED_SOURCE_SHA }}" \
+            --pinned-tools "${{ env.PINNED_TOOLS_SHA }}" \
+            --pinned-workflow "$POLICY_WORKFLOW_SHA" \
+            --package "${{ env.IMAGE }}" \
+            --repository "${{ env.POLICY_REPOSITORY }}" \
+            --ref "${{ env.POLICY_REF }}" \
+            --observed-repository "${{ github.repository }}" \
+            --observed-ref "${{ github.ref }}" \
+            --observed-workflow-sha "$OBSERVED_WORKFLOW_SHA" \
+            --actor "${{ github.actor }}" \
+            --run-id "${{ github.run_id }}" \
+            --run-attempt "${{ github.run_attempt }}"
 
       # (review #58 item 5) Pre-push lock-image agreement: the FULL image the
       # gate was authorized to release must equal the SOURCE tree's real lock
@@ -543,19 +606,27 @@ jobs:
             > "$RUNNER_TEMP/provenance.json"
           cosign attest --yes --type spdxjson --predicate "$RUNNER_TEMP/sbom.spdx.json" "${IMAGE}@${IMAGE_DIGEST}"
           cosign attest --yes --type slsaprovenance --predicate "$RUNNER_TEMP/provenance.json" "${IMAGE}@${IMAGE_DIGEST}"
-          # review #95 item 3: verify BOTH attestations for the SAME digest
-          # (spdxjson AND slsaprovenance), each with the agreed identity/issuer
-          # and the source-ref annotation, so an unverified SBOM cannot slip
-          # through while only the provenance is checked.
+          # review #99 item 1: verify BOTH attestations for the SAME digest
+          # (slsaprovenance AND spdxjson). cosign verify-attestation v3.1.3 has
+          # NO -a/--annotations flag (it rejects it with "unknown shorthand flag:
+          # 'a'"), so subject/digest/type/source are verified via the SUPPORTED
+          # mechanisms:
+          #   * subject/digest — the positional image@digest argument
+          #   * type           — --type slsaprovenance / --type spdxjson
+          #   * source binding — --policy (CUE) asserting the pinned SOURCE SHA
+          #     (SLSA materials) / the SPDX document + subject (SBOM), PLUS the
+          #     gate's check_verified_statement / check_verified_spdx_statement
+          #     over the SIGNED output.
+          # (verify/sign keep the -a ref=… annotation for the image signature.)
           cosign verify-attestation --type slsaprovenance \
             --certificate-identity "${{ env.WORKFLOW_IDENTITY }}" \
             --certificate-oidc-issuer "${{ env.OIDC_ISSUER }}" \
-            -a ref="${{ env.PINNED_SOURCE_SHA }}" \
+            --policy tools/portal/tools/cosign-slsa-policy.cue \
             "${IMAGE}@${IMAGE_DIGEST}" > "$RUNNER_TEMP/attestation-provenance.jsonl"
           cosign verify-attestation --type spdxjson \
             --certificate-identity "${{ env.WORKFLOW_IDENTITY }}" \
             --certificate-oidc-issuer "${{ env.OIDC_ISSUER }}" \
-            -a ref="${{ env.PINNED_SOURCE_SHA }}" \
+            --policy tools/portal/tools/cosign-spdx-policy.cue \
             "${IMAGE}@${IMAGE_DIGEST}" > "$RUNNER_TEMP/attestation-sbom.jsonl"
 
       - name: Assemble evidence bundle (explicit, single job)
@@ -580,6 +651,7 @@ jobs:
             "manifest_file": t + "/manifest.bin",
             "docker_content_digest": open(t + "/dcd.txt").read().strip(),
             "verified_attestation_file": t + "/attestation-provenance.jsonl",
+            "spdx_attestation_file": t + "/attestation-sbom.jsonl",
             "certificate_identity": os.environ["WORKFLOW_IDENTITY"],
             "certificate_issuer": os.environ["OIDC_ISSUER"],
             "actor": os.environ["GITHUB_ACTOR"],
@@ -609,6 +681,8 @@ jobs:
           # additionally gated on --oidc-trust-confirmed (owner confirmation).
           python3 tools/portal/tools/forgejo_lock_gate.py verify "$RUNNER_TEMP/evidence.json" \
             --owner "${{ env.OWNER_IDENTITY }}" \
+            --identity "${{ env.WORKFLOW_IDENTITY }}" \
+            --issuer "${{ env.OIDC_ISSUER }}" \
             --trusted-registry "${{ env.REGISTRY }}" \
             --pinned-source "${{ env.PINNED_SOURCE_SHA }}" \
             --pinned-tools "${{ env.PINNED_TOOLS_SHA }}" \
@@ -642,6 +716,8 @@ jobs:
           [[ "$REVIEWED_DIGEST" =~ ^sha256:[0-9a-f]{64}$ && "$REVIEWED_DIGEST" == "$IMAGE_DIGEST" ]] || { echo "STOP: digest differs from owner-reviewed B"; exit 1; }
           python3 tools/portal/tools/forgejo_lock_gate.py verify "$RUNNER_TEMP/evidence.json" \
             --owner "${{ env.OWNER_IDENTITY }}" \
+            --identity "${{ env.WORKFLOW_IDENTITY }}" \
+            --issuer "${{ env.OIDC_ISSUER }}" \
             --trusted-registry "${{ env.REGISTRY }}" \
             --pinned-source "${{ env.PINNED_SOURCE_SHA }}" \
             --pinned-tools "${{ env.PINNED_TOOLS_SHA }}" \

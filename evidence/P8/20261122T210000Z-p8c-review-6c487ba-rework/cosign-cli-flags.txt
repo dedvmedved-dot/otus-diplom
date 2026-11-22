@@ -1,0 +1,14 @@
+# Actual cosign v3.1.3 CLI flag-acceptance (review #99 item 1)
+# UTC: 2026-11-22T21:02:14Z
+# binary: /tmp/cosign-linux-amd64  sha256=4629c757b7618056f8ddd7e2625ae9fdd94c0372a65049520bc7d9df9efc7f71
+
+$ cosign verify-attestation --type slsaprovenance -a ref=test --help
+Error: unknown shorthand flag: 'a' in -a
+
+$ cosign verify-attestation --type spdxjson -a ref=test --help
+Error: unknown shorthand flag: 'a' in -a
+
+$ cosign verify-attestation --type slsaprovenance --certificate-identity X --certificate-oidc-issuer Y --policy /nonexistent.cue --help   (exit=0)
+
+$ cosign verify -a ref=test --help   (exit=0)
+$ cosign sign -a ref=test --help   (exit=0)
