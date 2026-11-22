@@ -1,8 +1,9 @@
-# P8C #101 — перепубликация workflow и перепиновка (repin) после review #99
+# P8C #105 — доработка #102 по review #103: SPDX predicate, CUE tools pin, порядок публикации
 
-Роль: Implementation Engineer (Hermes). Источник: issue #101, review архитектора
-[P8C_REVIEW_99.md](P8C_REVIEW_99.md) (commit `6c487ba0f662f8adec5be8593cab7cb0e152dda9`),
-переработка PR #98 по review #95 ([P8C_REVIEW_95.md](P8C_REVIEW_95.md), commit `420ecc3822092b195d1d02271f16adb1b650ebc4`).
+Роль: Implementation Engineer (Hermes). Источник: issue #105, review архитектора
+[P8C_REVIEW_103.md](P8C_REVIEW_103.md) (commit `585355f67ee6d975e9f50e970583020d1b978573`),
+доработка PR #102 (SHA `237c3e2ea603998483707f22f5856df6679040dd`), который в свою очередь
+перерабатывал PR #98 по review #95/#99.
 
 Этот документ — **инструкция**, а не разрешение на запуск. Он описывает, что сделано в PR
 и какие шаги владелец выполняет ПОСЛЕ повторного review архитектора. Настоящее ревью не
@@ -29,9 +30,18 @@
   * тип — `--type slsaprovenance` / `--type spdxjson`;
   * привязка к source — `--policy tools/portal/tools/cosign-slsa-policy.cue` (SLSA:
     `predicateType` + `sourceSHA` в `predicate.materials[0]`) и
-    `--policy tools/portal/tools/cosign-spdx-policy.cue` (SPDX: `predicateType` +
-    subject), ПЛЮС проверка SIGNED-вывода в gate:
-    `check_verified_statement` (SLSA) и новая `check_verified_spdx_statement` (SPDX).
+    `--policy tools/portal/tools/cosign-spdx-policy.cue` (SPDX), ПЛЮС проверка
+    SIGNED-вывода в gate: `check_verified_statement` (SLSA) и
+    `check_verified_spdx_statement` (SPDX).
+- **review #103 item 2 — SPDX проверяется по содержимому, а не по оболочке.** Оба слоя
+  (CUE-политика и gate) теперь требуют подписанный НЕПУСТОЙ SPDX-документ ожидаемой
+  формы: `spdxVersion` (SPDX-2.x), `SPDXID == "SPDXRef-DOCUMENT"`, непустые `name` /
+  `documentNamespace` и НЕПУСТОЙ `packages`. Привязки разделены явно: **SBOM→digest**
+  (SPDX: подписанный subject = image@digest + документ той самой image) и
+  **digest→source** (SLSA: тот же digest связан с pinned source SHA через
+  `predicate.materials[]`). Сама строка `predicateType` не доказывает ни того, ни
+  другого. Положительный фикстур — форма Syft/cosign; отрицательные — отсутствующий /
+  пустой / чужой документ (неверный `spdxVersion`/`SPDXID`, пустой `packages`).
 - CUE-политики проверены offline тем же движком, что использует cosign
   (`cuejson.Validate`): positive PASS, negative (неверный source material / неверный
   predicateType для каждого типа) REJECT (см. `evidence/`).
@@ -54,16 +64,21 @@
   gate изменён между jobs (workflow_sha/source_sha) отклонён; positive — только с
   подтверждённой identity.
 
-### 3/tools-pin — проверка точного tools pin (review #99 item 3)
+### 3/tools-pin — проверка точного tools pin (review #99 item 3 + review #103 item 3)
 
-- Новая команда `forgejo_lock_gate.py tools-pin-check --tools-dir tools` +
+- Команда `forgejo_lock_gate.py tools-pin-check --tools-dir tools` +
   `verify_tools_pin()`: сверяет, что **реально выбранный** tools checkout (по
   `PINNED_TOOLS_SHA`) реализует все gate-режимы, которые вызывает workflow
   (owner-gate/inventory/lock-image-check/digest/registry-fetch/predicate/workflow-blob/
-  verify). Протухший tools pin (напр. `32a38ea` без `workflow-blob`) отклоняется
-  fail-closed ДО побочных эффектов. Шаг добавлен в `test`, `preflight` и `release`.
-- Автономный тест: complete gate ACCEPT, gate без `workflow-blob` REJECT, отсутствие
-  файла REJECT.
+  verify) И несёт/загружает обе CUE-политики, которые workflow открывает через
+  `cosign verify-attestation --policy` (`cosign-slsa-policy.cue` +
+  `cosign-spdx-policy.cue`). Протухший tools pin (напр. `32a38ea` без `workflow-blob`)
+  или pin без одной из политик отклоняется fail-closed ДО побочных эффектов (до
+  build/push/sign, когда политики ещё не открыты). Шаг добавлен в `test`, `preflight`
+  и `release`.
+- Автономные тесты: complete gate ACCEPT; gate без `workflow-blob` REJECT; gate со
+  всеми командами, но БЕЗ одной из CUE-политик REJECT; пустая политика REJECT;
+  отсутствие файла REJECT.
 
 ### 4/tooling — устранена двойная `v` и проверены ассеты/checksum (review #99 item 3)
 
@@ -78,39 +93,60 @@
 Офлайн, синтетика, без CI/registry/secrets. Запуск: `bash portal/tools/run_offline_suite.sh`.
 
 - `test_forgejo_lock_gate.py` (89), `test_forgejo_offline_integration.py` (37),
-  `test_owner_gate_barrier.py` (37 — барьер/OIDC/blob/плейсхолдер-identity/SPDX/
-  gate-между-jobs/tools-pin/структура), `test_cosign_cli_flags.py` (5 — фактический
-  cosign CLI). Итого 168 тестов + синтаксис шаблона VERIFIED (4 job, 93 выражения).
-- CUE-политики проверены offline тем же `cuejson.Validate` (см. `evidence/`).
+  `test_owner_gate_barrier.py` (46 — барьер/OIDC/blob/плейсхолдер-identity/SPDX
+  (predicate-содержимое + отрицательные фикстуры)/gate-между-jobs/tools-pin
+  (CUE-политики)/структура), `test_cosign_cli_flags.py` (5 — фактический
+  cosign CLI). Итого 177 тестов + синтаксис шаблона VERIFIED (4 job, 93 выражения).
+- CUE-политики проверены offline тем же `cuejson.Validate` (cuelang.org/go v0.9.2),
+  что использует cosign: positive (SLSA/SPDX) PASS, negative (неверный source
+  material / неверный predicateType / отсутствующий-пустой-чужой SPDX-документ)
+  REJECT (см. `evidence/`).
 
 ## 3. Публикация и repin (владелец, ПОСЛЕ повторного review) — ИСПРАВЛЕННЫЙ ПОРЯДОК
 
-Порядок разделяет **подготовку** и **публикацию**, чтобы обе правки YAML (tools pin и
-identity/SAN) не меняли blob уже опубликованного workflow:
+**Все байты YAML, SAN (identity) и tools SHA финализируются ДО review и публикации.**
+После публикации workflow никакая правка YAML недопустима — допустима только **сверка**
+(сравнение) уже опубликованного blob с просмотренным и сверка tools pin.
 
-1. **Подготовка (этот PR)**: финальные tools (gate + тесты + CUE-политики + template),
-   финальный плейсхолдер identity, финальный workflow YAML. Ничего не публикуется.
-2. **Review точной версии**: архитектор принимает PR — принимает ТОЧНЫЙ SHA tools
-   (commit с `workflow-blob` + `tools-pin-check` + CUE-политиками) и ТОЧНЫЙ текст
-   workflow. Перепубликация и repin — только после этого review.
-3. **Отдельное решение владельца** о публикации (не это ревью).
-4. **Публикация**: workflow фиксируется в `.forgejo/workflows/p8c-portal-forgejo-release.yml`
-   в дереве `main`; фиксируются **merge commit** и **новый blob**
+1. **Подтвердить identity/SAN (владелец, ВНЕ этого PR)**: точное значение сертификатной
+   identity (Forgejo id-token `sub` / SAN), привязка к одобренному workflow, CA-доверие
+   к issuer (`https://git.aiopslab.online/api/actions`) и audience, trust roots. **Пока
+   SAN неизвестен — подготовка остаётся НЕЗАВЕРШЁННОЙ**, значение НЕ угадывается
+   (`<FORGEJO_OIDC_IDENTITY_UNCONFIRMED>` остаётся плейсхолдером, release BLOCKED).
+2. **Отдельный commit tools с подтверждённой identity**: в `forgejo_lock_gate.py`
+   подставить подтверждённый `WORKFLOW_IDENTITY` (плейсхолдер заменён точным значением
+   из п. 1); CUE-политики уже несут фиксированный `sourceSHA`. Этот commit финализирует
+   **tools SHA** (commit с `workflow-blob` + `tools-pin-check` + обеими CUE-политиками).
+   После этого шага identity в gate больше не меняется (иначе поменялся бы tools commit).
+3. **Подставить tools SHA и identity в кандидат YAML**: `PINNED_TOOLS_SHA` = точный tools
+   SHA из п. 2, `WORKFLOW_IDENTITY` = точная identity из п. 1. Теперь **байты кандидата
+   YAML финализированы** (tools pin и identity больше не меняются до публикации).
+4. **Проверить точные байты и checkout** (до build/push): `git -C tools rev-parse HEAD ==
+   PINNED_TOOLS_SHA`; обе CUE-политики присутствуют и загружаются из того же checkout
+   (`tools-pin-check` до внешних записей); workflow-синтаксис VERIFIED.
+5. **Review точной версии**: архитектор принимает PR — принимает ТОЧНЫЙ tools SHA,
+   ТОЧНЫЙ текст workflow и подтверждённую identity (все байты финализированы в п. 1–3).
+6. **Отдельное решение владельца** о публикации (не это ревью).
+7. **Публикация БЕЗ правок**: workflow фиксируется в
+   `.forgejo/workflows/p8c-portal-forgejo-release.yml` в дереве `main` БЕЗ каких-либо
+   правок; фиксируются **merge commit** и **новый blob**
    `git rev-parse <merge_commit>:.forgejo/workflows/p8c-portal-forgejo-release.yml`
-   (объект — `blob`). Никаких правок YAML после этого шага.
-5. **Repin POLICY_WORKFLOW_SHA** → новый blob (секрет репозитория). OWNER_GATE несёт
-   `workflow_sha` = тот же новый blob.
-6. **Repin PINNED_TOOLS_SHA** → точный SHA из п. 2 (commit с workflow-blob +
-   tools-pin-check + CUE-политиками). Этот commit НЕ меняет blob workflow (tools —
-   отдельный pin), поэтому порядок безопасен.
-7. **Подтвердить барьер**: выделенный runner/label `otus-diplom-admission` без других
-   подходящих runners; процедура закрытия/открытия выдачи из раздела 1.
-8. **Подтвердить OIDC**: доверие CA к issuer (`https://git.aiopslab.online/api/actions`)
-   и audience, точный SAN, привязка `sub` к одобренному workflow, trust roots; заменить
-   `<FORGEJO_OIDC_IDENTITY_UNCONFIRMED>` подтверждённым значением (в YAML env и в
-   `forgejo_lock_gate.py`).
-9. Только после п. 5–8 — **отдельное** решение о первом B. Это ревью не разрешает
-   dispatch, выпуск, смену секретов или lock.
+   (объект — `blob`). После этого шага правки YAML запрещены.
+8. **Сверка blob с просмотренным**: сравнить опубликованный blob с blob, который видел
+   архитектор на review (п. 5). Это — сверка (сравнение), НЕ редактирование. Допустима
+   также сверка tools pin (реально выбранный checkout == `PINNED_TOOLS_SHA`).
+9. **Выставить policy/OWNER_GATE** (только после п. 7–8): `POLICY_WORKFLOW_SHA` → новый
+   blob (секрет репозитория); OWNER_GATE несёт `workflow_sha` = тот же новый blob. Это
+   отдельные out-of-band секреты, а НЕ байты YAML.
+10. Подтвердить барьер (выделенный runner/label `otus-diplom-admission` без других
+    подходящих runners; процедура закрытия/открытия выдачи из раздела 1). Только после
+    п. 9–10 — **отдельное** решение о первом B. Это ревью не разрешает dispatch, выпуск,
+    смену секретов или lock.
+
+Ключевое отличие от прошлой редакции: `PINNED_TOOLS_SHA` и `WORKFLOW_IDENTITY` больше
+не правятся ПОСЛЕ публикации (п. 6/8 старой редакции) — они финализируются в п. 1–3 ДО
+review и публикации. Шаг 8 «сверка blob» — это сравнение, а не запись в YAML, поэтому
+он не противоречит запрету на правки после публикации.
 
 ## 4. Замечания для ревьюера
 
@@ -119,6 +155,14 @@ identity/SAN) не меняли blob уже опубликованного workf
 - SHA-256 cosign `v3.1.3` = `4629c757b7618056f8ddd7e2625ae9fdd94c0372a65049520bc7d9df9efc7f71`
   перепроверен по сети (совпал с pin; подтверждено в review #99).
 - `PINNED_TOOLS_SHA` в исполняемом YAML всё ещё `32a38ea…` (протухший, без
-  `workflow-blob`) — **намеренно не менялся** (запрет «не менять действующие pins»);
-  `tools-pin-check` и шаг в workflow теперь отклоняют такой pin fail-closed, а repin —
-  п. 6 выше.
+  `workflow-blob`) и `WORKFLOW_IDENTITY` — плейсхолдер — **намеренно НЕ менялись**
+  (запрет «не менять действующие pins/секреты» + «не угадывать SAN»); `tools-pin-check`
+  теперь отклоняет такой pin fail-closed, а финализация точного tools SHA + identity —
+  §3 п. 1–3 (ДО review/публикации).
+- **review #103**: (1) порядок публикации исправлен — YAML/SAN/tools SHA финализируются
+  до review/публикации, после публикации только сверка blob (§3); (2) SPDX проверяется
+  по содержимому (непустой документ ожидаемой формы) на обоих слоях (CUE + gate), с
+  явным разделением SBOM→digest и digest→source, положительным Syft-фикстуром и
+  отрицательными отсутствующий/пустой/чужой; (3) `tools-pin-check` требует и загружает
+  обе CUE-политики из того же checkout до внешних записей (отрицательный тест — gate со
+  всеми командами, но без одной политики).

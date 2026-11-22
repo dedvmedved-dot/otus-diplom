@@ -76,6 +76,9 @@ from pathlib import Path
 SHA_RE = re.compile(r"[0-9a-f]{40}\Z")
 DIGEST_RE = re.compile(r"sha256:[0-9a-f]{64}\Z")
 ISO_RE = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z\Z")
+# SPDX document identity (review #103 item 2): the SPDX predicate must be a
+# non-empty SPDX document of the expected shape — SPDX-2.x + SPDXRef-DOCUMENT.
+SPDX_VERSION_RE = re.compile(r"SPDX-2\.[0-9]+\Z")
 
 # Forgejo identity / OIDC. review #95 item 2 (B): the Actions OIDC issuer is
 # confirmed by source — routers/api/actions/id_token.go + discovery
@@ -304,12 +307,26 @@ GATE_MODES = (
     "verify",
 )
 
+# The CUE policies the workflow opens via `cosign verify-attestation --policy`
+# (SLSA provenance + SPDX SBOM). review #103 item 3: the EXACT pinned tools
+# checkout must also CARRY and LOAD both policies — the workflow opens them only
+# after push/sign, so a tools pin whose gate implements every mode but is
+# missing a policy would fail only at verify time. They are checked HERE (from
+# the same checkout, before any external write).
+REQUIRED_CUE_POLICIES = (
+    "portal/tools/cosign-slsa-policy.cue",
+    "portal/tools/cosign-spdx-policy.cue",
+)
 
-def verify_tools_pin(tools_dir, required_modes=GATE_MODES):
+
+def verify_tools_pin(tools_dir, required_modes=GATE_MODES,
+                     required_cue_policies=REQUIRED_CUE_POLICIES):
     """(ok, reason). The pinned tools checkout must implement every gate mode the
-    workflow invokes. Reads the gate SOURCE from the ACTUAL tools checkout (never
-    from the importing module), so a stale/mismatched PINNED_TOOLS_SHA is caught
-    before any release action (review #99 item 3)."""
+    workflow invokes AND carry/load both CUE policies the workflow opens with
+    ``cosign verify-attestation --policy``. Reads the gate SOURCE and the policy
+    files from the ACTUAL tools checkout (never from the importing module), so a
+    stale/mismatched PINNED_TOOLS_SHA is caught before any release action
+    (review #99 item 3 + review #103 item 3)."""
     gate_path = Path(tools_dir) / "portal" / "tools" / "forgejo_lock_gate.py"
     if not gate_path.is_file():
         return False, "tools pin: forgejo_lock_gate.py missing at %s" % gate_path
@@ -320,7 +337,25 @@ def verify_tools_pin(tools_dir, required_modes=GATE_MODES):
     missing = [m for m in required_modes if ('mode == "%s"' % m) not in text]
     if missing:
         return False, "tools pin: gate missing modes: %s" % ", ".join(missing)
-    return True, "tools pin implements all required gate modes"
+    # review #103 item 3: both CUE policies must be present AND loadable from
+    # the SAME checkout (the workflow opens them only after push/sign, so their
+    # absence here would otherwise surface too late). "Loadable" is checked
+    # structurally: readable, non-empty and carrying the predicateType binding
+    # each policy is required to enforce (the full cuejson.Validate runs at
+    # verify-attestation time inside cosign and in the offline evidence).
+    for rel in required_cue_policies:
+        policy_path = Path(tools_dir) / rel
+        if not policy_path.is_file():
+            return False, "tools pin: CUE policy missing at %s" % policy_path
+        try:
+            policy_text = policy_path.read_text()
+        except OSError as exc:
+            return False, "tools pin: CUE policy unreadable (%s): %s" % (rel, exc)
+        if not policy_text.strip():
+            return False, "tools pin: CUE policy empty: %s" % rel
+        if "predicateType:" not in policy_text:
+            return False, "tools pin: CUE policy missing predicateType binding: %s" % rel
+    return True, "tools pin implements all required gate modes and loads both CUE policies"
 
 
 # ---------------------------------------------------------------------------
@@ -730,9 +765,17 @@ def check_verified_statement(statement, *, expected_image_ref, expected_digest,
 
 def check_verified_spdx_statement(statement, *, expected_image_ref, expected_digest):
     """(ok, reason). The VERIFIED SPDX attestation must bind its subject to the
-    image/digest and carry the SPDX predicateType (review #99 item 1: the spdxjson
-    attestation is verified for its SIGNED subject/type — the source binding of an
-    SPDX SBOM IS the subject digest, since the document describes that exact image)."""
+    image/digest AND carry a SIGNED NON-EMPTY SPDX document of the expected
+    shape as its predicate.
+
+    review #103 item 2: the SBOM→digest binding is the signed SUBJECT
+    (image@digest) — the SPDX document describes that exact image — while the
+    digest→source binding is the SEPARATE SLSA provenance (check_verified_statement
+    binds the same digest to the pinned source SHA via its materials). The SPDX
+    ``predicateType`` string alone proves NEITHER: this check therefore reads the
+    predicate and requires an SPDX document of the expected shape (SPDX-2.x +
+    SPDXRef-DOCUMENT, non-empty name/documentNamespace, non-empty packages), so
+    a missing / empty / foreign document is rejected fail-closed."""
     if not isinstance(statement, dict):
         return False, "spdx statement: not an object"
     if statement.get("_type") not in IN_TOTO_TYPES:
@@ -743,11 +786,35 @@ def check_verified_spdx_statement(statement, *, expected_image_ref, expected_dig
     if not isinstance(subjects, list) or len(subjects) == 0:
         return False, "spdx statement: subject missing"
     want_hex = expected_digest[len("sha256:"):]
+    bound = False
     for sub in subjects:
         if (isinstance(sub, dict) and sub.get("name") == expected_image_ref
                 and (sub.get("digest") or {}).get("sha256") == want_hex):
-            return True, "spdx statement bound to image/digest"
-    return False, "spdx statement: subject does not bind image/digest"
+            bound = True
+            break
+    if not bound:
+        return False, "spdx statement: subject does not bind image/digest"
+    # review #103 item 2: the predicate must be a NON-EMPTY SPDX document of the
+    # expected shape — not merely present. The SPDX document identity + a
+    # non-empty packages list are required; an absent / empty / foreign document
+    # (wrong spdxVersion or SPDXID, empty packages) is rejected.
+    predicate = statement.get("predicate")
+    if not isinstance(predicate, dict) or not predicate:
+        return False, "spdx statement: predicate (SPDX document) missing/empty"
+    spdx_version = predicate.get("spdxVersion")
+    if not isinstance(spdx_version, str) or not SPDX_VERSION_RE.match(spdx_version):
+        return False, "spdx statement: predicate.spdxVersion not SPDX-2.x"
+    if predicate.get("SPDXID") != "SPDXRef-DOCUMENT":
+        return False, "spdx statement: predicate.SPDXID != SPDXRef-DOCUMENT"
+    if not isinstance(predicate.get("name"), str) or not predicate["name"].strip():
+        return False, "spdx statement: predicate.name missing/empty"
+    if (not isinstance(predicate.get("documentNamespace"), str)
+            or not predicate["documentNamespace"].strip()):
+        return False, "spdx statement: predicate.documentNamespace missing/empty"
+    packages = predicate.get("packages")
+    if not isinstance(packages, list) or len(packages) == 0:
+        return False, "spdx statement: predicate.packages missing/empty"
+    return True, "spdx statement bound to image/digest (non-empty SPDX document)"
 
 
 # ---------------------------------------------------------------------------
@@ -914,9 +981,14 @@ def decide_lock_update(evidence, bindings=None, now=None):
             break
     if not ok:
         return False, reason
-    # review #99 item 1: the SPDX attestation is verified for the SAME digest
-    # (subject/type) — an unverified SBOM must not slip through while only the
-    # SLSA provenance is checked.
+    # review #99 item 1 + review #103 item 2: the SPDX attestation is verified
+    # for the SAME digest — an unverified SBOM must not slip through while only
+    # the SLSA provenance is checked. The two bindings are DISTINCT and both are
+    # required, so the predicateType string alone proves neither:
+    #   * SBOM→digest  (this SPDX attestation): the signed subject is image@digest
+    #     AND the predicate is a non-empty SPDX document of the expected shape.
+    #   * digest→source (the SLSA attestation above): the same image@digest is
+    #     bound to the pinned source SHA via predicate.materials[].digest.sha1.
     spdx_statements = parse_verified_attestation(evidence.get("spdx_attestation") or "")
     if not spdx_statements:
         return False, "no verified SPDX attestation result (discovery alone is not trust)"

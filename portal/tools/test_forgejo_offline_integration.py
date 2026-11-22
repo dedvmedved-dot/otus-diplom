@@ -93,13 +93,31 @@ def make_statement(digest=DIGEST, image=IMAGE, source=PINNED, workflow=WORKFLOW,
 
 
 def make_spdx_statement(digest=DIGEST, image=IMAGE, predicate_type=None):
-    """A valid SPDX (spdxjson) attestation statement (review #99 item 1)."""
+    """A valid SPDX (spdxjson) attestation statement (review #103 item 2): a
+    realistic Syft/cosign SPDX-2.3 document with a NON-EMPTY packages list."""
     return {
         "_type": "https://in-toto.io/Statement/v1",
         "subject": [{"name": image, "digest": {"sha256": digest[len("sha256:"):]}}],
         "predicateType": predicate_type or gate.SPDX,
-        "predicate": {"spdxVersion": "SPDX-2.3", "name": "otus-diplom-portal",
-                      "documentNamespace": "https://example/spdx"},
+        "predicate": {
+            "spdxVersion": "SPDX-2.3",
+            "dataLicense": "CC0-1.0",
+            "SPDXID": "SPDXRef-DOCUMENT",
+            "name": "otus-diplom-portal",
+            "documentNamespace": "https://anchore.com/syft/otus-diplom-portal-0.1.0",
+            "creationInfo": {
+                "licenseListVersion": "3.24",
+                "creators": ["Organization: Anchore, Inc", "Tool: syft-1.55.0"],
+                "created": "2026-01-01T00:00:00Z",
+            },
+            "packages": [
+                {"SPDXID": "SPDXRef-Package-portal", "name": "portal",
+                 "versionInfo": "0.1.0", "downloadLocation": "NOASSERTION",
+                 "licenseConcluded": "NOASSERTION", "licenseDeclared": "NOASSERTION",
+                 "copyrightText": "NOASSERTION"},
+            ],
+            "documentDescribes": ["SPDXRef-Package-portal"],
+        },
     }
 
 

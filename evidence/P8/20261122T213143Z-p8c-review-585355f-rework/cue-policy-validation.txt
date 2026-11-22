@@ -1,0 +1,14 @@
+slsa valid (source bound)        want=true got=true PASS
+slsa wrong source material       want=false got=false PASS
+slsa wrong predicateType         want=false got=false PASS
+spdx valid (syft shape)          want=true got=true PASS
+spdx wrong predicateType         want=false got=false PASS
+spdx wrong spdxVersion (foreign) want=false got=false PASS
+spdx wrong SPDXID (foreign)      want=false got=false PASS
+spdx empty packages (foreign)    want=false got=false PASS
+
+GATE-enforced (check_verified_spdx_statement, NOT the CUE layer):
+  missing predicate / empty predicate / missing name / missing
+  documentNamespace / empty packages are rejected by the gate over the
+  SIGNED statement (test_owner_gate_barrier.py:TestSpdxAttestation).
+CUE POLICY VALIDATION: ALL CASES MATCHED EXPECTATION

@@ -102,14 +102,35 @@ def make_statement(**kw):
 
 
 def make_spdx_statement(**kw):
-    """A valid SPDX (spdxjson) attestation statement (review #99 item 1)."""
+    """A valid SPDX (spdxjson) attestation statement (review #103 item 2): a
+    realistic Syft/cosign SPDX-2.3 document — document identity (SPDX-2.x +
+    SPDXRef-DOCUMENT), non-empty name / documentNamespace and a NON-EMPTY
+    packages list. The predicateType string alone proves nothing, so the gate
+    (check_verified_spdx_statement) and the CUE policy require this shape."""
     return {
         "_type": "https://in-toto.io/Statement/v1",
         "subject": [{"name": kw.get("image", IMAGE),
                      "digest": {"sha256": kw.get("digest", DIGEST)[len("sha256:"):]}}],
         "predicateType": kw.get("predicate_type", gate.SPDX),
-        "predicate": {"spdxVersion": "SPDX-2.3", "name": "otus-diplom-portal",
-                      "documentNamespace": "https://example/spdx"},
+        "predicate": {
+            "spdxVersion": "SPDX-2.3",
+            "dataLicense": "CC0-1.0",
+            "SPDXID": "SPDXRef-DOCUMENT",
+            "name": "otus-diplom-portal",
+            "documentNamespace": "https://anchore.com/syft/otus-diplom-portal-0.1.0",
+            "creationInfo": {
+                "licenseListVersion": "3.24",
+                "creators": ["Organization: Anchore, Inc", "Tool: syft-1.55.0"],
+                "created": "2026-01-01T00:00:00Z",
+            },
+            "packages": [
+                {"SPDXID": "SPDXRef-Package-portal", "name": "portal",
+                 "versionInfo": "0.1.0", "downloadLocation": "NOASSERTION",
+                 "licenseConcluded": "NOASSERTION", "licenseDeclared": "NOASSERTION",
+                 "copyrightText": "NOASSERTION"},
+            ],
+            "documentDescribes": ["SPDXRef-Package-portal"],
+        },
     }
 
 
@@ -305,8 +326,10 @@ class TestOIDCTrust(unittest.TestCase):
 
 
 class TestSpdxAttestation(unittest.TestCase):
-    """review #99 item 1: the SPDX (spdxjson) attestation is verified for its
-    SIGNED subject/type — independent negative fixtures for the SPDX type."""
+    """review #103 item 2: the SPDX (spdxjson) attestation must carry a SIGNED
+    NON-EMPTY SPDX document of the expected shape — not just a predicateType and
+    a subject list. Independent negative fixtures for missing / empty / foreign
+    documents, alongside the positive Syft/cosign shape."""
 
     def _verify(self, spdx_stmt):
         ev = baseline()
@@ -341,6 +364,50 @@ class TestSpdxAttestation(unittest.TestCase):
         allowed, reason = gate.decide_lock_update(ev, BINDINGS, now=NOW)
         self.assertFalse(allowed)
         self.assertIn("SPDX", reason)
+
+    # --- review #103 item 2: predicate CONTENT, not just the shell ------------
+
+    def test_spdx_missing_predicate_rejected(self):
+        stmt = make_spdx_statement()
+        stmt.pop("predicate")
+        allowed, reason = self._verify(stmt)
+        self.assertFalse(allowed)
+        self.assertIn("predicate", reason)
+
+    def test_spdx_empty_predicate_rejected(self):
+        stmt = make_spdx_statement()
+        stmt["predicate"] = {}
+        allowed, reason = self._verify(stmt)
+        self.assertFalse(allowed)
+        self.assertIn("predicate", reason)
+
+    def test_spdx_foreign_document_wrong_version_rejected(self):
+        stmt = make_spdx_statement()
+        stmt["predicate"]["spdxVersion"] = "SPDX-1.0"  # not SPDX-2.x
+        allowed, reason = self._verify(stmt)
+        self.assertFalse(allowed)
+        self.assertIn("spdxVersion", reason)
+
+    def test_spdx_foreign_document_wrong_spdxid_rejected(self):
+        stmt = make_spdx_statement()
+        stmt["predicate"]["SPDXID"] = "SPDXRef-SomethingElse"
+        allowed, reason = self._verify(stmt)
+        self.assertFalse(allowed)
+        self.assertIn("SPDXID", reason)
+
+    def test_spdx_empty_packages_rejected(self):
+        stmt = make_spdx_statement()
+        stmt["predicate"]["packages"] = []
+        allowed, reason = self._verify(stmt)
+        self.assertFalse(allowed)
+        self.assertIn("packages", reason)
+
+    def test_spdx_missing_document_namespace_rejected(self):
+        stmt = make_spdx_statement()
+        stmt["predicate"].pop("documentNamespace")
+        allowed, reason = self._verify(stmt)
+        self.assertFalse(allowed)
+        self.assertIn("documentNamespace", reason)
 
 
 class TestGateChangedBetweenJobs(unittest.TestCase):
@@ -379,16 +446,24 @@ class TestGateChangedBetweenJobs(unittest.TestCase):
 
 
 class TestToolsPin(unittest.TestCase):
-    """review #99 item 3: the EXACT pinned tools checkout must implement every gate
-    mode the workflow drives — a stale tools pin (predating workflow-blob) is
-    refused."""
+    """review #99 item 3 + review #103 item 3: the EXACT pinned tools checkout
+    must implement every gate mode the workflow drives AND carry/load both CUE
+    policies — a stale tools pin (predating workflow-blob) or one missing a
+    policy is refused fail-closed."""
 
-    def _tools_dir(self, gate_text):
+    def _tools_dir(self, gate_text, *, policies=None):
         import tempfile
         d = tempfile.mkdtemp()
         p = Path(d) / "portal" / "tools"
         p.mkdir(parents=True)
         (p / "forgejo_lock_gate.py").write_text(gate_text)
+        # Copy the REAL CUE policies into the checkout so a complete tools dir
+        # loads them from the SAME checkout (review #103 item 3).
+        real_tools = Path(gate.__file__).parent
+        names = policies if policies is not None else ("cosign-slsa-policy.cue",
+                                                       "cosign-spdx-policy.cue")
+        for name in names:
+            (p / name).write_text((real_tools / name).read_text())
         return d
 
     def test_complete_gate_accepted(self):
@@ -412,6 +487,33 @@ class TestToolsPin(unittest.TestCase):
         ok, reason = gate.verify_tools_pin(d)
         self.assertFalse(ok)
         self.assertIn("missing", reason)
+
+    # --- review #103 item 3: the CUE policies must be carried by the checkout ---
+
+    def test_gate_with_commands_but_missing_spdx_policy_rejected(self):
+        # The gate implements every required mode but the SPDX CUE policy is
+        # absent — the workflow opens it only after push/sign, so it must be
+        # caught HERE (before any external write), not at verify time.
+        d = self._tools_dir(Path(gate.__file__).read_text(),
+                            policies=("cosign-slsa-policy.cue",))
+        ok, reason = gate.verify_tools_pin(d)
+        self.assertFalse(ok)
+        self.assertIn("CUE policy missing", reason)
+
+    def test_gate_with_commands_but_missing_slsa_policy_rejected(self):
+        d = self._tools_dir(Path(gate.__file__).read_text(),
+                            policies=("cosign-spdx-policy.cue",))
+        ok, reason = gate.verify_tools_pin(d)
+        self.assertFalse(ok)
+        self.assertIn("CUE policy missing", reason)
+
+    def test_gate_with_empty_cue_policy_rejected(self):
+        d = self._tools_dir(Path(gate.__file__).read_text())
+        p = Path(d) / "portal" / "tools" / "cosign-spdx-policy.cue"
+        p.write_text("")
+        ok, reason = gate.verify_tools_pin(d)
+        self.assertFalse(ok)
+        self.assertIn("empty", reason)
 
 
 class TestWorkflowStructure(unittest.TestCase):
