@@ -515,6 +515,31 @@ class TestToolsPin(unittest.TestCase):
         self.assertFalse(ok)
         self.assertIn("empty", reason)
 
+    def test_gate_with_swapped_cue_policies_rejected(self):
+        # review #106 item 3: presence + a bare `predicateType:` substring cannot
+        # tell the two policies apart — an EXACT copy of the SLSA policy placed at
+        # the SPDX path used to pass (tools_pin=true). Each policy must match its
+        # own role; the SPDX path carrying the SLSA policy must be refused.
+        d = self._tools_dir(Path(gate.__file__).read_text())
+        real_tools = Path(gate.__file__).parent
+        p = Path(d) / "portal" / "tools" / "cosign-spdx-policy.cue"
+        p.write_text((real_tools / "cosign-slsa-policy.cue").read_text())
+        ok, reason = gate.verify_tools_pin(d)
+        self.assertFalse(ok)
+        self.assertIn("swapped or corrupted", reason)
+
+    def test_gate_with_corrupted_cue_policy_rejected(self):
+        # review #106 item 3: a corrupted (truncated) CUE policy is still readable
+        # and non-empty, but its bytes no longer match the pre-reviewed reference —
+        # it must be refused fail-closed before any external write.
+        d = self._tools_dir(Path(gate.__file__).read_text())
+        p = Path(d) / "portal" / "tools" / "cosign-spdx-policy.cue"
+        raw = p.read_bytes()
+        p.write_bytes(raw[: len(raw) // 2])
+        ok, reason = gate.verify_tools_pin(d)
+        self.assertFalse(ok)
+        self.assertIn("swapped or corrupted", reason)
+
 
 class TestWorkflowStructure(unittest.TestCase):
     """The workflow template encodes the barrier + release-only OIDC + fixed URL."""

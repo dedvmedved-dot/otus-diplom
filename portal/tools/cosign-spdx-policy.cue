@@ -4,12 +4,18 @@
 // digest itself is verified by cosign from the positional image@digest argument
 // and by check_verified_spdx_statement in forgejo_lock_gate.py.
 //
-// review #103 item 2: this policy must require a SIGNED NON-EMPTY SPDX document
-// of the expected shape — NOT just the predicateType and a subject list. The
-// predicate must carry the SPDX document identity (SPDX-2.x + SPDXRef-DOCUMENT),
-// a non-empty name / documentNamespace and a NON-EMPTY packages list. A
-// missing / empty / foreign predicate is rejected here (cuejson.Validate)
-// before the gate re-checks the same shape over the SIGNED statement.
+// review #103 item 2 + review #106 item 2: this policy constrains the SHAPE of a
+// SIGNED SPDX document on the fields that ARE PRESENT — predicateType must be
+// the SPDX Document type, the predicate must carry the SPDX document identity
+// (SPDX-2.x + SPDXRef-DOCUMENT), a non-empty name / documentNamespace and a
+// NON-EMPTY packages list. cosign's `--policy` runs cuejson.Validate with
+// cue.Final(), which rejects CONTRADICTIONS on PRESENT fields (a foreign
+// predicateType, a wrong spdxVersion/SPDXID, an empty packages list) but does
+// NOT require ABSENT fields. Absence/emptiness of the predicate itself, name or
+// documentNamespace is therefore the GATE's responsibility — it is rejected by
+// check_verified_spdx_statement() in forgejo_lock_gate.py over the SIGNED
+// statement (see test_owner_gate_barrier.py:TestSpdxAttestation and the
+// per-layer matrix in evidence/), NOT by this policy.
 predicateType: "https://spdx.dev/Document"
 
 predicate: {

@@ -1,9 +1,9 @@
-# P8C #105 — доработка #102 по review #103: SPDX predicate, CUE tools pin, порядок публикации
+# P8C #107 — доработка #102 по review #106: границы SPDX-проверок + пара CUE до push
 
-Роль: Implementation Engineer (Hermes). Источник: issue #105, review архитектора
-[P8C_REVIEW_103.md](P8C_REVIEW_103.md) (commit `585355f67ee6d975e9f50e970583020d1b978573`),
-доработка PR #102 (SHA `237c3e2ea603998483707f22f5856df6679040dd`), который в свою очередь
-перерабатывал PR #98 по review #95/#99.
+Роль: Implementation Engineer (Hermes). Источник: issue #107, review архитектора
+[P8C_REVIEW_106.md](P8C_REVIEW_106.md) (commit `533cd2f7c63a5d192940a0476e419d5dadb27786`),
+доработка PR #102 (SHA `087a68100922338e72e76ce0b42d5b00fcc22cd5`), который ранее
+перерабатывался по review #103 (commit `585355f67ee6d975e9f50e970583020d1b978573`).
 
 Этот документ — **инструкция**, а не разрешение на запуск. Он описывает, что сделано в PR
 и какие шаги владелец выполняет ПОСЛЕ повторного review архитектора. Настоящее ревью не
@@ -33,18 +33,27 @@
     `--policy tools/portal/tools/cosign-spdx-policy.cue` (SPDX), ПЛЮС проверка
     SIGNED-вывода в gate: `check_verified_statement` (SLSA) и
     `check_verified_spdx_statement` (SPDX).
-- **review #103 item 2 — SPDX проверяется по содержимому, а не по оболочке.** Оба слоя
-  (CUE-политика и gate) теперь требуют подписанный НЕПУСТОЙ SPDX-документ ожидаемой
-  формы: `spdxVersion` (SPDX-2.x), `SPDXID == "SPDXRef-DOCUMENT"`, непустые `name` /
-  `documentNamespace` и НЕПУСТОЙ `packages`. Привязки разделены явно: **SBOM→digest**
-  (SPDX: подписанный subject = image@digest + документ той самой image) и
-  **digest→source** (SLSA: тот же digest связан с pinned source SHA через
-  `predicate.materials[]`). Сама строка `predicateType` не доказывает ни того, ни
-  другого. Положительный фикстур — форма Syft/cosign; отрицательные — отсутствующий /
-  пустой / чужой документ (неверный `spdxVersion`/`SPDXID`, пустой `packages`).
+- **review #103 item 2 — SPDX проверяется по содержимому, а не по оболочке.** Привязки
+  разделены явно: **SBOM→digest** (SPDX: подписанный subject = image@digest + документ
+  той самой image) и **digest→source** (SLSA: тот же digest связан с pinned source SHA
+  через `predicate.materials[]`). Сама строка `predicateType` не доказывает ни того, ни
+  другого. Требование «НЕПУСТОЙ SPDX-документ ожидаемой формы» (`spdxVersion` SPDX-2.x,
+  `SPDXID == "SPDXRef-DOCUMENT"`, непустые `name` / `documentNamespace`, НЕПУСТОЙ
+  `packages`) закрывают ДВА слоя с разными зонами ответственности (review #106 item 2):
+  * **CUE-политика** (`cosign verify-attestation --policy`) отклоняет противоречия на
+    ПРИСУТСТВУЮЩИХ полях — чужой `predicateType`, неверный `spdxVersion`/`SPDXID`,
+    пустой `packages` (это проверка формы, НЕ полный валидатор SPDX);
+  * **GATE** (`check_verified_spdx_statement`) дополнительно отклоняет ОТСУТСТВИЕ/ПУСТОТУ
+    `predicate`/`name`/`documentNamespace`/`packages` над SIGNED-выводом — т.к.
+    `cuejson.Validate` использует `cue.Final()` и НЕ требует отсутствующих полей.
+  Итоговый отказ gate НЕ ослаблен: отсутствующий/пустой/чужой документ всегда отклоняется
+  gate. Положительный фикстур — форма Syft/cosign; матрица исходов каждого слоя — в
+  `evidence/` (`cue-policy-validation.txt`).
 - CUE-политики проверены offline тем же движком, что использует cosign
-  (`cuejson.Validate`): positive PASS, negative (неверный source material / неверный
-  predicateType для каждого типа) REJECT (см. `evidence/`).
+  (`cuejson.Validate`, cuelang.org/go v0.9.2): positive PASS, negative на присутствующих
+  полях (неверный source material / неверный predicateType для каждого типа) REJECT;
+  отсутствие/пустота predicate не отклоняется CUE-слоем и показана в матрице отдельно от
+  исхода gate (см. `evidence/`).
 - Новый автономный тест `test_cosign_cli_flags.py` гоняет **фактический** cosign v3.1.3
   (скачивается и сверяется по SHA-256 `4629c757…`): `-a` отклоняется для обоих типов,
   поддерживаемые флаги принимаются, `verify`/`sign` принимают `-a`.
@@ -64,7 +73,7 @@
   gate изменён между jobs (workflow_sha/source_sha) отклонён; positive — только с
   подтверждённой identity.
 
-### 3/tools-pin — проверка точного tools pin (review #99 item 3 + review #103 item 3)
+### 3/tools-pin — проверка точного tools pin (review #99 item 3 + review #103 item 3 + review #106 item 3)
 
 - Команда `forgejo_lock_gate.py tools-pin-check --tools-dir tools` +
   `verify_tools_pin()`: сверяет, что **реально выбранный** tools checkout (по
@@ -76,9 +85,18 @@
   или pin без одной из политик отклоняется fail-closed ДО побочных эффектов (до
   build/push/sign, когда политики ещё не открыты). Шаг добавлен в `test`, `preflight`
   и `release`.
+- **review #106 item 3 — каждая политика проверяется на СВОЮ роль до push.** Наличие +
+  подстрока `predicateType:` не различают политики: контроль архитектора показал, что
+  точная копия SLSA-политики на пути SPDX даёт `tools_pin: true`. Теперь каждая
+  политика сверяется по точным байтам с заранее проверенным эталонным SHA-256
+  (`CUE_POLICY_REFERENCE_SHA256` в gate): перепутанные файлы или повреждённый CUE
+  изменяют дайджест и отклоняются fail-closed ДО первой внешней записи. Легитимное
+  изменение политики (напр. repin `sourceSHA`) обязано обновить эталонные SHA-256 в том
+  же reviewed-коммите (§3 публикация).
 - Автономные тесты: complete gate ACCEPT; gate без `workflow-blob` REJECT; gate со
   всеми командами, но БЕЗ одной из CUE-политик REJECT; пустая политика REJECT;
-  отсутствие файла REJECT.
+  отсутствие файла REJECT; **перепутанные политики REJECT; повреждённый CUE REJECT**
+  (review #106).
 
 ### 4/tooling — устранена двойная `v` и проверены ассеты/checksum (review #99 item 3)
 
@@ -93,14 +111,17 @@
 Офлайн, синтетика, без CI/registry/secrets. Запуск: `bash portal/tools/run_offline_suite.sh`.
 
 - `test_forgejo_lock_gate.py` (89), `test_forgejo_offline_integration.py` (37),
-  `test_owner_gate_barrier.py` (46 — барьер/OIDC/blob/плейсхолдер-identity/SPDX
+  `test_owner_gate_barrier.py` (48 — барьер/OIDC/blob/плейсхолдер-identity/SPDX
   (predicate-содержимое + отрицательные фикстуры)/gate-между-jobs/tools-pin
-  (CUE-политики)/структура), `test_cosign_cli_flags.py` (5 — фактический
-  cosign CLI). Итого 177 тестов + синтаксис шаблона VERIFIED (4 job, 93 выражения).
+  (CUE-политики, включая перепутанные и повреждённые)/структура),
+  `test_cosign_cli_flags.py` (5 — фактический cosign CLI). Итого 179 тестов +
+  синтаксис шаблона VERIFIED (4 job, 93 выражения).
 - CUE-политики проверены offline тем же `cuejson.Validate` (cuelang.org/go v0.9.2),
-  что использует cosign: positive (SLSA/SPDX) PASS, negative (неверный source
-  material / неверный predicateType / отсутствующий-пустой-чужой SPDX-документ)
-  REJECT (см. `evidence/`).
+  что использует cosign: positive (SLSA/SPDX) PASS; negative на ПРИСУТСТВУЮЩИХ полях
+  (неверный source material / неверный predicateType / чужой `spdxVersion`/`SPDXID` /
+  пустой `packages`) REJECT. Отсутствие/пустота predicate/`name`/`documentNamespace`/
+  `packages` CUE-слоем НЕ отклоняется (`cue.Final()` не требует отсутствующих полей) —
+  их отклоняет GATE; матрица исходов каждого слоя — в `evidence/`.
 
 ## 3. Публикация и repin (владелец, ПОСЛЕ повторного review) — ИСПРАВЛЕННЫЙ ПОРЯДОК
 
@@ -161,8 +182,20 @@ review и публикации. Шаг 8 «сверка blob» — это сра
   §3 п. 1–3 (ДО review/публикации).
 - **review #103**: (1) порядок публикации исправлен — YAML/SAN/tools SHA финализируются
   до review/публикации, после публикации только сверка blob (§3); (2) SPDX проверяется
-  по содержимому (непустой документ ожидаемой формы) на обоих слоях (CUE + gate), с
-  явным разделением SBOM→digest и digest→source, положительным Syft-фикстуром и
-  отрицательными отсутствующий/пустой/чужой; (3) `tools-pin-check` требует и загружает
-  обе CUE-политики из того же checkout до внешних записей (отрицательный тест — gate со
-  всеми командами, но без одной политики).
+  по содержимому (непустой документ ожидаемой формы) с явным разделением SBOM→digest и
+  digest→source, положительным Syft-фикстуром и отрицательными отсутствующий/пустой/чужой
+  (границы слоёв уточнены в review #106, см. ниже); (3) `tools-pin-check` требует и
+  загружает обе CUE-политики из того же checkout до внешних записей (отрицательный тест —
+  gate со всеми командами, но без одной политики).
+- **review #106** (эта доработка): (1) §3 порядок публикации — принят без изменений.
+  (2) SPDX — уточнены границы проверок: CUE-политика отклоняет противоречия на
+  присутствующих полях (форма), а отсутствие/пустоту predicate/`name`/`documentNamespace`/
+  `packages` отклоняет GATE (`check_verified_spdx_statement`, т.к. `cuejson.Validate` с
+  `cue.Final()` не требует отсутствующих полей); комментарий `cosign-spdx-policy.cue` и
+  runbook согласованы с этим разделением, итоговый отказ gate НЕ ослаблен; в матрицу
+  `evidence/` добавлены отсутствующий/пустой predicate с фактическим исходом каждого слоя
+  (CUE и gate отдельно). (3) `verify_tools_pin()` теперь сверяет каждую политику по
+  точным байтам с эталонным SHA-256 (`CUE_POLICY_REFERENCE_SHA256`) — перепутанные
+  файлы и повреждённый CUE отклоняются до первой внешней записи; добавлены регрессии на
+  перепутанные политики и повреждённый CUE (тест на отсутствующий файл сохранён).
+  Рабочие pins/секреты/lock не менялись, workflow не публиковался, B/C не запускались.

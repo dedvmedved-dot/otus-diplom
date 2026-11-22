@@ -318,15 +318,37 @@ REQUIRED_CUE_POLICIES = (
     "portal/tools/cosign-spdx-policy.cue",
 )
 
+# review #106 item 3: presence + a bare ``predicateType:`` substring cannot tell
+# the two policies apart — the review's control test placed an EXACT copy of the
+# SLSA policy at the SPDX path and ``tools-pin-check`` still returned
+# tools_pin=true. Each policy's ROLE must therefore be verified HERE, before any
+# external write. We bind each policy to its pre-reviewed bytes: sha256 of the
+# file must equal the reference recorded below (computed from the exact reviewed
+# policy bytes — see the evidence result.md). A swapped pair, a corrupted file,
+# or any un-reviewed edit changes the digest and is refused fail-closed. This is
+# the "exact-bytes vs pre-verified reference" option the review lists: it is
+# deterministic, needs no CUE engine in the gate, and runs offline in pure Python.
+# A LEGITIMATE policy change (e.g. a re-pin of sourceSHA) must update these
+# references as part of the same reviewed commit (§3 of the runbook).
+CUE_POLICY_REFERENCE_SHA256 = {
+    "portal/tools/cosign-slsa-policy.cue":
+        "b5051d68d2e8bbaa423e87c3488cdc615d5587338665632e740ba5df06b6259e",
+    "portal/tools/cosign-spdx-policy.cue":
+        "59fcc14263abbee70717d510fd9a57112065bd1291d8e7834598068533cf4c30",
+}
+
 
 def verify_tools_pin(tools_dir, required_modes=GATE_MODES,
-                     required_cue_policies=REQUIRED_CUE_POLICIES):
+                     required_cue_policies=REQUIRED_CUE_POLICIES,
+                     cue_policy_reference_sha256=CUE_POLICY_REFERENCE_SHA256):
     """(ok, reason). The pinned tools checkout must implement every gate mode the
-    workflow invokes AND carry/load both CUE policies the workflow opens with
+    workflow invokes AND carry both CUE policies the workflow opens with
     ``cosign verify-attestation --policy``. Reads the gate SOURCE and the policy
     files from the ACTUAL tools checkout (never from the importing module), so a
     stale/mismatched PINNED_TOOLS_SHA is caught before any release action
-    (review #99 item 3 + review #103 item 3)."""
+    (review #99 item 3 + review #103 item 3). Each CUE policy is further bound to
+    its pre-reviewed bytes via a reference SHA-256 so a swapped or corrupted
+    policy is refused BEFORE the first external write (review #106 item 3)."""
     gate_path = Path(tools_dir) / "portal" / "tools" / "forgejo_lock_gate.py"
     if not gate_path.is_file():
         return False, "tools pin: forgejo_lock_gate.py missing at %s" % gate_path
@@ -337,25 +359,29 @@ def verify_tools_pin(tools_dir, required_modes=GATE_MODES,
     missing = [m for m in required_modes if ('mode == "%s"' % m) not in text]
     if missing:
         return False, "tools pin: gate missing modes: %s" % ", ".join(missing)
-    # review #103 item 3: both CUE policies must be present AND loadable from
-    # the SAME checkout (the workflow opens them only after push/sign, so their
-    # absence here would otherwise surface too late). "Loadable" is checked
-    # structurally: readable, non-empty and carrying the predicateType binding
-    # each policy is required to enforce (the full cuejson.Validate runs at
-    # verify-attestation time inside cosign and in the offline evidence).
+    # review #103 item 3 + review #106 item 3: both CUE policies must be present
+    # AND match their own role from the SAME checkout (the workflow opens them
+    # only after push/sign, so a missing / swapped / corrupted policy would
+    # otherwise surface too late). Each policy is checked (a) readable +
+    # non-empty, and (b) byte-identical to its pre-reviewed reference — so the
+    # SPDX path carrying an exact SLSA copy, or a truncated policy, is refused.
     for rel in required_cue_policies:
         policy_path = Path(tools_dir) / rel
         if not policy_path.is_file():
             return False, "tools pin: CUE policy missing at %s" % policy_path
         try:
-            policy_text = policy_path.read_text()
+            policy_bytes = policy_path.read_bytes()
         except OSError as exc:
             return False, "tools pin: CUE policy unreadable (%s): %s" % (rel, exc)
-        if not policy_text.strip():
+        if not policy_bytes.strip():
             return False, "tools pin: CUE policy empty: %s" % rel
-        if "predicateType:" not in policy_text:
-            return False, "tools pin: CUE policy missing predicateType binding: %s" % rel
-    return True, "tools pin implements all required gate modes and loads both CUE policies"
+        expected = cue_policy_reference_sha256.get(rel)
+        if not isinstance(expected, str) or not expected:
+            return False, "tools pin: no reference SHA-256 recorded for CUE policy: %s" % rel
+        if hashlib.sha256(policy_bytes).hexdigest() != expected:
+            return False, ("tools pin: CUE policy does not match its reviewed role "
+                           "(swapped or corrupted): %s" % rel)
+    return True, "tools pin implements all required gate modes and both CUE policies match their reviewed roles"
 
 
 # ---------------------------------------------------------------------------
