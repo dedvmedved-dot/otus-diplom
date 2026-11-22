@@ -1,0 +1,15 @@
+# #99 — PR #98: нужны исправления, первый B заблокирован
+
+Проверен `29eb709e886c58021c49872efb6b4646de4d855d`, workflow blob `17fd51b3691fe8d34e3d8853d3bda1c81e21541c`. Не сливать #98, не публиковать, не менять pins, секреты или lock. Этот документ не включает workflow и не разрешает B/C.
+
+## Блокеры
+
+1. В `.forgejo/workflows/p8c-portal-forgejo-release.yml:550–559` оба `cosign verify-attestation` передают `-a ref=…`. Проверен официальный `cosign-linux-amd64` v3.1.3: SHA-256 `4629c757b7618056f8ddd7e2625ae9fdd94c0372a65049520bc7d9df9efc7f71` совпал с pin. Локальный вызов `cosign verify-attestation --type spdxjson -a ref=test --help` возвращает `unknown shorthand flag: 'a' in -a`; результат тот же для `slsaprovenance`. У `sign` и `verify` флаг принимается. Сейчас обе команды нацелены на правильный digest, но проверка останавливается уже на первой, после push/sign. Сохранить проверку ref подписи; для аттестаций проверять подписанные subject/digest, тип и политику привязки к source через поддерживаемые механизмы. Добавить проверку фактического CLI и независимые отрицательные случаи для каждого типа.
+2. В release вычисляется blob (:390–398), но нет повторной сверки с POLICY и снимком OWNER_GATE данного job до build/push; gate только записывается в файл. Сверка в preflight относится к другому снимку. Нужна проверка в release до внешних записей, с тестом смены gate между jobs. Кроме того, `oidc_trust_confirmed=true` при placeholder SAN позволяет дойти до push и sign: до них отклонять также неразрешённую identity, не угадывая SAN.
+3. В исполняемом YAML `PINNED_TOOLS_SHA=32a38ea1223ab8b0e10913a3c32c95d62c2661c6`; в gate этого дерева нет `workflow-blob`. Тесты HEAD не проверяют реально выбранный tools. Runbook §3 сначала фиксирует workflow blob, затем меняет tools pin и SAN — обе правки YAML меняют blob. Разделить подготовку и публикацию: финальные tools/identity → review точной версии → отдельное решение владельца → опубликованный commit/blob → policy pin. Для rootlesskit/syft/trivy также устранить двойную `v` и проверить имена ассетов и checksum до B.
+
+## Что прошло
+
+На проверенном HEAD системным `/usr/bin/python3` запущены три модуля unittest (`test_forgejo_lock_gate`, `test_forgejo_offline_integration`, `test_owner_gate_barrier`): 145/145 OK. `check_forgejo_workflow_syntax.py`: VERIFIED, четыре job, 78 выражений. Это не запуск Forgejo и не проверка криптографии. A1 получает объект из дерева dispatch commit по фиксированному пути, требует тип blob; наблюдение передано в preflight, predicate, evidence и final gate. Есть отрицательные тесты blob, issuer/identity, чужого run и временного окна PUT. `admission → test → preflight → release`, admission требует true. `enable-openid-connect: true` только в release; issuer `/api/actions`, SAN оставлен неподтверждённым. URL cosign и checksum верны.
+
+Наличие label не доказывает эксклюзивность PickTask. До отдельного решения владельца нужны подтверждения контроля всех подходящих runners, issuer/audience/CA/SAN и согласованных trust roots. Синтетические тесты их не заменяют.
