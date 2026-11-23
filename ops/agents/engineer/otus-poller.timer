@@ -1,0 +1,7 @@
+[Unit]
+Description=otus-diplom Forgejo task poller (engineer, every 60s)
+[Timer]
+OnBootSec=60s
+OnUnitActiveSec=60s
+[Install]
+WantedBy=timers.target

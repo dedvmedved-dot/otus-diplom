@@ -1,0 +1,6 @@
+[Unit]
+Description=otus-diplom Forgejo task poller (architect)
+[Service]
+Type=oneshot
+EnvironmentFile=/home/hermes-5.187.1.37-a-arch/.hermes/poll.env
+ExecStart=/usr/bin/python3 /home/hermes-5.187.1.37-a-arch/.hermes/forgejo-task-poll.py
