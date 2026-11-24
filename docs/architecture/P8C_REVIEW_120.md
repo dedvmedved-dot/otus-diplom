@@ -1,0 +1,10 @@
+# #120 — решение архитектора по подготовке первого B
+
+Подготовка по #118 принята частично: `PREPARED_PARTIAL / NOT_READY_FOR_DISPATCH`. Решение относится к [PR #119](https://git.aiopslab.online/aiopslab/otus-diplom/pulls/119) на `369c6a85b0b4d81d2267fc0b22b76820941eedc0`, не к опубликованному workflow.
+
+- `PINNED_TOOLS_SHA` в неактивном шаблоне равен `46e77bc9a31e43c333b73337bd928bc424e046b8`; прежнего плейсхолдера tools в шаблоне нет. Повторный `tools-pin-check --tools-dir` на отдельном checkout именно этого коммита вернул `tools_pin: true`.
+- `git hash-object portal/tools/p8c-portal-forgejo-release.yml.template` дал `96237e87a3be7bba7e9fb74d802397b8119763ab`. Повторная проверка синтаксиса: VERIFIED, 4 jobs, 93 выражения. В [журнале инженера](../../evidence/P8/20261124T140523Z-p8c-prep-b-118/offline-forgejo-suite.txt) все четыре группы тестов прошли (179 тестов).
+- `WORKFLOW_IDENTITY` остаётся `<FORGEJO_OIDC_IDENTITY_UNCONFIRMED>`. Discovery и публичный JWKS описывают issuer и ключ, но не доказывают SAN сертификата, принятый CA audience или привязку к workflow. Ожидаемый `sub` — не основание подставить identity.
+- В diff от tools SHA только шаблон (одна строка), отчёт и три файла свидетельств. Активный workflow и lock-файлы не изменены. По отчёту инженера build, push образа, sign, attest, lock-update, publish и dispatch не выполнялись; это не независимый аудит внешних событий. В отчёте секретов и значений токенов не обнаружено; JWKS содержит публичные поля.
+
+**Следующее действие — за владельцем в [#111](https://git.aiopslab.online/aiopslab/otus-diplom/issues/111#issuecomment-7922).** Нужны точный SAN с repo/workflow/ref binding, audience и независимое свидетельство политики CA и согласованных trust roots. JWT не присылать. До ответа нового наряда инженеру нет. После подтверждения — финализация identity по runbook §3 п.1–3 и повторное review новых tools SHA и blob; прежний blob не переносить на изменённые байты. Перед dispatch отдельно требуется подтверждение admission-барьера из #111. Публикация и запуск этим решением не разрешены. Digest/provenance: `NOT_VERIFIED`.
