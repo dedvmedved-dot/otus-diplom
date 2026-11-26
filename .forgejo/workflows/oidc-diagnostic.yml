@@ -1,0 +1,106 @@
+# Diagnostic OIDC id-token pilot for Forgejo Actions (task #126).
+#
+# ISOLATION CONTRACT (owner decision #124#issuecomment-9906, order #125/#126):
+#   - manual dispatch ONLY (workflow_dispatch). No push / pull_request /
+#     schedule / release / issue triggers => no automatic run.
+#   - ONE diagnostic run allowed, including a failed one; no rerun.
+#   - NOT the release B: no build, no push, no sign, no attest, no lock update,
+#     no publication. This workflow contains NO release steps.
+#   - NO release secrets (no OWNER_GATE, no REGISTRY_*, no POLICY_WORKFLOW_SHA).
+#     The only secrets-like tokens present are the per-run id-token request
+#     credentials that Forgejo injects for THIS run (ACTIONS_ID_TOKEN_REQUEST_*).
+#   - Write permissions limited to the id-token request (id-token: write) plus
+#     read-only contents. No packages: write, no other write scope.
+#
+# PURPOSE: observe the ACTUAL Forgejo Actions OIDC id-token claims for this
+# workflow/ref — the `iss` (issuer), `aud` (audience) and `sub` (subject).
+# The `sub` is reported as an OBSERVATION of exactly this workflow/ref only; it
+# does NOT by itself prove the release workflow's SAN or identity (that requires
+# the architect's identity/SAN binding, CA policy, trust-roots review and the
+# exclusive admission barrier of #111).
+#
+# SECRET HYGIENE: the JWT, its full payload and authorization headers are NEVER
+# printed, written outside $RUNNER_TEMP, uploaded, or committed. Only the three
+# extracted claims (iss / aud / sub) are emitted to the log.
+
+name: oidc-diagnostic-pilot
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  diagnostic:
+    runs-on: otus-diplom
+    timeout-minutes: 10
+    env:
+      # Audience requested from the Forgejo id-token endpoint. The `aud` claim
+      # echoes this value. `sigstore` mirrors the audience cosign keyless uses,
+      # so the observation is directly comparable to the release signing path.
+      AUDIENCE: sigstore
+    steps:
+      - name: Print run context (workflow / ref / sha — non-secret)
+        run: |
+          set -euo pipefail
+          printf 'REPOSITORY=%s\n' "${{ github.repository }}"
+          printf 'REF=%s\n' "${{ github.ref }}"
+          printf 'SHA=%s\n' "${{ github.sha }}"
+          printf 'WORKFLOW=%s\n' "${{ github.workflow }}"
+          printf 'RUN_ID=%s\n' "${{ github.run_id }}"
+          printf 'ACTOR=%s\n' "${{ github.actor }}"
+
+      - name: Request OIDC id-token and extract sub/iss/aud (JWT never emitted)
+        run: |
+          set -euo pipefail
+
+          # Forgejo injects these two env vars only when id-token: write is
+          # granted for the job. Report presence by name — never their values.
+          for v in ACTIONS_ID_TOKEN_REQUEST_URL ACTIONS_ID_TOKEN_REQUEST_TOKEN; do
+            if [ -n "${!v:-}" ]; then
+              printf 'ENV_PRESENT %s\n' "$v"
+            else
+              printf 'ENV_MISSING %s\n' "$v"
+              exit 1
+            fi
+          done
+
+          # The request URL already ends in '?placeholder=true' (Forgejo
+          # services/actions/task.go); append the audience query param.
+          SEP='?'
+          case "$ACTIONS_ID_TOKEN_REQUEST_URL" in *'?'*) SEP='&';; esac
+          REQ_URL="${ACTIONS_ID_TOKEN_REQUEST_URL}${SEP}audience=${AUDIENCE}"
+          RESP="$RUNNER_TEMP/oidc-id-token-response.json"
+
+          HTTP_CODE="$(curl -sS -o "$RESP" -w '%{http_code}' \
+            -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "$REQ_URL")"
+          printf 'OIDC_REQUEST_HTTP_STATUS=%s\n' "$HTTP_CODE"
+          printf 'OIDC_REQUESTED_AUDIENCE=%s\n' "$AUDIENCE"
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            printf 'OIDC_RESPONSE_KEYS='
+            python3 -c 'import sys,json; print(",".join(sorted(json.load(open(sys.argv[1])).keys())))' "$RESP" 2>/dev/null || printf 'unparseable'
+            printf '\n'
+            rm -f "$RESP"
+            exit 1
+          fi
+
+          # Decode ONLY the JWT payload segment and emit ONLY iss / aud / sub.
+          # The raw JWT is never echoed, never written outside $RUNNER_TEMP,
+          # never uploaded as an artifact.
+          python3 - "$RESP" <<'PY'
+          import sys, json, base64
+          obj = json.load(open(sys.argv[1]))
+          jwt = obj["value"]
+          assert jwt.count(".") == 2, "unexpected JWT shape"
+          payload_b64 = jwt.split(".")[1]
+          payload_b64 += "=" * (-len(payload_b64) % 4)
+          claims = json.loads(base64.urlsafe_b64decode(payload_b64))
+          for k in ("iss", "aud", "sub"):
+              print("OIDC_" + k.upper() + "=" + str(claims[k]))
+          PY
+          rc=$?
+          rm -f "$RESP"
+          exit $rc
