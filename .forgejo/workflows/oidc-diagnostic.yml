@@ -9,8 +9,10 @@
 #   - NO release secrets (no OWNER_GATE, no REGISTRY_*, no POLICY_WORKFLOW_SHA).
 #     The only secrets-like tokens present are the per-run id-token request
 #     credentials that Forgejo injects for THIS run (ACTIONS_ID_TOKEN_REQUEST_*).
-#   - Write permissions limited to the id-token request (id-token: write) plus
-#     read-only contents. No packages: write, no other write scope.
+#   - OIDC enabled ONLY via the Forgejo-native `enable-openid-connect: true`
+#     key. Forgejo does NOT implement the GitHub `permissions:` tag — declaring
+#     `permissions: {id-token: write}` is ineffective and does not enable OIDC.
+#     No packages: write, no other write scope.
 #
 # PURPOSE: observe the ACTUAL Forgejo Actions OIDC id-token claims for this
 # workflow/ref — the `iss` (issuer), `aud` (audience) and `sub` (subject).
@@ -28,9 +30,7 @@ name: oidc-diagnostic-pilot
 on:
   workflow_dispatch:
 
-permissions:
-  contents: read
-  id-token: write
+enable-openid-connect: true
 
 jobs:
   diagnostic:
@@ -56,8 +56,9 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Forgejo injects these two env vars only when id-token: write is
-          # granted for the job. Report presence by name — never their values.
+          # Forgejo injects these two env vars only when
+          # enable-openid-connect is true (workflow or job level).
+          # Report presence by name — never their values.
           for v in ACTIONS_ID_TOKEN_REQUEST_URL ACTIONS_ID_TOKEN_REQUEST_TOKEN; do
             if [ -n "${!v:-}" ]; then
               printf 'ENV_PRESENT %s\n' "$v"
