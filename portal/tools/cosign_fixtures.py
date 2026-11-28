@@ -54,7 +54,11 @@ _LOG_ID_B64 = base64.b64encode(b"01234567890123456789012345678901").decode()
 
 def make_signing_config(fulcio_url=APPROVED_FULCIO_URL, rekor_url=APPROVED_REKOR_URL,
                         oidc_issuer=APPROVED_OIDC_ISSUER):
-    """A coherent signing_config.v0.2 bound to the given (default: private) origins."""
+    """A coherent signing_config.v0.2 bound to the given (default: private) origins.
+
+    No ADDITIONAL service (review #172 item 1): ``tsaUrls`` is absent and
+    ``tsaConfig`` is the empty selector ``{}`` (the canonical "no TSA" shape),
+    because the private chain approves ONLY Fulcio / OIDC / Rekor."""
     return {
         "mediaType": SIGNING_CONFIG_MEDIA_TYPE,
         "caUrls": [{"url": fulcio_url, "majorApiVersion": 1,
@@ -64,7 +68,7 @@ def make_signing_config(fulcio_url=APPROVED_FULCIO_URL, rekor_url=APPROVED_REKOR
         "rekorTlogUrls": [{"url": rekor_url, "majorApiVersion": 1,
                            "validFor": {"start": "2026-01-01T00:00:00.000Z"}}],
         "rekorTlogConfig": {"selector": "ANY"},
-        "tsaConfig": {"selector": "ANY"},
+        "tsaConfig": {},
     }
 
 

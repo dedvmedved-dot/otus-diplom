@@ -467,6 +467,123 @@ def _parse_sigstore_json(path, label):
     return obj, ""
 
 
+# ---------------------------------------------------------------------------
+# Readable X.509 / public-key material (review #172 item 1)
+# ---------------------------------------------------------------------------
+# The Sigstore trusted root stores crypto material as ``rawBytes`` = base64 DER.
+# A non-empty string is NOT enough: the exact SHA only fixes the TRANSMITTED
+# bytes, so an unreadable certificate / public key at the correct digest must
+# still be refused BEFORE any push/sign. The pinned loader (cosign
+# ``root.NewTrustedRootFromPath``) parses these DER structures — a garbage
+# certificate is refused with "x509: malformed certificate" and a garbage tlog
+# key with "failed to parse public key". These helpers perform the SAME
+# structural parse in pure Python (no network, no signing, no extra deps), so a
+# structurally-correct root with an unreadable cert/key is rejected fail-closed
+# even when its SHA-256 matches the pin.
+
+
+def _der_read_tlv(data, off):
+    """(tag, value_bytes, next_offset) for one DER TLV at ``off``.
+
+    Raises ValueError on any truncation or a non-DER (indefinite) length."""
+    if off + 2 > len(data):
+        raise ValueError("truncated")
+    tag = data[off]
+    off += 1
+    length = data[off]
+    off += 1
+    if length & 0x80:
+        n = length & 0x7F
+        if n == 0:
+            raise ValueError("indefinite length is not DER")
+        if off + n > len(data):
+            raise ValueError("truncated long-form length")
+        length = int.from_bytes(data[off:off + n], "big")
+        off += n
+    if off + length > len(data):
+        raise ValueError("truncated value")
+    return tag, data[off:off + length], off + length
+
+
+def _is_readable_x509_certificate(der):
+    """True only for a DER X.509 certificate skeleton (a real, readable cert).
+
+    Verifies the outer SEQUENCE wraps a tbsCertificate SEQUENCE whose leading
+    elements are [0] (optional version) + INTEGER (serial) + five SEQUENCEs
+    (signature / issuer / validity / subject / subjectPublicKeyInfo). Garbage
+    bytes (not DER, not a certificate skeleton) are refused."""
+    try:
+        tag, body, nxt = _der_read_tlv(der, 0)
+        if tag != 0x30 or nxt != len(der):
+            return False
+        off = 0
+        tbs_tag, tbs, off = _der_read_tlv(body, off)
+        if tbs_tag != 0x30:
+            return False
+        toff = 0
+        first, _, after = _der_read_tlv(tbs, toff)
+        if first == 0xA0:  # [0] EXPLICIT version (v3 certs)
+            toff = after
+        serial, _, toff = _der_read_tlv(tbs, toff)
+        if serial != 0x02:  # serialNumber INTEGER
+            return False
+        for _ in range(5):  # signature / issuer / validity / subject / SPKI
+            elem, _, toff = _der_read_tlv(tbs, toff)
+            if elem != 0x30:
+                return False
+        return True
+    except (ValueError, IndexError):
+        return False
+
+
+def _is_readable_public_key(der):
+    """True only for a DER SubjectPublicKeyInfo skeleton (a real, readable key).
+
+    Verifies the outer SEQUENCE wraps an AlgorithmIdentifier SEQUENCE (whose
+    first element is an OID) followed by a non-empty subjectPublicKey BIT
+    STRING."""
+    try:
+        tag, body, nxt = _der_read_tlv(der, 0)
+        if tag != 0x30 or nxt != len(der):
+            return False
+        off = 0
+        alg_tag, alg, off = _der_read_tlv(body, off)
+        if alg_tag != 0x30:
+            return False
+        oid_tag, _, _ = _der_read_tlv(alg, 0)
+        if oid_tag != 0x06:
+            return False
+        bit_tag, bit, _ = _der_read_tlv(body, off)
+        if bit_tag != 0x03 or not bit:
+            return False
+        return True
+    except (ValueError, IndexError):
+        return False
+
+
+def _raw_bytes_to_der(raw):
+    """(der_bytes, reason) — decode a Sigstore rawBytes field (base64 DER)."""
+    if not isinstance(raw, str) or not raw:
+        return None, "absent/empty"
+    try:
+        der = base64.b64decode(raw, validate=True)
+    except ValueError:
+        return None, "not valid base64"
+    if not der:
+        return None, "empty after decode"
+    return der, ""
+
+
+def _readable_cert_bytes(raw):
+    der, _ = _raw_bytes_to_der(raw)
+    return der is not None and _is_readable_x509_certificate(der)
+
+
+def _readable_pubkey_bytes(raw):
+    der, _ = _raw_bytes_to_der(raw)
+    return der is not None and _is_readable_public_key(der)
+
+
 def _validate_signing_config(sc, fulcio_url, rekor_url, oidc_issuer):
     """(ok, reason). The AGREED signing config must be a coherent
     signingconfig.v0.2 whose service URLs are EXACTLY the approved private
@@ -482,6 +599,17 @@ def _validate_signing_config(sc, fulcio_url, rekor_url, oidc_issuer):
     tlog = sc.get("rekorTlogUrls")
     if not isinstance(tlog, list) or len(tlog) != 1:
         return False, "keyless trust: signing config rekorTlogUrls must list exactly one tlog"
+    # review #172 item 1: the agreed signing config may carry ONLY the three
+    # approved private services (Fulcio / OIDC / Rekor). ANY additional service
+    # — e.g. a Timestamp Authority via a non-empty ``tsaUrls``, or a non-empty
+    # ``tsaConfig`` selector — is unapproved and refused fail-closed even when
+    # the digest matches the pin (the private chain uses no TSA).
+    tsa = sc.get("tsaUrls")
+    if isinstance(tsa, list) and tsa:
+        return False, "keyless trust: signing config specifies an unapproved additional service (TSA)"
+    tsa_cfg = sc.get("tsaConfig")
+    if isinstance(tsa_cfg, dict) and tsa_cfg and tsa_cfg.get("selector"):
+        return False, "keyless trust: signing config selects an unapproved additional service (TSA selector)"
     if not isinstance(ca[0], dict) or ca[0].get("url") != fulcio_url:
         return False, "keyless trust: signing config Fulcio URL is not the approved private origin"
     if not isinstance(oidc[0], dict) or oidc[0].get("url") != oidc_issuer:
@@ -509,22 +637,36 @@ def _validate_trusted_root(tr, fulcio_url, rekor_url):
             return False, "keyless trust: trusted root CA URI is not the approved private Fulcio origin"
         chain = ca.get("certChain") or {}
         certs = chain.get("certificates") if isinstance(chain, dict) else None
-        if (isinstance(certs, list) and certs
-                and all(isinstance(c, dict) and isinstance(c.get("rawBytes"), str) and c["rawBytes"]
-                        for c in certs)):
+        if not (isinstance(certs, list) and certs):
+            continue
+        # review #172 item 1: every certificate rawBytes must be a READABLE
+        # X.509 certificate (base64 DER), not merely a non-empty string. The
+        # SHA-256 pin fixes the transmitted bytes, so an unreadable certificate
+        # at the correct digest must still be refused BEFORE any push/sign.
+        if all(isinstance(c, dict) and _readable_cert_bytes(c.get("rawBytes"))
+               for c in certs):
             usable_ca = True
     if not usable_ca:
-        return False, "keyless trust: trusted root has no usable certificate chain (unfit)"
+        return False, "keyless trust: trusted root has no readable certificate chain (unfit)"
     tlogs = tr.get("tlogs")
     if not isinstance(tlogs, list) or not tlogs:
         return False, "keyless trust: trusted root has no transparency log (unusable)"
+    # review #172 item 1: forbid unapproved ADDITIONAL services in the trusted
+    # root too — a non-empty ctlogs (CT log) or timestampAuthorities (TSA) list
+    # carries services the private chain does not approve.
+    for label, key in (("CT log", "ctlogs"), ("timestamp authority", "timestampAuthorities")):
+        extra = tr.get(key)
+        if isinstance(extra, list) and extra:
+            return False, "keyless trust: trusted root carries an unapproved additional service (%s)" % label
     for tl in tlogs:
         if not isinstance(tl, dict) or tl.get("baseUrl") != rekor_url:
             return False, "keyless trust: trusted root tlog baseUrl is not the approved private Rekor origin"
         pk = tl.get("publicKey") or {}
-        if not isinstance(pk, dict) or not isinstance(pk.get("rawBytes"), str) or not pk["rawBytes"]:
-            return False, "keyless trust: trusted root tlog public key missing (unusable)"
-    return True, "trusted root usable and bound to approved private origins"
+        # review #172 item 1: the tlog public key rawBytes must be a READABLE
+        # public key (base64 DER SubjectPublicKeyInfo), not merely non-empty.
+        if not isinstance(pk, dict) or not _readable_pubkey_bytes(pk.get("rawBytes")):
+            return False, "keyless trust: trusted root tlog public key is not a readable key (unusable)"
+    return True, "trusted root usable (readable cert chain + public key) and bound to approved private origins"
 
 
 def verify_keyless_trust_config(fulcio_url, rekor_url, oidc_issuer,
@@ -540,11 +682,14 @@ def verify_keyless_trust_config(fulcio_url, rekor_url, oidc_issuer,
       * validates the policy-approved private origins (https, non-placeholder,
         non-public) and the source-confirmed literal OIDC issuer;
       * PARSES the agreed signing config (signingconfig v0.2) and the pinned
-        trusted root (trustedroot v0.1 with a usable cert chain + tlog), so
-        arbitrary bytes are no longer accepted;
+        trusted root (trustedroot v0.1 with a READABLE cert chain + public key),
+        so arbitrary bytes are no longer accepted (review #172 item 1);
       * requires the signing config's service URLs and the trusted root's CA
         URIs / tlog base URLs to be EXACTLY the approved private origins, so a
         foreign HTTPS origin is refused even when its digest matches the pin;
+      * forbids unapproved ADDITIONAL services (review #172 item 1) — a non-empty
+        signing-config ``tsaUrls``/``tsaConfig`` selector, or a non-empty trusted
+        root ``ctlogs``/``timestampAuthorities``, is refused fail-closed;
       * verifies BOTH SHA-256 pins independently (authenticity).
     No public-sigstore fallback. The roots are never logged or saved here — only
     their SHA-256 is compared.

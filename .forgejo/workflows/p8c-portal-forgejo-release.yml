@@ -496,6 +496,12 @@ jobs:
       # SHAs are pinned out-of-band. This is the CODE enforcement of "no
       # public-sigstore fallback" — without these private materials the release
       # stops here (unconditional refusal until the separate deployment).
+      # review #172 item 1: this step runs BEFORE registry login/push, on the
+      # SAME files cosign later loads, with NO network access and NO signing. The
+      # gate now ALSO proves suitability for the pinned loader — it PARSES every
+      # certificate / tlog public key rawBytes as a readable DER cert/key (not a
+      # non-empty string) and refuses unapproved ADDITIONAL services (TSA/CT log).
+      # So an unreadable key/cert at the correct SHA is refused BEFORE any push.
       - name: Verify private keyless trust configuration (fail-closed, no public fallback)
         env:
           PRIVATE_TRUST_ROOT: ${{ secrets.PRIVATE_TRUST_ROOT }}

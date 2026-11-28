@@ -160,19 +160,26 @@ class TestCosignCliFlags(unittest.TestCase):
 
 @unittest.skipUnless(COSIGN, "cosign v3.1.3 binary unavailable (offline env)")
 class TestCosignLoaderRuntime(unittest.TestCase):
-    """review #170: RUNTIME acceptance/rejection of the ACTUAL cosign v3.1.3
+    """review #170 + review #172: RUNTIME acceptance of the ACTUAL cosign v3.1.3
     signing loader (``signcommon.LoadTrustedMaterialAndSigningConfig``) driven
-    with real parameters — NOT ``--help`` (which only proves flag recognition).
+    with real parameters — NOT ``--help``.
 
-    Proves offline that the pinned loader:
-      * ACCEPTS a coherent ``--signing-config`` + ``--trusted-root`` (no service
-        URLs) and proceeds PAST the loader — any failure is a later-stage error
-        (reference parsing / image access / key / network), never a loader error;
-      * REJECTS a foreign HTTPS origin (an explicit ``--fulcio-url`` alongside a
-        ``--signing-config`` → "cannot specify service URLs and use signing
-        config", the exact rejected combination review #170 names);
-      * REJECTS an unusable trusted root (a non-Sigstore JSON → "loading trusted
-        root").
+    This is the LOADER-COMPATIBILITY half of the split. The ORIGIN-POLICY half
+    (a foreign URL INSIDE the signing-config JSON, no CLI override) is enforced
+    by the gate and unit-tested in ``test_owner_gate_barrier.py``. Here the
+    actual binary proves, OFFLINE:
+      * a coherent ``--signing-config`` + ``--trusted-root`` (no service URLs)
+        is ACCEPTED by the loader — the command proceeds PAST the loader to the
+        image-access stage ("accessing image"), a POSITIVE observable loader
+        pass, never a loader error (a later-stage network failure is expected
+        offline and is NOT a loader failure);
+      * a STRUCTURALLY-CORRECT trusted root whose certificate / tlog public key
+        ``rawBytes`` is unreadable (garbage base64) is REJECTED by the loader
+        ("loading trusted root: failed to parse …");
+      * an explicit ``--fulcio-url`` alongside ``--signing-config`` is REJECTED
+        by the loader ("cannot specify service URLs and use signing config") —
+        the loader's OWN flag-incompatibility, distinct from the gate's ban on a
+        foreign URL inside the JSON.
     """
 
     IMG = ("registry.example/image@sha256:0123456789abcdef0123456789abcdef"
@@ -182,6 +189,8 @@ class TestCosignLoaderRuntime(unittest.TestCase):
         "loading trusted root",
         "error reading signing config",
         "must provide --new-bundle-format",
+        "failed to parse certificate",
+        "failed to parse public key",
     )
 
     def _write(self, obj):
@@ -197,16 +206,26 @@ class TestCosignLoaderRuntime(unittest.TestCase):
                               timeout=30)
 
     def test_loader_accepts_coherent_signing_config_and_root(self):
+        # POSITIVE with an OBSERVABLE loader pass: the command must reach the
+        # image-access stage ("accessing image"), NOT merely avoid the loader
+        # error strings. A later-stage network/reference failure is expected
+        # offline and proves the loader already parsed both files.
         sc = self._write(fixtures.make_signing_config())
         tr = self._write(fixtures.make_trusted_root())
         r = self._run("sign", "--signing-config", sc, "--trusted-root", tr,
                       "--new-bundle-format", "--oidc-client-id", "sigstore",
                       "--yes", self.IMG)
         out = (r.stderr or "") + (r.stdout or "")
+        self.assertNotEqual(r.returncode, 0)  # offline: fails AFTER the loader
+        self.assertIn("accessing image", out)  # reached the image-access stage
         for err in self.LOADER_ERRORS:
             self.assertNotIn(err, out)
 
-    def test_loader_rejects_foreign_https_origin(self):
+    def test_loader_rejects_explicit_service_url_alongside_signing_config(self):
+        # The loader itself refuses an explicit --fulcio-url alongside
+        # --signing-config (flag incompatibility). Distinct from the gate's
+        # origin-policy ban on a foreign URL INSIDE the JSON (unit-tested in
+        # test_owner_gate_barrier.py).
         sc = self._write(fixtures.make_signing_config())
         tr = self._write(fixtures.make_trusted_root())
         r = self._run("sign", "--signing-config", sc, "--trusted-root", tr,
@@ -216,14 +235,31 @@ class TestCosignLoaderRuntime(unittest.TestCase):
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("cannot specify service URLs and use signing config", out)
 
-    def test_loader_rejects_unusable_root(self):
-        # A trusted-root file that is not a valid Sigstore trusted root (an
-        # unknown proto field) is refused by the loader ("loading trusted root"),
-        # even alongside a valid --signing-config.
+    def test_loader_rejects_unreadable_certificate(self):
+        # A STRUCTURALLY-CORRECT trusted root whose CA certificate rawBytes is
+        # not a readable X.509 certificate (garbage base64) is refused by the
+        # loader ("failed to parse certificate"). The gate refuses the SAME
+        # fixture BEFORE push (test_unreadable_certificate_rejected_even_with_correct_digest).
         sc = self._write(fixtures.make_signing_config())
-        bad = self._write({"mediaType": "application/vnd.dev.sigstore.trustedroot+json;version=0.1",
-                           "notARealField": 1})
-        r = self._run("sign", "--signing-config", sc, "--trusted-root", bad,
+        bad = fixtures.make_trusted_root()
+        bad["certificateAuthorities"][0]["certChain"]["certificates"][0]["rawBytes"] = (
+            "bm90LWEtcGVtLWdhcmJhZ2U=")
+        tr = self._write(bad)
+        r = self._run("sign", "--signing-config", sc, "--trusted-root", tr,
+                      "--new-bundle-format", "--yes", self.IMG)
+        out = (r.stderr or "") + (r.stdout or "")
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("loading trusted root", out)
+
+    def test_loader_rejects_unreadable_tlog_key(self):
+        # A structurally-correct root whose tlog public key rawBytes is not a
+        # readable public key (garbage base64) is refused by the loader
+        # ("failed to parse public key").
+        sc = self._write(fixtures.make_signing_config())
+        bad = fixtures.make_trusted_root()
+        bad["tlogs"][0]["publicKey"]["rawBytes"] = "bm90LWEtcGVtLWdhcmJhZ2U="
+        tr = self._write(bad)
+        r = self._run("sign", "--signing-config", sc, "--trusted-root", tr,
                       "--new-bundle-format", "--yes", self.IMG)
         out = (r.stderr or "") + (r.stdout or "")
         self.assertNotEqual(r.returncode, 0)

@@ -492,6 +492,63 @@ class TestKeylessTrustConfig(unittest.TestCase):
         self.assertFalse(ok)
         self.assertIn("signing config SHA-256 mismatch", reason)
 
+    # --- review #172 item 1: forbid unapproved additional services (TSA) ------
+
+    def test_signing_config_tsa_urls_rejected(self):
+        # An unapproved ADDITIONAL service — a foreign Timestamp Authority URL
+        # INSIDE the signing-config JSON (NO CLI override) — is refused
+        # fail-closed even when its digest matches the pin.
+        sc = fixtures.make_signing_config()
+        sc["tsaUrls"] = [{"url": "https://tsa.evil.example", "majorApiVersion": 1,
+                          "validFor": {"start": "2026-01-01T00:00:00Z"}}]
+        sc_path, sc_sha = self._write(sc)
+        ok, reason = self._check(sc=sc_path, sc_sha=sc_sha)
+        self.assertFalse(ok)
+        self.assertIn("TSA", reason)
+
+    def test_signing_config_tsa_selector_rejected(self):
+        # A non-empty tsaConfig selector also selects a TSA (unapproved).
+        sc = fixtures.make_signing_config()
+        sc["tsaConfig"] = {"selector": "ANY"}
+        sc_path, sc_sha = self._write(sc)
+        ok, reason = self._check(sc=sc_path, sc_sha=sc_sha)
+        self.assertFalse(ok)
+        self.assertIn("TSA", reason)
+
+    # --- review #172 item 1: readable cert/key material (not non-empty) -------
+
+    def test_unreadable_certificate_rejected_even_with_correct_digest(self):
+        # A STRUCTURALLY-CORRECT trusted root whose CA certificate rawBytes is
+        # not a readable X.509 certificate (garbage base64) is refused BEFORE
+        # any push/sign, even when its SHA-256 matches the pin.
+        tr = fixtures.make_trusted_root()
+        tr["certificateAuthorities"][0]["certChain"]["certificates"][0]["rawBytes"] = (
+            "bm90LWEtcGVtLWdhcmJhZ2U=")
+        tr_path, tr_sha = self._write(tr)
+        ok, reason = self._check(tr=tr_path, tr_sha=tr_sha)
+        self.assertFalse(ok)
+        self.assertIn("readable certificate", reason)
+
+    def test_unreadable_tlog_key_rejected_even_with_correct_digest(self):
+        # A structurally-correct root whose tlog public key rawBytes is not a
+        # readable public key (garbage base64) is refused even at the correct SHA.
+        tr = fixtures.make_trusted_root()
+        tr["tlogs"][0]["publicKey"]["rawBytes"] = "bm90LWEtcGVtLWdhcmJhZ2U="
+        tr_path, tr_sha = self._write(tr)
+        ok, reason = self._check(tr=tr_path, tr_sha=tr_sha)
+        self.assertFalse(ok)
+        self.assertIn("readable", reason)
+
+    def test_trusted_root_additional_service_rejected(self):
+        # A trusted root carrying an unapproved additional service (non-empty
+        # timestampAuthorities = TSA) is refused fail-closed.
+        tr = fixtures.make_trusted_root()
+        tr["timestampAuthorities"] = [{"uri": "https://tsa.evil.example"}]
+        tr_path, tr_sha = self._write(tr)
+        ok, reason = self._check(tr=tr_path, tr_sha=tr_sha)
+        self.assertFalse(ok)
+        self.assertIn("additional service", reason)
+
 
 class TestSpdxAttestation(unittest.TestCase):
     """review #103 item 2: the SPDX (spdxjson) attestation must carry a SIGNED
