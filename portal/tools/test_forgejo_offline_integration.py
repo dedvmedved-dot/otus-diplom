@@ -155,7 +155,6 @@ def baseline():
         "spdx_attestation": json.dumps(make_spdx_statement()) + "\n",
         "certificate_identity": CONFIRMED_IDENTITY,
         "certificate_issuer": gate.FORGEJO_OIDC_ISSUER,
-        "certificate_audience": "sigstore",
         "actor": OWNER,
         "run_id": RUN_ID,
         "run_attempt": "1",
@@ -383,11 +382,14 @@ class TestFullChain(unittest.TestCase):
         self.assertIn("certificate issuer", reason)
 
     def test_certificate_audience_mismatch_not_allowed(self):
+        # review #168 item 1: the audience is a pure POLICY value. A foreign
+        # audience passed via the overridable binding is refused by the literal
+        # check (no public-sigstore fallback).
         ev = baseline()
-        ev["certificate_audience"] = "https://git.aiopslab.online/api/actions"
-        allowed, reason = gate.decide_lock_update(ev, BINDINGS, now=NOW)
+        allowed, reason = gate.decide_lock_update(
+            ev, dict(BINDINGS, audience="https://git.aiopslab.online/api/actions"), now=NOW)
         self.assertFalse(allowed)
-        self.assertIn("audience", reason)
+        self.assertIn("audience not confirmed", reason)
 
 
 class TestCliApplyScratchLock(unittest.TestCase):

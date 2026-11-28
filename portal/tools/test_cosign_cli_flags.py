@@ -107,6 +107,53 @@ class TestCosignCliFlags(unittest.TestCase):
         r = self._run("sign", "-a", "ref=test", "--help")
         self.assertEqual(r.returncode, 0)
 
+    # --- review #168 item 2/3: private keyless trust chain flags (v3.1.3) ----
+
+    def test_sign_accepts_private_fulcio_rekor_oidc_issuer(self):
+        # review #168 item 3: sign is bound to the PRIVATE Fulcio/Rekor/OIDC
+        # endpoints explicitly (no public-sigstore fallback). --fulcio-url/
+        # --rekor-url are the pinned v3.1.3 mechanism (deprecated in later cosign,
+        # but the pin is immutable).
+        r = self._run("sign", "--fulcio-url", "https://fulcio.private.example",
+                      "--rekor-url", "https://rekor.private.example",
+                      "--oidc-issuer", "https://o.private.example",
+                      "--oidc-client-id", "sigstore", "--help")
+        self.assertEqual(r.returncode, 0)
+        self.assertNotIn("unknown", r.stderr)
+
+    def test_attest_accepts_oidc_client_id_and_private_endpoints(self):
+        # review #168 item 2: both attestations request the LITERAL sigstore
+        # audience (--oidc-client-id) and the private endpoints.
+        r = self._run("attest", "--type", "spdxjson",
+                      "--oidc-client-id", "sigstore",
+                      "--fulcio-url", "https://fulcio.private.example",
+                      "--rekor-url", "https://rekor.private.example",
+                      "--oidc-issuer", "https://o.private.example", "--help")
+        self.assertEqual(r.returncode, 0)
+        self.assertNotIn("unknown", r.stderr)
+
+    def test_verify_accepts_private_rekor_and_trusted_root(self):
+        # review #168 item 3: verify is bound to the PRIVATE trusted root + Rekor.
+        r = self._run("verify",
+                      "--certificate-identity", "X",
+                      "--certificate-oidc-issuer", "Y",
+                      "--rekor-url", "https://rekor.private.example",
+                      "--trusted-root", "/nonexistent-root.json", "--help")
+        self.assertEqual(r.returncode, 0)
+        self.assertNotIn("unknown", r.stderr)
+
+    def test_verify_attestation_accepts_private_rekor_and_trusted_root(self):
+        # review #168 item 3: verify-attestation is bound to the PRIVATE trusted
+        # root + Rekor for both slsaprovenance and spdxjson.
+        r = self._run("verify-attestation", "--type", "slsaprovenance",
+                      "--certificate-identity", "X",
+                      "--certificate-oidc-issuer", "Y",
+                      "--rekor-url", "https://rekor.private.example",
+                      "--trusted-root", "/nonexistent-root.json",
+                      "--policy", "/nonexistent.cue", "--help")
+        self.assertEqual(r.returncode, 0)
+        self.assertNotIn("unknown", r.stderr)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

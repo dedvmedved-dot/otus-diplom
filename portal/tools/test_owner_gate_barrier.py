@@ -160,7 +160,6 @@ def baseline():
         "spdx_attestation": json.dumps(make_spdx_statement()) + "\n",
         "certificate_identity": CONFIRMED_IDENTITY,
         "certificate_issuer": gate.FORGEJO_OIDC_ISSUER,
-        "certificate_audience": "sigstore",
         "actor": OWNER,
         "run_id": RUN_ID,
         "run_attempt": "1",
@@ -333,13 +332,115 @@ class TestOIDCTrust(unittest.TestCase):
         self.assertIn("identity not confirmed", reason)
 
     def test_wrong_audience_rejected(self):
-        # Owner decision (#162): a non-sigstore token audience is refused
-        # fail-closed — no public-sigstore fallback.
+        # review #168 item 1: the audience is a pure POLICY value. A foreign
+        # audience passed via the overridable binding is refused fail-closed by
+        # the literal check — no public-sigstore fallback.
         ev = baseline()
-        ev["certificate_audience"] = "https://git.aiopslab.online/api/actions"
-        allowed, reason = gate.decide_lock_update(ev, BINDINGS, now=NOW)
+        allowed, reason = gate.decide_lock_update(
+            ev, dict(BINDINGS, audience="https://git.aiopslab.online/api/actions"), now=NOW)
         self.assertFalse(allowed)
-        self.assertIn("audience", reason)
+        self.assertIn("audience not confirmed", reason)
+
+    def test_foreign_binding_audience_rejected_even_with_matching_evidence(self):
+        # review #168 item 1: the audience used to be compared only BETWEEN the
+        # overridable binding and the evidence, so a matching WRONG pair passed.
+        # It is now matched against the literal `sigstore` independently, so a
+        # wrong-but-consistent override (binding AND a stale evidence value both
+        # foreign) is still refused.
+        ev = baseline()
+        ev["certificate_audience"] = "foreign-audience"  # stale key now ignored
+        allowed, reason = gate.decide_lock_update(
+            ev, dict(BINDINGS, audience="foreign-audience"), now=NOW)
+        self.assertFalse(allowed)
+        self.assertIn("audience not confirmed", reason)
+
+    def test_foreign_binding_issuer_rejected_even_with_matching_evidence(self):
+        # review #168 item 1: same class for the issuer — a matching WRONG pair
+        # (overridable binding + evidence both foreign) is refused by the literal
+        # issuer check, not merely by their mutual (non-)mismatch.
+        ev = baseline()
+        ev["certificate_issuer"] = "https://evil.example"
+        allowed, reason = gate.decide_lock_update(
+            ev, dict(BINDINGS, issuer="https://evil.example"), now=NOW)
+        self.assertFalse(allowed)
+        self.assertIn("issuer not confirmed", reason)
+
+
+class TestKeylessTrustConfig(unittest.TestCase):
+    """review #168 item 3: oidc_trust_confirmed=true must not merely flip a flag —
+    the PRIVATE Fulcio/Rekor/TUF trust chain must be PRESENT, AUTHENTIC and
+    applicable before sign/attest/verify, or the release fails closed (no
+    public-sigstore fallback)."""
+
+    def _write_root(self, content=b"private-trust-root-bytes"):
+        import tempfile
+        d = tempfile.TemporaryDirectory()
+        self.addCleanup(d.cleanup)
+        p = Path(d.name) / "trusted-root.json"
+        p.write_bytes(content)
+        return str(p)
+
+    def test_valid_private_trust_config(self):
+        # POSITIVE with a local fixture: a real temp file + its correct sha256.
+        p = self._write_root()
+        sha = hashlib.sha256(Path(p).read_bytes()).hexdigest()
+        ok, reason = gate.verify_keyless_trust_config(
+            "https://fulcio.private.example", "https://rekor.private.example", p, sha)
+        self.assertTrue(ok, reason)
+
+    def test_placeholder_fulcio_url_rejected(self):
+        p = self._write_root()
+        sha = hashlib.sha256(Path(p).read_bytes()).hexdigest()
+        ok, reason = gate.verify_keyless_trust_config(
+            "<PRIVATE_FULCIO_URL_OWNER_SUPPLIED>", "https://rekor.private.example", p, sha)
+        self.assertFalse(ok)
+        self.assertIn("Fulcio URL", reason)
+
+    def test_non_https_fulcio_url_rejected(self):
+        p = self._write_root()
+        sha = hashlib.sha256(Path(p).read_bytes()).hexdigest()
+        ok, reason = gate.verify_keyless_trust_config(
+            "http://fulcio.private.example", "https://rekor.private.example", p, sha)
+        self.assertFalse(ok)
+        self.assertIn("Fulcio URL", reason)
+
+    def test_placeholder_rekor_url_rejected(self):
+        p = self._write_root()
+        sha = hashlib.sha256(Path(p).read_bytes()).hexdigest()
+        ok, reason = gate.verify_keyless_trust_config(
+            "https://fulcio.private.example", "<PRIVATE_REKOR_URL_OWNER_SUPPLIED>", p, sha)
+        self.assertFalse(ok)
+        self.assertIn("Rekor URL", reason)
+
+    def test_missing_trust_root_sha_rejected(self):
+        p = self._write_root()
+        ok, reason = gate.verify_keyless_trust_config(
+            "https://fulcio.private.example", "https://rekor.private.example", p, "")
+        self.assertFalse(ok)
+        self.assertIn("SHA-256", reason)
+
+    def test_missing_trust_root_file_rejected(self):
+        ok, reason = gate.verify_keyless_trust_config(
+            "https://fulcio.private.example", "https://rekor.private.example",
+            "/nonexistent/trusted-root.json", "a" * 64)
+        self.assertFalse(ok)
+        self.assertIn("absent", reason)
+
+    def test_empty_trust_root_rejected(self):
+        p = self._write_root(content=b"")
+        ok, reason = gate.verify_keyless_trust_config(
+            "https://fulcio.private.example", "https://rekor.private.example", p, "a" * 64)
+        self.assertFalse(ok)
+        self.assertIn("empty", reason)
+
+    def test_trust_root_sha_mismatch_rejected(self):
+        # The trust root is present and non-empty but its sha256 does NOT match
+        # the pinned value — it is not authentic and must be refused.
+        p = self._write_root()
+        ok, reason = gate.verify_keyless_trust_config(
+            "https://fulcio.private.example", "https://rekor.private.example", p, "b" * 64)
+        self.assertFalse(ok)
+        self.assertIn("mismatch", reason)
 
 
 class TestSpdxAttestation(unittest.TestCase):
@@ -635,6 +736,44 @@ class TestWorkflowStructure(unittest.TestCase):
         for job in ("test", "preflight", "release"):
             steps = [s.get("name", "") for s in doc["jobs"][job]["steps"]]
             self.assertIn("Verify pinned tools implement every gate mode (exact tools pin)", steps)
+
+    # --- review #168 item 2: audience bound on all three keyless operations ----
+
+    def test_attest_commands_request_literal_audience(self):
+        # The LITERAL sigstore audience is requested (--oidc-client-id) by sign
+        # AND both attestations — three occurrences, so the actual token audience
+        # is bound for ALL three keyless operations, never left to a default.
+        text = (Path(__file__).parent / "p8c-portal-forgejo-release.yml.template").read_text()
+        self.assertEqual(text.count('--oidc-client-id "${{ env.OIDC_AUDIENCE }}"'), 3)
+        self.assertIn('cosign attest --yes --type spdxjson --oidc-client-id "${{ env.OIDC_AUDIENCE }}"', text)
+        self.assertIn('cosign attest --yes --type slsaprovenance --oidc-client-id "${{ env.OIDC_AUDIENCE }}"', text)
+
+    def test_evidence_bundle_does_not_emit_audience(self):
+        # The token audience is NOT an observation (not in the certificate, token
+        # never logged/saved) — it must not be emitted into the evidence bundle.
+        text = (Path(__file__).parent / "p8c-portal-forgejo-release.yml.template").read_text()
+        self.assertNotIn('"certificate_audience"', text)
+
+    # --- review #168 item 3: private trust config fail-closed, no fallback ----
+
+    def test_private_keyless_trust_step_present(self):
+        # The workflow verifies the PRIVATE trust chain (fail-closed) BEFORE any
+        # build/push/sign, so oidc_trust_confirmed=true cannot skip it.
+        doc = self._doc()
+        steps = [s.get("name", "") for s in doc["jobs"]["release"]["steps"]]
+        self.assertIn("Verify private keyless trust configuration (fail-closed, no public fallback)", steps)
+
+    def test_no_public_sigstore_fallback(self):
+        # The absence of a public-sigstore fallback is enforced by CODE: sign/
+        # attest/verify pass the private endpoints + trusted root explicitly and
+        # no public sigstore host appears as a cosign target.
+        text = (Path(__file__).parent / "p8c-portal-forgejo-release.yml.template").read_text()
+        self.assertNotIn("fulcio.sigstore.dev", text)
+        self.assertNotIn("rekor.sigstore.dev", text)
+        self.assertIn('--fulcio-url "${{ env.FULCIO_URL }}"', text)
+        self.assertIn('--rekor-url "${{ env.REKOR_URL }}"', text)
+        self.assertIn('--oidc-issuer "${{ env.OIDC_ISSUER }}"', text)
+        self.assertIn('--trusted-root "$RUNNER_TEMP/trusted-root.json"', text)
 
 
 if __name__ == "__main__":

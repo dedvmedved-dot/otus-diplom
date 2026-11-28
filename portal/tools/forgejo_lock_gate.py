@@ -242,6 +242,32 @@ def identity_is_confirmed(identity):
     return isinstance(identity, str) and identity == WORKFLOW_IDENTITY
 
 
+def issuer_is_confirmed(issuer):
+    """True only for the EXACT source-confirmed OIDC issuer (review #168 item 1).
+
+    The issuer is pinned LITERALLY to https://git.aiopslab.online/api/actions
+    (confirmed by source: routers/api/actions/id_token.go + the
+    /api/actions/.well-known/openid-configuration discovery). It is matched by
+    EXACT string equality — no regex, no diagnostic branch — so a foreign issuer
+    is refused fail-closed even when the overridable binding and the evidence
+    agree on the SAME wrong value (a matching-wrong override is not trust).
+    """
+    return isinstance(issuer, str) and issuer == FORGEJO_OIDC_ISSUER
+
+
+def audience_is_confirmed(audience):
+    """True only for the EXACT owner-confirmed OIDC token audience (review #168 item 1).
+
+    Owner decision (#162 comment 12512): the keyless token audience is the
+    LITERAL ``sigstore`` (cosign --oidc-client-id default; the private Fulcio's
+    issuer allowlist requires audience=sigstore). It is matched by EXACT string
+    equality — no regex, no diagnostic branch — so a foreign audience is refused
+    fail-closed even when the overridable binding and the evidence agree on the
+    SAME wrong value (a matching-wrong override is not trust).
+    """
+    return isinstance(audience, str) and audience == OIDC_AUDIENCE
+
+
 def _parse_epoch(issued):
     return calendar.timegm(time.strptime(issued, "%Y-%m-%dT%H:%M:%SZ"))
 
@@ -307,6 +333,7 @@ GATE_MODES = (
     "registry-fetch",
     "predicate",
     "workflow-blob",
+    "keyless-trust-check",
     "verify",
 )
 
@@ -385,6 +412,48 @@ def verify_tools_pin(tools_dir, required_modes=GATE_MODES,
             return False, ("tools pin: CUE policy does not match its reviewed role "
                            "(swapped or corrupted): %s" % rel)
     return True, "tools pin implements all required gate modes and both CUE policies match their reviewed roles"
+
+
+# ---------------------------------------------------------------------------
+# Private keyless trust configuration (review #168 item 3)
+# ---------------------------------------------------------------------------
+
+def verify_keyless_trust_config(fulcio_url, rekor_url, trust_root_file,
+                                trust_root_sha256):
+    """(ok, reason). The PRIVATE keyless trust chain (Fulcio/Rekor/TUF) must be
+    PRESENT, AUTHENTIC and applicable before sign/attest/verify.
+
+    review #168 item 3: ``oidc_trust_confirmed=true`` must not merely flip a
+    flag — the private trust materials must be verified here, BEFORE any
+    build/push/sign. A missing/placeholder/foreign Fulcio or Rekor URL, a
+    missing/empty trust root, or a trust root whose SHA-256 does not match the
+    pinned value are all refusals (fail-closed). There is NO public-sigstore
+    fallback: cosign is only ever pointed at the private endpoints + trusted
+    root, and this check refuses to run when those are absent. The trusted root
+    itself is never logged or saved here — only its SHA-256 is compared.
+    """
+    if (not isinstance(fulcio_url, str) or not fulcio_url.startswith("https://")
+            or "<" in fulcio_url):
+        return False, "keyless trust: private Fulcio URL absent/placeholder/not https"
+    if (not isinstance(rekor_url, str) or not rekor_url.startswith("https://")
+            or "<" in rekor_url):
+        return False, "keyless trust: private Rekor URL absent/placeholder/not https"
+    if not isinstance(trust_root_sha256, str) or not re.fullmatch(r"[0-9a-f]{64}", trust_root_sha256):
+        return False, "keyless trust: private trust root SHA-256 absent/not 64-hex"
+    if not isinstance(trust_root_file, str) or not trust_root_file:
+        return False, "keyless trust: private trust root file path missing"
+    root_path = Path(trust_root_file)
+    if not root_path.is_file():
+        return False, "keyless trust: private trust root file absent"
+    try:
+        data = root_path.read_bytes()
+    except OSError as exc:
+        return False, "keyless trust: private trust root unreadable: %s" % exc
+    if not data.strip():
+        return False, "keyless trust: private trust root empty"
+    if hashlib.sha256(data).hexdigest() != trust_root_sha256:
+        return False, "keyless trust: private trust root SHA-256 mismatch (not authentic)"
+    return True, "private keyless trust chain present and authentic"
 
 
 # ---------------------------------------------------------------------------
@@ -903,6 +972,11 @@ def decide_lock_update(evidence, bindings=None, now=None):
         certificate_identity   str    --certificate-identity passed to cosign
         certificate_issuer     str    --certificate-oidc-issuer passed to cosign
         actor                  str    github.actor (trusted runtime context)
+
+    The token AUDIENCE is deliberately NOT an evidence key: it is not carried by
+    the certificate and the token is never logged/saved, so there is no per-run
+    audience observation to report. The audience is a pure POLICY value, enforced
+    on the binding only via ``audience_is_confirmed`` (literal ``sigstore``).
         run_id                 str    runtime run id
         run_attempt            str    runtime run attempt (must be "1")
         observed_repository    str    github.repository (runtime, triple-checked vs policy+doc)
@@ -986,10 +1060,23 @@ def decide_lock_update(evidence, bindings=None, now=None):
         return False, "certificate identity not confirmed (not the literal SAN) in evidence"
     if evidence.get("certificate_identity") != b["identity"]:
         return False, "certificate identity != expected workflow identity"
+    # review #168 item 1: the issuer and audience are ALSO pinned LITERALLY and
+    # INDEPENDENTLY. The comparisons below used to compare the EVIDENCE against
+    # the (overridable) binding only, so a matching WRONG pair (binding AND
+    # evidence both foreign) slipped through. Each is now first matched against
+    # its literal constant (exact equality, no regex), so a wrong-but-consistent
+    # override is still refused fail-closed. The audience is a pure POLICY value
+    # (it is NOT carried by the certificate and the token is never logged/saved),
+    # so it is enforced on the binding only — there is no per-run audience
+    # observation to compare against.
+    if not issuer_is_confirmed(b["issuer"]):
+        return False, "policy issuer not confirmed (not the literal OIDC issuer) — keyless release BLOCKED"
+    if not issuer_is_confirmed(evidence.get("certificate_issuer")):
+        return False, "certificate issuer not confirmed (not the literal OIDC issuer) in evidence"
     if evidence.get("certificate_issuer") != b["issuer"]:
         return False, "certificate issuer != expected OIDC issuer"
-    if evidence.get("certificate_audience") != b["audience"]:
-        return False, "certificate audience != expected OIDC audience (sigstore)"
+    if not audience_is_confirmed(b["audience"]):
+        return False, "policy audience not confirmed (not the literal sigstore) — keyless release BLOCKED"
     statements = parse_verified_attestation(evidence.get("verified_attestation") or "")
     if not statements:
         return False, "no verified attestation result (discovery alone is not trust)"
@@ -1293,6 +1380,8 @@ USAGE = """usage:
   forgejo_lock_gate.py predicate <source_sha> <workflow_sha> <tools_sha> <run_id>
   forgejo_lock_gate.py workflow-blob --workflow-dir <dir> --commit <sha> --path <workflow_file>
   forgejo_lock_gate.py tools-pin-check --tools-dir <dir>
+  forgejo_lock_gate.py keyless-trust-check --fulcio-url <https_url> --rekor-url <https_url>
+      --trust-root-file <file> --trust-root-sha256 <64hex>
   forgejo_lock_gate.py verify <evidence.json> [--apply <lock_file> --apply-lock true
       --tools-root <dir>] [--oidc-trust-confirmed true]"""
 
@@ -1444,6 +1533,23 @@ def main(argv):
         print(json.dumps({"tools_pin": ok, "reason": reason}))
         if not ok:
             print("TOOLS PIN NOT VERIFIED: " + reason, file=sys.stderr)
+            return 1
+        return 0
+
+    if mode == "keyless-trust-check":
+        # review #168 item 3: the PRIVATE keyless trust chain (Fulcio/Rekor/TUF)
+        # must be present and authentic before any build/push/sign. The trust
+        # root is read from a file written by the workflow step (from the
+        # PRIVATE_TRUST_ROOT secret, never logged), and its SHA-256 is compared
+        # against the pinned out-of-band value. Absent/placeholder endpoints or
+        # a mismatched root refuse the release fail-closed (no public-sigstore
+        # fallback).
+        ok, reason = verify_keyless_trust_config(
+            flag("--fulcio-url", ""), flag("--rekor-url", ""),
+            flag("--trust-root-file", ""), flag("--trust-root-sha256", ""))
+        print(json.dumps({"keyless_trust": ok, "reason": reason}))
+        if not ok:
+            print("KEYLESS TRUST NOT VERIFIED: " + reason, file=sys.stderr)
             return 1
         return 0
 
