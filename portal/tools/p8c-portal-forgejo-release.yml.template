@@ -100,7 +100,7 @@ env:
   # GITHUB_WORKFLOW_SHA) BEFORE any release rights are granted. An
   # absent/mismatched pin fails the preflight (fail-closed).
   PINNED_SOURCE_SHA: "4c09d6b4a85e2d021516244988f48b92eade7acf"
-  PINNED_TOOLS_SHA: "3395d0cca3475efc1c4df910c1188bc5fe9db2d5"
+  PINNED_TOOLS_SHA: "0511b4674cd4239362be9602fa354ce587c0a9ff"
   # Full-tree completeness pin (review #58 item 2): sha256 of the SORTED full
   # `git ls-tree -r --name-only PINNED_SOURCE_SHA` list. The inventory step
   # verifies the source checkout is the COMPLETE pinned tree (inputs outside
