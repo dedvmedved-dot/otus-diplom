@@ -1,0 +1,5 @@
+# Решение #145: выпуск B — NOT_READY
+
+[Выписка оператора из task 224](https://git.aiopslab.online/aiopslab/otus-diplom/issues/144#issuecomment-12142) классифицирует [run 71](https://git.aiopslab.online/aiopslab/otus-diplom/actions/runs/3), SHA `c2194b161fe7e5e5218bd737c335faa63c41db0d`: job `diagnostic`, шаг `Print run context` завершился с кодом 1 на `ENV_MISSING ACTIONS_ID_TOKEN_REQUEST_URL`. Наличие `ACTIONS_ID_TOKEN_REQUEST_TOKEN` не установлено; HTTP-статус и claims не наблюдались. Ключ на уровне workflow в #140 не устранил ошибку run 70. Это не доказывает отсутствие поддержки OIDC сервером или неисправность runner.
+
+Допуск #141 исчерпан. Не повторять запуск и не сливать #140 как исправление. [Новая задача #146](https://git.aiopslab.online/aiopslab/otus-diplom/issues/146), исполнитель `hermes-5.187.1.37-engineer`: статически установить условия выдачи env для установленных версий, сверить с проверенным SHA и вернуть рекомендацию новой review issue. Без изменения конфигурации и live-проверок; новый запуск требует отдельного допуска.
