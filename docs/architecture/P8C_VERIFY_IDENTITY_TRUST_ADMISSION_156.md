@@ -34,7 +34,7 @@
 | 1 | Точный OIDC issuer для `cosign --certificate-oidc-issuer` | **Подтверждено** — `https://git.aiopslab.online/api/actions`. Источники: (а) run 72 `OIDC_ISS=…/api/actions` ([#153#issuecomment-12397](https://git.aiopslab.online/aiopslab/otus-diplom/issues/153#issuecomment-12397)); (б) live discovery `GET /api/actions/.well-known/openid-configuration`; (в) source `routers/api/actions/id_token.go:142` (`claims["iss"] = TrimSuffix(AppURL,"/") + "/api/actions"`); (г) шаблон `OIDC_ISSUER` и гейт `FORGEJO_OIDC_ISSUER` уже закрепляют это значение | **НЕТ** (issuer закрыт) |
 | 2 | Способ получения OIDC (Forgejo-native, не GitHub `permissions:`) | **Подтверждено** — run 72: `ENV_PRESENT ACTIONS_ID_TOKEN_REQUEST_URL` + `ENV_PRESENT ACTIONS_ID_TOKEN_REQUEST_TOKEN`, `OIDC_REQUEST_HTTP_STATUS=200` (инъекция runner v12.10.2). Ключ — `enable-openid-connect: true` (диагностический workflow @ `c2194b16…`; release-шаблон @ `96237e87…` на release-job). GitHub `permissions: id-token: write` Forgejo НЕ реализует ([#139](https://git.aiopslab.online/aiopslab/otus-diplom/issues/139), source `services/actions/task.go:162-186`) | **НЕТ** (механизм подтверждён) |
 | 3 | audience id-token | **Подтверждено значение** — run 72 `OIDC_AUD=sigstore` (диагностика запрашивала `audience=sigstore`); source `routers/api/actions/id_token.go:111-119` (aud = query-param `audience`, дефолт `AppURL+repoOwner`). Ключевой signer (cosign/Sigstore) ожидает audience `sigstore` | **Частично** — «принятие» audience доверенным signer входит в trust-цепочку (строка 5) |
-| 4 | Точный SAN / certificate identity (Forgejo id-token `sub`) для release | **Формат подтверждён**, значение для `main` — производное. Source `services/actions/auth.go:148-153` (`generateOIDCSub`): не-PR → `repo:{repository}:ref:{ref}` (строки 151/153). Run 72 `OIDC_SUB=repo:aiopslab/otus-diplom:ref:refs/heads/engineer/139-oidc-enable-openid` подтверждает формат на факте. **Производный SAN для release (`refs/heads/main`)** = `repo:aiopslab/otus-diplom:ref:refs/heads/main` | **ПРОБЕЛ** — значение для `main` не наблюдалось напрямую (нужен run на main, запрещён). `WORKFLOW_IDENTITY` остаётся плейсхолдером `<FORGEJO_OIDC_IDENTITY_UNCONFIRMED>` |
+| 4 | Точный SAN / certificate identity для release | **Формат OIDC `sub` подтверждён**, значение `sub` для `main` — расчётное. Source `services/actions/auth.go:148-153` (`generateOIDCSub`): не-PR → `repo:{repository}:ref:{ref}` (строки 151/153). Run 72 `OIDC_SUB=repo:aiopslab/otus-diplom:ref:refs/heads/engineer/139-oidc-enable-openid` подтверждает формат на факте. **Ожидаемый `sub` для release (`refs/heads/main`), не SAN** = `repo:aiopslab/otus-diplom:ref:refs/heads/main` | **ПРОБЕЛ** — нет свидетельства о SAN, который выбранная CA выдаёт для release; даже наблюдение `sub` на `main` не закрыло бы пробел. `WORKFLOW_IDENTITY` остаётся плейсхолдером `<FORGEJO_OIDC_IDENTITY_UNCONFIRMED>` |
 | 5 | Trust-цепочка: CA-доверие к issuer+audience, workflow binding, trust roots для sign/verify/verify-attestation | Механизм закреплён: гейт `forgejo_lock_gate.py` — `OIDC_TRUST_CONFIRMED = False` (fail-closed), `identity_is_confirmed()` отклоняет плейсхолдер; release-job имеет fail-closed шаг `Verify OIDC trust + identity confirmation` по `inputs.oidc_trust_confirmed` | **ПРОБЕЛ** — `oidc_trust_confirmed` = false; владелец не подтвердил, какой signer (публичный sigstore Fulcio/Rekor или приватный) принимает Forgejo issuer `https://git.aiopslab.online/api/actions`, и какие trust roots используются |
 | 6 | Verifier rule (правило проверки подписи/аттестации) | Зафиксировано: `cosign verify --certificate-identity $WORKFLOW_IDENTITY --certificate-oidc-issuer $OIDC_ISSUER -a ref=$PINNED_SOURCE_SHA`; `cosign verify-attestation --type slsaprovenance/spdxjson --policy cosign-slsa-policy.cue / cosign-spdx-policy.cue` (source-binding по `4c09d6b…`, SPDX-shape). Все три файла закреплены в tools `46e77bc…` | **Частично** — `--certificate-identity` ссылается на плейсхолдер SAN (строка 4) |
 | 7 | Эксклюзивный admission-барьер (runner/label, закрытие выдачи, нет конкурирующих runs, gate PUT 201/204) | Механизм закреплён: release-шаблон имеет job `admission` на `runs-on: otus-diplom-admission`, fail-closed по `inputs.admission_confirmed` («barrier before PickTask»). Runner `otus-diplom` несёт label `otus-diplom-admission` ([#148#issuecomment-12351](https://git.aiopslab.online/aiopslab/otus-diplom/issues/148#issuecomment-12351)) | **ПРОБЕЛ** — `admission_confirmed` = false; закрытие выдачи по label + подтверждение отсутствия конкурирующих release-runs + gate PUT (201/204) на возвращённый run id — действие владельца, не выполнено |
@@ -79,7 +79,7 @@
 - **OIDC `sub` наблюдался; сертификат и его SAN не наблюдались.** Соответствие `sub` → SAN зависит от выбранной CA и её правила выдачи. Для `cosign --certificate-identity` нужно подтверждение точного SAN, а не только формата `sub`.
   Формат `repo:{owner}/{repo}:ref:{ref}` подтверждён source (`services/actions/auth.go:148-153`)
   и фактом run 72 (`sub=repo:aiopslab/otus-diplom:ref:refs/heads/engineer/139-oidc-enable-openid`).
-  Производный SAN для release = `repo:aiopslab/otus-diplom:ref:refs/heads/main`.
+  Ожидаемый OIDC `sub` для release (не SAN) = `repo:aiopslab/otus-diplom:ref:refs/heads/main`.
 - **Правило verifier**: `cosign verify --certificate-identity <SAN> --certificate-oidc-issuer <issuer>`
   (+ `-a ref=<source>` для image-подписи); `verify-attestation` с CUE-политиками
   `cosign-slsa-policy.cue` / `cosign-spdx-policy.cue`; финальный гейт
@@ -110,9 +110,7 @@
 `repo:aiopslab/otus-diplom:ref:refs/heads/engineer/139-oidc-enable-openid`
 использован ТОЛЬКО как доказательство формата. В release policy
 (`WORKFLOW_IDENTITY`, гейт, шаблон) значение НЕ внесено — оно остаётся
-плейсхолдером. Кандидат для release — производный
-`repo:aiopslab/otus-diplom:ref:refs/heads/main`, который владелец должен
-подтвердить или заменить отдельным решением. Никаких записей в
+плейсхолдером. Ожидаемый `sub` для `main` не задаёт certificate identity. Никаких записей в
 trust/policy/шаблон инженером не делалось.
 
 ## Итог (для архитектора и владельца)
@@ -122,11 +120,7 @@ trust/policy/шаблон инженером не делалось.
 SHA. Выпуск B остаётся `NOT_READY_FOR_DISPATCH`; остаются ровно ТРИ подтверждения
 владельца (ни одно не выполнимо инженером без выхода за границы наряда):
 
-1. **Точный SAN** — принять производное значение
-   `repo:aiopslab/otus-diplom:ref:refs/heads/main` (формат подтверждён
-   source+run 72) ИЛИ указать иное точное значение certificate identity для
-   `cosign --certificate-identity`. Минимальный запрос: «подтверди SAN =
-   repo:aiopslab/otus-diplom:ref:refs/heads/main (или укажи иное)».
+1. **Точный SAN** — владелец указывает точную certificate identity для `cosign --certificate-identity` и основание: SAN ранее выданного сертификата соответствующего release-контекста либо однозначное правило выдачи выбранной CA для этого workflow/ref. Формат `sub` не заменяет это свидетельство.
 
 2. **Trust-цепочка** — подтвердить signer/CA (публичный sigstore Fulcio/Rekor или
    приватный) и trust roots для sign/verify/verify-attestation, принимающие
@@ -156,7 +150,7 @@ build/push/sign/attest/lock/публикация не выполнялись; а
 OIDC_ISSUER                   = CONFIRMED (https://git.aiopslab.online/api/actions)
 OIDC_AUDIENCE                 = CONFIRMED_VALUE (sigstore)
 OIDC_SUB_FORMAT               = CONFIRMED (repo:{repository}:ref:{ref}, no event suffix)
-RELEASE_SAN (refs/heads/main) = DERIVED_NOT_OBSERVED (repo:aiopslab/otus-diplom:ref:refs/heads/main)
+RELEASE_SAN (refs/heads/main) = UNKNOWN (certificate not observed; CA mapping not confirmed)
 WORKFLOW_IDENTITY (policy)    = PLACEHOLDER (not touched)
 OIDC_TRUST_CHAIN              = MISSING (owner)
 EXACT_SAN_CONFIRMATION        = MISSING (owner)
