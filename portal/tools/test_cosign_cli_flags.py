@@ -20,6 +20,7 @@ substituted binary cannot silently change the verdict.
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import shutil
 import subprocess
@@ -27,6 +28,8 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+
+import cosign_fixtures as fixtures
 
 COSIGN_VERSION = "3.1.3"
 COSIGN_SHA256 = "4629c757b7618056f8ddd7e2625ae9fdd94c0372a65049520bc7d9df9efc7f71"
@@ -153,6 +156,78 @@ class TestCosignCliFlags(unittest.TestCase):
                       "--policy", "/nonexistent.cue", "--help")
         self.assertEqual(r.returncode, 0)
         self.assertNotIn("unknown", r.stderr)
+
+
+@unittest.skipUnless(COSIGN, "cosign v3.1.3 binary unavailable (offline env)")
+class TestCosignLoaderRuntime(unittest.TestCase):
+    """review #170: RUNTIME acceptance/rejection of the ACTUAL cosign v3.1.3
+    signing loader (``signcommon.LoadTrustedMaterialAndSigningConfig``) driven
+    with real parameters — NOT ``--help`` (which only proves flag recognition).
+
+    Proves offline that the pinned loader:
+      * ACCEPTS a coherent ``--signing-config`` + ``--trusted-root`` (no service
+        URLs) and proceeds PAST the loader — any failure is a later-stage error
+        (reference parsing / image access / key / network), never a loader error;
+      * REJECTS a foreign HTTPS origin (an explicit ``--fulcio-url`` alongside a
+        ``--signing-config`` → "cannot specify service URLs and use signing
+        config", the exact rejected combination review #170 names);
+      * REJECTS an unusable trusted root (a non-Sigstore JSON → "loading trusted
+        root").
+    """
+
+    IMG = ("registry.example/image@sha256:0123456789abcdef0123456789abcdef"
+           "0123456789abcdef0123456789abcdef")
+    LOADER_ERRORS = (
+        "cannot specify service URLs and use signing config",
+        "loading trusted root",
+        "error reading signing config",
+        "must provide --new-bundle-format",
+    )
+
+    def _write(self, obj):
+        d = tempfile.TemporaryDirectory()
+        self.addCleanup(d.cleanup)
+        p = Path(d.name) / "fixture.json"
+        p.write_text(json.dumps(obj))
+        return str(p)
+
+    def _run(self, *args):
+        assert COSIGN is not None  # guarded by skipUnless
+        return subprocess.run([COSIGN, *args], capture_output=True, text=True,
+                              timeout=30)
+
+    def test_loader_accepts_coherent_signing_config_and_root(self):
+        sc = self._write(fixtures.make_signing_config())
+        tr = self._write(fixtures.make_trusted_root())
+        r = self._run("sign", "--signing-config", sc, "--trusted-root", tr,
+                      "--new-bundle-format", "--oidc-client-id", "sigstore",
+                      "--yes", self.IMG)
+        out = (r.stderr or "") + (r.stdout or "")
+        for err in self.LOADER_ERRORS:
+            self.assertNotIn(err, out)
+
+    def test_loader_rejects_foreign_https_origin(self):
+        sc = self._write(fixtures.make_signing_config())
+        tr = self._write(fixtures.make_trusted_root())
+        r = self._run("sign", "--signing-config", sc, "--trusted-root", tr,
+                      "--new-bundle-format", "--fulcio-url", "https://evil.example",
+                      "--yes", self.IMG)
+        out = (r.stderr or "") + (r.stdout or "")
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("cannot specify service URLs and use signing config", out)
+
+    def test_loader_rejects_unusable_root(self):
+        # A trusted-root file that is not a valid Sigstore trusted root (an
+        # unknown proto field) is refused by the loader ("loading trusted root"),
+        # even alongside a valid --signing-config.
+        sc = self._write(fixtures.make_signing_config())
+        bad = self._write({"mediaType": "application/vnd.dev.sigstore.trustedroot+json;version=0.1",
+                           "notARealField": 1})
+        r = self._run("sign", "--signing-config", sc, "--trusted-root", bad,
+                      "--new-bundle-format", "--yes", self.IMG)
+        out = (r.stderr or "") + (r.stdout or "")
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("loading trusted root", out)
 
 
 if __name__ == "__main__":

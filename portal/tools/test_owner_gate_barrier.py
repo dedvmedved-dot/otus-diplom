@@ -33,6 +33,7 @@ import unittest
 from pathlib import Path
 
 import forgejo_lock_gate as gate
+import cosign_fixtures as fixtures
 
 PINNED = "4c09d6b4a85e2d021516244988f48b92eade7acf"
 TOOLS = "a" * 40
@@ -367,80 +368,129 @@ class TestOIDCTrust(unittest.TestCase):
 
 
 class TestKeylessTrustConfig(unittest.TestCase):
-    """review #168 item 3: oidc_trust_confirmed=true must not merely flip a flag —
-    the PRIVATE Fulcio/Rekor/TUF trust chain must be PRESENT, AUTHENTIC and
-    applicable before sign/attest/verify, or the release fails closed (no
-    public-sigstore fallback)."""
+    """review #168 item 3 + review #170: oidc_trust_confirmed=true must not merely
+    flip a flag — the PRIVATE Fulcio/Rekor/TUF trust chain must be PRESENT,
+    AUTHENTIC (pinned SHA), APPROVED (coherent private origins) and APPLICABLE
+    before sign/attest/verify, or the release fails closed (no public-sigstore
+    fallback). review #170: the positive fixture must be a REAL Sigstore
+    trusted root (not arbitrary bytes), the agreed signing config is parsed and
+    its service URLs must be EXACTLY the approved private origins, and a foreign
+    origin or an unfit root is refused even when its digest matches the pin."""
 
-    def _write_root(self, content=b"private-trust-root-bytes"):
+    FULCIO = fixtures.APPROVED_FULCIO_URL
+    REKOR = fixtures.APPROVED_REKOR_URL
+    OIDC = fixtures.APPROVED_OIDC_ISSUER
+
+    def _write(self, obj):
         import tempfile
         d = tempfile.TemporaryDirectory()
         self.addCleanup(d.cleanup)
-        p = Path(d.name) / "trusted-root.json"
-        p.write_bytes(content)
-        return str(p)
+        p = Path(d.name) / "sigstore.json"
+        p.write_text(json.dumps(obj))
+        return str(p), hashlib.sha256(p.read_bytes()).hexdigest()
+
+    def _check(self, fulcio=FULCIO, rekor=REKOR, oidc=OIDC,
+               sc=None, tr=None, sc_sha=None, tr_sha=None):
+        if sc is None:
+            sc_path, default_sc_sha = self._write(fixtures.make_signing_config())
+            sc = sc_path
+            if sc_sha is None:
+                sc_sha = default_sc_sha
+        elif sc_sha is None:
+            sc_sha = hashlib.sha256(Path(sc).read_bytes()).hexdigest()
+        if tr is None:
+            tr_path, default_tr_sha = self._write(fixtures.make_trusted_root())
+            tr = tr_path
+            if tr_sha is None:
+                tr_sha = default_tr_sha
+        elif tr_sha is None:
+            tr_sha = hashlib.sha256(Path(tr).read_bytes()).hexdigest()
+        return gate.verify_keyless_trust_config(fulcio, rekor, oidc,
+                                                sc, sc_sha, tr, tr_sha)
 
     def test_valid_private_trust_config(self):
-        # POSITIVE with a local fixture: a real temp file + its correct sha256.
-        p = self._write_root()
-        sha = hashlib.sha256(Path(p).read_bytes()).hexdigest()
+        # POSITIVE with real local fixtures: a structurally-valid Sigstore
+        # trusted root + a coherent signing_config.v0.2 bound to the approved
+        # private origins, each with its correct sha256.
+        sc, sc_sha = self._write(fixtures.make_signing_config())
+        tr, tr_sha = self._write(fixtures.make_trusted_root())
         ok, reason = gate.verify_keyless_trust_config(
-            "https://fulcio.private.example", "https://rekor.private.example", p, sha)
+            self.FULCIO, self.REKOR, self.OIDC, sc, sc_sha, tr, tr_sha)
         self.assertTrue(ok, reason)
 
     def test_placeholder_fulcio_url_rejected(self):
-        p = self._write_root()
-        sha = hashlib.sha256(Path(p).read_bytes()).hexdigest()
-        ok, reason = gate.verify_keyless_trust_config(
-            "<PRIVATE_FULCIO_URL_OWNER_SUPPLIED>", "https://rekor.private.example", p, sha)
+        ok, reason = self._check(fulcio="<PRIVATE_FULCIO_URL_OWNER_SUPPLIED>")
         self.assertFalse(ok)
-        self.assertIn("Fulcio URL", reason)
+        self.assertIn("placeholder", reason)
 
     def test_non_https_fulcio_url_rejected(self):
-        p = self._write_root()
-        sha = hashlib.sha256(Path(p).read_bytes()).hexdigest()
-        ok, reason = gate.verify_keyless_trust_config(
-            "http://fulcio.private.example", "https://rekor.private.example", p, sha)
+        ok, reason = self._check(fulcio="http://fulcio.private.example")
         self.assertFalse(ok)
-        self.assertIn("Fulcio URL", reason)
+        self.assertIn("not https", reason)
 
-    def test_placeholder_rekor_url_rejected(self):
-        p = self._write_root()
-        sha = hashlib.sha256(Path(p).read_bytes()).hexdigest()
-        ok, reason = gate.verify_keyless_trust_config(
-            "https://fulcio.private.example", "<PRIVATE_REKOR_URL_OWNER_SUPPLIED>", p, sha)
+    def test_public_sigstore_fulcio_url_rejected(self):
+        # review #170: a public sigstore host is NEVER an approved private origin.
+        ok, reason = self._check(fulcio="https://fulcio.sigstore.dev")
         self.assertFalse(ok)
-        self.assertIn("Rekor URL", reason)
+        self.assertIn("public sigstore", reason)
+
+    def test_foreign_origin_signing_config_rejected_even_with_correct_digest(self):
+        # review #170 item 1: a signing config whose caUrls points at a FOREIGN
+        # origin is refused even when its SHA-256 matches the pin (coherence
+        # checked independently of authenticity).
+        sc, sc_sha = self._write(fixtures.make_signing_config(fulcio_url="https://evil.example"))
+        ok, reason = self._check(sc=sc, sc_sha=sc_sha)
+        self.assertFalse(ok)
+        self.assertIn("not the approved private origin", reason)
+
+    def test_foreign_oidc_issuer_rejected(self):
+        # A signing config with a foreign OIDC issuer is refused fail-closed.
+        sc, sc_sha = self._write(fixtures.make_signing_config(oidc_issuer="https://evil.example"))
+        ok, reason = self._check(sc=sc, sc_sha=sc_sha)
+        self.assertFalse(ok)
+        self.assertIn("OIDC issuer is not the approved origin", reason)
+
+    def test_unfit_root_rejected_even_with_correct_digest(self):
+        # review #170 item 1: a trusted root that PARSES as trustedroot v0.1 but
+        # has NO usable certificate chain is refused even when its SHA-256
+        # matches the pin.
+        tr = fixtures.make_trusted_root()
+        tr["certificateAuthorities"][0]["certChain"] = {"certificates": []}
+        tr_path, tr_sha = self._write(tr)
+        ok, reason = self._check(tr=tr_path, tr_sha=tr_sha)
+        self.assertFalse(ok)
+        self.assertIn("unfit", reason)
+
+    def test_root_not_a_sigstore_root_rejected(self):
+        # Arbitrary JSON (not a Sigstore trusted root) is refused — the positive
+        # fixture must be a REAL Sigstore root.
+        p, sha = self._write({"hello": "world"})
+        ok, reason = self._check(tr=p, tr_sha=sha)
+        self.assertFalse(ok)
+        self.assertIn("mediaType", reason)
 
     def test_missing_trust_root_sha_rejected(self):
-        p = self._write_root()
-        ok, reason = gate.verify_keyless_trust_config(
-            "https://fulcio.private.example", "https://rekor.private.example", p, "")
+        ok, reason = self._check(tr_sha="")
         self.assertFalse(ok)
         self.assertIn("SHA-256", reason)
 
     def test_missing_trust_root_file_rejected(self):
+        sc, sc_sha = self._write(fixtures.make_signing_config())
         ok, reason = gate.verify_keyless_trust_config(
-            "https://fulcio.private.example", "https://rekor.private.example",
+            self.FULCIO, self.REKOR, self.OIDC, sc, sc_sha,
             "/nonexistent/trusted-root.json", "a" * 64)
         self.assertFalse(ok)
         self.assertIn("absent", reason)
 
-    def test_empty_trust_root_rejected(self):
-        p = self._write_root(content=b"")
-        ok, reason = gate.verify_keyless_trust_config(
-            "https://fulcio.private.example", "https://rekor.private.example", p, "a" * 64)
-        self.assertFalse(ok)
-        self.assertIn("empty", reason)
-
     def test_trust_root_sha_mismatch_rejected(self):
-        # The trust root is present and non-empty but its sha256 does NOT match
-        # the pinned value — it is not authentic and must be refused.
-        p = self._write_root()
-        ok, reason = gate.verify_keyless_trust_config(
-            "https://fulcio.private.example", "https://rekor.private.example", p, "b" * 64)
+        ok, reason = self._check(tr_sha="b" * 64)
         self.assertFalse(ok)
         self.assertIn("mismatch", reason)
+
+    def test_signing_config_sha_mismatch_rejected(self):
+        ok, reason = self._check(sc_sha="b" * 64)
+        self.assertFalse(ok)
+        self.assertIn("signing config SHA-256 mismatch", reason)
 
 
 class TestSpdxAttestation(unittest.TestCase):
@@ -765,15 +815,35 @@ class TestWorkflowStructure(unittest.TestCase):
 
     def test_no_public_sigstore_fallback(self):
         # The absence of a public-sigstore fallback is enforced by CODE: sign/
-        # attest/verify pass the private endpoints + trusted root explicitly and
-        # no public sigstore host appears as a cosign target.
+        # attest use the agreed private --signing-config + --trusted-root,
+        # verify/verify-attestation pass --trusted-root, and no public sigstore
+        # host appears as a cosign target.
         text = (Path(__file__).parent / "p8c-portal-forgejo-release.yml.template").read_text()
         self.assertNotIn("fulcio.sigstore.dev", text)
         self.assertNotIn("rekor.sigstore.dev", text)
-        self.assertIn('--fulcio-url "${{ env.FULCIO_URL }}"', text)
-        self.assertIn('--rekor-url "${{ env.REKOR_URL }}"', text)
-        self.assertIn('--oidc-issuer "${{ env.OIDC_ISSUER }}"', text)
+        self.assertIn('--signing-config "$RUNNER_TEMP/signing-config.json"', text)
         self.assertIn('--trusted-root "$RUNNER_TEMP/trusted-root.json"', text)
+
+    def test_sign_attest_use_signing_config_not_service_urls(self):
+        # review #170: cosign v3.1.3's --use-signing-config defaults TRUE, so
+        # explicit --fulcio-url/--rekor-url/--oidc-issuer on sign/attest are a
+        # REJECTED combination ("cannot specify service URLs and use signing
+        # config"). The three signing commands (sign + 2 attest) therefore pass
+        # --signing-config (3x) + --trusted-root and NOT the service-URL flags;
+        # the only remaining --fulcio-url/--oidc-issuer is the gate's policy
+        # origin input, and --rekor-url survives only on verify/verify-attestation
+        # (legacy verify loader) and the gate step.
+        text = (Path(__file__).parent / "p8c-portal-forgejo-release.yml.template").read_text()
+        self.assertEqual(text.count('--signing-config "$RUNNER_TEMP/signing-config.json"'), 3)
+        self.assertEqual(text.count('--fulcio-url "${{ env.FULCIO_URL }}"'), 1)
+        self.assertEqual(text.count('--oidc-issuer "${{ env.OIDC_ISSUER }}"'), 1)
+        self.assertEqual(text.count('--rekor-url "${{ env.REKOR_URL }}"'), 4)
+        # No cosign sign/attest line carries a service URL flag.
+        for line in text.splitlines():
+            if "cosign sign" in line or "cosign attest" in line:
+                self.assertNotIn("--fulcio-url", line)
+                self.assertNotIn("--oidc-issuer", line)
+                self.assertNotIn("--rekor-url", line)
 
 
 if __name__ == "__main__":

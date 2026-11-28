@@ -180,6 +180,7 @@ REQUIRED_SOURCE_FILES = (
 )
 REQUIRED_TOOLS_FILES = (
     "portal/tools/forgejo_lock_gate.py",
+    "portal/tools/cosign_fixtures.py",
     "portal/tools/test_forgejo_lock_gate.py",
     "portal/tools/test_forgejo_offline_integration.py",
     "portal/tools/test_owner_gate_barrier.py",
@@ -415,45 +416,168 @@ def verify_tools_pin(tools_dir, required_modes=GATE_MODES,
 
 
 # ---------------------------------------------------------------------------
-# Private keyless trust configuration (review #168 item 3)
+# Private keyless trust configuration (review #168 item 3, reworked by #170)
 # ---------------------------------------------------------------------------
 
-def verify_keyless_trust_config(fulcio_url, rekor_url, trust_root_file,
-                                trust_root_sha256):
-    """(ok, reason). The PRIVATE keyless trust chain (Fulcio/Rekor/TUF) must be
-    PRESENT, AUTHENTIC and applicable before sign/attest/verify.
+SIGNING_CONFIG_MEDIA_TYPE = "application/vnd.dev.sigstore.signingconfig.v0.2+json"
+TRUSTED_ROOT_MEDIA_TYPE = "application/vnd.dev.sigstore.trustedroot+json;version=0.1"
+# Public-sigstore hosts are NEVER an approved origin: the private chain must
+# point at owner-supplied private Fulcio/Rekor endpoints. Any *.sigstore.dev
+# host is refused fail-closed (no public-sigstore fallback).
+_PUBLIC_SIGSTORE_SUFFIX = ".sigstore.dev"
 
-    review #168 item 3: ``oidc_trust_confirmed=true`` must not merely flip a
-    flag — the private trust materials must be verified here, BEFORE any
-    build/push/sign. A missing/placeholder/foreign Fulcio or Rekor URL, a
-    missing/empty trust root, or a trust root whose SHA-256 does not match the
-    pinned value are all refusals (fail-closed). There is NO public-sigstore
-    fallback: cosign is only ever pointed at the private endpoints + trusted
-    root, and this check refuses to run when those are absent. The trusted root
-    itself is never logged or saved here — only its SHA-256 is compared.
-    """
-    if (not isinstance(fulcio_url, str) or not fulcio_url.startswith("https://")
-            or "<" in fulcio_url):
-        return False, "keyless trust: private Fulcio URL absent/placeholder/not https"
-    if (not isinstance(rekor_url, str) or not rekor_url.startswith("https://")
-            or "<" in rekor_url):
-        return False, "keyless trust: private Rekor URL absent/placeholder/not https"
-    if not isinstance(trust_root_sha256, str) or not re.fullmatch(r"[0-9a-f]{64}", trust_root_sha256):
-        return False, "keyless trust: private trust root SHA-256 absent/not 64-hex"
-    if not isinstance(trust_root_file, str) or not trust_root_file:
-        return False, "keyless trust: private trust root file path missing"
-    root_path = Path(trust_root_file)
-    if not root_path.is_file():
-        return False, "keyless trust: private trust root file absent"
+
+def _approved_private_service_url(url, label):
+    """(ok, reason). A private service origin: https, non-empty, not a
+    placeholder, and not a public sigstore host."""
+    if not isinstance(url, str) or not url:
+        return False, "keyless trust: %s URL absent" % label
+    if "<" in url or ">" in url:
+        return False, "keyless trust: %s URL is a placeholder" % label
+    if not url.startswith("https://"):
+        return False, "keyless trust: %s URL not https" % label
     try:
-        data = root_path.read_bytes()
+        host = urllib.parse.urlparse(url).hostname or ""
+    except ValueError:
+        return False, "keyless trust: %s URL unparseable" % label
+    if not host or host.endswith(_PUBLIC_SIGSTORE_SUFFIX):
+        return False, "keyless trust: %s URL is a public sigstore host (no public fallback)" % label
+    return True, ""
+
+
+def _parse_sigstore_json(path, label):
+    """(obj, reason) — read + JSON-parse a Sigstore artifact file."""
+    if not isinstance(path, str) or not path:
+        return None, "keyless trust: %s file path missing" % label
+    p = Path(path)
+    if not p.is_file():
+        return None, "keyless trust: %s file absent" % label
+    try:
+        data = p.read_bytes()
     except OSError as exc:
-        return False, "keyless trust: private trust root unreadable: %s" % exc
+        return None, "keyless trust: %s unreadable: %s" % (label, exc)
     if not data.strip():
-        return False, "keyless trust: private trust root empty"
-    if hashlib.sha256(data).hexdigest() != trust_root_sha256:
+        return None, "keyless trust: %s empty" % label
+    try:
+        obj = json.loads(data.decode("utf-8"))
+    except (ValueError, UnicodeDecodeError) as exc:
+        return None, "keyless trust: %s is not valid JSON: %s" % (label, exc)
+    if not isinstance(obj, dict):
+        return None, "keyless trust: %s is not a JSON object" % label
+    return obj, ""
+
+
+def _validate_signing_config(sc, fulcio_url, rekor_url, oidc_issuer):
+    """(ok, reason). The AGREED signing config must be a coherent
+    signingconfig.v0.2 whose service URLs are EXACTLY the approved private
+    origins (no foreign origin, no public fallback)."""
+    if sc.get("mediaType") != SIGNING_CONFIG_MEDIA_TYPE:
+        return False, "keyless trust: signing config mediaType not signingconfig v0.2"
+    ca = sc.get("caUrls")
+    if not isinstance(ca, list) or len(ca) != 1:
+        return False, "keyless trust: signing config caUrls must list exactly one CA"
+    oidc = sc.get("oidcUrls")
+    if not isinstance(oidc, list) or len(oidc) != 1:
+        return False, "keyless trust: signing config oidcUrls must list exactly one OIDC issuer"
+    tlog = sc.get("rekorTlogUrls")
+    if not isinstance(tlog, list) or len(tlog) != 1:
+        return False, "keyless trust: signing config rekorTlogUrls must list exactly one tlog"
+    if not isinstance(ca[0], dict) or ca[0].get("url") != fulcio_url:
+        return False, "keyless trust: signing config Fulcio URL is not the approved private origin"
+    if not isinstance(oidc[0], dict) or oidc[0].get("url") != oidc_issuer:
+        return False, "keyless trust: signing config OIDC issuer is not the approved origin"
+    if not isinstance(tlog[0], dict) or tlog[0].get("url") != rekor_url:
+        return False, "keyless trust: signing config Rekor URL is not the approved private origin"
+    return True, "signing config coherent (approved private origins)"
+
+
+def _validate_trusted_root(tr, fulcio_url, rekor_url):
+    """(ok, reason). The pinned trusted root must be a USABLE Sigstore
+    TrustedRoot: trustedroot v0.1 mediaType, at least one tlog with a public
+    key, at least one certificate authority with a non-empty cert chain, and
+    every CA URI / tlog baseUrl bound to the approved private origin."""
+    if tr.get("mediaType") != TRUSTED_ROOT_MEDIA_TYPE:
+        return False, "keyless trust: trusted root mediaType not trustedroot v0.1"
+    cas = tr.get("certificateAuthorities")
+    if not isinstance(cas, list) or not cas:
+        return False, "keyless trust: trusted root has no certificate authority (unusable)"
+    usable_ca = False
+    for ca in cas:
+        if not isinstance(ca, dict):
+            continue
+        if ca.get("uri") != fulcio_url:
+            return False, "keyless trust: trusted root CA URI is not the approved private Fulcio origin"
+        chain = ca.get("certChain") or {}
+        certs = chain.get("certificates") if isinstance(chain, dict) else None
+        if (isinstance(certs, list) and certs
+                and all(isinstance(c, dict) and isinstance(c.get("rawBytes"), str) and c["rawBytes"]
+                        for c in certs)):
+            usable_ca = True
+    if not usable_ca:
+        return False, "keyless trust: trusted root has no usable certificate chain (unfit)"
+    tlogs = tr.get("tlogs")
+    if not isinstance(tlogs, list) or not tlogs:
+        return False, "keyless trust: trusted root has no transparency log (unusable)"
+    for tl in tlogs:
+        if not isinstance(tl, dict) or tl.get("baseUrl") != rekor_url:
+            return False, "keyless trust: trusted root tlog baseUrl is not the approved private Rekor origin"
+        pk = tl.get("publicKey") or {}
+        if not isinstance(pk, dict) or not isinstance(pk.get("rawBytes"), str) or not pk["rawBytes"]:
+            return False, "keyless trust: trusted root tlog public key missing (unusable)"
+    return True, "trusted root usable and bound to approved private origins"
+
+
+def verify_keyless_trust_config(fulcio_url, rekor_url, oidc_issuer,
+                                signing_config_file, signing_config_sha256,
+                                trust_root_file, trust_root_sha256):
+    """(ok, reason). The PRIVATE keyless trust chain must be PRESENT, AUTHENTIC,
+    APPROVED and APPLICABLE before sign/attest/verify (review #170 rework of
+    review #168 item 3).
+
+    The prior check only tested URL prefixes and the sha256 of non-empty bytes —
+    it neither established APPROVED service origins nor parsed a USABLE Sigstore
+    trusted root. This rework:
+      * validates the policy-approved private origins (https, non-placeholder,
+        non-public) and the source-confirmed literal OIDC issuer;
+      * PARSES the agreed signing config (signingconfig v0.2) and the pinned
+        trusted root (trustedroot v0.1 with a usable cert chain + tlog), so
+        arbitrary bytes are no longer accepted;
+      * requires the signing config's service URLs and the trusted root's CA
+        URIs / tlog base URLs to be EXACTLY the approved private origins, so a
+        foreign HTTPS origin is refused even when its digest matches the pin;
+      * verifies BOTH SHA-256 pins independently (authenticity).
+    No public-sigstore fallback. The roots are never logged or saved here — only
+    their SHA-256 is compared.
+    """
+    ok, reason = _approved_private_service_url(fulcio_url, "Fulcio")
+    if not ok:
+        return False, reason
+    ok, reason = _approved_private_service_url(rekor_url, "Rekor")
+    if not ok:
+        return False, reason
+    if not issuer_is_confirmed(oidc_issuer):
+        return False, "keyless trust: OIDC issuer is not the source-confirmed Forgejo Actions issuer"
+    for label, sha in (("signing config", signing_config_sha256),
+                       ("trust root", trust_root_sha256)):
+        if not isinstance(sha, str) or not re.fullmatch(r"[0-9a-f]{64}", sha):
+            return False, "keyless trust: private %s SHA-256 absent/not 64-hex" % label
+    sc, reason = _parse_sigstore_json(signing_config_file, "signing config")
+    if sc is None:
+        return False, reason
+    tr, reason = _parse_sigstore_json(trust_root_file, "trust root")
+    if tr is None:
+        return False, reason
+    ok, reason = _validate_signing_config(sc, fulcio_url, rekor_url, oidc_issuer)
+    if not ok:
+        return False, reason
+    ok, reason = _validate_trusted_root(tr, fulcio_url, rekor_url)
+    if not ok:
+        return False, reason
+    if hashlib.sha256(Path(signing_config_file).read_bytes()).hexdigest() != signing_config_sha256:
+        return False, "keyless trust: private signing config SHA-256 mismatch (not authentic)"
+    if hashlib.sha256(Path(trust_root_file).read_bytes()).hexdigest() != trust_root_sha256:
         return False, "keyless trust: private trust root SHA-256 mismatch (not authentic)"
-    return True, "private keyless trust chain present and authentic"
+    return True, "private keyless trust chain present, authentic, approved and applicable"
 
 
 # ---------------------------------------------------------------------------
@@ -1381,6 +1505,7 @@ USAGE = """usage:
   forgejo_lock_gate.py workflow-blob --workflow-dir <dir> --commit <sha> --path <workflow_file>
   forgejo_lock_gate.py tools-pin-check --tools-dir <dir>
   forgejo_lock_gate.py keyless-trust-check --fulcio-url <https_url> --rekor-url <https_url>
+      --oidc-issuer <https_url> --signing-config-file <file> --signing-config-sha256 <64hex>
       --trust-root-file <file> --trust-root-sha256 <64hex>
   forgejo_lock_gate.py verify <evidence.json> [--apply <lock_file> --apply-lock true
       --tools-root <dir>] [--oidc-trust-confirmed true]"""
@@ -1537,15 +1662,17 @@ def main(argv):
         return 0
 
     if mode == "keyless-trust-check":
-        # review #168 item 3: the PRIVATE keyless trust chain (Fulcio/Rekor/TUF)
-        # must be present and authentic before any build/push/sign. The trust
-        # root is read from a file written by the workflow step (from the
-        # PRIVATE_TRUST_ROOT secret, never logged), and its SHA-256 is compared
-        # against the pinned out-of-band value. Absent/placeholder endpoints or
-        # a mismatched root refuse the release fail-closed (no public-sigstore
-        # fallback).
+        # review #168 item 3 + review #170 rework: the PRIVATE keyless trust
+        # chain (Fulcio/Rekor/TUF) must be PRESENT, AUTHENTIC, APPROVED and
+        # APPLICABLE before any build/push/sign. The agreed signing config and
+        # the trusted root are read from files written by the workflow step
+        # (from the PRIVATE_SIGNING_CONFIG / PRIVATE_TRUST_ROOT secrets, never
+        # logged), and their SHA-256s are compared against the pinned
+        # out-of-band values. A foreign origin or an unfit root is refused even
+        # when its digest matches (no public-sigstore fallback).
         ok, reason = verify_keyless_trust_config(
-            flag("--fulcio-url", ""), flag("--rekor-url", ""),
+            flag("--fulcio-url", ""), flag("--rekor-url", ""), flag("--oidc-issuer", ""),
+            flag("--signing-config-file", ""), flag("--signing-config-sha256", ""),
             flag("--trust-root-file", ""), flag("--trust-root-sha256", ""))
         print(json.dumps({"keyless_trust": ok, "reason": reason}))
         if not ok:

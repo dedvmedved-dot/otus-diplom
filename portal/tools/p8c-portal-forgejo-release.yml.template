@@ -153,22 +153,31 @@ env:
   # private Fulcio's issuer allowlist requires audience=sigstore). Pinned
   # literally; the gate refuses any other audience fail-closed.
   OIDC_AUDIENCE: "sigstore"
-  # Private keyless trust chain (review #168 item 3). Owner-supplied P0
-  # placeholders, substituted out-of-band only when the private Fulcio/Rekor/TUF
-  # deployment is complete. Until then the release FAILS-CLOSED before any
-  # build/push/sign: the "Verify private keyless trust configuration" step
-  # refuses absent/placeholder endpoints and a trust root whose pinned SHA does
-  # not match. The absence of a public-sigstore fallback is enforced by CODE
-  # (sign/attest pass --fulcio-url/--rekor-url/--oidc-issuer; verify/
-  # verify-attestation pass --trusted-root), never by a comment.
-  #   --fulcio-url/--rekor-url are the pinned cosign v3.1.3 mechanism for a
-  #   private Fulcio/Rekor (deprecated in later cosign in favour of a
-  #   --signing-config file; the pin is immutable, so v3.1.3 is what runs).
+  # Private keyless trust chain (review #168 item 3, reworked by review #170).
+  # Owner-supplied P0 placeholders, substituted out-of-band only when the
+  # private Fulcio/Rekor/TUF deployment is complete. Until then the release
+  # FAILS-CLOSED before any build/push/sign: the "Verify private keyless trust
+  # configuration" step parses the agreed signing config AND the pinned trusted
+  # root, refuses absent/placeholder/foreign origins and a root whose pinned
+  # SHA does not match, and enforces the approved-origin coherence (the signing
+  # config's caUrls/oidcUrls/rekorTlogUrls and the trusted root's CA URIs /
+  # tlog baseUrls must equal THESE private origins). No public-sigstore
+  # fallback — enforced by CODE, never by a comment.
+  #   cosign v3.1.3's --use-signing-config defaults to TRUE, so explicit
+  #   --fulcio-url/--rekor-url/--oidc-issuer are REJECTED on sign/attest
+  #   ("cannot specify service URLs and use signing config"). The coherent
+  #   mechanism is a --signing-config file + --trusted-root: sign/attest pass
+  #   --signing-config/--trusted-root (no service URLs); verify/verify-
+  #   attestation pass --trusted-root + --rekor-url.
   FULCIO_URL: "<PRIVATE_FULCIO_URL_OWNER_SUPPLIED>"
   REKOR_URL: "<PRIVATE_REKOR_URL_OWNER_SUPPLIED>"
   # Pinned sha256 of the private trusted-root bundle (owner-supplied from the
   # verified TUF deployment) — AUTHENTICATES the trust root before it is applied.
   PRIVATE_TRUST_ROOT_SHA256: "<PRIVATE_TRUST_ROOT_SHA256_OWNER_SUPPLIED>"
+  # Pinned sha256 of the agreed private signing config (owner-supplied
+  # signing_config.v0.2 JSON) — AUTHENTICATES the signing config before it is
+  # applied on the sign/attest paths.
+  PRIVATE_SIGNING_CONFIG_SHA256: "<PRIVATE_SIGNING_CONFIG_SHA256_OWNER_SUPPLIED>"
 
 jobs:
   # (0) EXCLUSIVE ADMISSION BARRIER (review #95): a dedicated owner-controlled
@@ -478,24 +487,31 @@ jobs:
           [[ "${{ env.WORKFLOW_IDENTITY }}" == "repo:aiopslab/otus-diplom:ref:refs/heads/main" ]] || { echo "STOP: workflow identity != literal SAN — keyless release BLOCKED"; exit 1; }
           [[ "${{ env.OIDC_AUDIENCE }}" == "sigstore" ]] || { echo "STOP: token audience != sigstore — keyless release BLOCKED"; exit 1; }
 
-      # review #168 item 3: oidc_trust_confirmed=true must not merely flip a flag
-      # — the PRIVATE Fulcio/Rekor/TUF trust chain must be PRESENT, AUTHENTIC
-      # (pinned SHA) and APPLIED before sign/attest/verify, or the release fails
-      # closed BEFORE any build/push/sign. The trust root is read from a repo
-      # secret (never logged, never committed); its SHA is pinned out-of-band.
-      # This is the CODE enforcement of "no public-sigstore fallback" — without
-      # these private materials the release stops here (unconditional refusal
-      # until the separate private deployment).
+      # review #168 item 3 + review #170: oidc_trust_confirmed=true must not
+      # merely flip a flag — the PRIVATE Fulcio/Rekor/TUF trust chain must be
+      # PRESENT, AUTHENTIC (pinned SHA), APPROVED (coherent private origins)
+      # and APPLICABLE before sign/attest/verify, or the release fails closed
+      # BEFORE any build/push/sign. The agreed signing config AND the trusted
+      # root are read from repo secrets (never logged, never committed); their
+      # SHAs are pinned out-of-band. This is the CODE enforcement of "no
+      # public-sigstore fallback" — without these private materials the release
+      # stops here (unconditional refusal until the separate deployment).
       - name: Verify private keyless trust configuration (fail-closed, no public fallback)
         env:
           PRIVATE_TRUST_ROOT: ${{ secrets.PRIVATE_TRUST_ROOT }}
+          PRIVATE_SIGNING_CONFIG: ${{ secrets.PRIVATE_SIGNING_CONFIG }}
         run: |
           set -euo pipefail
           test -n "$PRIVATE_TRUST_ROOT" || { echo "STOP: private trust root secret absent"; exit 1; }
           printf '%s' "$PRIVATE_TRUST_ROOT" > "$RUNNER_TEMP/trusted-root.json"
+          test -n "$PRIVATE_SIGNING_CONFIG" || { echo "STOP: private signing config secret absent"; exit 1; }
+          printf '%s' "$PRIVATE_SIGNING_CONFIG" > "$RUNNER_TEMP/signing-config.json"
           python3 tools/portal/tools/forgejo_lock_gate.py keyless-trust-check \
             --fulcio-url "${{ env.FULCIO_URL }}" \
             --rekor-url "${{ env.REKOR_URL }}" \
+            --oidc-issuer "${{ env.OIDC_ISSUER }}" \
+            --signing-config-file "$RUNNER_TEMP/signing-config.json" \
+            --signing-config-sha256 "${{ env.PRIVATE_SIGNING_CONFIG_SHA256 }}" \
             --trust-root-file "$RUNNER_TEMP/trusted-root.json" \
             --trust-root-sha256 "${{ env.PRIVATE_TRUST_ROOT_SHA256 }}"
 
@@ -637,13 +653,17 @@ jobs:
           set -euo pipefail
           # Owner decision (#162): the keyless token audience is the LITERAL
           # `sigstore` (--oidc-client-id); the private Fulcio's issuer allowlist
-          # requires audience=sigstore. review #168 item 3: cosign is bound to the
-          # PRIVATE Fulcio/Rekor/OIDC endpoints + trusted root explicitly, so
-          # there is NO public-sigstore fallback (--fulcio-url/--rekor-url are the
-          # pinned v3.1.3 mechanism; --trusted-root for verify).
+          # requires audience=sigstore. review #170: cosign v3.1.3's
+          # --use-signing-config defaults TRUE, so sign/attest MUST NOT pass
+          # --fulcio-url/--rekor-url/--oidc-issuer (rejected: "cannot specify
+          # service URLs and use signing config"). The coherent mechanism is the
+          # agreed private --signing-config + --trusted-root (the private
+          # Fulcio/OIDC/Rekor origins come FROM the signing config), so there is
+          # NO public-sigstore fallback.
           cosign sign --yes --oidc-client-id "${{ env.OIDC_AUDIENCE }}" \
-            --fulcio-url "${{ env.FULCIO_URL }}" --rekor-url "${{ env.REKOR_URL }}" \
-            --oidc-issuer "${{ env.OIDC_ISSUER }}" \
+            --signing-config "$RUNNER_TEMP/signing-config.json" \
+            --trusted-root "$RUNNER_TEMP/trusted-root.json" \
+            --new-bundle-format \
             -a repo=${{ github.repository }} -a workflow=${{ github.workflow }} \
             -a ref=${{ env.PINNED_SOURCE_SHA }} "${IMAGE}@${IMAGE_DIGEST}"
           cosign verify --certificate-identity "${{ env.WORKFLOW_IDENTITY }}" \
@@ -670,18 +690,22 @@ jobs:
           python3 tools/portal/tools/forgejo_lock_gate.py predicate \
             "${{ env.PINNED_SOURCE_SHA }}" "$OBSERVED_WORKFLOW_SHA" "${{ env.PINNED_TOOLS_SHA }}" "${{ github.run_id }}" \
             > "$RUNNER_TEMP/provenance.json"
-          # review #168 item 2: BOTH attestations request the LITERAL sigstore
-          # audience (--oidc-client-id) and the PRIVATE Fulcio/Rekor/OIDC
-          # endpoints, so the actual token audience is bound for ALL THREE keyless
-          # operations (sign + these two attest) — never left to a default/public
-          # fallback. The token itself is never logged or saved.
+          # review #168 item 2 + review #170: BOTH attestations request the
+          # LITERAL sigstore audience (--oidc-client-id) and use the agreed
+          # private --signing-config + --trusted-root (the private
+          # Fulcio/OIDC/Rekor origins come FROM the signing config), so the
+          # token audience is bound for ALL THREE keyless operations (sign +
+          # these two attest) and no public/default fallback exists. The token
+          # itself is never logged or saved.
           cosign attest --yes --type spdxjson --oidc-client-id "${{ env.OIDC_AUDIENCE }}" \
-            --fulcio-url "${{ env.FULCIO_URL }}" --rekor-url "${{ env.REKOR_URL }}" \
-            --oidc-issuer "${{ env.OIDC_ISSUER }}" \
+            --signing-config "$RUNNER_TEMP/signing-config.json" \
+            --trusted-root "$RUNNER_TEMP/trusted-root.json" \
+            --new-bundle-format \
             --predicate "$RUNNER_TEMP/sbom.spdx.json" "${IMAGE}@${IMAGE_DIGEST}"
           cosign attest --yes --type slsaprovenance --oidc-client-id "${{ env.OIDC_AUDIENCE }}" \
-            --fulcio-url "${{ env.FULCIO_URL }}" --rekor-url "${{ env.REKOR_URL }}" \
-            --oidc-issuer "${{ env.OIDC_ISSUER }}" \
+            --signing-config "$RUNNER_TEMP/signing-config.json" \
+            --trusted-root "$RUNNER_TEMP/trusted-root.json" \
+            --new-bundle-format \
             --predicate "$RUNNER_TEMP/provenance.json" "${IMAGE}@${IMAGE_DIGEST}"
           # review #99 item 1: verify BOTH attestations for the SAME digest
           # (slsaprovenance AND spdxjson). cosign verify-attestation v3.1.3 has
