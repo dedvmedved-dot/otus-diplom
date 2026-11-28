@@ -1,0 +1,237 @@
+UTC_START=2026-11-28T15:30:52Z
+HEAD_SHA=21a502c0ff6da090004234ca2853c5e68941321f
+TOOLS_PIN=d4eea10a4508094bb209524f508e9c3062a46088
+SOURCE_PIN=4c09d6b4a85e2d021516244988f48b92eade7acf
+WORKFLOW_BLOB=de7a68f527c5612de4fa947aa9dbdf6779ef9535
+python=Python 3.12.3
+=== check_forgejo_workflow_syntax.py ===
+name: p8c-portal-forgejo-release
+trigger key: True(bool; PyYAML 1.1 coercion of bare `on`)
+jobs (4): admission, test, preflight, release
+  - admission: runs-on='otus-diplom-admission', 1 steps
+  - test: runs-on='otus-diplom', 9 steps
+  - preflight: runs-on='otus-diplom', 10 steps
+  - release: runs-on='otus-diplom', 29 steps
+109 expressions balanced
+SYNTAX = VERIFIED (YAML well-formed; structure + expressions OK)
+=== forgejo offline suite ===
+test_ambiguous_or_wrong_destination_is_unchanged (test_forgejo_lock_gate.TestApplyLockPair.test_ambiguous_or_wrong_destination_is_unchanged) ... ok
+test_apply_changes_only_the_digest_line (test_forgejo_lock_gate.TestApplyLockPair.test_apply_changes_only_the_digest_line) ... ok
+test_apply_preserves_absent_trailing_newline (test_forgejo_lock_gate.TestApplyLockPair.test_apply_preserves_absent_trailing_newline) ... ok
+test_apply_preserves_crlf_line_endings (test_forgejo_lock_gate.TestApplyLockPair.test_apply_preserves_crlf_line_endings) ... ok
+test_apply_preserves_mixed_line_endings (test_forgejo_lock_gate.TestApplyLockPair.test_apply_preserves_mixed_line_endings) ... ok
+test_lock_image_agreement_foreign_registry (test_forgejo_lock_gate.TestApplyLockPair.test_lock_image_agreement_foreign_registry) ... ok
+test_lock_image_agreement_matches (test_forgejo_lock_gate.TestApplyLockPair.test_lock_image_agreement_matches) ... ok
+test_lock_image_agreement_path_mismatch (test_forgejo_lock_gate.TestApplyLockPair.test_lock_image_agreement_path_mismatch) ... ok
+test_refuses_dotdot_through_symlink_component (test_forgejo_lock_gate.TestApplyLockPair.test_refuses_dotdot_through_symlink_component) ... ok
+test_refuses_images_lock_outside_tools_checkout (test_forgejo_lock_gate.TestApplyLockPair.test_refuses_images_lock_outside_tools_checkout) ... ok
+test_refuses_nested_images_lock (test_forgejo_lock_gate.TestApplyLockPair.test_refuses_nested_images_lock) ... ok
+test_refuses_symlink_lock_file (test_forgejo_lock_gate.TestApplyLockPair.test_refuses_symlink_lock_file) ... ok
+test_refuses_symlink_parent_directory (test_forgejo_lock_gate.TestApplyLockPair.test_refuses_symlink_parent_directory) ... ok
+test_refuses_symlinked_reference_lock_file (test_forgejo_lock_gate.TestApplyLockPair.test_refuses_symlinked_reference_lock_file) ... ok
+test_refuses_symlinked_tools_root (test_forgejo_lock_gate.TestApplyLockPair.test_refuses_symlinked_tools_root) ... ok
+test_rejects_already_set_digest (test_forgejo_lock_gate.TestApplyLockPair.test_rejects_already_set_digest) ... ok
+test_rejects_foreign_image_not_rewritten (test_forgejo_lock_gate.TestApplyLockPair.test_rejects_foreign_image_not_rewritten) ... ok
+test_rejects_host_only_mismatch (test_forgejo_lock_gate.TestApplyLockPair.test_rejects_host_only_mismatch) ... ok
+test_replace_targets_verified_reference_not_input_alias (test_forgejo_lock_gate.TestApplyLockPair.test_replace_targets_verified_reference_not_input_alias) ... ok
+test_writes_pair_preserving_other_sections (test_forgejo_lock_gate.TestApplyLockPair.test_writes_pair_preserving_other_sections) ... ok
+test_all_required_source_files_are_real_source_tree_files (test_forgejo_lock_gate.TestFileInventory.test_all_required_source_files_are_real_source_tree_files) ... ok
+test_full_tree_enforced_in_inventory (test_forgejo_lock_gate.TestFileInventory.test_full_tree_enforced_in_inventory) ... ok
+test_full_tree_omission_rejected_in_inventory (test_forgejo_lock_gate.TestFileInventory.test_full_tree_omission_rejected_in_inventory) ... ok
+test_missing_source_file (test_forgejo_lock_gate.TestFileInventory.test_missing_source_file) ... ok
+test_missing_tools_file (test_forgejo_lock_gate.TestFileInventory.test_missing_tools_file) ... ok
+test_out_of_portal_inputs_in_required_list (test_forgejo_lock_gate.TestFileInventory.test_out_of_portal_inputs_in_required_list) ... ok
+test_same_pins_rejected (test_forgejo_lock_gate.TestFileInventory.test_same_pins_rejected) ... ok
+test_source_tree_complete (test_forgejo_lock_gate.TestFileInventory.test_source_tree_complete) ... ok
+test_source_tree_extra_file_rejected (test_forgejo_lock_gate.TestFileInventory.test_source_tree_extra_file_rejected) ... ok
+test_source_tree_omission_rejected (test_forgejo_lock_gate.TestFileInventory.test_source_tree_omission_rejected) ... ok
+test_tools_smuggled_into_source (test_forgejo_lock_gate.TestFileInventory.test_tools_smuggled_into_source) ... ok
+test_valid (test_forgejo_lock_gate.TestFileInventory.test_valid) ... ok
+test_actor_does_not_confirm_owner (test_forgejo_lock_gate.TestOwnerGate.test_actor_does_not_confirm_owner) ... ok
+test_actor_missing (test_forgejo_lock_gate.TestOwnerGate.test_actor_missing) ... ok
+test_attempt_not_one (test_forgejo_lock_gate.TestOwnerGate.test_attempt_not_one) ... ok
+test_document_repository_vs_observed_mismatch (test_forgejo_lock_gate.TestOwnerGate.test_document_repository_vs_observed_mismatch) ... ok
+test_expired (test_forgejo_lock_gate.TestOwnerGate.test_expired) ... ok
+test_foreign_owner (test_forgejo_lock_gate.TestOwnerGate.test_foreign_owner) ... ok
+test_future (test_forgejo_lock_gate.TestOwnerGate.test_future) ... ok
+test_missing_gate (test_forgejo_lock_gate.TestOwnerGate.test_missing_gate) ... ok
+test_observed_ref_absent (test_forgejo_lock_gate.TestOwnerGate.test_observed_ref_absent) ... ok
+test_observed_ref_mismatch (test_forgejo_lock_gate.TestOwnerGate.test_observed_ref_mismatch) ... ok
+test_observed_repository_absent (test_forgejo_lock_gate.TestOwnerGate.test_observed_repository_absent) ... ok
+test_observed_repository_mismatch (test_forgejo_lock_gate.TestOwnerGate.test_observed_repository_mismatch) ... ok
+test_observed_workflow_sha_absent (test_forgejo_lock_gate.TestOwnerGate.test_observed_workflow_sha_absent) ... ok
+test_observed_workflow_sha_mismatch (test_forgejo_lock_gate.TestOwnerGate.test_observed_workflow_sha_mismatch) ... ok
+test_policy_workflow_sha_differs_from_agreeing_doc_and_runtime (test_forgejo_lock_gate.TestOwnerGate.test_policy_workflow_sha_differs_from_agreeing_doc_and_runtime) ... ok
+test_run_attempt_not_one (test_forgejo_lock_gate.TestOwnerGate.test_run_attempt_not_one) ... ok
+test_run_id_missing (test_forgejo_lock_gate.TestOwnerGate.test_run_id_missing) ... ok
+test_run_id_not_bound_to_run (test_forgejo_lock_gate.TestOwnerGate.test_run_id_not_bound_to_run) ... ok
+test_valid (test_forgejo_lock_gate.TestOwnerGate.test_valid) ... ok
+test_wrong_mode (test_forgejo_lock_gate.TestOwnerGate.test_wrong_mode) ... ok
+test_wrong_package (test_forgejo_lock_gate.TestOwnerGate.test_wrong_package) ... ok
+test_wrong_repository (test_forgejo_lock_gate.TestOwnerGate.test_wrong_repository) ... ok
+test_wrong_source_sha (test_forgejo_lock_gate.TestOwnerGate.test_wrong_source_sha) ... ok
+test_wrong_tools_sha (test_forgejo_lock_gate.TestOwnerGate.test_wrong_tools_sha) ... ok
+test_wrong_workflow_sha (test_forgejo_lock_gate.TestOwnerGate.test_wrong_workflow_sha) ... ok
+test_bearer_token_url_rejects_foreign_realm (test_forgejo_lock_gate.TestRegistry.test_bearer_token_url_rejects_foreign_realm) ... ok
+test_bearer_token_url_rejects_http_realm (test_forgejo_lock_gate.TestRegistry.test_bearer_token_url_rejects_http_realm) ... ok
+test_bearer_token_url_rejects_missing_realm (test_forgejo_lock_gate.TestRegistry.test_bearer_token_url_rejects_missing_realm) ... ok
+test_bearer_token_url_trusted (test_forgejo_lock_gate.TestRegistry.test_bearer_token_url_trusted) ... ok
+test_fetch_allowed_host_calls_transport (test_forgejo_lock_gate.TestRegistry.test_fetch_allowed_host_calls_transport) ... ok
+test_fetch_refuses_foreign_host_before_transport (test_forgejo_lock_gate.TestRegistry.test_fetch_refuses_foreign_host_before_transport) ... ok
+test_generic_transport_basic_accepted_uses_basic_for_manifest (test_forgejo_lock_gate.TestRegistry.test_generic_transport_basic_accepted_uses_basic_for_manifest) ... ok
+test_generic_transport_bearer_never_sends_basic_as_bearer (test_forgejo_lock_gate.TestRegistry.test_generic_transport_bearer_never_sends_basic_as_bearer) ... ok
+test_generic_transport_foreign_realm_refused_before_basic (test_forgejo_lock_gate.TestRegistry.test_generic_transport_foreign_realm_refused_before_basic) ... ok
+test_generic_transport_missing_bearer_token_rejected (test_forgejo_lock_gate.TestRegistry.test_generic_transport_missing_bearer_token_rejected) ... ok
+test_generic_transport_trusted_realm_flow (test_forgejo_lock_gate.TestRegistry.test_generic_transport_trusted_realm_flow) ... ok
+test_redirect_handler_refuses (test_forgejo_lock_gate.TestRegistry.test_redirect_handler_refuses) ... ok
+test_trusted_origin_rejects_foreign_host (test_forgejo_lock_gate.TestRegistry.test_trusted_origin_rejects_foreign_host) ... ok
+test_trusted_origin_rejects_http (test_forgejo_lock_gate.TestRegistry.test_trusted_origin_rejects_http) ... ok
+test_trusted_origin_same_host_https (test_forgejo_lock_gate.TestRegistry.test_trusted_origin_same_host_https) ... ok
+test_verify_manifest_bytes_mismatch (test_forgejo_lock_gate.TestRegistry.test_verify_manifest_bytes_mismatch) ... ok
+test_verify_manifest_dcd_mismatch (test_forgejo_lock_gate.TestRegistry.test_verify_manifest_dcd_mismatch) ... ok
+test_verify_manifest_image_ref_foreign (test_forgejo_lock_gate.TestRegistry.test_verify_manifest_image_ref_foreign) ... ok
+test_verify_manifest_valid (test_forgejo_lock_gate.TestRegistry.test_verify_manifest_valid) ... ok
+test_verify_manifest_wrong_registry (test_forgejo_lock_gate.TestRegistry.test_verify_manifest_wrong_registry) ... ok
+test_parse_dsse_envelope (test_forgejo_lock_gate.TestVerifiedStatement.test_parse_dsse_envelope) ... ok
+test_parse_raw_statement (test_forgejo_lock_gate.TestVerifiedStatement.test_parse_raw_statement) ... ok
+test_valid (test_forgejo_lock_gate.TestVerifiedStatement.test_valid) ... ok
+test_wrong_build_type (test_forgejo_lock_gate.TestVerifiedStatement.test_wrong_build_type) ... ok
+test_wrong_builder (test_forgejo_lock_gate.TestVerifiedStatement.test_wrong_builder) ... ok
+test_wrong_predicate_type (test_forgejo_lock_gate.TestVerifiedStatement.test_wrong_predicate_type) ... ok
+test_wrong_run_id (test_forgejo_lock_gate.TestVerifiedStatement.test_wrong_run_id) ... ok
+test_wrong_source_material (test_forgejo_lock_gate.TestVerifiedStatement.test_wrong_source_material) ... ok
+test_wrong_subject_digest (test_forgejo_lock_gate.TestVerifiedStatement.test_wrong_subject_digest) ... ok
+test_wrong_subject_image (test_forgejo_lock_gate.TestVerifiedStatement.test_wrong_subject_image) ... ok
+test_wrong_tools_material (test_forgejo_lock_gate.TestVerifiedStatement.test_wrong_tools_material) ... ok
+test_wrong_workflow_sha (test_forgejo_lock_gate.TestVerifiedStatement.test_wrong_workflow_sha) ... ok
+test_apply_without_apply_lock_authorization_refused (test_forgejo_offline_integration.TestCliApplyScratchLock.test_apply_without_apply_lock_authorization_refused) ... ok
+test_check_mode_positive_exit_zero_no_write (test_forgejo_offline_integration.TestCliApplyScratchLock.test_check_mode_positive_exit_zero_no_write) ... ok
+test_manifest_tamper_leaves_lock_untouched (test_forgejo_offline_integration.TestCliApplyScratchLock.test_manifest_tamper_leaves_lock_untouched) ... ok
+test_no_attestation_leaves_lock_untouched (test_forgejo_offline_integration.TestCliApplyScratchLock.test_no_attestation_leaves_lock_untouched) ... ok
+test_owner_gate_foreign_leaves_lock_untouched (test_forgejo_offline_integration.TestCliApplyScratchLock.test_owner_gate_foreign_leaves_lock_untouched) ... ok
+test_positive_writes_scratch_lock_pair (test_forgejo_offline_integration.TestCliApplyScratchLock.test_positive_writes_scratch_lock_pair) ... ok
+test_another_registry_not_allowed (test_forgejo_offline_integration.TestFullChain.test_another_registry_not_allowed) ... ok
+test_another_run_not_allowed (test_forgejo_offline_integration.TestFullChain.test_another_run_not_allowed) ... ok
+test_certificate_audience_mismatch_not_allowed (test_forgejo_offline_integration.TestFullChain.test_certificate_audience_mismatch_not_allowed) ... ok
+test_certificate_identity_mismatch_not_allowed (test_forgejo_offline_integration.TestFullChain.test_certificate_identity_mismatch_not_allowed) ... ok
+test_certificate_issuer_mismatch_not_allowed (test_forgejo_offline_integration.TestFullChain.test_certificate_issuer_mismatch_not_allowed) ... ok
+test_foreign_registry_not_allowed_before_network (test_forgejo_offline_integration.TestFullChain.test_foreign_registry_not_allowed_before_network) ... ok
+test_full_tree_extra_file_not_allowed (test_forgejo_offline_integration.TestFullChain.test_full_tree_extra_file_not_allowed) ... ok
+test_full_tree_omission_not_allowed (test_forgejo_offline_integration.TestFullChain.test_full_tree_omission_not_allowed) ... ok
+test_manifest_bytes_tampered_not_allowed (test_forgejo_offline_integration.TestFullChain.test_manifest_bytes_tampered_not_allowed) ... ok
+test_no_verified_attestation_not_allowed (test_forgejo_offline_integration.TestFullChain.test_no_verified_attestation_not_allowed) ... ok
+test_observed_ref_mismatch_not_allowed (test_forgejo_offline_integration.TestFullChain.test_observed_ref_mismatch_not_allowed) ... ok
+test_observed_repository_mismatch_not_allowed (test_forgejo_offline_integration.TestFullChain.test_observed_repository_mismatch_not_allowed) ... ok
+test_observed_workflow_sha_absent_not_allowed (test_forgejo_offline_integration.TestFullChain.test_observed_workflow_sha_absent_not_allowed) ... ok
+test_observed_workflow_sha_mismatch_not_allowed (test_forgejo_offline_integration.TestFullChain.test_observed_workflow_sha_mismatch_not_allowed) ... ok
+test_owner_gate_expired_not_allowed (test_forgejo_offline_integration.TestFullChain.test_owner_gate_expired_not_allowed) ... ok
+test_owner_gate_foreign_not_allowed (test_forgejo_offline_integration.TestFullChain.test_owner_gate_foreign_not_allowed) ... ok
+test_owner_gate_missing_not_allowed (test_forgejo_offline_integration.TestFullChain.test_owner_gate_missing_not_allowed) ... ok
+test_owner_gate_run_replay_not_allowed (test_forgejo_offline_integration.TestFullChain.test_owner_gate_run_replay_not_allowed) ... ok
+test_owner_gate_unconfirmed_actor_not_allowed (test_forgejo_offline_integration.TestFullChain.test_owner_gate_unconfirmed_actor_not_allowed) ... ok
+test_positive_allowed (test_forgejo_offline_integration.TestFullChain.test_positive_allowed) ... ok
+test_predicate_substitution_not_allowed (test_forgejo_offline_integration.TestFullChain.test_predicate_substitution_not_allowed) ... ok
+test_registry_host_mismatch_not_allowed (test_forgejo_offline_integration.TestFullChain.test_registry_host_mismatch_not_allowed) ... ok
+test_source_substituted_new_head_not_allowed (test_forgejo_offline_integration.TestFullChain.test_source_substituted_new_head_not_allowed) ... ok
+test_tools_material_swap_not_allowed (test_forgejo_offline_integration.TestFullChain.test_tools_material_swap_not_allowed) ... ok
+test_tools_sha_not_bound_not_allowed (test_forgejo_offline_integration.TestFullChain.test_tools_sha_not_bound_not_allowed) ... ok
+test_tools_smuggled_into_source_not_allowed (test_forgejo_offline_integration.TestFullChain.test_tools_smuggled_into_source_not_allowed) ... ok
+test_unbound_subject_not_allowed (test_forgejo_offline_integration.TestFullChain.test_unbound_subject_not_allowed) ... ok
+test_workflow_sha_not_bound_not_allowed (test_forgejo_offline_integration.TestFullChain.test_workflow_sha_not_bound_not_allowed) ... ok
+test_apply_lock_targets_source_tree_real_lock (test_forgejo_offline_integration.TestWorkflowStructuralOrder.test_apply_lock_targets_source_tree_real_lock) ... ok
+test_owner_gate_lives_in_unprivileged_preflight (test_forgejo_offline_integration.TestWorkflowStructuralOrder.test_owner_gate_lives_in_unprivileged_preflight) ... ok
+test_owner_gate_step_uses_env_secret_not_shell_interpolation (test_forgejo_offline_integration.TestWorkflowStructuralOrder.test_owner_gate_step_uses_env_secret_not_shell_interpolation) ... ok
+test_release_job_needs_preflight (test_forgejo_offline_integration.TestWorkflowStructuralOrder.test_release_job_needs_preflight) ... ok
+test_gate_source_sha_changed_between_jobs_rejected (test_owner_gate_barrier.TestGateChangedBetweenJobs.test_gate_source_sha_changed_between_jobs_rejected) ... ok
+test_gate_workflow_sha_changed_between_jobs_rejected (test_owner_gate_barrier.TestGateChangedBetweenJobs.test_gate_workflow_sha_changed_between_jobs_rejected) ... ok
+test_valid_gate_accepted (test_owner_gate_barrier.TestGateChangedBetweenJobs.test_valid_gate_accepted) ... ok
+test_foreign_oidc_issuer_rejected (test_owner_gate_barrier.TestKeylessTrustConfig.test_foreign_oidc_issuer_rejected) ... ok
+test_foreign_origin_signing_config_rejected_even_with_correct_digest (test_owner_gate_barrier.TestKeylessTrustConfig.test_foreign_origin_signing_config_rejected_even_with_correct_digest) ... ok
+test_missing_trust_root_file_rejected (test_owner_gate_barrier.TestKeylessTrustConfig.test_missing_trust_root_file_rejected) ... ok
+test_missing_trust_root_sha_rejected (test_owner_gate_barrier.TestKeylessTrustConfig.test_missing_trust_root_sha_rejected) ... ok
+test_non_https_fulcio_url_rejected (test_owner_gate_barrier.TestKeylessTrustConfig.test_non_https_fulcio_url_rejected) ... ok
+test_placeholder_fulcio_url_rejected (test_owner_gate_barrier.TestKeylessTrustConfig.test_placeholder_fulcio_url_rejected) ... ok
+test_public_sigstore_fulcio_url_rejected (test_owner_gate_barrier.TestKeylessTrustConfig.test_public_sigstore_fulcio_url_rejected) ... ok
+test_root_not_a_sigstore_root_rejected (test_owner_gate_barrier.TestKeylessTrustConfig.test_root_not_a_sigstore_root_rejected) ... ok
+test_signing_config_sha_mismatch_rejected (test_owner_gate_barrier.TestKeylessTrustConfig.test_signing_config_sha_mismatch_rejected) ... ok
+test_trust_root_sha_mismatch_rejected (test_owner_gate_barrier.TestKeylessTrustConfig.test_trust_root_sha_mismatch_rejected) ... ok
+test_unfit_root_rejected_even_with_correct_digest (test_owner_gate_barrier.TestKeylessTrustConfig.test_unfit_root_rejected_even_with_correct_digest) ... ok
+test_valid_private_trust_config (test_owner_gate_barrier.TestKeylessTrustConfig.test_valid_private_trust_config) ... ok
+test_audience_is_sigstore (test_owner_gate_barrier.TestOIDCTrust.test_audience_is_sigstore) ... ok
+test_evidence_foreign_identity_rejected (test_owner_gate_barrier.TestOIDCTrust.test_evidence_foreign_identity_rejected) ... ok
+test_foreign_binding_audience_rejected_even_with_matching_evidence (test_owner_gate_barrier.TestOIDCTrust.test_foreign_binding_audience_rejected_even_with_matching_evidence) ... ok
+test_foreign_binding_identity_rejected_even_with_confirmed_trust (test_owner_gate_barrier.TestOIDCTrust.test_foreign_binding_identity_rejected_even_with_confirmed_trust) ... ok
+test_foreign_binding_issuer_rejected_even_with_matching_evidence (test_owner_gate_barrier.TestOIDCTrust.test_foreign_binding_issuer_rejected_even_with_matching_evidence) ... ok
+test_identity_is_pinned_literal_san (test_owner_gate_barrier.TestOIDCTrust.test_identity_is_pinned_literal_san) ... ok
+test_issuer_is_source_confirmed (test_owner_gate_barrier.TestOIDCTrust.test_issuer_is_source_confirmed) ... ok
+test_positive_allowed_with_confirmed_trust (test_owner_gate_barrier.TestOIDCTrust.test_positive_allowed_with_confirmed_trust) ... ok
+test_trust_not_confirmed_blocks (test_owner_gate_barrier.TestOIDCTrust.test_trust_not_confirmed_blocks) ... ok
+test_wrong_audience_rejected (test_owner_gate_barrier.TestOIDCTrust.test_wrong_audience_rejected) ... ok
+test_wrong_identity_rejected (test_owner_gate_barrier.TestOIDCTrust.test_wrong_identity_rejected) ... ok
+test_wrong_issuer_rejected (test_owner_gate_barrier.TestOIDCTrust.test_wrong_issuer_rejected) ... ok
+test_delayed_put_expired_rejected (test_owner_gate_barrier.TestOwnerGateRace.test_delayed_put_expired_rejected) ... ok
+test_delayed_put_future_rejected (test_owner_gate_barrier.TestOwnerGateRace.test_delayed_put_future_rejected) ... ok
+test_foreign_run_rejected (test_owner_gate_barrier.TestOwnerGateRace.test_foreign_run_rejected) ... ok
+test_valid (test_owner_gate_barrier.TestOwnerGateRace.test_valid) ... ok
+test_wrong_blob_rejected (test_owner_gate_barrier.TestOwnerGateRace.test_wrong_blob_rejected) ... ok
+test_spdx_empty_packages_rejected (test_owner_gate_barrier.TestSpdxAttestation.test_spdx_empty_packages_rejected) ... ok
+test_spdx_empty_predicate_rejected (test_owner_gate_barrier.TestSpdxAttestation.test_spdx_empty_predicate_rejected) ... ok
+test_spdx_foreign_document_wrong_spdxid_rejected (test_owner_gate_barrier.TestSpdxAttestation.test_spdx_foreign_document_wrong_spdxid_rejected) ... ok
+test_spdx_foreign_document_wrong_version_rejected (test_owner_gate_barrier.TestSpdxAttestation.test_spdx_foreign_document_wrong_version_rejected) ... ok
+test_spdx_missing_attestation_rejected (test_owner_gate_barrier.TestSpdxAttestation.test_spdx_missing_attestation_rejected) ... ok
+test_spdx_missing_document_namespace_rejected (test_owner_gate_barrier.TestSpdxAttestation.test_spdx_missing_document_namespace_rejected) ... ok
+test_spdx_missing_predicate_rejected (test_owner_gate_barrier.TestSpdxAttestation.test_spdx_missing_predicate_rejected) ... ok
+test_spdx_missing_subject_rejected (test_owner_gate_barrier.TestSpdxAttestation.test_spdx_missing_subject_rejected) ... ok
+test_spdx_wrong_predicate_type_rejected (test_owner_gate_barrier.TestSpdxAttestation.test_spdx_wrong_predicate_type_rejected) ... ok
+test_spdx_wrong_subject_digest_rejected (test_owner_gate_barrier.TestSpdxAttestation.test_spdx_wrong_subject_digest_rejected) ... ok
+test_valid_spdx_allowed (test_owner_gate_barrier.TestSpdxAttestation.test_valid_spdx_allowed) ... ok
+test_complete_gate_accepted (test_owner_gate_barrier.TestToolsPin.test_complete_gate_accepted) ... ok
+test_gate_with_commands_but_missing_slsa_policy_rejected (test_owner_gate_barrier.TestToolsPin.test_gate_with_commands_but_missing_slsa_policy_rejected) ... ok
+test_gate_with_commands_but_missing_spdx_policy_rejected (test_owner_gate_barrier.TestToolsPin.test_gate_with_commands_but_missing_spdx_policy_rejected) ... ok
+test_gate_with_corrupted_cue_policy_rejected (test_owner_gate_barrier.TestToolsPin.test_gate_with_corrupted_cue_policy_rejected) ... ok
+test_gate_with_empty_cue_policy_rejected (test_owner_gate_barrier.TestToolsPin.test_gate_with_empty_cue_policy_rejected) ... ok
+test_gate_with_swapped_cue_policies_rejected (test_owner_gate_barrier.TestToolsPin.test_gate_with_swapped_cue_policies_rejected) ... ok
+test_missing_gate_file_rejected (test_owner_gate_barrier.TestToolsPin.test_missing_gate_file_rejected) ... ok
+test_stale_gate_missing_workflow_blob_rejected (test_owner_gate_barrier.TestToolsPin.test_stale_gate_missing_workflow_blob_rejected) ... ok
+test_absent_path_rejected (test_owner_gate_barrier.TestWorkflowBlob.test_absent_path_rejected) ... ok
+test_invalid_commit_rejected (test_owner_gate_barrier.TestWorkflowBlob.test_invalid_commit_rejected) ... ok
+test_non_blob_object_rejected (test_owner_gate_barrier.TestWorkflowBlob.test_non_blob_object_rejected) ... ok
+test_valid_blob (test_owner_gate_barrier.TestWorkflowBlob.test_valid_blob) ... ok
+test_admission_barrier_job_runs_first (test_owner_gate_barrier.TestWorkflowStructure.test_admission_barrier_job_runs_first) ... ok
+test_attest_commands_request_literal_audience (test_owner_gate_barrier.TestWorkflowStructure.test_attest_commands_request_literal_audience) ... ok
+test_cosign_version_has_no_double_v (test_owner_gate_barrier.TestWorkflowStructure.test_cosign_version_has_no_double_v) ... ok
+test_evidence_bundle_does_not_emit_audience (test_owner_gate_barrier.TestWorkflowStructure.test_evidence_bundle_does_not_emit_audience) ... ok
+test_fail_closed_inputs_present (test_owner_gate_barrier.TestWorkflowStructure.test_fail_closed_inputs_present) ... ok
+test_no_public_sigstore_fallback (test_owner_gate_barrier.TestWorkflowStructure.test_no_public_sigstore_fallback) ... ok
+test_private_keyless_trust_step_present (test_owner_gate_barrier.TestWorkflowStructure.test_private_keyless_trust_step_present) ... ok
+test_release_identity_literal_san_pinned (test_owner_gate_barrier.TestWorkflowStructure.test_release_identity_literal_san_pinned) ... ok
+test_release_only_oidc (test_owner_gate_barrier.TestWorkflowStructure.test_release_only_oidc) ... ok
+test_release_rechecks_owner_gate (test_owner_gate_barrier.TestWorkflowStructure.test_release_rechecks_owner_gate) ... ok
+test_sign_attest_use_signing_config_not_service_urls (test_owner_gate_barrier.TestWorkflowStructure.test_sign_attest_use_signing_config_not_service_urls) ... ok
+test_tool_versions_have_no_double_v (test_owner_gate_barrier.TestWorkflowStructure.test_tool_versions_have_no_double_v) ... ok
+test_tools_pin_check_step_present (test_owner_gate_barrier.TestWorkflowStructure.test_tools_pin_check_step_present) ... ok
+test_verify_attestation_uses_policy_not_annotations (test_owner_gate_barrier.TestWorkflowStructure.test_verify_attestation_uses_policy_not_annotations) ... ok
+
+----------------------------------------------------------------------
+Ran 196 tests in 2.183s
+
+OK
+=== cosign CLI flags + loader runtime (v3.1.3) ===
+test_attest_accepts_oidc_client_id_and_private_endpoints (__main__.TestCosignCliFlags.test_attest_accepts_oidc_client_id_and_private_endpoints) ... ok
+test_sign_accepts_a_annotation (__main__.TestCosignCliFlags.test_sign_accepts_a_annotation) ... ok
+test_sign_accepts_private_fulcio_rekor_oidc_issuer (__main__.TestCosignCliFlags.test_sign_accepts_private_fulcio_rekor_oidc_issuer) ... ok
+test_verify_accepts_a_annotation (__main__.TestCosignCliFlags.test_verify_accepts_a_annotation) ... ok
+test_verify_accepts_private_rekor_and_trusted_root (__main__.TestCosignCliFlags.test_verify_accepts_private_rekor_and_trusted_root) ... ok
+test_verify_attestation_accepts_private_rekor_and_trusted_root (__main__.TestCosignCliFlags.test_verify_attestation_accepts_private_rekor_and_trusted_root) ... ok
+test_verify_attestation_accepts_supported_flags (__main__.TestCosignCliFlags.test_verify_attestation_accepts_supported_flags) ... ok
+test_verify_attestation_rejects_a_slsaprovenance (__main__.TestCosignCliFlags.test_verify_attestation_rejects_a_slsaprovenance) ... ok
+test_verify_attestation_rejects_a_spdxjson (__main__.TestCosignCliFlags.test_verify_attestation_rejects_a_spdxjson) ... ok
+test_loader_accepts_coherent_signing_config_and_root (__main__.TestCosignLoaderRuntime.test_loader_accepts_coherent_signing_config_and_root) ... ok
+test_loader_rejects_foreign_https_origin (__main__.TestCosignLoaderRuntime.test_loader_rejects_foreign_https_origin) ... ok
+test_loader_rejects_unusable_root (__main__.TestCosignLoaderRuntime.test_loader_rejects_unusable_root) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.912s
+
+OK
+UTC_END=2026-11-28T15:30:56Z
