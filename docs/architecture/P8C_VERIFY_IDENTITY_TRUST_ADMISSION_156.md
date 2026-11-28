@@ -40,6 +40,14 @@
 | 7 | Эксклюзивный admission-барьер (runner/label, закрытие выдачи, нет конкурирующих runs, gate PUT 201/204) | Механизм закреплён: release-шаблон имеет job `admission` на `runs-on: otus-diplom-admission`, fail-closed по `inputs.admission_confirmed` («barrier before PickTask»). Runner `otus-diplom` несёт label `otus-diplom-admission` ([#148#issuecomment-12351](https://git.aiopslab.online/aiopslab/otus-diplom/issues/148#issuecomment-12351)) | **ПРОБЕЛ** — `admission_confirmed` = false; закрытие выдачи по label + подтверждение отсутствия конкурирующих release-runs + gate PUT (201/204) на возвращённый run id — действие владельца, не выполнено |
 | 8 | Release workflow/ref зафиксирован и опубликован | `POLICY_REF = refs/heads/main`, workflow name `p8c-portal-forgejo-release`, путь `.forgejo/workflows/p8c-portal-forgejo-release.yml`. Неактивный шаблон `96237e87…` (в `portal/tools/`, Forgejo его не запускает) | **ПРОБЕЛ** — активный workflow в `main` ПРОТУХШИЙ: `PINNED_TOOLS_SHA=32a38ea…`, `OIDC_ISSUER=https://git.aiopslab.online` (без `/api/actions`), `WORKFLOW_IDENTITY` в GitHub-формате (`…@refs/heads/main`), `permissions: id-token: write` без `enable-openid-connect`. Публикация финального шаблона не выполнялась (нужно отдельное решение архитектора/владельца) |
 
+## Проверка архитектора #159
+
+[PR #158 на проверенном SHA](https://git.aiopslab.online/aiopslab/otus-diplom/commit/dc268ebcf295d863c0b25510596e2c1b6f281951) меняет только этот отчёт. Пакет принят как анализ; выпуск B — BLOCKED / NOT_READY_FOR_DISPATCH.
+
+- Строки 1–4: [выписка по run 72, task 225](https://git.aiopslab.online/aiopslab/otus-diplom/issues/153#issuecomment-12397) и [generateOIDCSub, v15.0.11](https://codeberg.org/forgejo/forgejo/src/tag/v15.0.11/services/actions/auth.go#L148-L155). Для `workflow_dispatch` действует ветвь `default`, не `pull_request`. Выписка доказывает `sub` диагностического запуска, но не SAN сертификата.
+- Строки 5–7: [гейт](https://git.aiopslab.online/aiopslab/otus-diplom/src/commit/46e77bc9a31e43c333b73337bd928bc424e046b8/portal/tools/forgejo_lock_gate.py) и [исходный шаблон в tools](https://git.aiopslab.online/aiopslab/otus-diplom/src/commit/46e77bc9a31e43c333b73337bd928bc424e046b8/portal/tools/p8c-portal-forgejo-release.yml.template). Его blob `4fc1768d5ec6cf9b64ff7aa55c1b685eb59a51c3` и закреплённый blob `96237e87a3be7bba7e9fb74d802397b8119763ab` сверены: единственная разница — подстановка `PINNED_TOOLS_SHA`. Admission предшествует остальным jobs по цепочке `needs`, не обязательно напрямую.
+- Строка 8: [активный workflow на проверенной базе main](https://git.aiopslab.online/aiopslab/otus-diplom/src/commit/53dcd7fc91e53979df687f43578bd75e0ff9c9cc/.forgejo/workflows/p8c-portal-forgejo-release.yml) не эквивалентен закреплённому шаблону. Подтверждения владельца не разрешают автоматически ни публикацию, ни dispatch.
+
 ## Отдельные сверки
 
 ### A. Release workflow/ref и способ получения OIDC
@@ -68,7 +76,7 @@
 
 ### C. Фактический сертификатный SAN и правило verifier
 
-- **SAN = id-token `sub`** (Fulcio-сертификат несёт sub как identity).
+- **OIDC `sub` наблюдался; сертификат и его SAN не наблюдались.** Соответствие `sub` → SAN зависит от выбранной CA и её правила выдачи. Для `cosign --certificate-identity` нужно подтверждение точного SAN, а не только формата `sub`.
   Формат `repo:{owner}/{repo}:ref:{ref}` подтверждён source (`services/actions/auth.go:148-153`)
   и фактом run 72 (`sub=repo:aiopslab/otus-diplom:ref:refs/heads/engineer/139-oidc-enable-openid`).
   Производный SAN для release = `repo:aiopslab/otus-diplom:ref:refs/heads/main`.
@@ -87,7 +95,7 @@
 ### D. Admission-барьер
 
 - Механизм зафиксирован (шаблон `96237e87…`): job `admission` на выделенном
-  owner-контролируемом label `otus-diplom-admission`, `needs: admission` у всех
+  owner-контролируемом label `otus-diplom-admission`, зависимость от `admission` по цепочке `needs` у всех
   последующих jobs, fail-closed `inputs.admission_confirmed` («STOP: exclusive
   admission barrier not confirmed by owner (BLOCKED)»).
 - Label существует на runner (`otus-diplom-admission` в списке labels,
